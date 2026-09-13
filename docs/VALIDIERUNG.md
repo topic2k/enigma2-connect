@@ -17,8 +17,18 @@ bestanden Ruff, Formatierung, mypy und 269 Tests; ein Test wurde wegen fehlendem
 FFmpeg übersprungen. Die Silber-Abdeckungsprüfung scheiterte dadurch für
 `recording_snapshot.py` mit 92,45 %, während Config Flow 100 % erreichte.
 Fassung **1.1.0-dev.8** ergänzt die ausdrückliche Installation und Aufrufprüfung
-von FFmpeg im CI-Workflow. Ein erfolgreicher Lauf dieser Korrektur wird separat
-nachgewiesen; Coverage-Schwellen und Integrationsverhalten bleiben unverändert.
+von FFmpeg im CI-Workflow. Coverage-Schwellen und Integrationsverhalten bleiben unverändert.
+
+**Korrektur auf Commit `ffdf007` bestanden:** Der
+[Test-Workflow](https://github.com/topic2k/enigma2-connect/actions/runs/34771754492)
+bestand mit **270 Python-Tests ohne übersprungene Tests** in 13,44 Sekunden und
+**8 Frontend-Tests**. Ruff, Formatierung und mypy waren grün. Config Flow erreicht
+100 % Anweisungs-/Zweigabdeckung, alle 23 Module überschreiten die 95-%-Grenze;
+`recording_snapshot.py` erreicht nun 99,06 % kombiniert. Auch
+[Hassfest und HACS](https://github.com/topic2k/enigma2-connect/actions/runs/34771754483)
+bestanden. Der Blog-Monitor-Testcode blieb gegenüber dem oben verlinkten grünen
+Lauf unverändert. Diese Nachweise gelten für den genannten Commit; die
+nachfolgende Dokumentation des Ergebnisses ändert den Integrationscode nicht.
 
 ## Physischer DHCP-Adresswechsel: fehlende Identitätsdaten
 

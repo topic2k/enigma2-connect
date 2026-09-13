@@ -16,6 +16,8 @@ Unveröffentlichte Entwicklerversion.
 - FFmpeg wird vor den CI-Tests ausdrücklich installiert und aufgerufen, damit
   der Test zur tatsächlichen Aufnahmebild-Extraktion nicht übersprungen wird.
   Die Grenze von über 95 % Abdeckung pro Integrationsmodul bleibt unverändert.
+  Die korrigierte CI besteht 270 Python- und 8 Frontend-Tests sowie Hassfest/HACS;
+  CI-Nachweise und abgehakte Prüflisten sind dokumentiert.
 
 - Tatsächlichen DHCP-Adresswechsel am Octagon geprüft: Fehlende MAC-Daten nach
   dem Schnittstellen-Neustart verhindern die Übernahme erwartungsgemäß. Nach

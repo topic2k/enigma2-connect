@@ -16,6 +16,8 @@ Unreleased development version.
 - CI explicitly installs and runs FFmpeg before testing so actual recording-frame
   extraction is not skipped. The requirement of above 95% coverage per integration
   module remains unchanged.
+  Corrected CI passes 270 Python and 8 frontend tests plus Hassfest/HACS;
+  CI evidence and completed checklist entries are documented.
 
 - Checked an actual DHCP address change on the Octagon: missing MAC data after
   restarting the interface correctly prevents adoption. After a GUI restart,

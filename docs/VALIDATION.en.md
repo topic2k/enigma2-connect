@@ -17,8 +17,18 @@ passed Ruff, formatting, mypy and 269 tests; one test was skipped because FFmpeg
 was missing. Consequently, the Silver coverage gate failed for
 `recording_snapshot.py` at 92.45%, while config flow reached 100%.
 Version **1.1.0-dev.8** explicitly installs FFmpeg and verifies its invocation in
-CI. A successful run of this correction is established separately; coverage
-thresholds and integration behavior remain unchanged.
+CI. Coverage thresholds and integration behavior remain unchanged.
+
+**Correction passed on commit `ffdf007`:** The
+[test workflow](https://github.com/topic2k/enigma2-connect/actions/runs/34771754492)
+passed **270 Python tests without skips** in 13.44 seconds and **8 frontend tests**.
+Ruff, formatting and mypy passed. Config flow reaches 100% statement/branch
+coverage, all 23 modules exceed the 95% threshold, and `recording_snapshot.py`
+now reaches 99.06% combined coverage.
+[Hassfest and HACS](https://github.com/topic2k/enigma2-connect/actions/runs/34771754483)
+also passed. Blog-monitor test code was unchanged from the successful run linked
+above. This evidence applies to the stated commit; subsequently documenting the
+result does not change integration code.
 
 ## Physical DHCP address change: missing identity data
 

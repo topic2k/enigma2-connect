@@ -364,8 +364,10 @@ Vor der Hardware-/Veröffentlichungsfreigabe bleibt folgende Abnahme offen:
 - [x] Aufnahmebild aus einer vorhandenen Datei erzeugt und dekodiert; Lautstärke,
   Stummschaltung, Meldungsaufruf und eigener temporärer Timer geprüft.
   Ursprünglicher Zustand und vorhandene Timer/Aufnahmen nachweislich erhalten.
-- [ ] GitHub-CI für den vorgesehenen Commit vollständig grün abwarten. Danach
-  gelten die gesonderten PR-/Merge- und Release-Freigaben aus der Release-Anleitung.
+- [x] GitHub-CI für `ffdf007` bestanden: Tests einschließlich FFmpeg und
+  Coverage-Sperre, Frontend, Hassfest und HACS; Nachweise in der
+  [Prüfübersicht](VALIDIERUNG.md#github-ci-und-ffmpeg-voraussetzung).
+  PR-/Merge- und Release-Freigaben bleiben gemäß Release-Anleitung gesondert.
 
 ## Aufbau und Datenfluss
 

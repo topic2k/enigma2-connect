@@ -344,8 +344,10 @@ The following acceptance checks remain before hardware/publication approval:
 - [x] Generated and decoded artwork from an existing recording; checked volume,
   mute, message submission and an owned temporary timer. Verified restoration
   of the original state and preservation of existing timers/recordings.
-- [ ] Wait for all GitHub CI checks on the intended commit. The separate PR/merge
-  and release approvals in the release guide still apply afterwards.
+- [x] GitHub CI passed for `ffdf007`: tests including FFmpeg and the coverage
+  gate, frontend, Hassfest and HACS; evidence in the
+  [verification summary](VALIDATION.en.md#github-ci-and-the-ffmpeg-prerequisite).
+  Separate PR/merge and release approvals still apply as described in the release guide.
 
 ## Structure and data flow
 
