@@ -46,6 +46,12 @@ liegen (unter Debian/Ubuntu: `sudo apt-get install ffmpeg`). Ohne FFmpeg wird
 dieser Test lokal übersprungen und die Silber-Abdeckungsprüfung kann scheitern.
 Die CI installiert FFmpeg ausdrücklich und prüft den Aufruf vor dem Testlauf.
 
+Die GitHub-Workflows verwenden `actions/checkout@v7`, `astral-sh/setup-uv@v10`
+und `actions/upload-artifact@v7` mit Node.js 24 als Action-Laufzeit. Die
+gehosteten `ubuntu-latest`-Runner unterstützen diese Versionen. Dies ändert
+nicht die Python-Anforderungen der Integration. Bestehende Warnungen in alten
+Workflow-Läufen bleiben Bestandteil ihrer historischen Protokolle.
+
 ```sh
 uv sync --locked --group dev
 uv run --locked ruff check .

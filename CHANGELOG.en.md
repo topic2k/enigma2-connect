@@ -4,14 +4,18 @@
 
 ## Contents
 
-- [1.1.0-dev.8](#110-dev8)
+- [1.1.0-dev.9](#110-dev9)
 - [1.0.2](#102)
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 1.1.0-dev.8
+## 1.1.0-dev.9
 
 Unreleased development version.
+
+- Migrated GitHub Actions to Node.js 24: `checkout@v7`, `setup-uv@v10` and
+  `upload-artifact@v7` across all affected workflows, replacing the deprecated
+  Node.js 20 action versions.
 
 - CI explicitly installs and runs FFmpeg before testing so actual recording-frame
   extraction is not skipped. The requirement of above 95% coverage per integration

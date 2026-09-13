@@ -4,14 +4,18 @@
 
 ## Inhaltsverzeichnis
 
-- [1.1.0-dev.8](#110-dev8)
+- [1.1.0-dev.9](#110-dev9)
 - [1.0.2](#102)
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 1.1.0-dev.8
+## 1.1.0-dev.9
 
 Unveröffentlichte Entwicklerversion.
+
+- GitHub Actions auf Node.js 24 umgestellt: `checkout@v7`, `setup-uv@v10` und
+  `upload-artifact@v7` in allen betroffenen Workflows. Die veralteten
+  Node.js-20-Action-Versionen werden damit ersetzt.
 
 - FFmpeg wird vor den CI-Tests ausdrücklich installiert und aufgerufen, damit
   der Test zur tatsächlichen Aufnahmebild-Extraktion nicht übersprungen wird.

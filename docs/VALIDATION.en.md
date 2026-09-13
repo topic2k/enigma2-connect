@@ -2,12 +2,24 @@
 
 # Verification summary
 
-Checked on **2026-09-13**. Shared development version: **1.1.0-dev.8**.
+Checked on **2026-09-13**. Shared development version: **1.1.0-dev.9**.
 This is a technical report, not release or hardware approval. Version history:
 [changelog](../CHANGELOG.en.md). Reproduction commands:
 [developer guide](DEVELOPMENT.en.md#development-environment-and-checks).
 
 ## GitHub CI and the FFmpeg prerequisite
+
+**Node.js 24 migration in 1.1.0-dev.9:** All direct uses of `checkout@v4`,
+`setup-uv@v6` and `upload-artifact@v4` were replaced with `v7`, `v10` and `v7`,
+respectively. Action metadata for the reviewed releases
+[Checkout 7.0.1](https://github.com/actions/checkout/blob/v7.0.1/action.yml),
+[setup-uv 10.1.0](https://github.com/astral-sh/setup-uv/blob/v10.1.0/action.yml) and
+[Upload Artifact 7.0.1](https://github.com/actions/upload-artifact/blob/v7.0.1/action.yml)
+declares `node24`. Workflow triggers, permissions, upload path and retention are
+preserved. This replaces deprecated action versions previously forced to run on
+Node.js 24 by GitHub ([migration notice](https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/)).
+The blog monitor and its upload step remain intentionally skipped on branch pushes;
+CI verification does not start their external API execution.
 
 The first `quality-scale` push, commit `0fe1cb2`, passed
 [Hassfest and HACS](https://github.com/topic2k/enigma2-connect/actions/runs/34771537254)

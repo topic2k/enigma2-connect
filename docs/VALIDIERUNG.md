@@ -2,12 +2,25 @@
 
 # Prüfübersicht
 
-Prüfdatum: **13.09.2026**. Gemeinsamer Entwicklungsstand: **1.1.0-dev.8**.
+Prüfdatum: **13.09.2026**. Gemeinsamer Entwicklungsstand: **1.1.0-dev.9**.
 Dies ist ein technischer Prüfbericht, keine Release- oder Hardwarefreigabe.
 Versionshistorie: [Changelog](../CHANGELOG.md). Reproduktionsbefehle:
 [Entwicklerdokumentation](ENTWICKLUNG.md#entwicklungsumgebung-und-prüfungen).
 
 ## GitHub-CI und FFmpeg-Voraussetzung
+
+**Node.js-24-Umstellung in 1.1.0-dev.9:** Alle direkten Vorkommen von
+`checkout@v4`, `setup-uv@v6` und `upload-artifact@v4` wurden durch `v7`, `v10`
+beziehungsweise `v7` ersetzt. Die Action-Metadaten der geprüften Releases
+[Checkout 7.0.1](https://github.com/actions/checkout/blob/v7.0.1/action.yml),
+[setup-uv 10.1.0](https://github.com/astral-sh/setup-uv/blob/v10.1.0/action.yml)
+und [Upload Artifact 7.0.1](https://github.com/actions/upload-artifact/blob/v7.0.1/action.yml)
+deklarieren `node24`. Workflow-Trigger, Berechtigungen, Upload-Pfad und
+Aufbewahrungsdauer bleiben erhalten. Das ersetzt die veralteten Action-Versionen,
+die GitHub zuvor unter Node.js 24 erzwungen ausgeführt hat
+([GitHub-Migrationshinweis](https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/)).
+Der Blog-Monitor und sein Upload-Schritt bleiben bei Branch-Pushes planmäßig
+übersprungen; deren externe API-Ausführung wird durch die CI-Prüfung nicht gestartet.
 
 Der erste Push von `quality-scale`, Commit `0fe1cb2`, bestand
 [Hassfest und HACS](https://github.com/topic2k/enigma2-connect/actions/runs/34771537254)
