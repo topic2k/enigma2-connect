@@ -296,23 +296,26 @@ async def test_user_flow_errors(hass, receiver, failure, error):
 
 
 async def test_options_flow(hass, entry, receiver):
-    result = await hass.config_entries.options.async_init(entry.entry_id)
-    result = await hass.config_entries.options.async_configure(
-        result["flow_id"], {"next_step_id": "settings"}
-    )
-    assert result["type"] == "form"
-    result = await hass.config_entries.options.async_configure(
-        result["flow_id"],
-        {
-            "scan_interval": 30,
-            "artwork": "picon",
-            "bouquet": "",
-            "message_timeout": 10,
-            "message_type": 1,
-        },
-    )
-    assert result["type"] == "create_entry"
-    assert entry.options["scan_interval"] == 30
+    with patch.object(hass.config_entries, "async_reload", new_callable=AsyncMock) as reload:
+        result = await hass.config_entries.options.async_init(entry.entry_id)
+        result = await hass.config_entries.options.async_configure(
+            result["flow_id"], {"next_step_id": "settings"}
+        )
+        assert result["type"] == "form"
+        result = await hass.config_entries.options.async_configure(
+            result["flow_id"],
+            {
+                "scan_interval": 30,
+                "artwork": "picon",
+                "bouquet": "",
+                "message_timeout": 10,
+                "message_type": 1,
+            },
+        )
+        assert result["type"] == "create_entry"
+        assert entry.options["scan_interval"] == 30
+        await hass.async_block_till_done()
+        reload.assert_awaited_once_with(entry.entry_id)
 
 
 async def test_reconfigure_and_reauth(hass, entry, receiver):

@@ -19,6 +19,8 @@ Unreleased.
 - Documents setup with a Google Free Tier project, a manual dry run and local
   preparation without AI calls. Offline tests cover selection, response validation,
   enhancement proposals and failure handling.
+- The options-flow test isolates and verifies automatic reload, preventing a
+  background timer from interfering with CI test cleanup.
 
 ## 1.0.0
 

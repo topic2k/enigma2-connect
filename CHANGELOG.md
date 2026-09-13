@@ -19,6 +19,8 @@ Unveröffentlicht.
 - Einrichtung mit einem Google-Free-Tier-Projekt, manueller Probelauf und
   lokale Vorbereitung ohne KI-Aufruf sind dokumentiert. Offline-Tests prüfen
   Auswahl, Antwortvalidierung, Verbesserungsvorschläge und Fehlerfälle.
+- Der Optionsdialog-Test isoliert den automatischen Neuladevorgang und prüft
+  dessen Aufruf, damit kein Hintergrund-Timer den CI-Testabschluss stört.
 
 ## 1.0.0
 
