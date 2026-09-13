@@ -38,6 +38,11 @@ was developed with assistance from generative AI.
 
 ## Development environment and checks
 
+FFmpeg must be on PATH for the actual recording-frame extraction test (on
+Debian/Ubuntu: `sudo apt-get install ffmpeg`). Without it, this test is skipped
+locally and the Silver coverage gate may fail. CI explicitly installs FFmpeg
+and checks its invocation before running tests.
+
 From the project directory on Linux/WSL with Python 3.14.2 or later:
 
 ```sh

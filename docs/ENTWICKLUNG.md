@@ -41,6 +41,11 @@ nicht veröffentlicht. Die Software wurde mit Unterstützung generativer KI entw
 
 Im Projektverzeichnis unter Linux/WSL mit Python ab 3.14.2:
 
+FFmpeg muss für den Test zur tatsächlichen Aufnahmebild-Extraktion im Suchpfad
+liegen (unter Debian/Ubuntu: `sudo apt-get install ffmpeg`). Ohne FFmpeg wird
+dieser Test lokal übersprungen und die Silber-Abdeckungsprüfung kann scheitern.
+Die CI installiert FFmpeg ausdrücklich und prüft den Aufruf vor dem Testlauf.
+
 ```sh
 uv sync --locked --group dev
 uv run --locked ruff check .

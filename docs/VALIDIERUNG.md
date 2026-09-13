@@ -2,10 +2,23 @@
 
 # Prüfübersicht
 
-Prüfdatum: **13.09.2026**. Gemeinsamer Entwicklungsstand: **1.1.0-dev.7**.
+Prüfdatum: **13.09.2026**. Gemeinsamer Entwicklungsstand: **1.1.0-dev.8**.
 Dies ist ein technischer Prüfbericht, keine Release- oder Hardwarefreigabe.
 Versionshistorie: [Changelog](../CHANGELOG.md). Reproduktionsbefehle:
 [Entwicklerdokumentation](ENTWICKLUNG.md#entwicklungsumgebung-und-prüfungen).
+
+## GitHub-CI und FFmpeg-Voraussetzung
+
+Der erste Push von `quality-scale`, Commit `0fe1cb2`, bestand
+[Hassfest und HACS](https://github.com/topic2k/enigma2-connect/actions/runs/34771537254)
+sowie die [Blog-Monitor-Tests](https://github.com/topic2k/enigma2-connect/actions/runs/34771537165).
+Im [Testlauf](https://github.com/topic2k/enigma2-connect/actions/runs/34771537046)
+bestanden Ruff, Formatierung, mypy und 269 Tests; ein Test wurde wegen fehlendem
+FFmpeg übersprungen. Die Silber-Abdeckungsprüfung scheiterte dadurch für
+`recording_snapshot.py` mit 92,45 %, während Config Flow 100 % erreichte.
+Fassung **1.1.0-dev.8** ergänzt die ausdrückliche Installation und Aufrufprüfung
+von FFmpeg im CI-Workflow. Ein erfolgreicher Lauf dieser Korrektur wird separat
+nachgewiesen; Coverage-Schwellen und Integrationsverhalten bleiben unverändert.
 
 ## Physischer DHCP-Adresswechsel: fehlende Identitätsdaten
 

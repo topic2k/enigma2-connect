@@ -4,14 +4,18 @@
 
 ## Inhaltsverzeichnis
 
-- [1.1.0-dev.7](#110-dev7)
+- [1.1.0-dev.8](#110-dev8)
 - [1.0.2](#102)
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 1.1.0-dev.7
+## 1.1.0-dev.8
 
 Unveröffentlichte Entwicklerversion.
+
+- FFmpeg wird vor den CI-Tests ausdrücklich installiert und aufgerufen, damit
+  der Test zur tatsächlichen Aufnahmebild-Extraktion nicht übersprungen wird.
+  Die Grenze von über 95 % Abdeckung pro Integrationsmodul bleibt unverändert.
 
 - Tatsächlichen DHCP-Adresswechsel am Octagon geprüft: Fehlende MAC-Daten nach
   dem Schnittstellen-Neustart verhindern die Übernahme erwartungsgemäß. Nach

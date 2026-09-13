@@ -4,14 +4,18 @@
 
 ## Contents
 
-- [1.1.0-dev.7](#110-dev7)
+- [1.1.0-dev.8](#110-dev8)
 - [1.0.2](#102)
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 1.1.0-dev.7
+## 1.1.0-dev.8
 
 Unreleased development version.
+
+- CI explicitly installs and runs FFmpeg before testing so actual recording-frame
+  extraction is not skipped. The requirement of above 95% coverage per integration
+  module remains unchanged.
 
 - Checked an actual DHCP address change on the Octagon: missing MAC data after
   restarting the interface correctly prevents adoption. After a GUI restart,

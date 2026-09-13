@@ -2,10 +2,23 @@
 
 # Verification summary
 
-Checked on **2026-09-13**. Shared development version: **1.1.0-dev.7**.
+Checked on **2026-09-13**. Shared development version: **1.1.0-dev.8**.
 This is a technical report, not release or hardware approval. Version history:
 [changelog](../CHANGELOG.en.md). Reproduction commands:
 [developer guide](DEVELOPMENT.en.md#development-environment-and-checks).
+
+## GitHub CI and the FFmpeg prerequisite
+
+The first `quality-scale` push, commit `0fe1cb2`, passed
+[Hassfest and HACS](https://github.com/topic2k/enigma2-connect/actions/runs/34771537254)
+and the [blog-monitor tests](https://github.com/topic2k/enigma2-connect/actions/runs/34771537165).
+The [test run](https://github.com/topic2k/enigma2-connect/actions/runs/34771537046)
+passed Ruff, formatting, mypy and 269 tests; one test was skipped because FFmpeg
+was missing. Consequently, the Silver coverage gate failed for
+`recording_snapshot.py` at 92.45%, while config flow reached 100%.
+Version **1.1.0-dev.8** explicitly installs FFmpeg and verifies its invocation in
+CI. A successful run of this correction is established separately; coverage
+thresholds and integration behavior remain unchanged.
 
 ## Physical DHCP address change: missing identity data
 
