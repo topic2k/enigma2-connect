@@ -7,6 +7,14 @@ Dies ist ein technischer Prüfbericht, keine Release- oder Hardwarefreigabe.
 Versionshistorie: [Changelog](../CHANGELOG.md). Reproduktionsbefehle:
 [Entwicklerdokumentation](ENTWICKLUNG.md#entwicklungsumgebung-und-prüfungen).
 
+Die Veröffentlichung **1.1.0** übernimmt diesen Entwicklungsstand mit stabiler
+Versionskennung und aktualisierter Freigabedokumentation. Die folgenden
+Hardware-Nachweise bleiben an ihre genannten Versionen und Prüfbedingungen
+gebunden; die Veröffentlichung erweitert ihren Umfang nicht. CI-Nachweise zum
+endgültigen Commit stehen im [Release 1.1.0](https://github.com/topic2k/enigma2-connect/releases/tag/v1.1.0).
+Echte Bonjour-Erkennung, automatischer DHCP-Empfang in laufendem HA und die
+subjektive Bild-/Tonprüfung bleiben offen.
+
 ## Dependabot: cryptography und CVE-2026-69247
 
 [Dependabot-Hinweis 1](https://github.com/topic2k/enigma2-connect/security/dependabot/1)

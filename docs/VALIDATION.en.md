@@ -7,6 +7,13 @@ This is a technical report, not release or hardware approval. Version history:
 [changelog](../CHANGELOG.en.md). Reproduction commands:
 [developer guide](DEVELOPMENT.en.md#development-environment-and-checks).
 
+Release **1.1.0** carries this development state forward with a stable version
+and updated release documentation. The hardware evidence below remains tied to
+its stated versions and test conditions; publication does not extend its scope.
+CI evidence for the final commit is recorded in [release 1.1.0](https://github.com/topic2k/enigma2-connect/releases/tag/v1.1.0).
+Actual Bonjour discovery, automatic DHCP receipt in running HA and subjective
+picture/audio playback remain pending.
+
 ## Dependabot: cryptography and CVE-2026-69247
 
 [Dependabot alert 1](https://github.com/topic2k/enigma2-connect/security/dependabot/1)

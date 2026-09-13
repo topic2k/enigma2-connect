@@ -11,7 +11,11 @@
 
 ## 1.1.0
 
-Unreleased.
+Released on 2026-09-13.
+
+- Released the verified quality improvements as version 1.1.0. Actual Bonjour
+  discovery, automatic DHCP receipt in running Home Assistant and subjective
+  picture/audio playback remain documented as pending practical checks.
 
 - Replaced vulnerable transitive test dependency `cryptography 48.0.1` with
   `50.0.1` (CVE-2026-69247), together with compatible `pyOpenSSL 26.4.0`.

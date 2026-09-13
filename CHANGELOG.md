@@ -11,7 +11,11 @@
 
 ## 1.1.0
 
-Unveröffentlicht.
+Veröffentlicht am 13.09.2026.
+
+- Geprüften Qualitätsstand als Version 1.1.0 freigegeben. Echte Bonjour-Erkennung,
+  automatischer DHCP-Empfang in laufendem Home Assistant und die subjektive
+  Bild-/Tonprüfung bleiben als offene Praxisnachweise dokumentiert.
 
 - Verwundbare transitive Testabhängigkeit `cryptography 48.0.1` durch `50.0.1`
   ersetzt (CVE-2026-69247); `pyOpenSSL` auf das passende `26.4.0` angehoben.
