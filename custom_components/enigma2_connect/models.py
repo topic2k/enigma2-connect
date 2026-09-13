@@ -48,6 +48,7 @@ def signal_snr_db(signal: dict | None) -> float | None:
 def text(value: Any) -> str | None:
     if value is None or value in ("", "N/A"):
         return None
+    # Strip DVB emphasis markers that would otherwise leak into entity text.
     return unescape(str(value)).replace("\u0086", "").replace("\u0087", "")
 
 
@@ -85,6 +86,7 @@ def services(rows: list, *, channels: bool = False) -> dict[str, Service]:
                 flags = int(ref.split(":")[1])
             except ValueError, IndexError:
                 continue
+            # Bouquet navigation and marker entries are not selectable channels.
             if flags & (2 | 64 | 128 | 256 | 512):
                 continue
         parsed.setdefault(ref, Service(ref, text(name) or "?"))
@@ -101,6 +103,7 @@ def epoch(value: str | int) -> int:
         return value
     parsed = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
     if parsed.tzinfo is None:
+        # Avoid silently interpreting timer input in the Home Assistant host timezone.
         raise ValueError("A timezone offset is required")
     return int(parsed.timestamp())
 
@@ -198,6 +201,8 @@ def picon_candidates(
 
 @dataclass(frozen=True)
 class Snapshot:
+    # All entities consume the same poll result. For optional lists, None means
+    # unavailable; an empty list means the receiver reported no entries.
     state: ReceiverState
     signal: dict | None = None
     info: dict = field(default_factory=dict)
@@ -207,3 +212,4 @@ class Snapshot:
     channels: dict[str, Service] = field(default_factory=dict)
     bouquet: str | None = None
     movie_directory: str | None = None
+    media_channels: dict[str, Service] | None = None

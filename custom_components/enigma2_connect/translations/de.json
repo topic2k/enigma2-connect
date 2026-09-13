@@ -51,20 +51,78 @@
   },
   "options": {
     "error": {
+      "image_api_key_required": "Für die ausgewählte Bildquelle ist ein API-Schlüssel erforderlich.",
+      "invalid_image_url": "Eine direkte HTTP(S)-Bild-URL ohne Benutzerkennwort eingeben. Erlaubte Platzhalter: title, filename, channel.",
       "invalid_timezone": "Eine gültige Zeitzone eingeben, zum Beispiel Europe/Berlin."
     },
     "step": {
-      "init": {
+      "settings": {
         "title": "Receiver-Optionen",
         "data": {
           "scan_interval": "Abfrageintervall (Sekunden)",
-          "bouquet": "Standard-Bouquetreferenz (optional)",
+          "recording_image_sources": "Vorschaubilder für Aufnahmen – Bildquellen",
+          "recording_snapshot_minutes": "Snapshot-Zeitpunkt nach Aufnahmebeginn",
+          "recording_tmdb_key": "TMDB API-Schlüssel",
+          "recording_omdb_key": "OMDb API-Schlüssel",
+          "recording_image_url": "Eigene Bild-URL",
+          "bouquet": "Standard-Bouquet (optional)",
           "artwork": "Medienbild",
           "message_type": "Nachrichtentyp (0–3)",
           "message_timeout": "Anzeigedauer (Sekunden)",
           "receiver_timezone": "Zeitzone des Receivers",
-          "off_mode": "Verhalten beim Ausschalten"
+          "off_mode": "Verhalten beim Ausschalten",
+          "recordings_layout": "Aufnahmen in der Medien-Kachel (gilt für alle Receiver)",
+          "media_show_channels": "Sender im Medienbrowser anzeigen",
+          "media_channel_bouquet": "Bouquet für den Medienbrowser"
+        },
+        "data_description": {
+          "recording_image_sources": "Mehrfachauswahl. Keine Auswahl deaktiviert Vorschaubilder. Reihenfolge: eigene URL, TMDB, OMDb, Snapshot. Nur ausgewählte Internetquellen erhalten den Aufnahmetitel.",
+          "recording_snapshot_minutes": "Standard: 10 Minuten. Kürzere abgeschlossene Aufnahmen: Mitte der Aufnahme. Startet keine Wiedergabe.",
+          "recording_image_url": "Direkte JPEG-, PNG- oder WebP-URL. Platzhalter in geschweiften Klammern: title, filename, channel. Werte werden URL-kodiert.",
+          "message_type": "0 = Ja/Nein-Frage, 1 = Information, 2 = Warnung, 3 = Fehler.",
+          "media_show_channels": "Optionaler Senderordner in beiden Medienansichten; standardmäßig ausgeschaltet. Senderbilder verwenden vorhandene Picons.",
+          "media_channel_bouquet": "Sendergruppe anhand ihres Namens wählen. Leer: folgt dem aktuell ausgewählten Bouquet unter Quelle."
         }
+      },
+      "init": {
+        "title": "Receiver-Optionen",
+        "description": "Bildquellen zuerst unter Receiver-Einstellungen ändern und speichern. Vorschaubilder neu generieren verwendet die gespeicherten Quellen und startet die Vorbereitung im Hintergrund nur für diesen Receiver. Die Medienliste bleibt nutzbar.",
+        "menu_options": {
+          "settings": "Receiver-Einstellungen",
+          "regenerate_images": "Vorschaubilder neu generieren"
+        }
+      }
+    },
+    "abort": {
+      "images_disabled": "Vorschaubilder sind deaktiviert. Wähle und speichere zuerst mindestens eine Bildquelle in den Receiver-Einstellungen."
+    }
+  },
+  "selector": {
+    "recording_image_sources": {
+      "options": {
+        "snapshot": "Snapshot aus der Aufnahme",
+        "tmdb": "TMDB",
+        "omdb": "OMDb (IMDb-Zuordnung)",
+        "custom": "Eigene Bild-URL"
+      }
+    },
+    "recordings_layout": {
+      "options": {
+        "receivers": "Getrennt nach Receiver",
+        "merged": "Receiver zusammenfassen"
+      }
+    },
+    "artwork": {
+      "options": {
+        "picon": "Senderlogo",
+        "screenshot": "Bildschirmfoto",
+        "none": "Kein Bild"
+      }
+    },
+    "off_mode": {
+      "options": {
+        "standby": "Standby",
+        "deep_standby": "Tiefschlaf"
       }
     }
   },
@@ -276,6 +334,12 @@
     }
   },
   "exceptions": {
+    "recording_unavailable": {
+      "message": "Die Aufnahme oder ihr Receiver ist nicht verfügbar. Aktualisiere die Aufnahmeliste."
+    },
+    "recording_receiver_only": {
+      "message": "Wähle {receiver} als Wiedergabegerät. Diese Aufnahme kann nur auf diesem Receiver abgespielt werden; Browser-Streaming wird nicht unterstützt."
+    },
     "invalid_auth": {
       "message": "Der Receiver hat die Zugangsdaten abgelehnt."
     },
@@ -286,7 +350,7 @@
       "message": "Die Adresse liefert keine gültigen OpenWebif-Gerätedaten."
     },
     "invalid_target": {
-      "message": "Wähle genau einen geladenen Enigma2-HA-Receiver."
+      "message": "Wähle genau einen geladenen Enigma2-Connect-Receiver."
     },
     "invalid_time": {
       "message": "Gib eine Zeitzone und ein Ende nach dem Beginn an."
@@ -296,6 +360,45 @@
     },
     "request_failed": {
       "message": "Die Receiver-Anfrage ist fehlgeschlagen oder wurde abgelehnt."
+    },
+    "unknown_channel": {
+      "message": "Unbekannter Sender"
+    },
+    "select_recording": {
+      "message": "Eine Enigma2-Aufnahme oder einen Sender auswählen"
+    },
+    "invalid_media": {
+      "message": "Eine Sendernummer oder eine Enigma2-Servicereferenz verwenden"
+    },
+    "unknown_selection": {
+      "message": "Unbekannte Auswahl"
+    },
+    "unknown_remote_key": {
+      "message": "Unbekannte Fernbedienungstaste: {key}"
+    },
+    "invalid_key_code": {
+      "message": "Tastencode außerhalb des Linux-Eingabebereichs"
+    },
+    "invalid_sequence": {
+      "message": "Ungültige Sequenzlänge, Wiederholungsanzahl oder Verzögerung"
+    },
+    "recording_folder_missing": {
+      "message": "Der Aufnahmeordner existiert nicht mehr"
+    },
+    "unknown_recording_folder": {
+      "message": "Unbekannter Aufnahmeordner"
+    },
+    "cannot_identify": {
+      "message": "Der OpenWebif-Receiver konnte nicht erkannt werden"
+    },
+    "cannot_update": {
+      "message": "Die Receiver-Daten konnten nicht aktualisiert werden"
+    },
+    "channel_unavailable": {
+      "message": "Der Sender, das gewählte Bouquet oder sein Receiver ist nicht verfügbar, oder die Senderanzeige ist ausgeschaltet. Aktualisiere die Senderliste."
+    },
+    "channel_receiver_only": {
+      "message": "Wähle {receiver} als Wiedergabegerät, um diesen Sender einzuschalten. Browser-Streaming wird nicht unterstützt."
     }
   },
   "services": {
@@ -433,5 +536,10 @@
         }
       }
     }
+  },
+  "common": {
+    "recordings": "Enigma2-Aufnahmen",
+    "recording": "Aufnahme",
+    "channels": "Sender"
   }
 }

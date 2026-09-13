@@ -80,6 +80,7 @@ class OpenWebifClient:
         )
         self.verify_ssl = verify_ssl
         self.timeout = aiohttp.ClientTimeout(total=timeout)
+        # All entities share this lock so state-changing requests stay ordered.
         self.command_lock = asyncio.Lock()
 
     async def request(self, path: str, params: dict | None = None, *, image: bool = False) -> Any:
@@ -109,6 +110,7 @@ class OpenWebifClient:
                     if not content.startswith((b"\xff\xd8\xff", b"\x89PNG\r\n\x1a\n")):
                         raise ProtocolError("Receiver did not return an image")
                     return content
+                # Accept JSON even when the receiver reports a different MIME type.
                 data = await response.json(content_type=None)
                 if not isinstance(data, dict):
                     raise ProtocolError("Expected a JSON object")
@@ -145,6 +147,7 @@ class OpenWebifClient:
             raise ValueError("Invalid key sequence")
         if not 0 <= delay <= 5:
             raise ValueError("Delay must be between 0 and 5 seconds")
+        # Hold the lock across delays to keep other commands out of a key sequence.
         async with self.command_lock:
             for index, code in enumerate(codes):
                 data = await self.get(

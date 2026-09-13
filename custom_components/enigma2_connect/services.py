@@ -55,6 +55,7 @@ def register_services(hass):
                 params.update(justplay=int(params["justplay"]), disabled=0, eit=0)
         await coordinator.perform(coordinator.client.command, endpoint, refresh=False, **params)
         if service.startswith("timer_"):
+            # Bypass the slow list deadline so calendar and counts reflect the action.
             coordinator.invalidate_lists()
             await coordinator.async_request_refresh()
 

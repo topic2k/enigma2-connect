@@ -52,6 +52,7 @@ class EnigmaCalendar(EnigmaEntity, CalendarEntity):
             occurrences = [(begin, end)]
             if repeated:
                 occurrences = []
+                # Recurrences follow receiver wall time across offset changes.
                 duration = end.replace(tzinfo=None) - begin.replace(tzinfo=None)
                 if duration <= timedelta(0):
                     # A concrete timer can cross backwards through the repeated hour.
@@ -59,6 +60,7 @@ class EnigmaCalendar(EnigmaEntity, CalendarEntity):
                     duration = timedelta(seconds=end.timestamp() - begin.timestamp())
                 day = max(begin.date(), (lower.astimezone(zone) - duration).date())
                 while day <= upper.astimezone(zone).date():
+                    # Enigma2 encodes weekdays as a bitmask starting with Monday.
                     if repeated & (1 << day.weekday()):
                         if day == begin.date():
                             # Preserve the concrete occurrence reported by the receiver,

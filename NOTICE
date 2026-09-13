@@ -25,6 +25,6 @@ See docs/LIZENZEN.md for the pinned sources and the licensing decision.
 Branding build dependency:
 Poppins ExtraBold, Copyright 2020 The Poppins Project Authors.
 Font source: https://github.com/google/fonts/tree/main/ofl/poppins
-Licensed under the SIL Open Font License 1.1; see docs/branding/source/OFL-Poppins.txt.
+Licensed under the SIL Open Font License 1.1; see assets/branding/source/OFL-Poppins.txt.
 The font is bundled only with the branding sources; runtime PNG assets do not require it.
 

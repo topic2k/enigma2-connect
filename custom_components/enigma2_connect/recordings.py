@@ -5,7 +5,23 @@ from pathlib import PurePosixPath
 
 from homeassistant.components.media_player import BrowseMedia, MediaClass
 from homeassistant.components.media_player.errors import BrowseError
+from homeassistant.helpers.translation import async_get_translations
 from homeassistant.util import dt as dt_util
+
+from .const import DOMAIN
+
+
+async def async_recording_labels(hass):
+    """Media browser titles follow the Home Assistant server language."""
+    translations = await async_get_translations(hass, hass.config.language, "common", {DOMAIN})
+    return {
+        key: translations.get(f"component.{DOMAIN}.common.{key}", fallback)
+        for key, fallback in {
+            "recordings": "Enigma2 recordings",
+            "recording": "Recording",
+            "channels": "Channels",
+        }.items()
+    }
 
 
 def recording_path(movie):
@@ -16,9 +32,9 @@ def recording_path(movie):
     return PurePosixPath(filename)
 
 
-def recording_title(movie):
+def recording_title(movie, fallback_title="Recording"):
     """HA has no subtitle field; include available details in the display title."""
-    parts = [movie.get("eventname") or recording_path(movie).name or "Recording"]
+    parts = [movie.get("eventname") or recording_path(movie).name or fallback_title]
     try:
         timestamp = float(movie.get("recordingtime"))
         if timestamp > 0:
@@ -38,7 +54,9 @@ def recording_title(movie):
     return " · ".join(parts)
 
 
-def browse_recordings(snapshot, title, media_type=None, media_id=None):
+def browse_recordings(
+    snapshot, title, media_type=None, media_id=None, *, fallback_title="Recording", thumbnails=None
+):
     """Build one folder level from the shared recursive recording catalog."""
     movies = [movie for movie in snapshot.movies or [] if movie.get("serviceref")]
     # Older replies without directory metadata retain absolute folder structure.
@@ -60,9 +78,9 @@ def browse_recordings(snapshot, title, media_type=None, media_id=None):
     elif media_type == "enigma2_directory" and media_id:
         current = PurePosixPath(media_id)
         if current not in folders:
-            raise BrowseError("Recording folder no longer exists")
+            raise BrowseError(translation_domain=DOMAIN, translation_key="recording_folder_missing")
     else:
-        raise BrowseError("Unknown recording folder")
+        raise BrowseError(translation_domain=DOMAIN, translation_key="unknown_recording_folder")
 
     children = [
         BrowseMedia(
@@ -78,10 +96,11 @@ def browse_recordings(snapshot, title, media_type=None, media_id=None):
     ]
     children.extend(
         BrowseMedia(
-            title=recording_title(movie),
+            title=recording_title(movie, fallback_title),
             media_class=MediaClass.VIDEO,
             media_content_type="enigma2_recording",
             media_content_id=movie["serviceref"],
+            thumbnail=(thumbnails or {}).get(movie["serviceref"]),
             can_play=True,
             can_expand=False,
         )

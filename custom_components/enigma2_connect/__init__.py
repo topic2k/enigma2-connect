@@ -7,8 +7,10 @@ from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
 
 from .api import OpenWebifClient, power_command_middleware
+from .channel_media import ChannelPiconView
 from .const import DEFAULT_INTERVAL, DOMAIN
 from .coordinator import EnigmaConfigEntry, EnigmaCoordinator
+from .recording_images import RecordingThumbnailView
 from .services import register_services
 
 PLATFORMS = [
@@ -27,6 +29,8 @@ CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     register_services(hass)
+    hass.http.register_view(RecordingThumbnailView(hass))
+    hass.http.register_view(ChannelPiconView(hass))
     return True
 
 
@@ -47,8 +51,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: EnigmaConfigEntry) -> bo
     await coordinator.async_config_entry_first_refresh()
     entry.runtime_data = coordinator
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    coordinator.recording_images.async_start()
     return True
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: EnigmaConfigEntry) -> bool:
-    return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+    unloaded = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+    if unloaded:
+        await entry.runtime_data.recording_images.async_close()
+    return unloaded

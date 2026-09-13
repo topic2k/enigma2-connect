@@ -29,6 +29,7 @@ class EnigmaCamera(EnigmaEntity, Camera):
     async def async_camera_image(self, width=None, height=None):
         if not self.available or self.coordinator.data.state.standby:
             return None
+        # Check the cache inside the lock so concurrent viewers share one capture.
         async with self._image_lock:
             if self._image is not None and monotonic() - self._fetched < 5:
                 return self._image

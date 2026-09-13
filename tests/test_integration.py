@@ -138,6 +138,7 @@ async def test_action_rejection_surfaces(hass, entry, receiver):
 async def test_media_channel_number_sources_browse(hass, entry, receiver):
     await setup(hass, entry)
     entity = EnigmaMediaPlayer(entry.runtime_data)
+    entity.hass = hass
     await entity.async_play_media("channel", "105")
     assert receiver[3].call_args.args == ([2, 11, 6, 352],)
     await entity.async_select_source("Channel")
@@ -173,6 +174,7 @@ async def test_media_browse_recordings_including_nested_folders(hass, entry, rec
     receiver[1].side_effect = get
     await setup(hass, entry)
     entity = EnigmaMediaPlayer(entry.runtime_data)
+    entity.hass = hass
     browse = await entity.async_browse_media()
     assert not browse.can_play
     assert browse.can_expand
@@ -295,6 +297,9 @@ async def test_user_flow_errors(hass, receiver, failure, error):
 
 async def test_options_flow(hass, entry, receiver):
     result = await hass.config_entries.options.async_init(entry.entry_id)
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], {"next_step_id": "settings"}
+    )
     assert result["type"] == "form"
     result = await hass.config_entries.options.async_configure(
         result["flow_id"],

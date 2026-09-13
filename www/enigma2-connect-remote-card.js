@@ -44,6 +44,59 @@ const ROWS = [
 ];
 const REPEAT = new Set(["up", "down", "left", "right", "volume_up", "volume_down", "channel_up", "channel_down", "fast_forward", "rewind"]);
 
+const TEXT = {
+  en: {
+    cardName: "Enigma2 Connect remote control",
+    cardDescription: "Enigma2 / OpenWebif remote: select the receiver and title in the visual editor.",
+    invalidEntity: "Configure an Enigma2 Connect remote entity using 'entity: remote.…'.",
+    selectReceiver: "Select the receiver control in the card editor.",
+    unavailable: "Receiver unavailable.",
+    commandFailed: "The remote command failed.",
+    key: "Key",
+    buttons: {
+      power: "Power", mute: "Mute", epg: "Programme guide", info: "Information",
+      menu: "Menu", up: "Up", exit: "Exit", left: "Left", ok: "OK", right: "Right",
+      favorites: "Favorites", down: "Down", help: "Help", red: "Red", green: "Green",
+      yellow: "Yellow", blue: "Blue", volume_down: "Volume down", volume_up: "Volume up",
+      channel_down: "Previous channel", channel_up: "Next channel", rewind: "Rewind",
+      play: "Play", pause: "Pause", fast_forward: "Fast forward", stop: "Stop",
+      record: "Record", tv: "TV", radio: "Radio", audio: "Audio", subtitle: "Subtitles",
+      text: "Teletext",
+    },
+    labels: {},
+  },
+  de: {
+    cardName: "Enigma2 Connect Fernbedienung",
+    cardDescription: "Enigma2 / OpenWebif Fernbedienung: Receiver und Titel im grafischen Editor auswählen.",
+    invalidEntity: "Eine Enigma2-Connect-Fernbedienung mit 'entity: remote.…' konfigurieren.",
+    selectReceiver: "Bitte die Receiver-Steuerung im Karteneditor auswählen.",
+    unavailable: "Receiver nicht verfügbar.",
+    commandFailed: "Der Fernbedienungsbefehl ist fehlgeschlagen.",
+    key: "Taste",
+    buttons: {
+      power: "Ein/Aus", mute: "Stumm", epg: "Programmführer", info: "Information",
+      menu: "Menü", up: "Nach oben", exit: "Zurück", left: "Nach links", ok: "OK",
+      right: "Nach rechts", favorites: "Favoriten", down: "Nach unten", help: "Hilfe",
+      red: "Rot", green: "Grün", yellow: "Gelb", blue: "Blau", volume_down: "Leiser",
+      volume_up: "Lauter", channel_down: "Vorheriger Sender", channel_up: "Nächster Sender",
+      rewind: "Zurückspulen", play: "Wiedergabe", pause: "Pause", fast_forward: "Vorspulen",
+      stop: "Stopp", record: "Aufnahme", tv: "Fernsehen", radio: "Radio", audio: "Tonspur",
+      subtitle: "Untertitel", text: "Videotext",
+    },
+    labels: {
+      mute: "Stumm", menu: "Menü", exit: "Zurück", help: "Hilfe", red: "Rot", green: "Grün",
+      yellow: "Gelb", blue: "Blau", volume_down: "Vol −", volume_up: "Vol +",
+      channel_down: "P −", channel_up: "P +", play: "Start", stop: "Stopp", record: "Aufn.",
+      subtitle: "UT", audio: "Ton",
+    },
+  },
+};
+
+export function cardLanguage(language) {
+  const locale = language || globalThis.document?.documentElement?.lang || globalThis.navigator?.language || "en";
+  return /^de(?:[-_]|$)/i.test(locale) ? "de" : "en";
+}
+
 // Inline geometry avoids missing glyphs and platform-specific emoji rendering.
 const ICONS = {
   power: '<path d="M12 3v9M6.3 5.7a8 8 0 1 0 11.4 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
@@ -91,9 +144,10 @@ export class Enigma2RemoteCard extends HTMLElement {
 
   setConfig(config) {
     if (config.entity && (typeof config.entity !== "string" || !config.entity.startsWith("remote."))) {
-      throw new Error("Configure an Enigma2 Connect remote entity using 'entity: remote.…'.");
+      throw new Error(TEXT[cardLanguage(this._hass?.language)].invalidEntity);
     }
     this.hold.stop();
+    this.errorMessage = "";
     this.config = {...config};
     this.render();
   }
@@ -110,7 +164,14 @@ export class Enigma2RemoteCard extends HTMLElement {
   }
 
   set hass(value) {
+    const language = cardLanguage(value?.language);
     this._hass = value;
+    if (this.language !== language) {
+      this.hold.stop();
+      this.errorMessage = "";
+      this.render();
+      return;
+    }
     this.updateState();
   }
 
@@ -121,9 +182,11 @@ export class Enigma2RemoteCard extends HTMLElement {
     this.shadowRoot.querySelector("h2").textContent = this.config.name || state?.attributes.friendly_name || "Enigma2 Connect";
     this.shadowRoot.querySelectorAll("button").forEach((button) => {button.disabled = !this.available;});
     if (!this.config.entity) {
-      this.shadowRoot.querySelector("output").textContent = this._hass?.language?.startsWith("de")
-        ? "Bitte die Receiver-Steuerung im Karteneditor auswählen."
-        : "Select the receiver control in the card editor.";
+      this.shadowRoot.querySelector("output").textContent = TEXT[this.language].selectReceiver;
+    } else if (!this.available) {
+      this.shadowRoot.querySelector("output").textContent = TEXT[this.language].unavailable;
+    } else {
+      this.shadowRoot.querySelector("output").textContent = this.errorMessage || "";
     }
     if (!this.available) this.hold.stop();
   }
@@ -133,10 +196,23 @@ export class Enigma2RemoteCard extends HTMLElement {
     this.pending = true;
     try {
       await this._hass.callService("remote", "send_command", {entity_id: this.config.entity, command: [key]});
-      this.shadowRoot.querySelector("output").textContent = "";
+      this.errorMessage = "";
+      this.updateState();
       return true;
     } catch (error) {
-      this.shadowRoot.querySelector("output").textContent = error.message || String(error);
+      this.errorMessage = error?.message || TEXT[this.language].commandFailed;
+      if (error?.translation_domain && error.translation_key) {
+        try {
+          const localize = await this._hass.loadBackendTranslation?.("exceptions", [error.translation_domain]);
+          this.errorMessage = localize?.(
+            `component.${error.translation_domain}.exceptions.${error.translation_key}.message`,
+            error.translation_placeholders || {},
+          ) || this.errorMessage;
+        } catch {
+          // Keep the original error if translation resources cannot be loaded.
+        }
+      }
+      this.updateState();
       return false;
     } finally {
       this.pending = false;
@@ -144,6 +220,9 @@ export class Enigma2RemoteCard extends HTMLElement {
   }
 
   render() {
+    this.language = cardLanguage(this._hass?.language);
+    if (!this.config) return;
+    const text = TEXT[this.language];
     // Only static labels enter HTML; entity names and errors use textContent.
     this.shadowRoot.innerHTML = `<ha-card><style>
       :host{display:block} .remote{max-width:340px;margin:auto;padding:20px}
@@ -156,7 +235,7 @@ export class Enigma2RemoteCard extends HTMLElement {
       button:disabled{opacity:.35;cursor:default} [data-key=red]{border-bottom:4px solid #d43c3c}
       [data-key=green]{border-bottom:4px solid #289752} [data-key=yellow]{border-bottom:4px solid #d5b800}
       [data-key=blue]{border-bottom:4px solid #337dd4} output{display:block;color:var(--error-color,#b00020);font-size:13px}
-      </style><div class="remote"><h2></h2>${ROWS.map(row => `<div class="row">${row.map(([key,label]) => `<button type="button" data-key="${key}" aria-label="${key.replaceAll("_", " ")}">${buttonContent(key, label)}</button>`).join("")}</div>`).join("")}<output role="status" aria-live="polite"></output></div></ha-card>`;
+      </style><div class="remote" lang="${this.language}"><h2></h2>${ROWS.map(row => `<div class="row">${row.map(([key,label]) => `<button type="button" data-key="${key}" aria-label="${text.buttons[key] || `${text.key} ${key}`}" title="${text.buttons[key] || `${text.key} ${key}`}">${buttonContent(key, text.labels[key] || label)}</button>`).join("")}</div>`).join("")}<output role="status" aria-live="polite"></output></div></ha-card>`;
     this.shadowRoot.querySelectorAll("button").forEach(button => {
       const key = button.dataset.key;
       button.addEventListener("pointerdown", event => {
@@ -178,9 +257,9 @@ if (!customElements.get("enigma2-connect-remote-card")) customElements.define("e
 window.customCards = window.customCards || [];
 const cardInfo = {
   type: "enigma2-connect-remote-card",
-  name: "Enigma2 Connect Fernbedienung",
+  get name() { return TEXT[cardLanguage()].cardName; },
   preview: true,
-  description: "Enigma2 / OpenWebif remote: Receiver und Titel im grafischen Editor auswählen.",
+  get description() { return TEXT[cardLanguage()].cardDescription; },
   getEntitySuggestion: (hass, entityId) => isEnigmaRemote(hass, entityId)
     ? {config: {type: "custom:enigma2-connect-remote-card", entity: entityId}}
     : null,
