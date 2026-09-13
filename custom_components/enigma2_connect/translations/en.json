@@ -1,0 +1,437 @@
+{
+  "title": "Enigma2 Connect",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Enigma2 Connect",
+        "data": {
+          "host": "Hostname or IP address",
+          "port": "Port (HTTP: 80, HTTPS: 443)",
+          "username": "Username",
+          "password": "Password",
+          "use_https": "Use HTTPS",
+          "verify_ssl": "Verify TLS certificate"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Enigma2 Connect",
+        "data": {
+          "host": "Hostname or IP address",
+          "port": "Port (HTTP: 80, HTTPS: 443)",
+          "username": "Username",
+          "password": "Password",
+          "use_https": "Use HTTPS",
+          "verify_ssl": "Verify TLS certificate"
+        }
+      },
+      "reconfigure": {
+        "title": "Enigma2 Connect",
+        "data": {
+          "host": "Hostname or IP address",
+          "port": "Port (HTTP: 80, HTTPS: 443)",
+          "username": "Username",
+          "password": "Password",
+          "use_https": "Use HTTPS",
+          "verify_ssl": "Verify TLS certificate"
+        }
+      }
+    },
+    "error": {
+      "invalid_host": "Enter a hostname or IP address without a URL scheme, path or credentials.",
+      "invalid_auth": "Receiver rejected the credentials.",
+      "cannot_connect": "Cannot connect to OpenWebif.",
+      "invalid_response": "The address did not return valid OpenWebif device data."
+    },
+    "abort": {
+      "already_configured": "Receiver already configured.",
+      "wrong_device": "This is a different receiver.",
+      "reauth_successful": "Authentication updated.",
+      "reconfigure_successful": "Configuration updated."
+    }
+  },
+  "options": {
+    "error": {
+      "invalid_timezone": "Enter a valid timezone, for example Europe/Berlin."
+    },
+    "step": {
+      "init": {
+        "title": "Receiver options",
+        "data": {
+          "scan_interval": "Polling interval (seconds)",
+          "bouquet": "Default bouquet reference (optional)",
+          "artwork": "Media artwork",
+          "message_type": "Message type (0–3)",
+          "message_timeout": "Message duration (seconds)",
+          "receiver_timezone": "Receiver timezone",
+          "off_mode": "Power-off mode"
+        }
+      }
+    }
+  },
+  "entity": {
+    "remote": {
+      "remote": {
+        "name": "Receiver control"
+      }
+    },
+    "notify": {
+      "message": {
+        "name": "Screen message"
+      }
+    },
+    "select": {
+      "select_bouquet": {
+        "name": "Bouquet"
+      },
+      "select_channel": {
+        "name": "Channel selection"
+      }
+    },
+    "sensor": {
+      "channel": {
+        "name": "Channel"
+      },
+      "now": {
+        "name": "Current programme"
+      },
+      "next": {
+        "name": "Next programme"
+      },
+      "signal": {
+        "name": "Signal quality"
+      },
+      "snr": {
+        "name": "Signal-to-noise ratio"
+      },
+      "ber": {
+        "name": "Reported bit error rate"
+      },
+      "recordings": {
+        "name": "Recordings"
+      },
+      "timers": {
+        "name": "Timers"
+      }
+    },
+    "binary_sensor": {
+      "standby": {
+        "name": "Standby"
+      },
+      "recording": {
+        "name": "Recording active"
+      },
+      "streaming": {
+        "name": "Streaming active"
+      },
+      "connection": {
+        "name": "Connection"
+      }
+    },
+    "camera": {
+      "screenshot": {
+        "name": "Screenshot"
+      }
+    },
+    "calendar": {
+      "calendar": {
+        "name": "Recording timers"
+      }
+    },
+    "button": {
+      "refresh": {
+        "name": "Refresh lists"
+      },
+      "key_1": {
+        "name": "Key 1"
+      },
+      "key_2": {
+        "name": "Key 2"
+      },
+      "key_3": {
+        "name": "Key 3"
+      },
+      "key_4": {
+        "name": "Key 4"
+      },
+      "key_5": {
+        "name": "Key 5"
+      },
+      "key_6": {
+        "name": "Key 6"
+      },
+      "key_7": {
+        "name": "Key 7"
+      },
+      "key_8": {
+        "name": "Key 8"
+      },
+      "key_9": {
+        "name": "Key 9"
+      },
+      "key_0": {
+        "name": "Key 0"
+      },
+      "key_power": {
+        "name": "Key power"
+      },
+      "key_up": {
+        "name": "Key up"
+      },
+      "key_down": {
+        "name": "Key down"
+      },
+      "key_left": {
+        "name": "Key left"
+      },
+      "key_right": {
+        "name": "Key right"
+      },
+      "key_ok": {
+        "name": "Key ok"
+      },
+      "key_menu": {
+        "name": "Key menu"
+      },
+      "key_exit": {
+        "name": "Key exit"
+      },
+      "key_red": {
+        "name": "Key red"
+      },
+      "key_green": {
+        "name": "Key green"
+      },
+      "key_yellow": {
+        "name": "Key yellow"
+      },
+      "key_blue": {
+        "name": "Key blue"
+      },
+      "key_info": {
+        "name": "Key info"
+      },
+      "key_epg": {
+        "name": "Key epg"
+      },
+      "key_help": {
+        "name": "Key help"
+      },
+      "key_audio": {
+        "name": "Key audio"
+      },
+      "key_subtitle": {
+        "name": "Key subtitle"
+      },
+      "key_text": {
+        "name": "Key text"
+      },
+      "key_tv": {
+        "name": "Key tv"
+      },
+      "key_radio": {
+        "name": "Key radio"
+      },
+      "key_favorites": {
+        "name": "Key favorites"
+      },
+      "key_play": {
+        "name": "Key play"
+      },
+      "key_pause": {
+        "name": "Key pause"
+      },
+      "key_stop": {
+        "name": "Key stop"
+      },
+      "key_record": {
+        "name": "Key record"
+      },
+      "key_fast_forward": {
+        "name": "Key fast forward"
+      },
+      "key_rewind": {
+        "name": "Key rewind"
+      },
+      "key_next": {
+        "name": "Key next"
+      },
+      "key_previous": {
+        "name": "Key previous"
+      },
+      "key_channel_up": {
+        "name": "Key channel up"
+      },
+      "key_channel_down": {
+        "name": "Key channel down"
+      },
+      "key_volume_up": {
+        "name": "Key volume up"
+      },
+      "key_volume_down": {
+        "name": "Key volume down"
+      },
+      "key_mute": {
+        "name": "Key mute"
+      }
+    }
+  },
+  "exceptions": {
+    "invalid_auth": {
+      "message": "Receiver rejected the credentials."
+    },
+    "cannot_connect": {
+      "message": "Cannot connect to OpenWebif."
+    },
+    "invalid_response": {
+      "message": "The address did not return valid OpenWebif device data."
+    },
+    "invalid_target": {
+      "message": "Select exactly one loaded Enigma2 Connect receiver."
+    },
+    "invalid_time": {
+      "message": "Provide a timezone and an end after the start."
+    },
+    "power_unconfirmed": {
+      "message": "No complete response to the power command was received. The receiver may already be restarting or shutting down. Check its state before sending another command."
+    },
+    "request_failed": {
+      "message": "The receiver request failed or was rejected."
+    }
+  },
+  "services": {
+    "reboot": {
+      "name": "Reboot receiver",
+      "description": "Reboot receiver.",
+      "fields": {
+        "device_id": {
+          "name": "Receiver",
+          "description": "Receiver"
+        }
+      }
+    },
+    "restart_gui": {
+      "name": "Restart Enigma2 GUI",
+      "description": "Restart Enigma2 GUI.",
+      "fields": {
+        "device_id": {
+          "name": "Receiver",
+          "description": "Receiver"
+        }
+      }
+    },
+    "deep_standby": {
+      "name": "Deep standby",
+      "description": "Deep standby.",
+      "fields": {
+        "device_id": {
+          "name": "Receiver",
+          "description": "Receiver"
+        }
+      }
+    },
+    "message": {
+      "name": "Show screen message",
+      "description": "Show screen message.",
+      "fields": {
+        "device_id": {
+          "name": "Receiver",
+          "description": "Receiver"
+        },
+        "text": {
+          "name": "Message",
+          "description": "Message"
+        },
+        "type": {
+          "name": "Message type",
+          "description": "0 = Yes/no question, 1 = Information, 2 = Warning, 3 = Error. Default: 1 (Information)."
+        },
+        "timeout": {
+          "name": "Duration (seconds)",
+          "description": "Duration (seconds)"
+        }
+      }
+    },
+    "timer_add": {
+      "name": "Add timer",
+      "description": "Add timer.",
+      "fields": {
+        "device_id": {
+          "name": "Receiver",
+          "description": "Receiver"
+        },
+        "service_reference": {
+          "name": "Channel service reference",
+          "description": "Channel service reference"
+        },
+        "begin": {
+          "name": "Start (ISO with timezone or Unix seconds)",
+          "description": "Start (ISO with timezone or Unix seconds)"
+        },
+        "end": {
+          "name": "End (ISO with timezone or Unix seconds)",
+          "description": "End (ISO with timezone or Unix seconds)"
+        },
+        "name": {
+          "name": "Name",
+          "description": "Name"
+        },
+        "description": {
+          "name": "Description",
+          "description": "Description"
+        },
+        "justplay": {
+          "name": "Zap only",
+          "description": "Zap only"
+        },
+        "afterevent": {
+          "name": "After recording (0: nothing, 1: standby, 2: shutdown, 3: automatic)",
+          "description": "After recording (0: nothing, 1: standby, 2: shutdown, 3: automatic)"
+        }
+      }
+    },
+    "timer_delete": {
+      "name": "Delete timer",
+      "description": "Delete timer.",
+      "fields": {
+        "device_id": {
+          "name": "Receiver",
+          "description": "Receiver"
+        },
+        "service_reference": {
+          "name": "Channel service reference",
+          "description": "Channel service reference"
+        },
+        "begin": {
+          "name": "Start (ISO with timezone or Unix seconds)",
+          "description": "Start (ISO with timezone or Unix seconds)"
+        },
+        "end": {
+          "name": "End (ISO with timezone or Unix seconds)",
+          "description": "End (ISO with timezone or Unix seconds)"
+        }
+      }
+    },
+    "timer_toggle": {
+      "name": "Toggle timer",
+      "description": "Toggle timer.",
+      "fields": {
+        "device_id": {
+          "name": "Receiver",
+          "description": "Receiver"
+        },
+        "service_reference": {
+          "name": "Channel service reference",
+          "description": "Channel service reference"
+        },
+        "begin": {
+          "name": "Start (ISO with timezone or Unix seconds)",
+          "description": "Start (ISO with timezone or Unix seconds)"
+        },
+        "end": {
+          "name": "End (ISO with timezone or Unix seconds)",
+          "description": "End (ISO with timezone or Unix seconds)"
+        }
+      }
+    }
+  }
+}

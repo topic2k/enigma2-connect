@@ -1,0 +1,27 @@
+[project]
+name = "enigma2-connect"
+version = "0.1.0"
+description = "Enigma2 Connect: Home Assistant integration for Enigma2 receivers using OpenWebif"
+requires-python = ">=3.14.2"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+
+[dependency-groups]
+dev = ["pytest-homeassistant-custom-component==0.13.364", "ruff==0.16.7", "PyTurboJPEG==1.8.3"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+target-version = "py314"
+line-length = 100
+extend-exclude = [".work"]
+
+[tool.ruff.format]
+line-ending = "lf"
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I"]

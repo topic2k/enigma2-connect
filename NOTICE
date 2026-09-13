@@ -1,0 +1,30 @@
+Enigma2 Connect
+Copyright 2026 Enigma2 Connect contributors
+Licensed under the Apache License, Version 2.0.
+
+Functional references studied for this independently implemented integration:
+- cinzas/homeassistant-enigma-player and its KavajNaruj predecessor
+- howeydium/HAVUOpenWebif
+- home-assistant/core, homeassistant/components/enigma2 (Apache-2.0)
+- autinerd/openwebifpy 4.3.1 (MIT; Copyright 2019 Finbarr Brady)
+- E2OpenPlugins/e2openplugin-OpenWebif (GPL-3.0-or-later in inspected source headers)
+
+These references are acknowledgments, not claims that their code has been
+relicensed. Their production source files are not incorporated in this
+project. Home Assistant and its libraries remain separate dependencies,
+licensed by their respective authors. OpenWebif runs on the receiver and
+is accessed through HTTP; it is not linked or bundled into this integration.
+
+Local .work research snapshots, interpreters, package caches and test
+environments are excluded from version control and release artifacts.
+Those third-party materials retain their original licenses; the project
+Apache license does not purport to relicense them.
+
+See docs/LIZENZEN.md for the pinned sources and the licensing decision.
+
+Branding build dependency:
+Poppins ExtraBold, Copyright 2020 The Poppins Project Authors.
+Font source: https://github.com/google/fonts/tree/main/ofl/poppins
+Licensed under the SIL Open Font License 1.1; see docs/branding/source/OFL-Poppins.txt.
+The font is bundled only with the branding sources; runtime PNG assets do not require it.
+

@@ -1,0 +1,6 @@
+{
+  "name": "enigma2-connect-remote",
+  "private": true,
+  "type": "module",
+  "scripts": {"test": "node --test tests/frontend.test.cjs"}
+}

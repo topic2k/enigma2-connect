@@ -1,0 +1,110 @@
+reboot:
+  fields:
+    device_id:
+      required: true
+      selector: &id001
+        device:
+          integration: enigma2_connect
+restart_gui:
+  fields:
+    device_id:
+      required: true
+      selector: *id001
+deep_standby:
+  fields:
+    device_id:
+      required: true
+      selector: *id001
+message:
+  fields:
+    device_id:
+      required: true
+      selector: *id001
+    text:
+      required: true
+      selector:
+        text: {}
+    type:
+      required: false
+      selector:
+        number:
+          min: 0
+          max: 3
+          mode: box
+    timeout:
+      required: false
+      selector:
+        number:
+          min: 1
+          max: 120
+          mode: box
+timer_add:
+  fields:
+    device_id:
+      required: true
+      selector: *id001
+    service_reference:
+      required: true
+      selector:
+        text: {}
+    begin:
+      required: true
+      selector:
+        text: {}
+    end:
+      required: true
+      selector:
+        text: {}
+    name:
+      required: true
+      selector:
+        text: {}
+    description:
+      required: false
+      selector:
+        text: {}
+    justplay:
+      required: false
+      selector:
+        boolean: {}
+    afterevent:
+      required: false
+      selector:
+        number:
+          min: 0
+          max: 3
+          mode: box
+timer_delete:
+  fields:
+    device_id:
+      required: true
+      selector: *id001
+    service_reference:
+      required: true
+      selector:
+        text: {}
+    begin:
+      required: true
+      selector:
+        text: {}
+    end:
+      required: true
+      selector:
+        text: {}
+timer_toggle:
+  fields:
+    device_id:
+      required: true
+      selector: *id001
+    service_reference:
+      required: true
+      selector:
+        text: {}
+    begin:
+      required: true
+      selector:
+        text: {}
+    end:
+      required: true
+      selector:
+        text: {}

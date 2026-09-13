@@ -1,0 +1,437 @@
+{
+  "title": "Enigma2 Connect",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Enigma2 Connect",
+        "data": {
+          "host": "Hostname oder IP-Adresse",
+          "port": "Port (HTTP: 80, HTTPS: 443)",
+          "username": "Benutzername",
+          "password": "Passwort",
+          "use_https": "HTTPS verwenden",
+          "verify_ssl": "TLS-Zertifikat prüfen"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Enigma2 Connect",
+        "data": {
+          "host": "Hostname oder IP-Adresse",
+          "port": "Port (HTTP: 80, HTTPS: 443)",
+          "username": "Benutzername",
+          "password": "Passwort",
+          "use_https": "HTTPS verwenden",
+          "verify_ssl": "TLS-Zertifikat prüfen"
+        }
+      },
+      "reconfigure": {
+        "title": "Enigma2 Connect",
+        "data": {
+          "host": "Hostname oder IP-Adresse",
+          "port": "Port (HTTP: 80, HTTPS: 443)",
+          "username": "Benutzername",
+          "password": "Passwort",
+          "use_https": "HTTPS verwenden",
+          "verify_ssl": "TLS-Zertifikat prüfen"
+        }
+      }
+    },
+    "error": {
+      "invalid_host": "Hostname oder IP-Adresse ohne URL-Schema, Pfad oder Zugangsdaten eingeben.",
+      "invalid_auth": "Der Receiver hat die Zugangsdaten abgelehnt.",
+      "cannot_connect": "Keine Verbindung zu OpenWebif möglich.",
+      "invalid_response": "Die Adresse liefert keine gültigen OpenWebif-Gerätedaten."
+    },
+    "abort": {
+      "already_configured": "Receiver bereits eingerichtet.",
+      "wrong_device": "Dies ist ein anderer Receiver.",
+      "reauth_successful": "Anmeldung aktualisiert.",
+      "reconfigure_successful": "Konfiguration aktualisiert."
+    }
+  },
+  "options": {
+    "error": {
+      "invalid_timezone": "Eine gültige Zeitzone eingeben, zum Beispiel Europe/Berlin."
+    },
+    "step": {
+      "init": {
+        "title": "Receiver-Optionen",
+        "data": {
+          "scan_interval": "Abfrageintervall (Sekunden)",
+          "bouquet": "Standard-Bouquetreferenz (optional)",
+          "artwork": "Medienbild",
+          "message_type": "Nachrichtentyp (0–3)",
+          "message_timeout": "Anzeigedauer (Sekunden)",
+          "receiver_timezone": "Zeitzone des Receivers",
+          "off_mode": "Verhalten beim Ausschalten"
+        }
+      }
+    }
+  },
+  "entity": {
+    "remote": {
+      "remote": {
+        "name": "Receiver-Steuerung"
+      }
+    },
+    "notify": {
+      "message": {
+        "name": "Bildschirmnachricht"
+      }
+    },
+    "select": {
+      "select_bouquet": {
+        "name": "Bouquet"
+      },
+      "select_channel": {
+        "name": "Senderauswahl"
+      }
+    },
+    "sensor": {
+      "channel": {
+        "name": "Sender"
+      },
+      "now": {
+        "name": "Aktuelle Sendung"
+      },
+      "next": {
+        "name": "Nächste Sendung"
+      },
+      "signal": {
+        "name": "Signalqualität"
+      },
+      "snr": {
+        "name": "Signal-Rausch-Verhältnis"
+      },
+      "ber": {
+        "name": "Gemeldete Bitfehlerrate"
+      },
+      "recordings": {
+        "name": "Aufnahmen"
+      },
+      "timers": {
+        "name": "Timer"
+      }
+    },
+    "binary_sensor": {
+      "standby": {
+        "name": "Standby"
+      },
+      "recording": {
+        "name": "Aufnahme aktiv"
+      },
+      "streaming": {
+        "name": "Streaming aktiv"
+      },
+      "connection": {
+        "name": "Verbindung"
+      }
+    },
+    "camera": {
+      "screenshot": {
+        "name": "Bildschirmfoto"
+      }
+    },
+    "calendar": {
+      "calendar": {
+        "name": "Aufnahme-Timer"
+      }
+    },
+    "button": {
+      "refresh": {
+        "name": "Listen aktualisieren"
+      },
+      "key_1": {
+        "name": "Taste 1"
+      },
+      "key_2": {
+        "name": "Taste 2"
+      },
+      "key_3": {
+        "name": "Taste 3"
+      },
+      "key_4": {
+        "name": "Taste 4"
+      },
+      "key_5": {
+        "name": "Taste 5"
+      },
+      "key_6": {
+        "name": "Taste 6"
+      },
+      "key_7": {
+        "name": "Taste 7"
+      },
+      "key_8": {
+        "name": "Taste 8"
+      },
+      "key_9": {
+        "name": "Taste 9"
+      },
+      "key_0": {
+        "name": "Taste 0"
+      },
+      "key_power": {
+        "name": "Taste Ein/Aus"
+      },
+      "key_up": {
+        "name": "Taste Hoch"
+      },
+      "key_down": {
+        "name": "Taste Runter"
+      },
+      "key_left": {
+        "name": "Taste Links"
+      },
+      "key_right": {
+        "name": "Taste Rechts"
+      },
+      "key_ok": {
+        "name": "Taste OK"
+      },
+      "key_menu": {
+        "name": "Taste Menü"
+      },
+      "key_exit": {
+        "name": "Taste Zurück"
+      },
+      "key_red": {
+        "name": "Taste Rot"
+      },
+      "key_green": {
+        "name": "Taste Grün"
+      },
+      "key_yellow": {
+        "name": "Taste Gelb"
+      },
+      "key_blue": {
+        "name": "Taste Blau"
+      },
+      "key_info": {
+        "name": "Taste Info"
+      },
+      "key_epg": {
+        "name": "Taste EPG"
+      },
+      "key_help": {
+        "name": "Taste Hilfe"
+      },
+      "key_audio": {
+        "name": "Taste Audio"
+      },
+      "key_subtitle": {
+        "name": "Taste Untertitel"
+      },
+      "key_text": {
+        "name": "Taste Videotext"
+      },
+      "key_tv": {
+        "name": "Taste TV"
+      },
+      "key_radio": {
+        "name": "Taste Radio"
+      },
+      "key_favorites": {
+        "name": "Taste Favoriten"
+      },
+      "key_play": {
+        "name": "Taste Wiedergabe"
+      },
+      "key_pause": {
+        "name": "Taste Pause"
+      },
+      "key_stop": {
+        "name": "Taste Stopp"
+      },
+      "key_record": {
+        "name": "Taste Aufnahme"
+      },
+      "key_fast_forward": {
+        "name": "Taste Vorspulen"
+      },
+      "key_rewind": {
+        "name": "Taste Zurückspulen"
+      },
+      "key_next": {
+        "name": "Taste Weiter"
+      },
+      "key_previous": {
+        "name": "Taste Vorherige"
+      },
+      "key_channel_up": {
+        "name": "Taste Sender auf"
+      },
+      "key_channel_down": {
+        "name": "Taste Sender ab"
+      },
+      "key_volume_up": {
+        "name": "Taste Lauter"
+      },
+      "key_volume_down": {
+        "name": "Taste Leiser"
+      },
+      "key_mute": {
+        "name": "Taste Stumm"
+      }
+    }
+  },
+  "exceptions": {
+    "invalid_auth": {
+      "message": "Der Receiver hat die Zugangsdaten abgelehnt."
+    },
+    "cannot_connect": {
+      "message": "Keine Verbindung zu OpenWebif möglich."
+    },
+    "invalid_response": {
+      "message": "Die Adresse liefert keine gültigen OpenWebif-Gerätedaten."
+    },
+    "invalid_target": {
+      "message": "Wähle genau einen geladenen Enigma2-HA-Receiver."
+    },
+    "invalid_time": {
+      "message": "Gib eine Zeitzone und ein Ende nach dem Beginn an."
+    },
+    "power_unconfirmed": {
+      "message": "Keine vollständige Antwort auf den Power-Befehl erhalten. Der Receiver startet möglicherweise bereits neu oder fährt herunter. Prüfe seinen Zustand, bevor du erneut einen Befehl sendest."
+    },
+    "request_failed": {
+      "message": "Die Receiver-Anfrage ist fehlgeschlagen oder wurde abgelehnt."
+    }
+  },
+  "services": {
+    "reboot": {
+      "name": "Receiver neu starten",
+      "description": "Receiver neu starten.",
+      "fields": {
+        "device_id": {
+          "name": "Receiver",
+          "description": "Receiver"
+        }
+      }
+    },
+    "restart_gui": {
+      "name": "Enigma2-Oberfläche neu starten",
+      "description": "Enigma2-Oberfläche neu starten.",
+      "fields": {
+        "device_id": {
+          "name": "Receiver",
+          "description": "Receiver"
+        }
+      }
+    },
+    "deep_standby": {
+      "name": "Tiefschlaf",
+      "description": "Tiefschlaf.",
+      "fields": {
+        "device_id": {
+          "name": "Receiver",
+          "description": "Receiver"
+        }
+      }
+    },
+    "message": {
+      "name": "Bildschirmnachricht anzeigen",
+      "description": "Bildschirmnachricht anzeigen.",
+      "fields": {
+        "device_id": {
+          "name": "Receiver",
+          "description": "Receiver"
+        },
+        "text": {
+          "name": "Nachricht",
+          "description": "Nachricht"
+        },
+        "type": {
+          "name": "Nachrichtentyp",
+          "description": "0 = Ja/Nein-Frage, 1 = Information, 2 = Warnung, 3 = Fehler. Standard: 1 (Information)."
+        },
+        "timeout": {
+          "name": "Dauer (Sekunden)",
+          "description": "Dauer (Sekunden)"
+        }
+      }
+    },
+    "timer_add": {
+      "name": "Timer anlegen",
+      "description": "Timer anlegen.",
+      "fields": {
+        "device_id": {
+          "name": "Receiver",
+          "description": "Receiver"
+        },
+        "service_reference": {
+          "name": "Sender-Service-Referenz",
+          "description": "Sender-Service-Referenz"
+        },
+        "begin": {
+          "name": "Beginn (ISO mit Zeitzone oder Unix-Sekunden)",
+          "description": "Beginn (ISO mit Zeitzone oder Unix-Sekunden)"
+        },
+        "end": {
+          "name": "Ende (ISO mit Zeitzone oder Unix-Sekunden)",
+          "description": "Ende (ISO mit Zeitzone oder Unix-Sekunden)"
+        },
+        "name": {
+          "name": "Name",
+          "description": "Name"
+        },
+        "description": {
+          "name": "Beschreibung",
+          "description": "Beschreibung"
+        },
+        "justplay": {
+          "name": "Nur umschalten",
+          "description": "Nur umschalten"
+        },
+        "afterevent": {
+          "name": "Nach Aufnahme (0: nichts, 1: Standby, 2: Ausschalten, 3: automatisch)",
+          "description": "Nach Aufnahme (0: nichts, 1: Standby, 2: Ausschalten, 3: automatisch)"
+        }
+      }
+    },
+    "timer_delete": {
+      "name": "Timer löschen",
+      "description": "Timer löschen.",
+      "fields": {
+        "device_id": {
+          "name": "Receiver",
+          "description": "Receiver"
+        },
+        "service_reference": {
+          "name": "Sender-Service-Referenz",
+          "description": "Sender-Service-Referenz"
+        },
+        "begin": {
+          "name": "Beginn (ISO mit Zeitzone oder Unix-Sekunden)",
+          "description": "Beginn (ISO mit Zeitzone oder Unix-Sekunden)"
+        },
+        "end": {
+          "name": "Ende (ISO mit Zeitzone oder Unix-Sekunden)",
+          "description": "Ende (ISO mit Zeitzone oder Unix-Sekunden)"
+        }
+      }
+    },
+    "timer_toggle": {
+      "name": "Timer aktivieren/deaktivieren",
+      "description": "Timer aktivieren/deaktivieren.",
+      "fields": {
+        "device_id": {
+          "name": "Receiver",
+          "description": "Receiver"
+        },
+        "service_reference": {
+          "name": "Sender-Service-Referenz",
+          "description": "Sender-Service-Referenz"
+        },
+        "begin": {
+          "name": "Beginn (ISO mit Zeitzone oder Unix-Sekunden)",
+          "description": "Beginn (ISO mit Zeitzone oder Unix-Sekunden)"
+        },
+        "end": {
+          "name": "Ende (ISO mit Zeitzone oder Unix-Sekunden)",
+          "description": "Ende (ISO mit Zeitzone oder Unix-Sekunden)"
+        }
+      }
+    }
+  }
+}
