@@ -3,6 +3,12 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING, overload
+
+if TYPE_CHECKING:
+    from collections.abc import Awaitable, Callable
+    from typing import Any
+
 import logging
 from dataclasses import replace
 from datetime import timedelta
@@ -16,7 +22,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from .api import AuthenticationError, OpenWebifClient, PowerCommandUnconfirmed, ReceiverError
 from .channel_media import CONF_CHANNEL_BOUQUET, CONF_SHOW_CHANNELS
 from .const import CATALOG_INTERVAL, DOMAIN, SLOW_INTERVAL
-from .models import ReceiverState, Snapshot, services
+from .models import JsonObject, ReceiverState, Snapshot, services
 from .recording_images import RecordingImages
 
 _LOGGER = logging.getLogger(__name__)
@@ -24,7 +30,7 @@ _LOGGER = logging.getLogger(__name__)
 
 class EnigmaCoordinator(DataUpdateCoordinator[Snapshot]):
     def __init__(
-        self, hass: HomeAssistant, entry: ConfigEntry, client: OpenWebifClient, interval: int
+        self, hass: HomeAssistant, entry: EnigmaConfigEntry, client: OpenWebifClient, interval: int
     ) -> None:
         super().__init__(
             hass,
@@ -37,7 +43,7 @@ class EnigmaCoordinator(DataUpdateCoordinator[Snapshot]):
         self.client = client
         self.entry = entry
         self.recording_images = RecordingImages(hass, self)
-        self.info: dict = {}
+        self.info: dict[str, Any] = {}
         self._slow_due = 0.0
         self._catalog_due = 0.0
         self._bouquet = entry.options.get("bouquet")
@@ -62,7 +68,17 @@ class EnigmaCoordinator(DataUpdateCoordinator[Snapshot]):
                 translation_domain=DOMAIN, translation_key="cannot_identify"
             ) from err
 
-    async def optional(self, endpoint: str, field: str | None = None, **params):
+    @overload
+    async def optional(
+        self, endpoint: str, field: None = None, **params: Any
+    ) -> JsonObject | None: ...
+
+    @overload
+    async def optional(self, endpoint: str, field: str, **params: Any) -> list[Any] | None: ...
+
+    async def optional(
+        self, endpoint: str, field: str | None = None, **params: Any
+    ) -> JsonObject | list[Any] | None:
         error_key = (
             f"{endpoint}_{params['stype']}"
             if endpoint == "bouquets" and "stype" in params
@@ -70,7 +86,7 @@ class EnigmaCoordinator(DataUpdateCoordinator[Snapshot]):
         )
         try:
             result = await self.client.get(endpoint, **params)
-            value = result[field] if field else result
+            value: JsonObject | list[Any] = result[field] if field else result
             if field and not isinstance(value, list):
                 raise ValueError("Expected list")
         except AuthenticationError:
@@ -177,7 +193,9 @@ class EnigmaCoordinator(DataUpdateCoordinator[Snapshot]):
                     translation_domain=DOMAIN, translation_key="cannot_update"
                 ) from err
 
-    async def perform(self, method, *args, refresh: bool = True, **kwargs) -> None:
+    async def perform(
+        self, method: Callable[..., Awaitable[Any]], *args: Any, refresh: bool = True, **kwargs: Any
+    ) -> None:
         try:
             await method(*args, **kwargs)
         except AuthenticationError as err:
@@ -197,7 +215,7 @@ class EnigmaCoordinator(DataUpdateCoordinator[Snapshot]):
             await self.async_request_refresh()
 
     async def select_bouquet(self, reference: str) -> None:
-        async def change():
+        async def change() -> None:
             async with self.data_lock:
                 result = await self.client.get("getservices", sRef=reference)
                 channels = services(result.get("services", []), channels=True)

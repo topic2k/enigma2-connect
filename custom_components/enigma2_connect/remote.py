@@ -1,6 +1,20 @@
 # SPDX-License-Identifier: Apache-2.0
 """Standard remote actions, including validated atomic sequences."""
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from typing import Any
+
+    from homeassistant.core import HomeAssistant
+    from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
+
+    from .coordinator import EnigmaConfigEntry
+
+from collections.abc import Iterable
+
 from homeassistant.components.remote import RemoteEntity, RemoteEntityFeature
 from homeassistant.exceptions import ServiceValidationError
 
@@ -10,7 +24,7 @@ from .entity import EnigmaEntity
 PARALLEL_UPDATES = 0
 
 
-def key_codes(command):
+def key_codes(command: Iterable[str]) -> list[int]:
     result = []
     for key in command:
         try:
@@ -29,7 +43,11 @@ def key_codes(command):
     return result
 
 
-async def async_setup_entry(hass, entry, async_add_entities):
+async def async_setup_entry(
+    hass: HomeAssistant,
+    entry: EnigmaConfigEntry,
+    async_add_entities: AddConfigEntryEntitiesCallback,
+) -> None:
     async_add_entities([EnigmaRemote(entry.runtime_data, "remote")])
 
 
@@ -37,21 +55,21 @@ class EnigmaRemote(EnigmaEntity, RemoteEntity):
     _attr_supported_features = RemoteEntityFeature(0)
 
     @property
-    def suggested_object_id(self):
+    def suggested_object_id(self) -> str:
         # Keep the technical suffix independent of the translated control label.
         return "remote"
 
     @property
-    def is_on(self):
+    def is_on(self) -> bool | None:
         return not self.coordinator.data.state.standby
 
-    async def async_turn_on(self, **kwargs):
+    async def async_turn_on(self, **kwargs: Any) -> None:
         await self.coordinator.perform(self.coordinator.client.command, "powerstate", newstate=4)
 
-    async def async_turn_off(self, **kwargs):
+    async def async_turn_off(self, **kwargs: Any) -> None:
         await self.coordinator.perform(self.coordinator.client.command, "powerstate", newstate=5)
 
-    async def async_send_command(self, command, **kwargs):
+    async def async_send_command(self, command: Iterable[str], **kwargs: Any) -> None:
         codes = key_codes([command] if isinstance(command, str) else command)
         repeats = kwargs.get("num_repeats", 1)
         delay = kwargs.get("delay_secs", 0.3)

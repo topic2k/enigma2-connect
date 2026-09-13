@@ -36,6 +36,21 @@ async def setup(hass, entry):
     assert entry.state is ConfigEntryState.LOADED
 
 
+async def test_actions_registered_without_entries(hass):
+    """Automations can discover action schemas even without a configured receiver."""
+    assert not hass.config_entries.async_entries(DOMAIN)
+    assert await async_setup_component(hass, DOMAIN, {})
+    assert set(hass.services.async_services()[DOMAIN]) == {
+        "reboot",
+        "restart_gui",
+        "deep_standby",
+        "message",
+        "timer_add",
+        "timer_delete",
+        "timer_toggle",
+    }
+
+
 async def test_setup_all_platforms_and_unload(hass, entry, receiver):
     await setup(hass, entry)
     assert entry.state is ConfigEntryState.LOADED

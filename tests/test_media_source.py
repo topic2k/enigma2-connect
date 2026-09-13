@@ -11,13 +11,29 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.enigma2_connect.const import DOMAIN
 from custom_components.enigma2_connect.media_player import EnigmaMediaPlayer
-from custom_components.enigma2_connect.media_source import CONF_RECORDINGS_LAYOUT
+from custom_components.enigma2_connect.media_source import (
+    CONF_RECORDINGS_LAYOUT,
+    EnigmaRecordingSource,
+)
 
 from .conftest import DATA
 from .test_integration import setup
 
 SOURCE = f"media-source://{DOMAIN}"
 MOVIE_REF = "1:0:0:0:0:0:0:0:0:0:/media/hdd/movie/Series/Season 1/Film %: test.ts"
+
+
+def test_source_name_supports_the_writable_ha_contract(hass):
+    with patch(
+        "custom_components.enigma2_connect.media_source.async_get_cached_translations",
+        return_value={f"component.{DOMAIN}.common.recordings": "Aufnahmen"},
+    ):
+        source = EnigmaRecordingSource(hass)
+        assert source.name == "Aufnahmen"
+        source.name = "Custom library"
+        assert source.name == "Custom library"
+        source.name = None
+        assert source.name == "Aufnahmen"
 
 
 async def test_source_tile_grouped_merged_and_playback(hass, entry, receiver):

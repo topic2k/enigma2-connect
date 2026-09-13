@@ -49,6 +49,18 @@ Home Assistant. Sichere deine Home-Assistant-Installation vor dem Einbau.
    und Passwort bleiben leer, wenn OpenWebif keine Anmeldung verlangt.
 7. Schließe den Dialog ab und öffne das neu angelegte Gerät.
 
+Die Verbindungsfelder gelten ebenso für **Neu konfigurieren** und eine erneute
+Anmeldung:
+
+| Feld | Standard und Bedeutung |
+| --- | --- |
+| Hostname oder IP-Adresse | Kein Standard; Adresse des Receivers ohne Protokoll, Port und Pfad. |
+| Port (HTTP: 80, HTTPS: 443) | Bei der Ersteinrichtung 80; bei HTTPS bei Bedarf auf den tatsächlich eingerichteten Port ändern, meist 443. |
+| Benutzername | Leer; nur bei aktivierter OpenWebif-Anmeldung ausfüllen. |
+| Passwort | Leer; Passwort der OpenWebif-Anmeldung. |
+| HTTPS verwenden | Aus; nur einschalten, wenn OpenWebif HTTPS unterstützt und dafür eingerichtet ist. |
+| TLS-Zertifikat prüfen | Ein; prüft bei HTTPS, ob das Receiver-Zertifikat vertrauenswürdig ist. Bei einem eigenen, nicht vertrauenswürdigen Zertifikat lässt sich die Prüfung gezielt ausschalten. |
+
 Weitere Receiver fügst du auf dieselbe Weise hinzu. Benenne sie eindeutig,
 zum Beispiel „Wohnzimmer“ und „Schlafzimmer“. Die Einrichtung erfolgt vollständig
 über die Oberfläche; eine YAML-Konfiguration ist nicht erforderlich.
@@ -59,6 +71,49 @@ vorgesehen. Dann lässt sich das
 **Benutzerdefinierte Repositories** als Typ **Integration** hinzufügen. Die Schritte
 erklärt auch die [HACS-Anleitung](https://www.hacs.xyz/docs/faq/custom_repositories/).
 Eine Aufnahme in den HACS-Standardkatalog ist nicht zugesagt.
+
+### Automatisch erkennen und Adressen aktualisieren
+
+Wenn OpenWebif seinen Webdienst per Bonjour mit einem Namen beginnend mit
+„OpenWebif“ ankündigt, erscheint ein Fund unter **Einstellungen → Geräte & Dienste**.
+Öffne **Hinzufügen**, prüfe die vorausgefüllte Adresse, den Port und HTTPS, ergänze
+bei Bedarf Zugangsdaten und schließe den Dialog ab. Erst danach wird der Receiver
+gekoppelt. Ohne passenden Bonjour-Namen oder bei blockiertem Multicast verwende
+die manuelle Einrichtung oben. Die bloße Installation von OpenWebif garantiert
+keine passende Ankündigung; Image und Bonjour-/Avahi-Konfiguration sind entscheidend.
+
+Bei bereits gekoppelten Receivern kann Home Assistant eine durch DHCP erkannte
+neue IP übernehmen. Dafür müssen die bekannte MAC-Adresse und die Identität in
+der OpenWebif-Antwort übereinstimmen. Port, Anmeldung und TLS-Einstellungen bleiben
+erhalten. Eine andere Ankündigung schaltet HTTPS nicht ab.
+
+Fehlen nach einem Neustart der Netzwerkschnittstelle die Geräteinformationen in
+OpenWebif, kann ein Neustart der Receiver-Benutzeroberfläche (Enigma2/GUI) helfen.
+Wähle dafür einen Zeitpunkt ohne laufende Aufnahme. Sobald die bekannte MAC wieder
+gemeldet wird, kannst du die Adresse bei Bedarf über **Neu konfigurieren** ändern.
+Bei einem über MAC gekoppelten Receiver bleibt auch dieser Weg gesperrt, solange
+die Geräteidentität fehlt oder abweicht.
+
+### Unterstützte Geräte
+
+Voraussetzung ist die OpenWebif-JSON-API. Markenname oder Enigma2 allein sind kein
+Kompatibilitätsnachweis. Diese Übersicht beschreibt vorhandene Prüfungen vom
+13.09.2026 am damaligen Stand 0.1.0. Zusätzlich bestand die aktuelle lesende
+Abnahme am Octagon: Einrichtung, Entitäten, Aktualisierung, Screenshot und Picon.
+Ergänzend wurden Aufnahmebilder, begrenzte Bedienaktionen und die Adressübernahme
+nach einem tatsächlichen DHCP-Wechsel geprüft:
+
+| Receiver / OpenWebif | Belegter Umfang und Grenze |
+| --- | --- |
+| Octagon SF8008 4K Supreme / 2.4.0 | Live-TV/Radio, Aufnahmen, Picons/Bildschirmfoto, Fernbedienung, Nachrichten, Timer, Standby und Neustart wurden geprüft. |
+| Vu+ Solo² / 1.4.4 | Einrichtung ohne Anmeldung, getrennte Gerätezuordnung, Kataloge, Fernbedienung, Nachrichten und Timer wurden geprüft. Ohne DVB-Eingangssignal keine zweite Bild-/Tonabnahme. |
+| Andere Enigma2-Receiver / Images | Können mit passender OpenWebif-API funktionieren; noch kein konkreter Hardware-Nachweis. Optionale Daten können fehlen. |
+| Receiver ohne OpenWebif-JSON-API | Nicht unterstützt; eine HTML-Weboberfläche allein reicht nicht aus. |
+
+Die neue Erkennung und Adressänderung sind mit gezielt ausgelösten Meldungen und
+echten HA-Konfigurationsflüssen getestet, einschließlich der neuen IP des Octagon.
+Die automatische Erkennung echter Netzwerkmeldungen steht noch aus. Den genauen Umfang dokumentiert die
+[Prüfübersicht](VALIDIERUNG.md#aktuelle-lesende-octagon-abnahme).
 
 ## Den Receiver bedienen
 
@@ -95,6 +150,13 @@ Verlasse dich dafür auf das Bild am Fernseher. Manche Dashboardkarten blenden
 Stop nicht ein; die [Fernbedienungskarte](#fernbedienung-im-dashboard) bietet
 zusätzliche Tasten. Weitere einzelne Tasten lassen sich bei Bedarf als
 standardmäßig deaktivierte Button-Entitäten in den Entitätseinstellungen aktivieren.
+
+Signalqualität, SNR und gemeldete Bitfehlerrate sind optionale Diagnosen und bei
+neuen Entitäten zunächst deaktiviert. Öffne **Einstellungen → Geräte & Dienste →
+Entitäten**, zeige deaktivierte Entitäten an und aktiviere den gewünschten Sensor.
+Vorhandene Aktivierungsentscheidungen bleiben bei Updates erhalten. Der Receiver
+bietet außerdem Zustandsanzeigen für Standby, Aufnahme, Streaming und Verbindung;
+Verbindung und **Listen aktualisieren** gehören zu den Diagnosen.
 
 ## Aufnahmen und Sender durchsuchen
 
@@ -256,6 +318,27 @@ Ein während der Bedienung gewechseltes Bouquet bleibt bis zum Neuladen aktiv.
 Speichere eine gewünschte Startgruppe in den Optionen. Timer und Aufnahmen werden
 normalerweise alle zwei Minuten, Senderlisten alle fünf Minuten aktualisiert.
 Für eine sofortige Aktualisierung verwende **Listen aktualisieren**.
+Die Aktion wartet auf ihren Abruf und meldet einen Fehler, wenn der Receiver
+nicht aktualisiert werden konnte. Auch direkt aufeinanderfolgende Aufrufe
+verwenden einen neuen Abruf statt des vorherigen Ergebnisses.
+
+Ist der Receiver nicht erreichbar, werden seine Bedienelemente als **Nicht verfügbar**
+angezeigt. Die Verbindungsanzeige bleibt sichtbar und zeigt die fehlende Verbindung.
+Fehlen nur einzelne optionale Werte, können Sensoren **Unbekannt** anzeigen;
+ein nicht abrufbarer Timerkatalog macht den Kalender nicht verfügbar. Die Integration
+versucht weitere Abrufe automatisch. Ausfall und Wiederverbindung werden jeweils
+einmal protokolliert, nicht bei jeder Wiederholung.
+
+Die Zustände werden lokal abgefragt, standardmäßig alle 15 Sekunden. Zwischen
+den Abfragen kann die Anzeige hinter der Receiver-Bedienung zurückliegen.
+Eine neue Abfrage erfolgt auch nach passenden Bedienaktionen. Aufnahmen und
+Timer folgen ihrem Zwei-Minuten-Takt, Senderlisten dem Fünf-Minuten-Takt.
+Aufnahmebilder werden beim Einrichten und bei Katalogänderungen im Hintergrund
+vorbereitet: höchstens 128 aktuelle Bilder, ein Auftrag gleichzeitig mit mindestens
+fünf Sekunden Pause. Ältere Bilder entstehen bei Bedarf. Der lokale Bildspeicher
+gilt bis zu sieben Tage; der Browser kann Aufnahmebilder einen Tag und Senderlogos
+15 Minuten wiederverwenden. Bildschirmfotos werden höchstens fünf Sekunden
+wiederverwendet. **Vorschaubilder neu erzeugen** umgeht den Aufnahmebildspeicher.
 
 ## Fernbedienung im Dashboard
 
@@ -310,6 +393,10 @@ Antworten auf Ja/Nein-Fragen werden derzeit nicht an Home Assistant zurückgegeb
 
 Auch Senderwechsel, Standby und Tastenfolgen lassen sich automatisieren.
 Die folgenden Beispiele zeigen dir die passenden Aktionen.
+
+Die Integration stellt keine eigenen Auslöser oder Bedingungen bereit. Verwende in
+Automationen die Standard-Auslöser und Zustandsbedingungen von Home Assistant,
+zum Beispiel eine Änderung der Aufnahme- oder Verbindungsanzeige.
 
 ### Aktionen und Beispiele
 
@@ -449,6 +536,16 @@ Die Oberfläche ist deutsch und englisch. Die Fernbedienung folgt deiner
 Profilsprache, die Aufnahmekachel und automatisch vergebene Entitätsnamen der
 HA-Systemsprache. Für andere Sprachen wird Englisch verwendet. Eigene Namen
 und Receiver-Texte werden nicht übersetzt.
+
+### Reparaturhinweis zu FFmpeg
+
+**FFmpeg für Aufnahmebilder fehlt** bedeutet, dass die gewählte Snapshot-Quelle
+kein ausführbares FFmpeg findet. Installiere FFmpeg in der Home-Assistant-Laufzeit
+oder korrigiere den dort konfigurierten Programmpfad; lade danach Enigma2 Connect
+neu. Alternativ entferne in den Receiver-Einstellungen die Bildquelle
+**Snapshot aus der Aufnahme** und speichere. Dann verschwindet der Hinweis.
+Receiver-Steuerung und Medienlisten bleiben währenddessen bedienbar. Beim
+Entfernen des Receiver-Eintrags wird auch sein Reparaturhinweis entfernt.
 
 ## Aktualisieren und entfernen
 

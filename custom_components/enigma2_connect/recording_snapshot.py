@@ -1,6 +1,14 @@
 # SPDX-License-Identifier: Apache-2.0
 """Extract one frame through a bounded, temporary loopback file relay."""
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .api import OpenWebifClient
+    from .models import JsonObject
+
 import asyncio
 import re
 from contextlib import suppress
@@ -16,7 +24,7 @@ MAX_VIDEO_BYTES = 64 * 1024 * 1024
 SNAPSHOT_TIMEOUT = 45
 
 
-def recording_duration(movie):
+def recording_duration(movie: JsonObject) -> int | None:
     """Return the duration actually reported for the recording file, if known."""
     parts = str(movie.get("length", "")).split(":")
     if len(parts) == 2 and all(part.isascii() and part.isdigit() for part in parts):
@@ -26,14 +34,16 @@ def recording_duration(movie):
     return None
 
 
-def snapshot_position(movie, minutes):
+def snapshot_position(movie: JsonObject, minutes: float) -> float:
     position = float(minutes) * 60
     if (length := recording_duration(movie)) is not None and position >= length:
         return length / 2
     return position
 
 
-async def extract_snapshot(client, movie, minutes=10, binary="ffmpeg"):
+async def extract_snapshot(
+    client: OpenWebifClient, movie: JsonObject, minutes: float = 10, binary: str = "ffmpeg"
+) -> bytes | None:
     """Seek on the file, keeping receiver credentials out of FFmpeg arguments/logs."""
     path = recording_path(movie)
     if not path.is_absolute():
@@ -43,7 +53,7 @@ async def extract_snapshot(client, movie, minutes=10, binary="ffmpeg"):
     file_url = client.base_url.with_path("/file").with_query(action="download", file=str(path))
     transferred = 0
 
-    async def relay(request):
+    async def relay(request: web.Request) -> web.StreamResponse:
         nonlocal transferred
         headers = {**client.headers, "Accept-Encoding": "identity"}
         if byte_range := request.headers.get("Range"):

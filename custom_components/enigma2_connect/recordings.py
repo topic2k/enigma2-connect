@@ -1,9 +1,21 @@
 # SPDX-License-Identifier: Apache-2.0
 """Recording titles and directory navigation for the HA media browser."""
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
+
+    from homeassistant.core import HomeAssistant
+
+    from .models import JsonObject, Snapshot
+
 from pathlib import PurePosixPath
 
-from homeassistant.components.media_player import BrowseMedia, MediaClass
+from homeassistant.components.media_player.browse_media import BrowseMedia
+from homeassistant.components.media_player.const import MediaClass
 from homeassistant.components.media_player.errors import BrowseError
 from homeassistant.helpers.translation import async_get_translations
 from homeassistant.util import dt as dt_util
@@ -11,7 +23,7 @@ from homeassistant.util import dt as dt_util
 from .const import DOMAIN
 
 
-async def async_recording_labels(hass):
+async def async_recording_labels(hass: HomeAssistant) -> dict[str, str]:
     """Media browser titles follow the Home Assistant server language."""
     translations = await async_get_translations(hass, hass.config.language, "common", {DOMAIN})
     return {
@@ -24,7 +36,7 @@ async def async_recording_labels(hass):
     }
 
 
-def recording_path(movie):
+def recording_path(movie: JsonObject) -> PurePosixPath:
     """Keep receiver paths independent of the host OS and service IDs unchanged."""
     filename = movie.get("filename")
     if not filename:
@@ -32,11 +44,11 @@ def recording_path(movie):
     return PurePosixPath(filename)
 
 
-def recording_title(movie, fallback_title="Recording"):
+def recording_title(movie: JsonObject, fallback_title: str = "Recording") -> str:
     """HA has no subtitle field; include available details in the display title."""
     parts = [movie.get("eventname") or recording_path(movie).name or fallback_title]
     try:
-        timestamp = float(movie.get("recordingtime"))
+        timestamp = float(movie.get("recordingtime", ""))
         if timestamp > 0:
             recorded = dt_util.as_local(dt_util.utc_from_timestamp(timestamp))
             parts.append(recorded.strftime("%d.%m.%Y %H:%M"))
@@ -55,8 +67,14 @@ def recording_title(movie, fallback_title="Recording"):
 
 
 def browse_recordings(
-    snapshot, title, media_type=None, media_id=None, *, fallback_title="Recording", thumbnails=None
-):
+    snapshot: Snapshot,
+    title: str,
+    media_type: str | None = None,
+    media_id: str | None = None,
+    *,
+    fallback_title: str = "Recording",
+    thumbnails: Mapping[str, str | None] | None = None,
+) -> BrowseMedia:
     """Build one folder level from the shared recursive recording catalog."""
     movies = [movie for movie in snapshot.movies or [] if movie.get("serviceref")]
     # Older replies without directory metadata retain absolute folder structure.

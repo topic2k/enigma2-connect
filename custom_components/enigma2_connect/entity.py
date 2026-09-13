@@ -1,8 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """Shared device identity for all receiver entities."""
 
-from homeassistant.helpers.device_registry import CONNECTION_NETWORK_MAC, format_mac
-from homeassistant.helpers.entity import DeviceInfo
+from homeassistant.helpers.device_registry import CONNECTION_NETWORK_MAC, DeviceInfo, format_mac
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
@@ -15,6 +14,7 @@ class EnigmaEntity(CoordinatorEntity[EnigmaCoordinator]):
 
     def __init__(self, coordinator: EnigmaCoordinator, key: str) -> None:
         super().__init__(coordinator)
+        assert coordinator.entry.unique_id is not None  # Every supported config flow sets an ID.
         self._attr_unique_id = f"{coordinator.entry.unique_id}_{key}"
         self._attr_translation_key = key
         self._attr_device_info = DeviceInfo(

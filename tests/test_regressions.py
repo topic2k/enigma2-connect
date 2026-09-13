@@ -40,6 +40,26 @@ async def test_unavailable_setup_retries(hass, entry, receiver):
     assert entry.state is ConfigEntryState.SETUP_RETRY
 
 
+async def test_repeated_poll_failure_logs_once_and_recovers(hass, entry, receiver, caplog):
+    """The coordinator reports transitions instead of logging every failed poll."""
+    await setup(hass, entry)
+    healthy = deepcopy(receiver[0]["statusinfo"])
+    caplog.clear()
+    receiver[0]["statusinfo"] = ConnectionError()
+    for _ in range(3):
+        await entry.runtime_data.async_refresh()
+    assert hass.states.get("media_player.test_receiver").state == "unavailable"
+    failures = [
+        message for message in caplog.messages if "Error fetching enigma2_connect" in message
+    ]
+    assert len(failures) == 1
+    receiver[0]["statusinfo"] = healthy
+    for _ in range(2):
+        await entry.runtime_data.async_refresh()
+    assert hass.states.get("media_player.test_receiver").state == "playing"
+    assert caplog.messages.count("Fetching enigma2_connect data recovered") == 1
+
+
 async def test_slow_poll_cadence(hass, entry, receiver):
     await setup(hass, entry)
     receiver[1].reset_mock()

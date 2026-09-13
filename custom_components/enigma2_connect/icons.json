@@ -1,0 +1,186 @@
+{
+  "entity": {
+    "sensor": {
+      "channel": {
+        "default": "mdi:television"
+      },
+      "now": {
+        "default": "mdi:play-box-outline"
+      },
+      "next": {
+        "default": "mdi:skip-next-outline"
+      },
+      "signal": {
+        "default": "mdi:signal"
+      },
+      "snr": {
+        "default": "mdi:signal"
+      },
+      "ber": {
+        "default": "mdi:counter"
+      },
+      "recordings": {
+        "default": "mdi:movie-open"
+      },
+      "timers": {
+        "default": "mdi:timer-outline"
+      }
+    },
+    "binary_sensor": {
+      "standby": {
+        "default": "mdi:power-standby"
+      },
+      "recording": {
+        "default": "mdi:record-rec"
+      },
+      "streaming": {
+        "default": "mdi:cast-connected"
+      }
+    },
+    "button": {
+      "refresh": {
+        "default": "mdi:refresh"
+      },
+      "key_1": {
+        "default": "mdi:numeric-1-box-outline"
+      },
+      "key_2": {
+        "default": "mdi:numeric-2-box-outline"
+      },
+      "key_3": {
+        "default": "mdi:numeric-3-box-outline"
+      },
+      "key_4": {
+        "default": "mdi:numeric-4-box-outline"
+      },
+      "key_5": {
+        "default": "mdi:numeric-5-box-outline"
+      },
+      "key_6": {
+        "default": "mdi:numeric-6-box-outline"
+      },
+      "key_7": {
+        "default": "mdi:numeric-7-box-outline"
+      },
+      "key_8": {
+        "default": "mdi:numeric-8-box-outline"
+      },
+      "key_9": {
+        "default": "mdi:numeric-9-box-outline"
+      },
+      "key_0": {
+        "default": "mdi:numeric-0-box-outline"
+      },
+      "key_power": {
+        "default": "mdi:power"
+      },
+      "key_up": {
+        "default": "mdi:arrow-up"
+      },
+      "key_down": {
+        "default": "mdi:arrow-down"
+      },
+      "key_left": {
+        "default": "mdi:arrow-left"
+      },
+      "key_right": {
+        "default": "mdi:arrow-right"
+      },
+      "key_ok": {
+        "default": "mdi:check"
+      },
+      "key_menu": {
+        "default": "mdi:menu"
+      },
+      "key_exit": {
+        "default": "mdi:exit-to-app"
+      },
+      "key_red": {
+        "default": "mdi:circle"
+      },
+      "key_green": {
+        "default": "mdi:circle"
+      },
+      "key_yellow": {
+        "default": "mdi:circle"
+      },
+      "key_blue": {
+        "default": "mdi:circle"
+      },
+      "key_info": {
+        "default": "mdi:information-outline"
+      },
+      "key_epg": {
+        "default": "mdi:calendar-text"
+      },
+      "key_help": {
+        "default": "mdi:help-circle-outline"
+      },
+      "key_audio": {
+        "default": "mdi:music-note"
+      },
+      "key_subtitle": {
+        "default": "mdi:subtitles-outline"
+      },
+      "key_text": {
+        "default": "mdi:text-box-outline"
+      },
+      "key_tv": {
+        "default": "mdi:television"
+      },
+      "key_radio": {
+        "default": "mdi:radio"
+      },
+      "key_favorites": {
+        "default": "mdi:star"
+      },
+      "key_play": {
+        "default": "mdi:play"
+      },
+      "key_pause": {
+        "default": "mdi:pause"
+      },
+      "key_stop": {
+        "default": "mdi:stop"
+      },
+      "key_record": {
+        "default": "mdi:record"
+      },
+      "key_fast_forward": {
+        "default": "mdi:fast-forward"
+      },
+      "key_rewind": {
+        "default": "mdi:rewind"
+      },
+      "key_next": {
+        "default": "mdi:skip-next"
+      },
+      "key_previous": {
+        "default": "mdi:skip-previous"
+      },
+      "key_channel_up": {
+        "default": "mdi:chevron-up"
+      },
+      "key_channel_down": {
+        "default": "mdi:chevron-down"
+      },
+      "key_volume_up": {
+        "default": "mdi:volume-plus"
+      },
+      "key_volume_down": {
+        "default": "mdi:volume-minus"
+      },
+      "key_mute": {
+        "default": "mdi:volume-off"
+      }
+    },
+    "select": {
+      "select_bouquet": {
+        "default": "mdi:view-list"
+      },
+      "select_channel": {
+        "default": "mdi:television"
+      }
+    }
+  }
+}

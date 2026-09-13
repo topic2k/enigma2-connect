@@ -10,7 +10,9 @@ die [README](../README.md) bleibt der kurze Einstieg für Anwender.
 
 - [Projekt und Voraussetzungen](#projekt-und-voraussetzungen)
 - [Entwicklungsumgebung und Prüfungen](#entwicklungsumgebung-und-prüfungen)
+- [Lesende Receiver-Abnahme](#lesende-receiver-abnahme)
 - [Home-Assistant-Entwicklerblog überwachen](#home-assistant-entwicklerblog-überwachen)
+- [Qualitätsstufen und nächste Schritte](#qualitätsstufen-und-nächste-schritte)
 - [Aufbau und Datenfluss](#aufbau-und-datenfluss)
 - [Verhaltensregeln für Implementierungen](#verhaltensregeln-für-implementierungen)
 - [Dokumentation und Änderungen](#dokumentation-und-änderungen)
@@ -39,12 +41,27 @@ nicht veröffentlicht. Die Software wurde mit Unterstützung generativer KI entw
 
 Im Projektverzeichnis unter Linux/WSL mit Python ab 3.14.2:
 
+FFmpeg muss für den Test zur tatsächlichen Aufnahmebild-Extraktion im Suchpfad
+liegen (unter Debian/Ubuntu: `sudo apt-get install ffmpeg`). Ohne FFmpeg wird
+dieser Test lokal übersprungen und die Silber-Abdeckungsprüfung kann scheitern.
+Die CI installiert FFmpeg ausdrücklich und prüft den Aufruf vor dem Testlauf.
+
+Die GitHub-Workflows verwenden `actions/checkout@v7`, `astral-sh/setup-uv@v10.1.0`
+und `actions/upload-artifact@v7` mit Node.js 24 als Action-Laufzeit. Die
+gehosteten `ubuntu-latest`-Runner unterstützen diese Versionen. Dies ändert
+nicht die Python-Anforderungen der Integration. Bestehende Warnungen in alten
+Workflow-Läufen bleiben Bestandteil ihrer historischen Protokolle.
+Für setup-uv wird der vollständige Release-Tag verwendet; ein Kurz-Tag `v10`
+ist im Upstream-Repository nicht vorhanden.
+
 ```sh
 uv sync --locked --group dev
 uv run --locked ruff check .
 uv run --locked ruff format --check .
-uv run --locked pytest --cov=custom_components.enigma2_connect --cov-report=term-missing
-uv run --locked python -m compileall -q custom_components tests
+uv run --locked mypy
+uv run --locked pytest --cov=custom_components.enigma2_connect --cov-branch --cov-report=term-missing --cov-report=json:coverage.json
+uv run --locked python scripts/check_config_flow_coverage.py coverage.json --silver
+uv run --locked python -m compileall -q custom_components tests scripts
 node --test tests/frontend.test.cjs
 git diff --check
 ```
@@ -54,6 +71,20 @@ deren Auflösung. Nach einer Versionsänderung `uv lock --offline` ausführen un
 prüfen, dass nur die erwarteten Projektmetadaten geändert wurden. Keine
 Abhängigkeiten nebenbei aktualisieren. Eine frische Umgebung benötigt beim
 ersten Synchronisieren Zugriff auf die Paketquellen.
+
+**Befristete Sicherheitsausnahme:** Home Assistant 2026.9.1 und 2026.9.2 binden
+`cryptography==48.0.1` und `pyOpenSSL==26.2.0`. Wegen
+[CVE-2026-69247](https://github.com/pyca/cryptography/security/advisories/GHSA-g6cj-pr64-35w5)
+setzt `[tool.uv].override-dependencies` in der Entwicklungsumgebung stattdessen
+`cryptography==50.0.1` und `pyopenssl==26.4.0`. Die zweite Anhebung ist erforderlich,
+weil pyOpenSSL 26.2.0 nur cryptography unter 49 erlaubt; 26.4.0 unterstützt 50.
+Dies weicht bewusst von Home Assistants Paketmetadaten ab und wird mit unseren
+Integrationstests geprüft, nicht als allgemeine HA-Freigabe behauptet. Bei einem
+späteren Update des HA-Teststacks die Ausnahme entfernen, sobald dessen Vorgaben
+eine reparierte cryptography-Version ab 50 zulassen, und Lockdatei/Tests erneut prüfen.
+Die Custom-Integration installiert diese Pakete nicht selbst; ihre Manifest-
+Anforderungen bleiben leer. Für eine produktive HA-Installation gelten deren
+eigene Paketversionen, die durch diese Repository-Änderung nicht aktualisiert werden.
 
 Die Python-Tests verwenden das echte Home-Assistant-Framework; Receiver-Antworten
 und Transporte sind simuliert. Sie prüfen unter anderem Config Flow,
@@ -72,6 +103,41 @@ Die vorhandene lokale WSL-Umgebung kann über `.work/run_tests.sh` verwendet
 werden; sie ist kein Bestandteil einer frischen Installation. Auf dem
 Windows-Mount vermeidet `--capture=sys` bekannte Probleme der pytest-Erfassung.
 Weitere lokale Pfade und Berichte stehen im Validierungsdokument.
+
+## Lesende Receiver-Abnahme
+
+Nach Installation der Entwicklungsabhängigkeiten startet
+[receiver_acceptance.py](../scripts/receiver_acceptance.py) den aktuellen Code
+in einem temporären Home Assistant und liest den ausdrücklich angegebenen Receiver:
+
+```sh
+uv run --locked python scripts/receiver_acceptance.py --host RECEIVER --username root
+```
+
+Das Passwort wird verdeckt abgefragt. Für automatisierte Aufrufe kann
+`--password-env NAME` eine vorhandene Umgebungsvariable lesen. Ohne Anmeldung
+`--username` weglassen. `--https` und `--port PORT` wählen Protokoll und Port;
+HTTPS prüft das Zertifikat. Der Bericht liegt standardmäßig unter
+`.work/receiver-acceptance.json`; `--output PFAD` hält Receiver-Berichte getrennt.
+
+Geprüft werden Einrichtung, alle neun Plattformen, die drei standardmäßig
+deaktivierten Signaldiagnosen, verfügbare Entitätszustände, Aktualisierung,
+Duplikatschutz und Entladen. Optionale Ausfälle und nicht verfügbare Entitäten
+werden als Anzahl beziehungsweise Endpunktnamen ausgewiesen, damit Standby und
+unterschiedliche Gerätefunktionen erkennbar bleiben. `passed: true` bestätigt
+den technischen Ablauf; diese Angaben trotzdem bei der Geräteabnahme bewerten.
+
+Der Transport lässt ausschließlich die benötigten lesenden API-Aufrufe zu.
+Hintergrund-Bilderzeugung wird zurückgestellt. Zugangsdaten und HA-Speicher bleiben
+im Arbeitsspeicher; rohe pytest-Protokolle werden nicht ausgegeben. Der JSON-Bericht
+enthält Prüfschritt, Exit-Status, Versionen, Quelltext-Hash und technische Summen.
+Exit-Status 0 setzt einen vollständig abgeschlossenen Ablauf voraus; Fehler oder
+ein übersprungener Ablauf sind kein erfolgreicher Nachweis.
+
+Das ist ein echtes HA-Backend mit Test-Fixtures, kein bereits installiertes
+HA-System. UI, Bild/Ton, Bonjour und physischer DHCP-Wechsel gehören weiterhin
+zur separaten Abnahme unten. Normale pytest-/CI-Läufe kontaktieren keine Receiver;
+direkter Aufruf der Hardware-Testdatei ohne Prüfkonfiguration wird übersprungen.
 
 ## Home-Assistant-Entwicklerblog überwachen
 
@@ -183,6 +249,147 @@ python scripts/ha_blog_gemini.py --blog-dir /path/to/developers.home-assistant/b
 Ohne `--prepare-only` ist `GEMINI_API_KEY` erforderlich und ein echter KI-Aufruf
 möglich. GitHub-Schreibzugriffe erfordern zusätzlich ausdrücklich `--publish`.
 
+
+## Qualitätsstufen und nächste Schritte
+
+Enigma2 Connect bleibt eine **Custom-Integration ohne offizielle Qualitätsstufe**.
+Die [HA-Qualitätsskala](https://developers.home-assistant.io/docs/core/integration-quality-scale/)
+dient als Entwicklungsmaßstab. Die vollständige
+[Regelcheckliste](../custom_components/enigma2_connect/quality_scale.yaml) führt
+Implementierung und offene Nachweise getrennt auf. `done` ist eine interne
+Bewertung; eine offizielle Stufe setzt die Prüfung durch Home Assistant voraus.
+Ausnahmen nur verwenden, wenn die jeweilige Regel sie erlaubt und die Begründung
+belegt ist. Ein nicht untersuchter Punkt bleibt `todo`.
+
+Die erste Etappe ergänzt Dialoghilfen und Tests für Einrichtung, Neuanmeldung,
+Neukonfiguration und Optionen. Tests prüfen insbesondere Fehlerkorrektur im selben
+Dialog, Duplikate nach Host/MAC, falsche Geräte und Receiver ohne MAC-Identität.
+Zusätzliche Laufzeittests prüfen die Aktionsregistrierung ohne Eintrag und die
+einmalige Protokollierung von Ausfall und Wiederverbindung. Die CI misst jetzt
+Anweisungs- **und Zweigabdeckung** und verlangt für `config_flow.py` jeweils 100 %.
+Diese kombinierte Abdeckung darf nicht mit früherer reiner Statement-Coverage
+verglichen werden. Aktuelle Ergebnisse stehen in [VALIDIERUNG.md](VALIDIERUNG.md).
+
+Die zweite Etappe erweitert die reguläre Suite um Transport-, Bedienungs-,
+Kalender-, Bildanbieter- und Snapshot-Fehlerfälle. Bisher nur lokal vorhandene
+Tests zu schnellen Senderwechseln und abgebrochenen Screenshot-Abrufen laufen
+jetzt ebenfalls in CI. **Listen aktualisieren** wartet auf einen unmittelbaren
+Abruf statt eines eventuell nur vorgemerkten Updates und meldet dessen Fehler.
+Die CI verlangt zusätzlich **über 95 % kombinierte Anweisungs-/Zweigabdeckung in
+jedem der 23 Integrationsmodule**; ein fehlendes Modul oder genau 95 % führt zum
+Fehler. Konfigurationsflüsse bleiben bei 100 % beider Messgrößen.
+
+Die dritte Etappe ergänzt Erkennung, sichere DHCP-Adressübernahme, robuste
+Diagnosen, Gerätelebenszyklus-Prüfungen, übersetzte Reparaturhinweise und Icons.
+Die 23 Produktionsmodule verwenden vollständige Funktionssignaturen und den
+typisierten `EnigmaConfigEntry`. `uv run --locked mypy` erzwingt `strict = true`;
+keine Module sind ausgenommen und fehlende Importtypen werden nicht pauschal
+ignoriert. `follow_imports = "silent"` unterdrückt Meldungen aus fremden Paketen,
+behält deren Typinformationen aber bei. `JsonObject` enthält flexible, von
+OpenWebif-Version und Image abhängige Metadaten; feste Zustände und Sender sind
+Dataclasses. Überladungen unterscheiden Bildbytes, JSON-Objekte und optionale
+Listen. Das mitgelieferte Paket trägt `py.typed`.
+
+Der Netzwerkclient verwendet eine von HA übergebene `aiohttp`-Session. Die
+Aufnahmebild-Verwaltung führt Dateioperationen, FFmpeg-Pfadsuche und Pillow-Arbeit
+über `async_add_executor_job` aus. FFmpeg läuft als asynchroner Unterprozess;
+Downloadgrenzen, Zeitlimits, Prozessende und Relay-Bereinigung sind getestet.
+Die Konvertierung kleiner, bereits begrenzter JSON-Antworten bleibt lokale
+Speicherarbeit; keine synchrone Netz-/Dateiabfrage findet dort statt.
+
+**Korrektur der früheren Brands-Einschätzung:** Seit HA 2026.3 sind lokale
+`brand/`-Dateien für Custom-Integrationen offiziell vorgesehen. Die acht
+mitgelieferten PNGs erfüllen diesen Weg; ein separater Brands-PR ist dafür nicht
+erforderlich. Quellen: [HA-Ankündigung][quality-local-brands] und
+[Brands-Repository][quality-brand-requirements]. Das ist eine interne Bewertung
+der aktuellen Custom-Integration, keine Anerkennung durch ein Core-Review.
+
+| Stufe | Lokaler Stand und verbleibender Nachweis |
+| --- | --- |
+| Bronze | Alle 20 Kriterien intern umgesetzt, einschließlich lokaler Brands. Dialoge müssen weiterhin 100 % Anweisungs- und Zweigabdeckung erreichen. |
+| Silber | Alle 10 zusätzlichen Kriterien intern umgesetzt; jede der 23 Python-Dateien muss über 95 % kombinierte Abdeckung behalten. |
+| Gold | Alle 21 zusätzlichen Kriterien intern umgesetzt. Ein echter DHCP-Adresswechsel ist mit gezielt ausgelöstem HA-Verarbeitungsschritt geprüft; echte Bonjour-Ankündigungen und der automatische DHCP-Empfang in laufendem HA bleiben offen. |
+| Platin | Alle drei zusätzlichen Kriterien intern umgesetzt: asynchroner Client, injizierte Session und strikte Typprüfung in CI. Die CI-Nachweise gelten für die im Prüfbericht genannten Commits; für Veröffentlichungen wird der endgültige Commit erneut geprüft. |
+
+### Erkennung und Geräte-Lebenszyklus
+
+OpenWebif registriert HTTP-/HTTPS-Dienste über Bonjour beziehungsweise Avahi;
+siehe [Upstream-Implementierung][quality-openwebif]. Unser Manifest begrenzt neue
+Funde auf Bonjour-Namen `openwebif*` unter `_http._tcp.local.` und
+`_https._tcp.local.`. Avahi-Ankündigungen ohne diesen Namen sind kein Beleg für
+OpenWebif und lösen keine allgemeine Webserver-Erkennung aus. Einrichtung bleibt
+manuell möglich. Für bestehende Geräte beobachtet DHCP ausschließlich registrierte
+MAC-Adressen. Erst eine erfolgreiche `about`-Abfrage mit der gespeicherten
+Identität erlaubt die Übernahme einer IP. Fehlgeschlagene Anmeldung, fehlende MAC
+oder abweichendes Gerät ändern nichts; Port, TLS und Zugangsdaten bleiben erhalten.
+Die Konfigurationsflüsse sind bestätigt, echte Netzankündigungen noch nicht.
+
+Jeder Eintrag gehört genau einem Receiver; Sender und Aufnahmen sind keine
+weiteren Geräte. Ein zusätzlich eingerichteter Receiver erhält seine Entitäten
+ohne Neustart. Ein unerreichbarer Receiver bleibt registriert. Dauerhaft entfernt
+wird er durch Löschen seines Integrationseintrags: HA entfernt die zugehörigen
+Geräte-/Entitätszuordnungen, die Integration ihren Reparaturhinweis. Andere Receiver
+bleiben erhalten. Dies ist der geprüfte Löschweg bei dieser Ein-Gerät-Architektur;
+ein Hub-Abgleich oder automatisches Löschen nach Ausfall wäre hier falsch.
+
+Verbindung und Listenaktualisierung sind Diagnosen; ebenso Signalqualität, SNR und
+BER, die bei neuen Entitäten zunächst deaktiviert sind. Vorhandene Nutzerentscheidungen
+werden nicht überschrieben. Die Verbindung verwendet `CONNECTIVITY`. Prozentqualität,
+Signal-Rausch-Verhältnis und unnormierte BER besitzen keine fachlich passende
+zusätzliche Geräteklasse: SNR ist keine RSSI-Leistung, BER keine erfundene Prozentgröße.
+Standby, Aufnahme und Streaming nutzen ihre eigenen Zustände und Icons. Symbole
+mit Geräteklassen-Vorgabe werden nicht überschrieben. Alle nutzersichtbaren
+Aktionsfehler besitzen Übersetzungsschlüssel; interne Parserfehler werden an der
+HA-Grenze übersetzt, nicht ungefiltert angezeigt.
+
+Ein fehlendes FFmpeg bei gewählter Snapshot-Quelle erzeugt einen eigenen Hinweis
+je Receiver. Installation beziehungsweise Pfadkorrektur und Neuladen oder Abwahl
+der Quelle beheben ihn. Ein gewöhnlicher Receiver-Ausfall erzeugt keinen zusätzlichen
+Reparaturhinweis. Anmeldung läuft über den vorhandenen HA-Reauth-Mechanismus.
+
+[quality-local-brands]: https://developers.home-assistant.io/blog/2026/02/24/brands-proxy-api/
+[quality-brand-requirements]: https://github.com/home-assistant/brands/blob/master/README.md
+[quality-openwebif]: https://github.com/E2OpenPlugins/e2openplugin-OpenWebif/blob/master/plugin/httpserver.py
+
+Jede Stufe setzt alle vorherigen voraus. Für jede abgeschlossene Etappe Version,
+Lockdatei, beide Changelogs und Dokumentation gemäß Projektvorgaben aktualisieren;
+Tests, Ruff, Syntax und Hassfest erneut prüfen. Empfang, Bild und Ton sowie neue
+Erkennungsabläufe zusätzlich an realen Receivern prüfen und den genauen Umfang
+festhalten. Automatisierte Tests verwenden simulierte Receiver-Antworten.
+
+Eine Core-Aufnahme ist ein gesondertes Vorhaben: API-Bibliotheksarchitektur,
+Abhängigkeiten, HA-Brands, offizielle Benutzerdokumentation und Core-Review vorher
+klären. Für die Entwicklung wird im Manifest keine offizielle Stufe behauptet.
+Merge und Veröffentlichung bleiben an die Freigaben aus
+[RELEASING.md](../RELEASING.md) gebunden.
+
+Vor der Hardware-/Veröffentlichungsfreigabe bleibt folgende Abnahme offen:
+
+- [x] Aktuellen Integrationscode im isolierten HA-Testbackend mit echtem Octagon
+  geprüft; Versionen und Umfang in der [Prüfübersicht](VALIDIERUNG.md#aktuelle-lesende-octagon-abnahme).
+  Einrichtung, neun Plattformen, Aktualisierung, Duplikatschutz und Entladen bestanden;
+  keine Sichtprüfung einer installierten HA-Oberfläche.
+- [x] HTTPS-Leseablauf am Octagon sowie Ablehnung seines nicht vertrauenswürdigen
+  Zertifikats geprüft; die Ausnahme blieb auf den Test begrenzt.
+- [x] Bild und Audio eines kurzen Live-Stream-Ausschnitts technisch dekodiert,
+  ohne Senderwechsel oder gespeicherte Inhalte; subjektive Wiedergabeprüfung offen.
+- [ ] Einen echten Bonjour-Fund einschließlich Name, HTTP/HTTPS und Port prüfen;
+  Einrichtung bestätigen, wiederholte Ankündigungen und manuelle Einrichtung prüfen.
+- [x] Echten DHCP-Adresswechsel mit gezielt ausgelöstem HA-Verarbeitungsschritt
+  geprüft: nach GUI-Neustart gleiche MAC, erhaltene Kennungen, Anmeldung und TLS.
+  Fehlende MAC sperrte vorher korrekt die Übernahme; falsche Identität und
+  Adresskonflikte sind zusätzlich simuliert geprüft; siehe [Prüfbericht](VALIDIERUNG.md#physischer-dhcp-adresswechsel-fehlende-identitätsdaten).
+- [ ] Automatischen Empfang und Weiterverarbeitung einer echten DHCP-Meldung
+  in einer durchgehend laufenden HA-Installation nachweisen.
+- [x] Neue Symbole, deaktivierte Signaldiagnosen, Optionsdialoge und FFmpeg-Reparatur
+  in der echten Testoberfläche geprüft; Texte und Abhilfe auf Deutsch und Englisch.
+- [x] Aufnahmebild aus einer vorhandenen Datei erzeugt und dekodiert; Lautstärke,
+  Stummschaltung, Meldungsaufruf und eigener temporärer Timer geprüft.
+  Ursprünglicher Zustand und vorhandene Timer/Aufnahmen nachweislich erhalten.
+- [x] GitHub-CI für `ffdf007` bestanden: Tests einschließlich FFmpeg und
+  Coverage-Sperre, Frontend, Hassfest und HACS; Nachweise in der
+  [Prüfübersicht](VALIDIERUNG.md#github-ci-und-ffmpeg-voraussetzung).
+  PR-/Merge- und Release-Freigaben bleiben gemäß Release-Anleitung gesondert.
 
 ## Aufbau und Datenfluss
 
@@ -393,8 +600,7 @@ kein fertiges Bild für jede Firmware.
 Signalwerte werden normalisiert. Ein ganzzahliger Prozent-Ersatzwert im dB-Feld
 wird nicht als echter dB-Wert veröffentlicht; BER bleibt ohne erfundene Einheit.
 Temperatur, freier RAM/Plattenspeicher und Uptime sind nicht implementiert.
-Browser-/Cast-Streaming, Wake-on-LAN, automatische Receiver-Erkennung und neue
-wiederkehrende Timer gehören ebenfalls nicht zum aktuellen Umfang.
+Browser-/Cast-Streaming, Wake-on-LAN und neue wiederkehrende Timer gehören ebenfalls nicht zum aktuellen Umfang.
 
 ## Validierung von Aktionen
 

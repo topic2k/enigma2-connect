@@ -1,0 +1,170 @@
+# Internal self-assessment; this custom integration has no official HA tier.
+# Evidence and remaining work: docs/ENTWICKLUNG.md and docs/DEVELOPMENT.en.md.
+# "done" describes the implementation, not acceptance into Home Assistant Core.
+rules:
+  # Bronze
+  action-setup:
+    status: done
+    comment: __init__.async_setup registers services before any entry is loaded.
+  appropriate-polling:
+    status: done
+    comment: Coordinator polls state every 15 s by default, lists every 120 s and channels every 300 s.
+  brands:
+    status: done
+    comment: Eight shipped brand PNGs follow HA 2026.3 custom-integration support; tested through HA's local brands API without CDN access. Core branding remains part of a separate admission.
+  common-modules:
+    status: done
+    comment: entity.py, coordinator.py, models.py and const.py share identity, updates and parsing.
+  config-flow:
+    status: done
+    comment: UI setup validates the connection, separates data/options and explains fields in both languages.
+  config-flow-test-coverage:
+    status: done
+    comment: 100 percent statement and branch coverage; tests/test_config_flow.py covers recovery and identity. CI enforces both.
+  dependency-transparency:
+    status: done
+    comment: No additional runtime packages in manifest requirements; the Apache-2.0 API client is included.
+  docs-actions:
+    status: done
+    comment: User guides describe actions and examples in the messages and automations chapter.
+  docs-conditions:
+    status: done
+    comment: No integration-specific conditions; user guides explain use of standard HA state conditions.
+  docs-high-level-description:
+    status: done
+    comment: README and both user guides explain receiver control and playback location.
+  docs-installation-instructions:
+    status: done
+    comment: Both user guides cover prerequisites, installation and UI setup step by step.
+  docs-removal-instructions:
+    status: done
+    comment: Both user guides describe removing the entry and custom integration files.
+  docs-triggers:
+    status: done
+    comment: No integration-specific triggers; user guides explain standard HA state triggers.
+  entity-event-setup:
+    status: done
+    comment: CoordinatorEntity owns entity subscriptions; recording preparation is stopped on entry unload.
+  entity-unique-id:
+    status: done
+    comment: EnigmaEntity combines persistent entry identity with a stable entity key.
+  has-entity-name:
+    status: done
+    comment: All receiver entities inherit _attr_has_entity_name from EnigmaEntity.
+  runtime-data:
+    status: done
+    comment: EnigmaConfigEntry stores its coordinator in runtime_data.
+  test-before-configure:
+    status: done
+    comment: Config flow validates about and statusinfo responses before creating or updating an entry.
+  test-before-setup:
+    status: done
+    comment: async_config_entry_first_refresh runs before loading platforms.
+  unique-config-entry:
+    status: done
+    comment: Host and MAC identity checks reject duplicates; flow tests cover setup and changed addresses.
+  # Silver
+  action-exceptions:
+    status: done
+    comment: Services validate targets; coordinator.perform translates failures. The refresh button waits for its own fetch and reports failure.
+  config-entry-unloading:
+    status: done
+    comment: Platforms unload and async_close cancels recording-image jobs; lifecycle tests cover both.
+  docs-configuration-parameters:
+    status: done
+    comment: Both user guides list all user-facing options, defaults, ranges and their per-receiver or shared scope.
+  docs-installation-parameters:
+    status: done
+    comment: Both user guides describe all six connection fields, defaults and reconfiguration/authentication behavior.
+  entity-unavailable:
+    status: done
+    comment: CoordinatorEntity handles offline receivers; missing optional values are unknown, calendar needs timers. The connectivity diagnostic stays available. Both guides explain this.
+  integration-owner:
+    status: done
+    comment: Manifest identifies @topic2k as the maintainer.
+  log-when-unavailable:
+    status: done
+    comment: test_repeated_poll_failure_logs_once_and_recovers verifies one failure and one recovery message across repeated polls.
+  parallel-updates:
+    status: done
+    comment: All nine platforms specify PARALLEL_UPDATES=0; API commands and coordinator catalogs use locks.
+  reauthentication-flow:
+    status: done
+    comment: ConfigEntryAuthFailed and action failures initiate reauth; UI recovery and wrong-device tests exist.
+  test-coverage:
+    status: done
+    comment: All 23 modules exceed 95 percent combined statement/branch coverage (minimum 96.25). CI checks each module and requires complete config flows.
+  # Gold
+  devices:
+    status: done
+    comment: All receiver entities share DeviceInfo including MAC when reported by OpenWebif.
+  diagnostics:
+    status: done
+    comment: Allowlist export covers unloaded entries, partial catalogs and offline receivers without credentials or media metadata (test_gold_lifecycle).
+  discovery:
+    status: done
+    comment: Bonjour openwebif* HTTP/HTTPS announcements offer validated UI setup; upstream registration verified. Simulated flow tests pass; hardware acceptance remains pending.
+  discovery-update-info:
+    status: done
+    comment: Registered-device DHCP updates only the host after about confirms the saved MAC. TLS, port, credentials and IDs stay unchanged; error/wrong-device tests exist.
+  docs-data-update:
+    status: done
+    comment: Both user guides explain local polling, action refreshes, list cadences, background image preparation and cache lifetimes.
+  docs-examples:
+    status: done
+    comment: Both user guides include action and automation YAML examples.
+  docs-known-limitations:
+    status: done
+    comment: User guides explain receiver-only playback, deep standby and limited playback feedback.
+  docs-supported-devices:
+    status: done
+    comment: Both guides distinguish dated Octagon/Vu+ evidence, untested receivers and unsupported non-JSON interfaces; discovery hardware verification is explicitly pending.
+  docs-supported-functions:
+    status: done
+    comment: Guides cover all nine entity platforms, media source, receiver states and optional diagnostics with activation instructions.
+  docs-troubleshooting:
+    status: done
+    comment: Both user guides have a troubleshooting chapter and describe diagnostics.
+  docs-use-cases:
+    status: done
+    comment: User guides cover everyday control, recordings, messages and timer automations.
+  dynamic-devices:
+    status: done
+    comment: One receiver per entry. Real HA tests add a second receiver and all its entities after initial setup without a restart.
+  entity-category:
+    status: done
+    comment: Connectivity, refresh and tuner measurements are diagnostics; normal controls and media states retain their primary function.
+  entity-device-class:
+    status: done
+    comment: Connectivity uses CONNECTIVITY; SNR, percentage quality and receiver-specific BER deliberately avoid semantically wrong classes. Rationale in developer guides.
+  entity-disabled-by-default:
+    status: done
+    comment: Individual key buttons and noisy tuner diagnostics start disabled; existing user registry decisions are preserved.
+  entity-translations:
+    status: done
+    comment: EnigmaEntity translation keys use synchronized German and English catalogs, verified in HA tests.
+  exception-translations:
+    status: done
+    comment: Service, browse, coordinator, flow and refresh error paths use translated HA exceptions; raw transport/parser details stay internal.
+  icon-translations:
+    status: done
+    comment: icons.json covers receiver states, sensors, selections and key/refresh buttons, retaining device-class/platform defaults elsewhere.
+  reconfiguration-flow:
+    status: done
+    comment: Reconfigure supports network changes while preserving MAC-backed hardware identity.
+  repair-issues:
+    status: done
+    comment: Missing FFmpeg with snapshots selected creates a translated actionable issue per receiver, removed on recovery, deselection or entry deletion. Reauth handles credentials.
+  stale-devices:
+    status: done
+    comment: The sole receiver is removed through its config entry; HA registry cleanup and isolation from other receivers are tested. Temporary outages never delete it.
+  # Platinum
+  async-dependency:
+    status: done
+    comment: aiohttp uses the HA session; cache/Pillow/path lookup runs in the executor and FFmpeg/relay use asyncio. Tests cover cancellation, cleanup and limits.
+  inject-websession:
+    status: done
+    comment: OpenWebifClient receives a Home Assistant managed aiohttp session.
+  strict-typing:
+    status: done
+    comment: All 23 production modules pass mypy strict with typed EnigmaConfigEntry throughout, explicit JSON boundaries, overloads and py.typed. Pinned mypy runs in CI.

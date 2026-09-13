@@ -1,16 +1,26 @@
 # SPDX-License-Identifier: Apache-2.0
 """Optional receiver-owned channel browsing and authenticated picons."""
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from homeassistant.core import HomeAssistant
+
+    from .coordinator import EnigmaConfigEntry
+    from .models import Service
+
 import asyncio
 from collections import OrderedDict
 from hashlib import sha256
 from time import monotonic
 
 from aiohttp import web
-from homeassistant.components.http import HomeAssistantView
-from homeassistant.components.media_player import MediaClass
+from homeassistant.components.media_player.const import MediaClass
 from homeassistant.components.media_source import BrowseMediaSource, Unresolvable
 from homeassistant.config_entries import ConfigEntryState
+from homeassistant.helpers.http import HomeAssistantView
 
 from .api import ReceiverError
 from .const import DOMAIN
@@ -20,12 +30,12 @@ CONF_CHANNEL_BOUQUET = "media_channel_bouquet"
 PICON_FALLBACK = b'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 90"><rect x="20" y="10" width="120" height="65" rx="5" fill="#263238"/><path d="M60 82h40" stroke="#b0bec5" stroke-width="5"/></svg>'
 
 
-def channel_identifier(entry, channel):
+def channel_identifier(entry: EnigmaConfigEntry, channel: Service) -> str:
     return f"channel/{entry.entry_id}/{sha256(channel.reference.encode()).hexdigest()}"
 
 
-def channel_entry(hass, entry_id):
-    entry = hass.config_entries.async_get_entry(entry_id)
+def channel_entry(hass: HomeAssistant, entry_id: str) -> EnigmaConfigEntry:
+    entry: EnigmaConfigEntry | None = hass.config_entries.async_get_entry(entry_id)
     if (
         not entry
         or entry.domain != DOMAIN
@@ -38,7 +48,9 @@ def channel_entry(hass, entry_id):
     return entry
 
 
-def channel_from_identifier(hass, identifier):
+def channel_from_identifier(
+    hass: HomeAssistant, identifier: str | None
+) -> tuple[EnigmaConfigEntry, Service]:
     kind, _, remainder = (identifier or "").partition("/")
     entry_id, _, digest = remainder.partition("/")
     if kind != "channel":
@@ -50,7 +62,9 @@ def channel_from_identifier(hass, identifier):
     raise Unresolvable(translation_domain=DOMAIN, translation_key="channel_unavailable")
 
 
-def channel_folder(entry, title, children=None):
+def channel_folder(
+    entry: EnigmaConfigEntry, title: str, children: list[BrowseMediaSource] | None = None
+) -> BrowseMediaSource:
     return BrowseMediaSource(
         domain=DOMAIN,
         identifier=f"channels/{entry.entry_id}",
@@ -63,7 +77,7 @@ def channel_folder(entry, title, children=None):
     )
 
 
-def browse_channels(entry, title):
+def browse_channels(entry: EnigmaConfigEntry, title: str) -> BrowseMediaSource:
     children = [
         BrowseMediaSource(
             domain=DOMAIN,
@@ -85,12 +99,12 @@ class ChannelPiconView(HomeAssistantView):
     name = f"api:{DOMAIN}:channel_picon"
     requires_auth = True
 
-    def __init__(self, hass):
+    def __init__(self, hass: HomeAssistant) -> None:
         self.hass = hass
-        self._cache = OrderedDict()
+        self._cache: OrderedDict[tuple[str, str], tuple[float, bytes, str, int]] = OrderedDict()
         self._slots = asyncio.Semaphore(4)
 
-    async def get(self, request, entry_id, digest):
+    async def get(self, request: web.Request, entry_id: str, digest: str) -> web.Response:
         identifier = f"channel/{entry_id}/{digest}"
         try:
             entry, channel = channel_from_identifier(self.hass, identifier)

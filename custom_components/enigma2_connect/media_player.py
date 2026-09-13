@@ -1,13 +1,27 @@
 # SPDX-License-Identifier: Apache-2.0
 """Media controls and a shared bouquet source list."""
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from typing import Any
+
+    from homeassistant.components.media_player.browse_media import BrowseMedia
+    from homeassistant.core import HomeAssistant
+    from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
+
+    from .coordinator import EnigmaConfigEntry, EnigmaCoordinator
+
 from asyncio import sleep
 from time import monotonic
 from uuid import uuid4
 
 from homeassistant.components import media_source
-from homeassistant.components.media_player import MediaPlayerEntity, MediaPlayerState, MediaType
-from homeassistant.components.media_player import MediaPlayerEntityFeature as Feature
+from homeassistant.components.media_player import MediaPlayerEntity
+from homeassistant.components.media_player.const import MediaPlayerEntityFeature as Feature
+from homeassistant.components.media_player.const import MediaPlayerState, MediaType
 from homeassistant.components.media_player.errors import BrowseError
 from homeassistant.core import callback
 from homeassistant.exceptions import ServiceValidationError
@@ -29,7 +43,11 @@ from .recordings import async_recording_labels, browse_recordings
 PARALLEL_UPDATES = 0
 
 
-async def async_setup_entry(hass, entry, async_add_entities):
+async def async_setup_entry(
+    hass: HomeAssistant,
+    entry: EnigmaConfigEntry,
+    async_add_entities: AddConfigEntryEntitiesCallback,
+) -> None:
     async_add_entities([EnigmaMediaPlayer(entry.runtime_data)])
 
 
@@ -51,14 +69,14 @@ class EnigmaMediaPlayer(EnigmaEntity, MediaPlayerEntity):
         | Feature.BROWSE_MEDIA
     )
 
-    def __init__(self, coordinator):
+    def __init__(self, coordinator: EnigmaCoordinator) -> None:
         super().__init__(coordinator, "media_player")
         self._attr_translation_key = None
         self._screenshot_state = self._current_screenshot_state()
         self._screenshot_generation = uuid4().hex
         self._screenshot_ready_at = monotonic() + 1
 
-    def _current_screenshot_state(self):
+    def _current_screenshot_state(self) -> tuple[str | None, bool]:
         state = self.coordinator.data.state
         return state.reference, state.standby
 
@@ -71,7 +89,7 @@ class EnigmaMediaPlayer(EnigmaEntity, MediaPlayerEntity):
         super()._handle_coordinator_update()
 
     @property
-    def state(self):
+    def state(self) -> MediaPlayerState:
         state = self.coordinator.data.state
         return (
             MediaPlayerState.OFF
@@ -82,31 +100,31 @@ class EnigmaMediaPlayer(EnigmaEntity, MediaPlayerEntity):
         )
 
     @property
-    def assumed_state(self):
+    def assumed_state(self) -> bool:
         # OpenWebif's status endpoints do not distinguish playback from pause.
         # HA must offer separate play/pause controls instead of a state toggle.
         return not self.coordinator.data.state.standby
 
     @property
-    def media_title(self):
+    def media_title(self) -> str | None:
         return self.coordinator.data.state.title
 
     @property
-    def media_channel(self):
+    def media_channel(self) -> str | None:
         return self.coordinator.data.state.channel
 
     @property
-    def media_content_id(self):
+    def media_content_id(self) -> str | None:
         return self.coordinator.data.state.reference
 
     @property
-    def media_content_type(self):
+    def media_content_type(self) -> MediaType:
         return (
             MediaType.VIDEO if self.coordinator.data.state.recording_playback else MediaType.TVSHOW
         )
 
     @property
-    def extra_state_attributes(self):
+    def extra_state_attributes(self) -> dict[str, Any]:
         state = self.coordinator.data.state
         if state.standby:
             return {}
@@ -119,19 +137,19 @@ class EnigmaMediaPlayer(EnigmaEntity, MediaPlayerEntity):
         }
 
     @property
-    def volume_level(self):
+    def volume_level(self) -> float | None:
         return self.coordinator.data.state.volume
 
     @property
-    def is_volume_muted(self):
+    def is_volume_muted(self) -> bool | None:
         return self.coordinator.data.state.muted
 
     @property
-    def source_list(self):
+    def source_list(self) -> list[str]:
         return list(self.coordinator.data.channels)
 
     @property
-    def source(self):
+    def source(self) -> str | None:
         return next(
             (
                 label
@@ -142,7 +160,7 @@ class EnigmaMediaPlayer(EnigmaEntity, MediaPlayerEntity):
         )
 
     @property
-    def media_image_url(self):
+    def media_image_url(self) -> str | None:
         # A credential-free cache key; bytes are fetched through the authenticated API.
         if not self.media_content_id or self.coordinator.entry.options.get("artwork") == "none":
             return None
@@ -157,7 +175,7 @@ class EnigmaMediaPlayer(EnigmaEntity, MediaPlayerEntity):
             ).with_query(query)
         )
 
-    async def async_get_media_image(self):
+    async def async_get_media_image(self) -> tuple[bytes | None, str | None]:
         if (
             not self.media_content_id
             or self.coordinator.data.state.standby
@@ -184,7 +202,7 @@ class EnigmaMediaPlayer(EnigmaEntity, MediaPlayerEntity):
         except ReceiverError:
             return None, None
 
-    def _screenshot_request_current(self, generation):
+    def _screenshot_request_current(self, generation: str) -> bool:
         return (
             self.available
             and not self.coordinator.data.state.standby
@@ -193,16 +211,16 @@ class EnigmaMediaPlayer(EnigmaEntity, MediaPlayerEntity):
             and self._current_screenshot_state() == self._screenshot_state
         )
 
-    async def command(self, endpoint, **params):
+    async def command(self, endpoint: str, **params: Any) -> None:
         await self.coordinator.perform(self.coordinator.client.command, endpoint, **params)
 
-    async def key(self, name):
+    async def key(self, name: str) -> None:
         await self.coordinator.perform(self.coordinator.client.keys, [KEYS[name]])
 
-    async def async_turn_on(self):
+    async def async_turn_on(self) -> None:
         await self.command("powerstate", newstate=4)
 
-    async def async_turn_off(self):
+    async def async_turn_off(self) -> None:
         deep = self.coordinator.entry.options.get("off_mode") == "deep_standby"
         # Deep standby takes the API offline, so an immediate refresh would fail.
         await self.coordinator.perform(
@@ -212,41 +230,41 @@ class EnigmaMediaPlayer(EnigmaEntity, MediaPlayerEntity):
             refresh=not deep,
         )
 
-    async def async_set_volume_level(self, volume):
+    async def async_set_volume_level(self, volume: float) -> None:
         await self.command("vol", set=f"set{round(max(0, min(1, volume)) * 100)}")
 
-    async def async_mute_volume(self, mute):
+    async def async_mute_volume(self, mute: bool) -> None:
         await self.coordinator.perform(self.coordinator.client.set_mute, mute)
 
-    async def async_volume_up(self):
+    async def async_volume_up(self) -> None:
         await self.key("volume_up")
 
-    async def async_volume_down(self):
+    async def async_volume_down(self) -> None:
         await self.key("volume_down")
 
-    async def async_media_play(self):
+    async def async_media_play(self) -> None:
         await self.key("play")
 
-    async def async_media_pause(self):
+    async def async_media_pause(self) -> None:
         await self.key("pause")
 
-    async def async_media_stop(self):
+    async def async_media_stop(self) -> None:
         await self.key("stop")
 
-    async def async_media_next_track(self):
+    async def async_media_next_track(self) -> None:
         await self.key("channel_up")
 
-    async def async_media_previous_track(self):
+    async def async_media_previous_track(self) -> None:
         await self.key("channel_down")
 
-    async def async_select_source(self, source):
+    async def async_select_source(self, source: str) -> None:
         if source not in self.coordinator.data.channels:
             raise ServiceValidationError(
                 translation_domain=DOMAIN, translation_key="unknown_channel"
             )
         await self.command("zap", sRef=self.coordinator.data.channels[source].reference)
 
-    async def async_play_media(self, media_type, media_id, **kwargs):
+    async def async_play_media(self, media_type: str, media_id: str, **kwargs: Any) -> None:
         if media_source.is_media_source_id(media_id):
             item = media_source.MediaSourceItem.from_uri(self.hass, media_id, self.entity_id)
             if item.domain != DOMAIN:
@@ -254,11 +272,12 @@ class EnigmaMediaPlayer(EnigmaEntity, MediaPlayerEntity):
                     translation_domain=DOMAIN, translation_key="select_recording"
                 )
             is_channel = (item.identifier or "").startswith("channel/")
-            entry, movie = (
-                channel_from_identifier(self.hass, item.identifier)
-                if is_channel
-                else recording_from_identifier(self.hass, item.identifier)
-            )
+            if is_channel:
+                entry, channel = channel_from_identifier(self.hass, item.identifier)
+                reference = channel.reference
+            else:
+                entry, movie = recording_from_identifier(self.hass, item.identifier)
+                reference = movie["serviceref"]
             # Service references identify files on the owning receiver's filesystem.
             if entry.entry_id != self.coordinator.entry.entry_id:
                 raise ServiceValidationError(
@@ -268,7 +287,7 @@ class EnigmaMediaPlayer(EnigmaEntity, MediaPlayerEntity):
                     else "recording_receiver_only",
                     translation_placeholders={"receiver": entry.title},
                 )
-            await self.command("zap", sRef=movie.reference if is_channel else movie["serviceref"])
+            await self.command("zap", sRef=reference)
             return
         if (
             media_type == MediaType.CHANNEL
@@ -288,7 +307,9 @@ class EnigmaMediaPlayer(EnigmaEntity, MediaPlayerEntity):
         else:
             raise ServiceValidationError(translation_domain=DOMAIN, translation_key="invalid_media")
 
-    async def async_browse_media(self, media_content_type=None, media_content_id=None):
+    async def async_browse_media(
+        self, media_content_type: str | None = None, media_content_id: str | None = None
+    ) -> BrowseMedia:
         if media_content_id and media_source.is_media_source_id(media_content_id):
             item = media_source.MediaSourceItem.from_uri(
                 self.hass, media_content_id, self.entity_id
@@ -319,5 +340,8 @@ class EnigmaMediaPlayer(EnigmaEntity, MediaPlayerEntity):
         if result.media_content_id == "root" and self.coordinator.entry.options.get(
             CONF_SHOW_CHANNELS, False
         ):
-            result.children.insert(0, channel_folder(self.coordinator.entry, labels["channels"]))
+            result.children = [
+                channel_folder(self.coordinator.entry, labels["channels"]),
+                *(result.children or ()),
+            ]
         return result

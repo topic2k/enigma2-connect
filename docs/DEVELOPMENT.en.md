@@ -10,7 +10,9 @@ and everyday use, see the [user guide](USER_GUIDE.en.md). The
 
 - [Project and requirements](#project-and-requirements)
 - [Development environment and checks](#development-environment-and-checks)
+- [Read-only receiver acceptance](#read-only-receiver-acceptance)
 - [Monitor the Home Assistant developer blog](#monitor-the-home-assistant-developer-blog)
+- [Quality tiers and next steps](#quality-tiers-and-next-steps)
 - [Structure and data flow](#structure-and-data-flow)
 - [Implementation rules](#implementation-rules)
 - [Documentation and changes](#documentation-and-changes)
@@ -36,14 +38,29 @@ was developed with assistance from generative AI.
 
 ## Development environment and checks
 
+FFmpeg must be on PATH for the actual recording-frame extraction test (on
+Debian/Ubuntu: `sudo apt-get install ffmpeg`). Without it, this test is skipped
+locally and the Silver coverage gate may fail. CI explicitly installs FFmpeg
+and checks its invocation before running tests.
+
+GitHub workflows use `actions/checkout@v7`, `astral-sh/setup-uv@v10.1.0` and
+`actions/upload-artifact@v7` with the Node.js 24 action runtime. Hosted
+`ubuntu-latest` runners support these versions. This does not change the
+integration's Python requirements. Existing warnings in older workflow runs
+remain part of their historical logs.
+setup-uv uses its full release tag because the upstream repository does not
+provide a `v10` major-version alias.
+
 From the project directory on Linux/WSL with Python 3.14.2 or later:
 
 ```sh
 uv sync --locked --group dev
 uv run --locked ruff check .
 uv run --locked ruff format --check .
-uv run --locked pytest --cov=custom_components.enigma2_connect --cov-report=term-missing
-uv run --locked python -m compileall -q custom_components tests
+uv run --locked mypy
+uv run --locked pytest --cov=custom_components.enigma2_connect --cov-branch --cov-report=term-missing --cov-report=json:coverage.json
+uv run --locked python scripts/check_config_flow_coverage.py coverage.json --silver
+uv run --locked python -m compileall -q custom_components tests scripts
 node --test tests/frontend.test.cjs
 git diff --check
 ```
@@ -52,6 +69,20 @@ git diff --check
 resolution. After a version change, run `uv lock --offline` and verify that only
 the expected project metadata changed. Do not update dependencies incidentally.
 A fresh environment needs access to package sources for its first sync.
+
+**Temporary security override:** Home Assistant 2026.9.1 and 2026.9.2 pin
+`cryptography==48.0.1` and `pyOpenSSL==26.2.0`. To address
+[CVE-2026-69247](https://github.com/pyca/cryptography/security/advisories/GHSA-g6cj-pr64-35w5),
+`[tool.uv].override-dependencies` selects `cryptography==50.0.1` and
+`pyopenssl==26.4.0` in the development environment. The second upgrade is necessary
+because pyOpenSSL 26.2.0 requires cryptography below 49, while 26.4.0 supports 50.
+This deliberately differs from Home Assistant's package metadata and is checked
+by our integration tests; it is not a general HA compatibility certification.
+When updating the HA test stack, remove the override once its requirements allow
+patched cryptography from version 50, then recheck the lockfile and tests.
+The custom integration does not install these packages itself; its manifest
+requirements remain empty. Production HA installations retain their own package
+versions, which this repository change does not update.
 
 Python tests use the real Home Assistant framework with simulated receiver
 responses and transports. They cover configuration, device targeting, platforms,
@@ -69,6 +100,39 @@ documented build.
 The existing local WSL environment can use `.work/run_tests.sh`; it is not part
 of a fresh installation. On the Windows mount, `--capture=sys` avoids known
 pytest capture issues. The validation document records further local paths and reports.
+
+## Read-only receiver acceptance
+
+After installing development dependencies,
+[receiver_acceptance.py](../scripts/receiver_acceptance.py) loads the current code
+in temporary Home Assistant and reads the explicitly selected receiver:
+
+```sh
+uv run --locked python scripts/receiver_acceptance.py --host RECEIVER --username root
+```
+
+The password prompt hides input. Automated callers can use `--password-env NAME`
+to read an existing environment variable. Omit `--username` for anonymous access.
+`--https` and `--port PORT` select the protocol and port; HTTPS verifies the
+certificate. The default report is `.work/receiver-acceptance.json`; use
+`--output PATH` to keep separate reports for each receiver.
+
+Checks cover setup, all nine platforms, the three signal diagnostics disabled by
+default, entity states, refresh, duplicate prevention and unloading. Optional
+failures and unavailable entities are reported as endpoint names or counts to
+account for standby and different receiver capabilities. `passed: true` confirms
+the technical flow; assess these details separately for device acceptance.
+
+The transport only allows the required read API calls. Background image generation
+is deferred. Credentials and HA storage remain in memory; raw pytest logs are not
+printed. The JSON report contains the test stage, exit status, versions, source
+hash and technical summaries. Exit status 0 requires a completed flow; errors or
+skipped execution cannot produce successful evidence.
+
+This runs a real HA backend with test fixtures, not an existing HA installation.
+UI, picture/audio, Bonjour and physical DHCP changes still require the separate
+acceptance below. Normal pytest/CI runs do not contact receivers; directly running
+the hardware test file without acceptance configuration skips the test.
 
 ## Monitor the Home Assistant developer blog
 
@@ -171,6 +235,141 @@ python scripts/ha_blog_gemini.py --blog-dir /path/to/developers.home-assistant/b
 Without `--prepare-only`, `GEMINI_API_KEY` is required and a real AI call may occur.
 GitHub writes additionally require explicit `--publish`.
 
+
+## Quality tiers and next steps
+
+Enigma2 Connect remains a **custom integration without an official quality tier**.
+The [HA quality scale](https://developers.home-assistant.io/docs/core/integration-quality-scale/)
+guides development. The complete
+[rule checklist](../custom_components/enigma2_connect/quality_scale.yaml) records
+implementation and outstanding evidence separately. `done` is an internal
+assessment; an official tier requires review by Home Assistant. Use exemptions
+only when the rule permits them and evidence supports the reason. Uninvestigated
+items remain `todo`.
+
+The first stage adds field descriptions and tests for setup, reauthentication,
+reconfiguration and options. Tests specifically cover recovery in the same flow,
+host/MAC duplicates, wrong devices and receivers without MAC identity. Additional
+runtime tests verify action registration without an entry and single failure and
+recovery log messages. CI now measures **statement and branch coverage** and
+requires 100% of each for `config_flow.py`. This combined coverage is not directly
+comparable with previous statement-only figures. Current results are recorded in
+[VALIDATION.en.md](VALIDATION.en.md).
+
+The second stage adds transport, control, calendar, image-provider and snapshot
+failure tests to the regular suite. Previously local-only tests for rapid channel
+changes and cancelled screenshot requests now also run in CI. **Refresh lists**
+waits for an immediate fetch instead of a potentially deferred update and reports
+its failure. CI additionally requires **above 95% combined statement/branch
+coverage in each of the 23 integration modules**; a missing module or exactly 95%
+fails the check. Config flows still require 100% of both measures.
+
+The third stage adds discovery, verified DHCP address updates, resilient
+diagnostics, device lifecycle tests, translated repair issues and icons. All 23
+production modules have complete function signatures and use `EnigmaConfigEntry`.
+`uv run --locked mypy` enforces `strict = true`; no modules are excluded and missing
+import types are not globally ignored. `follow_imports = "silent"` suppresses
+diagnostics from dependencies while retaining their type information. `JsonObject`
+describes flexible, image/version-specific receiver metadata; fixed state and
+service models are dataclasses. Overloads distinguish image bytes, JSON objects
+and optional lists. The bundled package includes `py.typed`.
+
+The network client uses an injected HA-managed `aiohttp` session. Recording artwork
+delegates file access, FFmpeg path lookup and Pillow operations to
+`async_add_executor_job`. FFmpeg runs as an asynchronous subprocess; transfer limits,
+timeouts, process termination and relay cleanup are tested. Parsing bounded JSON
+responses remains in-memory work with no synchronous network or filesystem access.
+
+**Correction to the earlier brands assessment:** Since HA 2026.3, custom integrations
+can officially include local `brand/` files. The eight shipped PNGs follow this path;
+a separate brands PR is no longer required for this custom integration. Sources:
+[HA announcement][quality-local-brands] and [brands repository][quality-brand-requirements].
+This is an internal assessment of the current custom integration, not a Core review.
+
+| Tier | Local status and remaining evidence |
+| --- | --- |
+| Bronze | All 20 criteria implemented internally, including local brands. Flows must retain 100% statement and branch coverage. |
+| Silver | All 10 additional criteria implemented internally; each of the 23 Python modules must retain above 95% combined coverage. |
+| Gold | All 21 additional criteria implemented internally. An actual DHCP address change passed with an explicitly triggered HA handler; actual Bonjour announcements and automatic DHCP receipt in running HA remain pending. |
+| Platinum | All three additional criteria implemented internally: async client, injected session and strict typing enforced in CI. CI evidence applies to the commits named in the verification summary; releases require another check of the final commit. |
+
+### Discovery and device lifecycle
+
+OpenWebif registers HTTP/HTTPS services through Bonjour or Avahi; see its
+[upstream implementation][quality-openwebif]. The manifest limits new discoveries
+to Bonjour names `openwebif*` on `_http._tcp.local.` and `_https._tcp.local.`.
+Avahi announcements without that name do not establish OpenWebif identity and
+do not trigger generic web-server discovery. Manual setup remains available.
+DHCP watches only registered MAC addresses. A successful `about` response confirming
+the saved identity is required before adopting an IP. Authentication errors,
+missing MAC metadata and different hardware preserve the saved configuration;
+port, TLS policy and credentials are unchanged. Flow behavior is tested; actual
+network announcements have not yet been verified.
+
+Each entry owns exactly one receiver; channels and recordings are not additional
+devices. Adding another entry creates its entities without restarting HA. Offline
+receivers stay registered. The permanent removal path is deletion of the receiver's
+integration entry: HA removes its device/entity associations and the integration
+deletes its repair issue. Other receivers remain intact. This is the tested removal
+path for this single-device architecture; hub reconciliation or automatic deletion
+after an outage would be inappropriate.
+
+Connectivity and catalog refresh are diagnostics, as are signal quality, SNR and
+BER. The latter three start disabled for new entities; existing user choices are
+preserved. Connectivity uses `CONNECTIVITY`. Percentage quality, signal-to-noise
+ratio and the receiver's unnormalized BER have no additional semantically suitable
+device class: SNR is not RSSI power and BER is not an invented percentage. Standby,
+recording and streaming retain their own states and icons. Device-class icons are
+not overridden. User-facing action failures use translation keys; internal parser
+errors are translated at the HA boundary rather than exposed directly.
+
+Missing FFmpeg with snapshots selected creates an issue per receiver. Installing
+it or fixing the path and reloading, or deselecting snapshots, clears the issue.
+Ordinary receiver outages do not create additional repair issues. Authentication
+continues through the existing HA reauthentication mechanism.
+
+[quality-local-brands]: https://developers.home-assistant.io/blog/2026/02/24/brands-proxy-api/
+[quality-brand-requirements]: https://github.com/home-assistant/brands/blob/master/README.md
+[quality-openwebif]: https://github.com/E2OpenPlugins/e2openplugin-OpenWebif/blob/master/plugin/httpserver.py
+
+Every tier requires all preceding tiers. For each completed stage, update the
+version, lockfile, both changelogs and documentation under the project rules;
+rerun tests, Ruff, syntax checks and Hassfest. Additionally verify reception,
+picture, sound and new discovery flows on real receivers and record the exact
+scope. Automated tests use simulated receiver responses.
+
+Core inclusion is a separate project: first establish the API library architecture,
+dependencies, HA brands, official user documentation and Core review requirements.
+Development does not claim an official tier in the manifest. Merge and publication
+remain subject to the approvals in [RELEASING.en.md](../RELEASING.en.md).
+
+The following acceptance checks remain before hardware/publication approval:
+
+- [x] Tested the current integration code in an isolated HA backend with the real
+  Octagon; versions and scope are in the [validation overview](VALIDATION.en.md#current-read-only-octagon-acceptance).
+  Setup, nine platforms, refresh, duplicate prevention and unloading passed;
+  this does not include visual inspection of an installed HA interface.
+- [x] Checked the Octagon HTTPS read flow and rejection of its untrusted certificate;
+  the exception remained limited to the test.
+- [x] Technically decoded video and audio from a short live-stream sample without
+  changing channels or saving content; subjective playback checks remain pending.
+- [ ] Verify an actual Bonjour announcement including name, HTTP/HTTPS and port;
+  confirm setup, repeated announcements and manual setup.
+- [x] Verified a real DHCP address change with explicitly triggered HA handling:
+  matching MAC after GUI restart, retained identifiers, credentials and TLS.
+  Missing MAC correctly blocked adoption beforehand; wrong identity and address
+  conflicts are additionally covered by simulations; see the [report](VALIDATION.en.md#physical-dhcp-address-change-missing-identity-data).
+- [ ] Verify automatic receipt and handling of an actual DHCP announcement
+  in a continuously running HA installation.
+- [x] Checked new icons, disabled signal diagnostics, options dialogs and FFmpeg
+  repair in the real test interface; text and remediation in German and English.
+- [x] Generated and decoded artwork from an existing recording; checked volume,
+  mute, message submission and an owned temporary timer. Verified restoration
+  of the original state and preservation of existing timers/recordings.
+- [x] GitHub CI passed for `ffdf007`: tests including FFmpeg and the coverage
+  gate, frontend, Hassfest and HACS; evidence in the
+  [verification summary](VALIDATION.en.md#github-ci-and-the-ffmpeg-prerequisite).
+  Separate PR/merge and release approvals still apply as described in the release guide.
 
 ## Structure and data flow
 
@@ -371,7 +570,7 @@ does not guarantee a finished image on every firmware.
 Signal values are normalized. An integer percentage substitute in a dB field is
 not published as a real dB reading; BER has no invented unit. Temperature, free
 RAM/disk space and uptime are not implemented. Browser/Cast streaming, Wake-on-LAN,
-automatic discovery and creating recurring timers are also outside the current scope.
+and creating recurring timers are also outside the current scope.
 
 ## Action validation
 

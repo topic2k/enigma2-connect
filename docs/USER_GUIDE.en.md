@@ -47,6 +47,17 @@ Assistant installation before installing.
    password empty if OpenWebif does not require a login.
 7. Complete the dialog and open the newly added device.
 
+The connection fields also apply to **Reconfigure** and reauthentication:
+
+| Field | Default and meaning |
+| --- | --- |
+| Hostname or IP address | No default; receiver address without scheme, port or path. |
+| Port (HTTP: 80, HTTPS: 443) | Initially 80; for HTTPS, change it to the configured receiver port when necessary, usually 443. |
+| Username | Empty; enter only when OpenWebif authentication is enabled. |
+| Password | Empty; the password for OpenWebif authentication. |
+| Use HTTPS | Off; enable only when OpenWebif supports and is configured for HTTPS. |
+| Verify TLS certificate | On; checks whether the HTTPS receiver certificate is trusted. Verification can be disabled for a deliberately configured, untrusted private certificate. |
+
 Add further receivers in the same way. Give them recognizable names, such as
 “Living room” and “Bedroom”. Setup uses the interface throughout; no YAML
 configuration is required.
@@ -56,6 +67,47 @@ A future publication is intended to support HACS as a custom repository. The
 through HACS **Custom repositories**, with type **Integration**. The
 [HACS guide](https://www.hacs.xyz/docs/faq/custom_repositories/) explains the steps.
 Inclusion in the default HACS catalog is not promised.
+
+### Discover receivers and update addresses
+
+If OpenWebif announces its web service through Bonjour with a name starting with
+“OpenWebif”, it appears under **Settings → Devices & services**. Open **Add**, check
+the prefilled address, port and HTTPS setting, provide credentials if required,
+then complete the dialog. Pairing happens only after confirmation and API validation.
+Without a matching Bonjour name, or when multicast is blocked, use manual setup
+above. Installing OpenWebif alone does not guarantee a matching announcement;
+the image and its Bonjour/Avahi configuration determine this.
+
+For paired receivers, Home Assistant can adopt a new IP detected through DHCP.
+The known MAC address must match the identity returned by OpenWebif. Port,
+authentication and TLS settings are preserved. Another announcement never disables HTTPS.
+
+If OpenWebif device information is missing after restarting the network interface,
+restarting the receiver's user interface (Enigma2/GUI) may help. Choose a time with
+no recording in progress. Once the known MAC is reported again, you can change
+the address through **Reconfigure** if needed. For an entry paired by MAC, this
+also remains blocked while its hardware identity is missing or different.
+
+### Supported devices
+
+The OpenWebif JSON API is required. Brand names or Enigma2 alone do not prove
+compatibility. These existing checks took place on 13 September 2026 against
+version 0.1.0. In addition, current read-only acceptance passed on the Octagon:
+setup, entities, refresh, screenshot and picon. Additional checks covered recording
+artwork, bounded control actions and address adoption after an actual DHCP change:
+
+| Receiver / OpenWebif | Verified scope and limitation |
+| --- | --- |
+| Octagon SF8008 4K Supreme / 2.4.0 | Live TV/radio, recordings, picons/screenshots, remote controls, messages, timers, standby and restart were checked. |
+| Vu+ Solo² / 1.4.4 | Setup without authentication, separate devices, catalogs, remote controls, messages and timers were checked. No second video/audio acceptance because the DVB input signal was missing. |
+| Other Enigma2 receivers / images | May work with a compatible OpenWebif API; no specific hardware evidence yet. Optional data may be absent. |
+| Receivers without the OpenWebif JSON API | Unsupported; an HTML web interface alone is insufficient. |
+
+New discovery and address updates have been tested with explicitly triggered
+announcements and real HA configuration flows, including the Octagon's new IP.
+Automatic discovery of actual network announcements remains pending.
+See the [validation overview](VALIDATION.en.md#current-read-only-octagon-acceptance)
+for the precise hardware scope.
 
 ## Control your receiver
 
@@ -90,6 +142,13 @@ report whether playback is paused, so check the TV for that. Some dashboard card
 do not show stop; the [remote card](#dashboard-remote) provides additional buttons.
 Further individual button entities are disabled by default and can be enabled
 in their entity settings if needed.
+
+Signal quality, SNR and reported bit error rate are optional diagnostics and
+initially disabled for new entities. Open **Settings → Devices & services →
+Entities**, show disabled entities and enable the sensor you need. Existing
+enable/disable choices are preserved on upgrades. Receiver states also cover
+standby, recording, streaming and connectivity; connectivity and **Refresh lists**
+are diagnostics.
 
 ## Browse recordings and channels
 
@@ -242,6 +301,25 @@ A bouquet changed during use remains selected until the integration reloads.
 Save a preferred starting group in the options. Timers and recordings normally
 refresh every two minutes; channel catalogs every five minutes. Use **Refresh
 lists** for an immediate update.
+The action waits for its fetch and reports an error if the receiver could not be
+updated. Even immediately repeated calls perform a new fetch instead of using
+the previous result.
+
+When the receiver cannot be reached, its controls become **Unavailable**. The
+connection indicator remains visible and shows the loss of connection. Missing
+individual optional values may appear as **Unknown**; an inaccessible timer
+catalog makes the calendar unavailable. The integration retries automatically.
+Failure and recovery are logged once each, not on every retry.
+
+States are polled locally, every 15 seconds by default. Between polls, the
+display may lag behind receiver controls. Relevant actions also request an update.
+Recordings and timers follow their two-minute cadence, channel catalogs five minutes.
+Recording images are prepared in the background at setup and on catalog updates:
+at most 128 recent images, one job at a time with at least a five-second pause.
+Older images are generated on demand. Local images expire after seven days;
+the browser may reuse recording images for one day and channel logos for
+15 minutes. Screenshots are reused for at most five seconds. **Regenerate thumbnails**
+bypasses the recording-image cache.
 
 ## Dashboard remote
 
@@ -294,6 +372,10 @@ currently returned to Home Assistant.
 
 Channel changes, standby and button sequences can also be automated.
 The examples below show you the matching actions.
+
+The integration provides no custom triggers or conditions. Use the standard
+Home Assistant state triggers and conditions in automations, for example a
+change of the recording or connection indicator.
 
 ### Actions and examples
 
@@ -429,6 +511,15 @@ The interface supports German and English. The remote follows your profile
 language; the recordings tile and automatically assigned entity names follow the
 HA system language. Other languages fall back to English. Custom names and
 receiver text are not translated.
+
+### FFmpeg repair issue
+
+**FFmpeg is missing for recording thumbnails** means the selected snapshot source
+cannot find an executable FFmpeg. Install it in the Home Assistant runtime or
+correct the configured executable path, then reload Enigma2 Connect. Alternatively,
+deselect **Snapshot from recording** in Receiver settings and save. This clears
+the issue. Receiver controls and media catalogs remain usable. Removing a receiver
+entry also removes its repair issue.
 
 ## Update or remove
 

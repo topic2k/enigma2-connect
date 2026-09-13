@@ -1,6 +1,15 @@
 # SPDX-License-Identifier: Apache-2.0
 """Device-scoped actions with mandatory, unambiguous receiver targeting."""
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any, cast
+
+if TYPE_CHECKING:
+    from homeassistant.core import HomeAssistant, ServiceCall
+
+    from .coordinator import EnigmaConfigEntry, EnigmaCoordinator
+
 import voluptuous as vol
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.core import callback
@@ -12,8 +21,8 @@ from .models import timer_range
 
 
 @callback
-def register_services(hass):
-    def resolve(device_id):
+def register_services(hass: HomeAssistant) -> None:
+    def resolve(device_id: str) -> EnigmaCoordinator:
         device = dr.async_get(hass).async_get(device_id)
         entries = [
             entry
@@ -26,9 +35,9 @@ def register_services(hass):
             raise ServiceValidationError(
                 translation_domain=DOMAIN, translation_key="invalid_target"
             )
-        return entries[0].runtime_data
+        return cast("EnigmaConfigEntry", entries[0]).runtime_data
 
-    async def handle(call):
+    async def handle(call: ServiceCall) -> None:
         coordinator = resolve(call.data["device_id"])
         params = dict(call.data)
         params.pop("device_id")
@@ -59,7 +68,7 @@ def register_services(hass):
             coordinator.invalidate_lists()
             await coordinator.async_request_refresh()
 
-    base = {vol.Required("device_id"): str}
+    base: dict[Any, Any] = {vol.Required("device_id"): str}
     timer = {
         **base,
         vol.Required("service_reference"): str,

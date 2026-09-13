@@ -3,6 +3,16 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
+    from typing import Any
+
+    from homeassistant.core import HomeAssistant
+
+    from .coordinator import EnigmaConfigEntry
+
 import ipaddress
 import re
 from uuid import uuid4
@@ -13,6 +23,8 @@ from homeassistant.core import callback
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import selector
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.service_info.dhcp import DhcpServiceInfo
+from homeassistant.helpers.service_info.zeroconf import ZeroconfServiceInfo
 
 from .api import AuthenticationError, OpenWebifClient, ReceiverError
 from .channel_media import CONF_CHANNEL_BOUQUET, CONF_SHOW_CHANNELS
@@ -34,7 +46,7 @@ from .recording_images import (
 
 def bouquet_selector(bouquets: dict[str, Service], selected: str) -> selector.SelectSelector:
     """Use a label-rendering dropdown while retaining unavailable saved bouquets."""
-    choices = [{"value": "", "label": "—"}]
+    choices: list[selector.SelectOptionDict] = [{"value": "", "label": "—"}]
     choices.extend({"value": item.reference, "label": label} for label, item in bouquets.items())
     if selected and not any(choice["value"] == selected for choice in choices):
         # Older manually entered references may not occur in the receiver's catalog.
@@ -69,7 +81,7 @@ def host(value: str) -> str:
         return value
 
 
-def schema(defaults: dict) -> vol.Schema:
+def schema(defaults: dict[str, Any]) -> vol.Schema:
     username = vol.Optional("username")
     password = vol.Optional("password")
     if "username" in defaults:
@@ -93,7 +105,7 @@ def schema(defaults: dict) -> vol.Schema:
     )
 
 
-def make_client(hass, data: dict) -> OpenWebifClient:
+def make_client(hass: HomeAssistant, data: dict[str, Any]) -> OpenWebifClient:
     return OpenWebifClient(
         async_get_clientsession(hass, verify_ssl=data.get("verify_ssl", True)), **data
     )
@@ -102,8 +114,47 @@ def make_client(hass, data: dict) -> OpenWebifClient:
 class EnigmaFlow(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 1
 
-    async def _configure(self, step: str, user_input: dict | None):
-        entry = (
+    async def async_step_zeroconf(
+        self, discovery_info: ZeroconfServiceInfo
+    ) -> config_entries.ConfigFlowResult:
+        """Offer an advertised OpenWebif service; pairing still validates the API."""
+        self._async_abort_entries_match({"host": discovery_info.host})
+        self._discovered = {
+            "host": discovery_info.host,
+            "port": discovery_info.port,
+            "use_https": discovery_info.type == "_https._tcp.local.",
+        }
+        self.context["title_placeholders"] = {"host": discovery_info.host}
+        return await self.async_step_user()
+
+    async def async_step_dhcp(
+        self, discovery_info: DhcpServiceInfo
+    ) -> config_entries.ConfigFlowResult:
+        """Update a registered receiver only after its API confirms its MAC."""
+        mac = discovery_info.macaddress.replace(":", "").lower()
+        for entry in self._async_current_entries():
+            if entry.unique_id != mac:
+                continue
+            # Never merge two configured receivers through an address update.
+            self._async_abort_entries_match({"host": discovery_info.ip})
+            data = {**entry.data, "host": discovery_info.ip}
+            try:
+                result = await make_client(self.hass, data).get("about")
+                hardware_id = identity(result.get("info", {}))
+            except ReceiverError, ValueError, TypeError, AttributeError:
+                return self.async_abort(reason="discovery_failed")
+            if hardware_id != entry.unique_id:
+                return self.async_abort(reason="wrong_device")
+            # Keep the configured port, TLS policy, credentials and entity IDs.
+            return self.async_update_reload_and_abort(
+                entry, data_updates={"host": discovery_info.ip}, reason="already_configured"
+            )
+        return self.async_abort(reason="not_registered")
+
+    async def _configure(
+        self, step: str, user_input: dict[str, Any] | None
+    ) -> config_entries.ConfigFlowResult:
+        entry: EnigmaConfigEntry | None = (
             self._get_reauth_entry()
             if step == "reauth_confirm"
             else self._get_reconfigure_entry()
@@ -141,6 +192,7 @@ class EnigmaFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         return self.async_abort(reason="already_configured")
                 unique_id = hardware_id or f"host:{data['host']}"
                 if entry:
+                    assert entry.unique_id is not None  # Every supported config flow sets an ID.
                     # Address changes must still point to the originally paired hardware.
                     # Host-based fallback IDs cannot provide that identity check.
                     if not entry.unique_id.startswith("host:") and hardware_id != entry.unique_id:
@@ -155,33 +207,49 @@ class EnigmaFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 )
         return self.async_show_form(
             step_id=step,
-            data_schema=schema(user_input or (dict(entry.data) if entry else {})),
+            data_schema=schema(
+                user_input or (dict(entry.data) if entry else getattr(self, "_discovered", {}))
+            ),
             errors=errors,
         )
 
-    async def async_step_user(self, user_input=None):
+    async def async_step_user(
+        self, user_input: dict[str, Any] | None = None
+    ) -> config_entries.ConfigFlowResult:
         return await self._configure("user", user_input)
 
-    async def async_step_reauth(self, entry_data):
+    async def async_step_reauth(
+        self, entry_data: Mapping[str, Any]
+    ) -> config_entries.ConfigFlowResult:
         return await self.async_step_reauth_confirm()
 
-    async def async_step_reauth_confirm(self, user_input=None):
+    async def async_step_reauth_confirm(
+        self, user_input: dict[str, Any] | None = None
+    ) -> config_entries.ConfigFlowResult:
         return await self._configure("reauth_confirm", user_input)
 
-    async def async_step_reconfigure(self, user_input=None):
+    async def async_step_reconfigure(
+        self, user_input: dict[str, Any] | None = None
+    ) -> config_entries.ConfigFlowResult:
         return await self._configure("reconfigure", user_input)
 
     @staticmethod
     @callback
-    def async_get_options_flow(config_entry):
+    def async_get_options_flow(config_entry: EnigmaConfigEntry) -> EnigmaOptions:
         return EnigmaOptions()
 
 
 class EnigmaOptions(config_entries.OptionsFlowWithReload):
-    async def async_step_init(self, user_input=None):
+    config_entry: EnigmaConfigEntry
+
+    async def async_step_init(
+        self, user_input: dict[str, Any] | None = None
+    ) -> config_entries.ConfigFlowResult:
         return self.async_show_menu(step_id="init", menu_options=["settings", "regenerate_images"])
 
-    async def async_step_regenerate_images(self, user_input=None):
+    async def async_step_regenerate_images(
+        self, user_input: dict[str, Any] | None = None
+    ) -> config_entries.ConfigFlowResult:
         if not self.config_entry.options.get(CONF_IMAGE_SOURCES, DEFAULT_IMAGE_SOURCES):
             return self.async_abort(reason="images_disabled")
         # A fresh namespace bypasses both disk and browser caches. Reload cancels
@@ -191,7 +259,9 @@ class EnigmaOptions(config_entries.OptionsFlowWithReload):
             data={**self.config_entry.options, CONF_IMAGE_GENERATION: uuid4().hex},
         )
 
-    async def async_step_settings(self, user_input=None):
+    async def async_step_settings(
+        self, user_input: dict[str, Any] | None = None
+    ) -> config_entries.ConfigFlowResult:
         errors = {}
         if user_input is not None:
             try:

@@ -5,12 +5,12 @@ from __future__ import annotations
 
 import asyncio
 from base64 import b64encode
-from typing import Any
+from typing import Any, Literal, overload
 
 import aiohttp
 from yarl import URL
 
-from .models import boolean, picon_candidates
+from .models import JsonObject, boolean, picon_candidates
 
 
 class ReceiverError(Exception):
@@ -83,7 +83,19 @@ class OpenWebifClient:
         # All entities share this lock so state-changing requests stay ordered.
         self.command_lock = asyncio.Lock()
 
-    async def request(self, path: str, params: dict | None = None, *, image: bool = False) -> Any:
+    @overload
+    async def request(
+        self, path: str, params: dict[str, Any] | None = None, *, image: Literal[False] = False
+    ) -> JsonObject: ...
+
+    @overload
+    async def request(
+        self, path: str, params: dict[str, Any] | None = None, *, image: Literal[True]
+    ) -> bytes: ...
+
+    async def request(
+        self, path: str, params: dict[str, Any] | None = None, *, image: bool = False
+    ) -> JsonObject | bytes:
         disruptive_power = path == "/api/powerstate" and str((params or {}).get("newstate")) in (
             "1",
             "2",
@@ -133,7 +145,7 @@ class OpenWebifClient:
         except (ValueError, UnicodeError) as err:
             raise ProtocolError("Invalid JSON response") from err
 
-    async def get(self, endpoint: str, **params: Any) -> dict:
+    async def get(self, endpoint: str, **params: Any) -> JsonObject:
         return await self.request(f"/api/{endpoint}", params or None)
 
     async def command(self, endpoint: str, **params: Any) -> None:
