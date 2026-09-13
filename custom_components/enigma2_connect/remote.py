@@ -4,7 +4,7 @@
 from homeassistant.components.remote import RemoteEntity, RemoteEntityFeature
 from homeassistant.exceptions import ServiceValidationError
 
-from .const import KEYS
+from .const import DOMAIN, KEYS
 from .entity import EnigmaEntity
 
 PARALLEL_UPDATES = 0
@@ -16,9 +16,15 @@ def key_codes(command):
         try:
             code = KEYS[str(key)] if str(key) in KEYS else int(key)
         except ValueError, TypeError:
-            raise ServiceValidationError(f"Unknown remote key: {key}") from None
+            raise ServiceValidationError(
+                translation_domain=DOMAIN,
+                translation_key="unknown_remote_key",
+                translation_placeholders={"key": str(key)},
+            ) from None
         if not 0 <= code <= 0x2FF:
-            raise ServiceValidationError("Key code outside Linux input range")
+            raise ServiceValidationError(
+                translation_domain=DOMAIN, translation_key="invalid_key_code"
+            )
         result.append(code)
     return result
 
@@ -55,7 +61,9 @@ class EnigmaRemote(EnigmaEntity, RemoteEntity):
             or len(codes) * repeats > 500
             or not 0 <= delay <= 5
         ):
-            raise ServiceValidationError("Invalid sequence length, repeat count or delay")
+            raise ServiceValidationError(
+                translation_domain=DOMAIN, translation_key="invalid_sequence"
+            )
         await self.coordinator.perform(
             self.coordinator.client.keys,
             codes * repeats,

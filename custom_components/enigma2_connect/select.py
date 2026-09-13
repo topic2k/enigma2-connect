@@ -4,6 +4,7 @@
 from homeassistant.components.select import SelectEntity
 from homeassistant.exceptions import ServiceValidationError
 
+from .const import DOMAIN
 from .entity import EnigmaEntity
 
 PARALLEL_UPDATES = 0
@@ -43,7 +44,9 @@ class EnigmaSelect(EnigmaEntity, SelectEntity):
 
     async def async_select_option(self, option):
         if option not in self.items:
-            raise ServiceValidationError("Unknown selection")
+            raise ServiceValidationError(
+                translation_domain=DOMAIN, translation_key="unknown_selection"
+            )
         reference = self.items[option].reference
         if self.kind == "bouquet":
             await self.coordinator.select_bouquet(reference)

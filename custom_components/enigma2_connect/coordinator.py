@@ -14,8 +14,10 @@ from homeassistant.exceptions import ConfigEntryAuthFailed, HomeAssistantError
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .api import AuthenticationError, OpenWebifClient, PowerCommandUnconfirmed, ReceiverError
+from .channel_media import CONF_CHANNEL_BOUQUET, CONF_SHOW_CHANNELS
 from .const import CATALOG_INTERVAL, DOMAIN, SLOW_INTERVAL
 from .models import ReceiverState, Snapshot, services
+from .recording_images import RecordingImages
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -34,6 +36,7 @@ class EnigmaCoordinator(DataUpdateCoordinator[Snapshot]):
         )
         self.client = client
         self.entry = entry
+        self.recording_images = RecordingImages(hass, self)
         self.info: dict = {}
         self._slow_due = 0.0
         self._catalog_due = 0.0
@@ -51,9 +54,13 @@ class EnigmaCoordinator(DataUpdateCoordinator[Snapshot]):
             if not isinstance(self.info, dict) or not self.info.get("model"):
                 raise ValueError("Missing receiver model")
         except AuthenticationError as err:
-            raise ConfigEntryAuthFailed("Receiver authentication failed") from err
+            raise ConfigEntryAuthFailed(
+                translation_domain=DOMAIN, translation_key="invalid_auth"
+            ) from err
         except (ReceiverError, KeyError, ValueError) as err:
-            raise UpdateFailed("Cannot identify OpenWebif receiver") from err
+            raise UpdateFailed(
+                translation_domain=DOMAIN, translation_key="cannot_identify"
+            ) from err
 
     async def optional(self, endpoint: str, field: str | None = None, **params):
         error_key = (
@@ -67,8 +74,10 @@ class EnigmaCoordinator(DataUpdateCoordinator[Snapshot]):
             if field and not isinstance(value, list):
                 raise ValueError("Expected list")
         except AuthenticationError:
+            # Authentication failures require reauth, even on optional endpoints.
             raise
         except ReceiverError, KeyError, ValueError:
+            # Missing optional data must not make the entire receiver unavailable.
             self.optional_errors.add(error_key)
             return None
         self.optional_errors.discard(error_key)
@@ -85,9 +94,12 @@ class EnigmaCoordinator(DataUpdateCoordinator[Snapshot]):
                     current = await self.optional("getcurrent")
                 state = ReceiverState.parse(raw, current)
                 previous = self.data if self.data else Snapshot(state)
+                # Reuse slow-changing lists between their own refresh deadlines.
+                # A failed list refresh replaces old data with None, not an empty list.
                 timers, movies = previous.timers, previous.movies
                 movie_directory = previous.movie_directory
-                if monotonic() >= self._slow_due:
+                catalog_refreshed = monotonic() >= self._slow_due
+                if catalog_refreshed:
                     timers = await self.optional("timerlist", "timers")
                     catalog = await self.optional("movielist", recursive=1)
                     movies = catalog.get("movies") if isinstance(catalog, dict) else None
@@ -101,11 +113,14 @@ class EnigmaCoordinator(DataUpdateCoordinator[Snapshot]):
                         movie_directory = None
                     self._slow_due = monotonic() + SLOW_INTERVAL
                 bouquets, channels = previous.bouquets, previous.channels
+                media_channels = previous.media_channels
                 if monotonic() >= self._catalog_due:
                     tv = await self.optional("bouquets", "bouquets", stype="tv")
                     radio = await self.optional("bouquets", "bouquets", stype="radio")
                     bouquets = services([*(tv or []), *(radio or [])])
                     refs = {item.reference for item in bouquets.values()}
+                    # A configured reference may be absent from the bouquet listing;
+                    # retain it so manually entered bouquets can still be queried.
                     if not self._bouquet or (
                         self._bouquet not in refs
                         and self._bouquet != self.entry.options.get("bouquet")
@@ -121,8 +136,24 @@ class EnigmaCoordinator(DataUpdateCoordinator[Snapshot]):
                         else []
                     )
                     channels = services(rows or [], channels=True)
+                    media_channels = None
+                    if self.entry.options.get(CONF_SHOW_CHANNELS, False):
+                        media_bouquet = (
+                            self.entry.options.get(CONF_CHANNEL_BOUQUET) or self._bouquet
+                        )
+                        if media_bouquet == self._bouquet:
+                            media_channels = channels
+                        elif media_bouquet:
+                            media_rows = await self.optional(
+                                "getservices", "services", sRef=media_bouquet
+                            )
+                            media_channels = (
+                                services(media_rows, channels=True)
+                                if media_rows is not None
+                                else None
+                            )
                     self._catalog_due = monotonic() + CATALOG_INTERVAL
-                return Snapshot(
+                snapshot = Snapshot(
                     state,
                     signal,
                     self.info,
@@ -132,11 +163,19 @@ class EnigmaCoordinator(DataUpdateCoordinator[Snapshot]):
                     channels,
                     self._bouquet,
                     movie_directory,
+                    media_channels,
                 )
+                if catalog_refreshed:
+                    self.recording_images.async_catalog_updated(snapshot)
+                return snapshot
             except AuthenticationError as err:
-                raise ConfigEntryAuthFailed("Receiver authentication failed") from err
+                raise ConfigEntryAuthFailed(
+                    translation_domain=DOMAIN, translation_key="invalid_auth"
+                ) from err
             except (ReceiverError, ValueError, TypeError) as err:
-                raise UpdateFailed("Cannot update receiver") from err
+                raise UpdateFailed(
+                    translation_domain=DOMAIN, translation_key="cannot_update"
+                ) from err
 
     async def perform(self, method, *args, refresh: bool = True, **kwargs) -> None:
         try:
@@ -162,9 +201,18 @@ class EnigmaCoordinator(DataUpdateCoordinator[Snapshot]):
             async with self.data_lock:
                 result = await self.client.get("getservices", sRef=reference)
                 channels = services(result.get("services", []), channels=True)
+                # Publish selection and channels together only after a successful fetch.
                 self._bouquet = reference
                 self.async_set_updated_data(
-                    replace(self.data, bouquet=reference, channels=channels)
+                    replace(
+                        self.data,
+                        bouquet=reference,
+                        channels=channels,
+                        media_channels=channels
+                        if self.entry.options.get(CONF_SHOW_CHANNELS, False)
+                        and not self.entry.options.get(CONF_CHANNEL_BOUQUET)
+                        else self.data.media_channels,
+                    )
                 )
 
         await self.perform(change, refresh=False)

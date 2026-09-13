@@ -74,6 +74,8 @@ def receiver():
         return deepcopy(value)
 
     with (
+        # Background artwork is exercised explicitly in test_recording_preparation.
+        patch("custom_components.enigma2_connect.recording_images.BACKGROUND_DELAY", 3600),
         patch(
             "custom_components.enigma2_connect.api.OpenWebifClient.get", side_effect=get
         ) as get_mock,

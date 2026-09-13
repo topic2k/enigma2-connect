@@ -26,6 +26,7 @@ class EnigmaBinarySensor(EnigmaEntity, BinarySensorEntity):
 
     @property
     def available(self):
+        # Keep connectivity visible as off when polling fails, rather than unavailable.
         return True if self.key == "connection" else super().available
 
     @property

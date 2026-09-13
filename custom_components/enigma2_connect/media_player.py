@@ -5,15 +5,26 @@ from asyncio import sleep
 from time import monotonic
 from uuid import uuid4
 
+from homeassistant.components import media_source
 from homeassistant.components.media_player import MediaPlayerEntity, MediaPlayerState, MediaType
 from homeassistant.components.media_player import MediaPlayerEntityFeature as Feature
+from homeassistant.components.media_player.errors import BrowseError
 from homeassistant.core import callback
 from homeassistant.exceptions import ServiceValidationError
 
 from .api import ReceiverError
-from .const import KEYS
+from .channel_media import (
+    CONF_SHOW_CHANNELS,
+    browse_channels,
+    channel_entry,
+    channel_folder,
+    channel_from_identifier,
+)
+from .const import DOMAIN, KEYS
 from .entity import EnigmaEntity
-from .recordings import browse_recordings
+from .media_source import recording_from_identifier
+from .recording_images import recording_thumbnail
+from .recordings import async_recording_labels, browse_recordings
 
 PARALLEL_UPDATES = 0
 
@@ -156,11 +167,13 @@ class EnigmaMediaPlayer(EnigmaEntity, MediaPlayerEntity):
         try:
             if self.coordinator.entry.options.get("artwork") == "screenshot":
                 generation = self._screenshot_generation
+                # Allow the receiver to render the new channel after a zap.
                 if (delay := self._screenshot_ready_at - monotonic()) > 0:
                     await sleep(delay)
                 if not self._screenshot_request_current(generation):
                     return None, None
                 image = await self.coordinator.client.screenshot()
+                # A channel change during the fetch makes this frame obsolete too.
                 if not self._screenshot_request_current(generation):
                     return None, None
                 return image, "image/jpeg"
@@ -191,6 +204,7 @@ class EnigmaMediaPlayer(EnigmaEntity, MediaPlayerEntity):
 
     async def async_turn_off(self):
         deep = self.coordinator.entry.options.get("off_mode") == "deep_standby"
+        # Deep standby takes the API offline, so an immediate refresh would fail.
         await self.coordinator.perform(
             self.coordinator.client.command,
             "powerstate",
@@ -227,10 +241,35 @@ class EnigmaMediaPlayer(EnigmaEntity, MediaPlayerEntity):
 
     async def async_select_source(self, source):
         if source not in self.coordinator.data.channels:
-            raise ServiceValidationError("Unknown channel")
+            raise ServiceValidationError(
+                translation_domain=DOMAIN, translation_key="unknown_channel"
+            )
         await self.command("zap", sRef=self.coordinator.data.channels[source].reference)
 
     async def async_play_media(self, media_type, media_id, **kwargs):
+        if media_source.is_media_source_id(media_id):
+            item = media_source.MediaSourceItem.from_uri(self.hass, media_id, self.entity_id)
+            if item.domain != DOMAIN:
+                raise ServiceValidationError(
+                    translation_domain=DOMAIN, translation_key="select_recording"
+                )
+            is_channel = (item.identifier or "").startswith("channel/")
+            entry, movie = (
+                channel_from_identifier(self.hass, item.identifier)
+                if is_channel
+                else recording_from_identifier(self.hass, item.identifier)
+            )
+            # Service references identify files on the owning receiver's filesystem.
+            if entry.entry_id != self.coordinator.entry.entry_id:
+                raise ServiceValidationError(
+                    translation_domain=DOMAIN,
+                    translation_key="channel_receiver_only"
+                    if is_channel
+                    else "recording_receiver_only",
+                    translation_placeholders={"receiver": entry.title},
+                )
+            await self.command("zap", sRef=movie.reference if is_channel else movie["serviceref"])
+            return
         if (
             media_type == MediaType.CHANNEL
             and media_id.isascii()
@@ -247,12 +286,38 @@ class EnigmaMediaPlayer(EnigmaEntity, MediaPlayerEntity):
         ):
             await self.command("zap", sRef=media_id)
         else:
-            raise ServiceValidationError("Use a channel number or an Enigma2 service reference")
+            raise ServiceValidationError(translation_domain=DOMAIN, translation_key="invalid_media")
 
     async def async_browse_media(self, media_content_type=None, media_content_id=None):
-        return browse_recordings(
+        if media_content_id and media_source.is_media_source_id(media_content_id):
+            item = media_source.MediaSourceItem.from_uri(
+                self.hass, media_content_id, self.entity_id
+            )
+            if item.domain == DOMAIN and (item.identifier or "").startswith("channels/"):
+                try:
+                    entry = channel_entry(self.hass, item.identifier.partition("/")[2])
+                except media_source.Unresolvable:
+                    raise BrowseError(
+                        translation_domain=DOMAIN, translation_key="channel_unavailable"
+                    ) from None
+                labels = await async_recording_labels(self.hass)
+                return browse_channels(entry, f"{entry.title} · {labels['channels']}")
+            return await media_source.async_browse_media(self.hass, media_content_id)
+        labels = await async_recording_labels(self.hass)
+        result = browse_recordings(
             self.coordinator.data,
             self.coordinator.entry.title,
             media_content_type,
             media_content_id,
+            fallback_title=labels["recording"],
+            thumbnails={
+                movie["serviceref"]: recording_thumbnail(self.coordinator.entry, movie)
+                for movie in self.coordinator.data.movies or []
+                if movie.get("serviceref")
+            },
         )
+        if result.media_content_id == "root" and self.coordinator.entry.options.get(
+            CONF_SHOW_CHANNELS, False
+        ):
+            result.children.insert(0, channel_folder(self.coordinator.entry, labels["channels"]))
+        return result

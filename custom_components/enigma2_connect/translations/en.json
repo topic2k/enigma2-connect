@@ -51,20 +51,78 @@
   },
   "options": {
     "error": {
+      "image_api_key_required": "An API key is required for the selected image source.",
+      "invalid_image_url": "Enter a direct HTTP(S) image URL without user credentials. Supported placeholders: title, filename, channel.",
       "invalid_timezone": "Enter a valid timezone, for example Europe/Berlin."
     },
     "step": {
-      "init": {
+      "settings": {
         "title": "Receiver options",
         "data": {
           "scan_interval": "Polling interval (seconds)",
-          "bouquet": "Default bouquet reference (optional)",
+          "recording_image_sources": "Recording thumbnails – image sources",
+          "recording_snapshot_minutes": "Snapshot position after recording start",
+          "recording_tmdb_key": "TMDB API key",
+          "recording_omdb_key": "OMDb API key",
+          "recording_image_url": "Custom image URL",
+          "bouquet": "Default bouquet (optional)",
           "artwork": "Media artwork",
           "message_type": "Message type (0–3)",
           "message_timeout": "Message duration (seconds)",
           "receiver_timezone": "Receiver timezone",
-          "off_mode": "Power-off mode"
+          "off_mode": "Power-off mode",
+          "recordings_layout": "Recordings in the media tile (applies to all receivers)",
+          "media_show_channels": "Show channels in the media browser",
+          "media_channel_bouquet": "Bouquet for the media browser"
+        },
+        "data_description": {
+          "recording_image_sources": "Select multiple sources, or clear all to disable thumbnails. Priority: custom URL, TMDB, OMDb, snapshot. Only selected Internet sources receive the recording title.",
+          "recording_snapshot_minutes": "Default: 10 minutes. Shorter completed recordings use their midpoint. Does not start playback.",
+          "recording_image_url": "Direct JPEG, PNG or WebP URL. Placeholders in braces: title, filename, channel. Values are URL-encoded.",
+          "message_type": "0 = Yes/no question, 1 = Information, 2 = Warning, 3 = Error.",
+          "media_show_channels": "Optional channel folder in both media views; disabled by default. Channel images use available picons.",
+          "media_channel_bouquet": "Select a channel group by name. Empty: follow the bouquet currently selected for Source."
         }
+      },
+      "init": {
+        "title": "Receiver options",
+        "description": "Change and save image sources under Receiver settings first. Regenerate thumbnails uses the saved sources and starts background preparation for this receiver only. Media browsing remains available.",
+        "menu_options": {
+          "settings": "Receiver settings",
+          "regenerate_images": "Regenerate thumbnails"
+        }
+      }
+    },
+    "abort": {
+      "images_disabled": "Thumbnails are disabled. Select and save at least one image source in Receiver settings first."
+    }
+  },
+  "selector": {
+    "recording_image_sources": {
+      "options": {
+        "snapshot": "Snapshot from recording",
+        "tmdb": "TMDB",
+        "omdb": "OMDb (IMDb matching)",
+        "custom": "Custom image URL"
+      }
+    },
+    "recordings_layout": {
+      "options": {
+        "receivers": "Separate receiver folders",
+        "merged": "Merge receivers"
+      }
+    },
+    "artwork": {
+      "options": {
+        "picon": "Channel logo",
+        "screenshot": "Screenshot",
+        "none": "No artwork"
+      }
+    },
+    "off_mode": {
+      "options": {
+        "standby": "Standby",
+        "deep_standby": "Deep standby"
       }
     }
   },
@@ -276,6 +334,12 @@
     }
   },
   "exceptions": {
+    "recording_unavailable": {
+      "message": "The recording or its receiver is unavailable. Refresh the recording list."
+    },
+    "recording_receiver_only": {
+      "message": "Select {receiver} as the playback device. This recording can only play on its owning receiver; browser streaming is not supported."
+    },
     "invalid_auth": {
       "message": "Receiver rejected the credentials."
     },
@@ -296,6 +360,45 @@
     },
     "request_failed": {
       "message": "The receiver request failed or was rejected."
+    },
+    "unknown_channel": {
+      "message": "Unknown channel"
+    },
+    "select_recording": {
+      "message": "Select an Enigma2 recording or channel"
+    },
+    "invalid_media": {
+      "message": "Use a channel number or an Enigma2 service reference"
+    },
+    "unknown_selection": {
+      "message": "Unknown selection"
+    },
+    "unknown_remote_key": {
+      "message": "Unknown remote key: {key}"
+    },
+    "invalid_key_code": {
+      "message": "Key code outside Linux input range"
+    },
+    "invalid_sequence": {
+      "message": "Invalid sequence length, repeat count or delay"
+    },
+    "recording_folder_missing": {
+      "message": "Recording folder no longer exists"
+    },
+    "unknown_recording_folder": {
+      "message": "Unknown recording folder"
+    },
+    "cannot_identify": {
+      "message": "Cannot identify OpenWebif receiver"
+    },
+    "cannot_update": {
+      "message": "Cannot update receiver"
+    },
+    "channel_unavailable": {
+      "message": "The channel, selected bouquet or receiver is unavailable, or channel browsing is disabled. Refresh the channel list."
+    },
+    "channel_receiver_only": {
+      "message": "Select {receiver} as the playback device to tune this channel. Browser streaming is not supported."
     }
   },
   "services": {
@@ -433,5 +536,10 @@
         }
       }
     }
+  },
+  "common": {
+    "recordings": "Enigma2 recordings",
+    "recording": "Recording",
+    "channels": "Channels"
   }
 }
