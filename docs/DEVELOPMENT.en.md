@@ -43,11 +43,13 @@ Debian/Ubuntu: `sudo apt-get install ffmpeg`). Without it, this test is skipped
 locally and the Silver coverage gate may fail. CI explicitly installs FFmpeg
 and checks its invocation before running tests.
 
-GitHub workflows use `actions/checkout@v7`, `astral-sh/setup-uv@v10` and
+GitHub workflows use `actions/checkout@v7`, `astral-sh/setup-uv@v10.1.0` and
 `actions/upload-artifact@v7` with the Node.js 24 action runtime. Hosted
 `ubuntu-latest` runners support these versions. This does not change the
 integration's Python requirements. Existing warnings in older workflow runs
 remain part of their historical logs.
+setup-uv uses its full release tag because the upstream repository does not
+provide a `v10` major-version alias.
 
 From the project directory on Linux/WSL with Python 3.14.2 or later:
 

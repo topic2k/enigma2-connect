@@ -13,7 +13,7 @@
 
 Unreleased development version.
 
-- Migrated GitHub Actions to Node.js 24: `checkout@v7`, `setup-uv@v10` and
+- Migrated GitHub Actions to Node.js 24: `checkout@v7`, `setup-uv@v10.1.0` and
   `upload-artifact@v7` across all affected workflows, replacing the deprecated
   Node.js 20 action versions.
 

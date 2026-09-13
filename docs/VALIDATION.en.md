@@ -10,7 +10,7 @@ This is a technical report, not release or hardware approval. Version history:
 ## GitHub CI and the FFmpeg prerequisite
 
 **Node.js 24 migration in 1.1.0-dev.9:** All direct uses of `checkout@v4`,
-`setup-uv@v6` and `upload-artifact@v4` were replaced with `v7`, `v10` and `v7`,
+`setup-uv@v6` and `upload-artifact@v4` were replaced with `v7`, `v10.1.0` and `v7`,
 respectively. Action metadata for the reviewed releases
 [Checkout 7.0.1](https://github.com/actions/checkout/blob/v7.0.1/action.yml),
 [setup-uv 10.1.0](https://github.com/astral-sh/setup-uv/blob/v10.1.0/action.yml) and

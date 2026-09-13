@@ -13,7 +13,7 @@
 
 Unveröffentlichte Entwicklerversion.
 
-- GitHub Actions auf Node.js 24 umgestellt: `checkout@v7`, `setup-uv@v10` und
+- GitHub Actions auf Node.js 24 umgestellt: `checkout@v7`, `setup-uv@v10.1.0` und
   `upload-artifact@v7` in allen betroffenen Workflows. Die veralteten
   Node.js-20-Action-Versionen werden damit ersetzt.
 

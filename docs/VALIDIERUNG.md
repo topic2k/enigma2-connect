@@ -10,7 +10,7 @@ Versionshistorie: [Changelog](../CHANGELOG.md). Reproduktionsbefehle:
 ## GitHub-CI und FFmpeg-Voraussetzung
 
 **Node.js-24-Umstellung in 1.1.0-dev.9:** Alle direkten Vorkommen von
-`checkout@v4`, `setup-uv@v6` und `upload-artifact@v4` wurden durch `v7`, `v10`
+`checkout@v4`, `setup-uv@v6` und `upload-artifact@v4` wurden durch `v7`, `v10.1.0`
 beziehungsweise `v7` ersetzt. Die Action-Metadaten der geprüften Releases
 [Checkout 7.0.1](https://github.com/actions/checkout/blob/v7.0.1/action.yml),
 [setup-uv 10.1.0](https://github.com/astral-sh/setup-uv/blob/v10.1.0/action.yml)
