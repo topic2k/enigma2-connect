@@ -152,8 +152,11 @@ class GeminiTests(unittest.TestCase):
         self.assertEqual(network.call_count, 1)
         request = network.call_args.args[0]
         self.assertNotIn("test-key", request.full_url)
+        self.assertTrue(request.full_url.endswith("gemini-3.8-flash:generateContent"))
         payload = json.loads(request.data)
         self.assertNotIn("tools", payload)
+        self.assertNotIn("temperature", payload["generationConfig"])
+        self.assertEqual(payload["generationConfig"]["thinkingConfig"], {"thinkingLevel": "LOW"})
         self.assertEqual(payload["generationConfig"]["maxOutputTokens"], 8192)
         self.assertEqual(data["results"], [self.result])
         self.assertEqual(usage["promptTokenCount"], 25)

@@ -4,8 +4,17 @@
 
 ## Contents
 
+- [1.0.2](#102)
 - [1.0.1](#101)
 - [1.0.0](#100)
+
+## 1.0.2
+
+Unreleased.
+
+- The blog workflow uses Gemini 3.8 Flash with low thinking effort and current
+  request parameters. The first real Gemini 2.5 Flash request returned HTTP 404.
+  Weekly scheduling and fixed request limits are preserved.
 
 ## 1.0.1
 

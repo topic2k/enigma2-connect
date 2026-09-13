@@ -84,10 +84,10 @@ bewertet. Ohne neue Beiträge erfolgt kein KI-Aufruf. Weitere Beiträge bleiben
 für den nächsten Lauf offen; Quelltexte werden nicht stillschweigend gekürzt.
 
 Das [Gemini-Prüfskript](../scripts/ha_blog_gemini.py) verwendet die Google-API
-direkt mit `gemini-2.5-flash`. Eine feste Anfrage vermeidet variable Agentenschleifen.
+direkt mit `gemini-3.8-flash`. Eine feste Anfrage vermeidet variable Agentenschleifen.
 Es gibt keine Werkzeuge, Websuche, automatische Wiederholung oder Umschaltung auf
 andere Modelle. Die Grenzen sind 400.000 UTF-8-Eingabebytes und 8.192 Ausgabetokens
-einschließlich eines Denkbudgets von 1.024 Tokens. Bei zu großer Eingabe verkleinert
+einschließlich Denktokens bei Denkstufe `low`. Bei zu großer Eingabe verkleinert
 das Skript die Beitragsgruppe. Passt schon ein Beitrag mit dem vollständigen
 Code nicht hinein, schlägt der Lauf fehl und verlangt eine manuelle Prüfung.
 
@@ -137,7 +137,7 @@ zusätzlich 30 Tage als Actions-Artefakt vor.
    erstellen. Kein Billing-Konto verknüpfen und kein Paid-Tier-Upgrade aktivieren.
 2. Die aktiven Modelllimits in AI Studio prüfen. Google nennt auf der
    [Preisseite](https://ai.google.dev/gemini-api/docs/pricing?hl=de#free) kostenlose
-   Ein- und Ausgabe für Gemini 2.5 Flash; konkrete Anfrage-/Tokenlimits sind
+   Ein- und Ausgabe für Gemini 3.8 Flash; konkrete Anfrage-/Tokenlimits sind
    [projektabhängig](https://ai.google.dev/gemini-api/docs/rate-limits).
    Eine kleine Anfrage pro Woche dürfte ausreichen, kann ohne echten Probelauf
    mit dem Projekt aber nicht garantiert werden. Der Free Tier schützt vor
