@@ -322,12 +322,23 @@ The following acceptance checks remain before hardware/publication approval:
   Octagon; versions and scope are in the [validation overview](VALIDATION.en.md#current-read-only-octagon-acceptance).
   Setup, nine platforms, refresh, duplicate prevention and unloading passed;
   this does not include visual inspection of an installed HA interface.
+- [x] Checked the Octagon HTTPS read flow and rejection of its untrusted certificate;
+  the exception remained limited to the test.
+- [x] Technically decoded video and audio from a short live-stream sample without
+  changing channels or saving content; subjective playback checks remain pending.
 - [ ] Verify an actual Bonjour announcement including name, HTTP/HTTPS and port;
   confirm setup, repeated announcements and manual setup.
-- [ ] Verify a real DHCP address change: matching MAC, retained identifiers,
-  credentials and TLS; reject different identities and occupied addresses.
-- [ ] Check new icons, disabled signal diagnostics and the FFmpeg repair issue in
-  both interface languages; verify recording artwork and controls on the receiver.
+- [x] Verified a real DHCP address change with explicitly triggered HA handling:
+  matching MAC after GUI restart, retained identifiers, credentials and TLS.
+  Missing MAC correctly blocked adoption beforehand; wrong identity and address
+  conflicts are additionally covered by simulations; see the [report](VALIDATION.en.md#physical-dhcp-address-change-missing-identity-data).
+- [ ] Verify automatic receipt and handling of an actual DHCP announcement
+  in a continuously running HA installation.
+- [x] Checked new icons, disabled signal diagnostics, options dialogs and FFmpeg
+  repair in the real test interface; text and remediation in German and English.
+- [x] Generated and decoded artwork from an existing recording; checked volume,
+  mute, message submission and an owned temporary timer. Verified restoration
+  of the original state and preservation of existing timers/recordings.
 - [ ] Wait for all GitHub CI checks on the intended commit. The separate PR/merge
   and release approvals in the release guide still apply afterwards.
 

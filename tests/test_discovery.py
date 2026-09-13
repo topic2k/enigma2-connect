@@ -91,6 +91,10 @@ async def test_dhcp_preserves_credentials_tls_options_and_ids(hass, entry, recei
         (ConnectionError(), "discovery_failed"),
         ({"info": None}, "discovery_failed"),
         ({"info": {}}, "wrong_device"),
+        (
+            {"info": {"ifaces": [{"name": "wlan0", "mac": None, "ip": "0.0.0.0"}]}},
+            "wrong_device",
+        ),
         ({"info": {"ifaces": [{"mac": "11:22:33:44:55:66"}]}}, "wrong_device"),
     ],
 )

@@ -342,12 +342,23 @@ Vor der Hardware-/Veröffentlichungsfreigabe bleibt folgende Abnahme offen:
   geprüft; Versionen und Umfang in der [Prüfübersicht](VALIDIERUNG.md#aktuelle-lesende-octagon-abnahme).
   Einrichtung, neun Plattformen, Aktualisierung, Duplikatschutz und Entladen bestanden;
   keine Sichtprüfung einer installierten HA-Oberfläche.
+- [x] HTTPS-Leseablauf am Octagon sowie Ablehnung seines nicht vertrauenswürdigen
+  Zertifikats geprüft; die Ausnahme blieb auf den Test begrenzt.
+- [x] Bild und Audio eines kurzen Live-Stream-Ausschnitts technisch dekodiert,
+  ohne Senderwechsel oder gespeicherte Inhalte; subjektive Wiedergabeprüfung offen.
 - [ ] Einen echten Bonjour-Fund einschließlich Name, HTTP/HTTPS und Port prüfen;
   Einrichtung bestätigen, wiederholte Ankündigungen und manuelle Einrichtung prüfen.
-- [ ] Einen echten DHCP-Adresswechsel prüfen: gleiche MAC, erhaltene Kennungen,
-  Anmeldung und TLS; bei falscher Identität oder Adresskonflikt keine Übernahme.
-- [ ] Neue Symbole, deaktivierte Signaldiagnosen und FFmpeg-Reparaturhinweis in
-  beiden Oberflächensprachen prüfen; Aufnahmebilder und Bedienung am Receiver testen.
+- [x] Echten DHCP-Adresswechsel mit gezielt ausgelöstem HA-Verarbeitungsschritt
+  geprüft: nach GUI-Neustart gleiche MAC, erhaltene Kennungen, Anmeldung und TLS.
+  Fehlende MAC sperrte vorher korrekt die Übernahme; falsche Identität und
+  Adresskonflikte sind zusätzlich simuliert geprüft; siehe [Prüfbericht](VALIDIERUNG.md#physischer-dhcp-adresswechsel-fehlende-identitätsdaten).
+- [ ] Automatischen Empfang und Weiterverarbeitung einer echten DHCP-Meldung
+  in einer durchgehend laufenden HA-Installation nachweisen.
+- [x] Neue Symbole, deaktivierte Signaldiagnosen, Optionsdialoge und FFmpeg-Reparatur
+  in der echten Testoberfläche geprüft; Texte und Abhilfe auf Deutsch und Englisch.
+- [x] Aufnahmebild aus einer vorhandenen Datei erzeugt und dekodiert; Lautstärke,
+  Stummschaltung, Meldungsaufruf und eigener temporärer Timer geprüft.
+  Ursprünglicher Zustand und vorhandene Timer/Aufnahmen nachweislich erhalten.
 - [ ] GitHub-CI für den vorgesehenen Commit vollständig grün abwarten. Danach
   gelten die gesonderten PR-/Merge- und Release-Freigaben aus der Release-Anleitung.
 

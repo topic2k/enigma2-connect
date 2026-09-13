@@ -85,8 +85,14 @@ keine passende Ankündigung; Image und Bonjour-/Avahi-Konfiguration sind entsche
 Bei bereits gekoppelten Receivern kann Home Assistant eine durch DHCP erkannte
 neue IP übernehmen. Dafür müssen die bekannte MAC-Adresse und die Identität in
 der OpenWebif-Antwort übereinstimmen. Port, Anmeldung und TLS-Einstellungen bleiben
-erhalten. Bei nicht bestätigter Identität oder fehlender MAC ändere die Adresse
-über **Neu konfigurieren**. Eine andere Ankündigung schaltet HTTPS nicht ab.
+erhalten. Eine andere Ankündigung schaltet HTTPS nicht ab.
+
+Fehlen nach einem Neustart der Netzwerkschnittstelle die Geräteinformationen in
+OpenWebif, kann ein Neustart der Receiver-Benutzeroberfläche (Enigma2/GUI) helfen.
+Wähle dafür einen Zeitpunkt ohne laufende Aufnahme. Sobald die bekannte MAC wieder
+gemeldet wird, kannst du die Adresse bei Bedarf über **Neu konfigurieren** ändern.
+Bei einem über MAC gekoppelten Receiver bleibt auch dieser Weg gesperrt, solange
+die Geräteidentität fehlt oder abweicht.
 
 ### Unterstützte Geräte
 
@@ -94,7 +100,8 @@ Voraussetzung ist die OpenWebif-JSON-API. Markenname oder Enigma2 allein sind ke
 Kompatibilitätsnachweis. Diese Übersicht beschreibt vorhandene Prüfungen vom
 13.09.2026 am damaligen Stand 0.1.0. Zusätzlich bestand die aktuelle lesende
 Abnahme am Octagon: Einrichtung, Entitäten, Aktualisierung, Screenshot und Picon.
-Die frühere Prüfung der Bedienaktionen wurde dabei nicht wiederholt:
+Ergänzend wurden Aufnahmebilder, begrenzte Bedienaktionen und die Adressübernahme
+nach einem tatsächlichen DHCP-Wechsel geprüft:
 
 | Receiver / OpenWebif | Belegter Umfang und Grenze |
 | --- | --- |
@@ -103,9 +110,9 @@ Die frühere Prüfung der Bedienaktionen wurde dabei nicht wiederholt:
 | Andere Enigma2-Receiver / Images | Können mit passender OpenWebif-API funktionieren; noch kein konkreter Hardware-Nachweis. Optionale Daten können fehlen. |
 | Receiver ohne OpenWebif-JSON-API | Nicht unterstützt; eine HTML-Weboberfläche allein reicht nicht aus. |
 
-Die neue Erkennung und automatische Adressänderung sind mit simulierten
-Ankündigungen und echten HA-Konfigurationsflüssen getestet. Die Bestätigung an
-realen Receiver-Ankündigungen steht noch aus. Den genauen Umfang dokumentiert die
+Die neue Erkennung und Adressänderung sind mit gezielt ausgelösten Meldungen und
+echten HA-Konfigurationsflüssen getestet, einschließlich der neuen IP des Octagon.
+Die automatische Erkennung echter Netzwerkmeldungen steht noch aus. Den genauen Umfang dokumentiert die
 [Prüfübersicht](VALIDIERUNG.md#aktuelle-lesende-octagon-abnahme).
 
 ## Den Receiver bedienen

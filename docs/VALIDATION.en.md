@@ -2,10 +2,111 @@
 
 # Verification summary
 
-Checked on **2026-09-13**. Shared development version: **1.1.0-dev.4**.
+Checked on **2026-09-13**. Shared development version: **1.1.0-dev.7**.
 This is a technical report, not release or hardware approval. Version history:
 [changelog](../CHANGELOG.en.md). Reproduction commands:
 [developer guide](DEVELOPMENT.en.md#development-environment-and-checks).
+
+## Physical DHCP address change: missing identity data
+
+**Result after GUI restart: address adoption passed.** OpenWebif once again
+reported the previously captured MAC and new address for `wlan0`. The explicitly
+triggered DHCP handler adopted the address and reloaded the entry over HTTPS.
+All 64 registered entity identifiers, device associations, credentials, port,
+TLS settings and options were preserved; all nine platforms and 17 enabled
+entities were available. Refresh, repeated discovery without another receiver
+request and unloading passed with 13 read requests in total. The existing exception
+for the untrusted certificate remained limited to the isolated test configuration.
+
+The user changed the DHCP assignment on the router and restarted the Octagon's
+network interface. Beforehand, its identity, connection settings and 64 registered
+entities (17 enabled) were captured in an isolated HA instance. OpenWebif responds
+at the new address even before the GUI restart; the local ARP entry confirmed the
+same MAC as before the change. However, repeated `/api/about` responses contained
+only `wlan0` with `mac: null` and `ip: 0.0.0.0`.
+
+DHCP handling was explicitly triggered in an isolated HA instance using the real
+new address and previously captured MAC. Before the GUI restart, it aborted with
+`wrong_device` and did not adopt the address; protection against an unconfirmed
+identity worked correctly. No actual DHCP network message
+was captured. Registrations were reconstructed from the baseline in the test;
+this is not acceptance of a continuously running production HA installation.
+
+OpenWebif obtains adapter data from Enigma2's `iNetwork`; `/api/about` requests
+full information. A stale or incomplete Enigma2 interface list is therefore a
+plausible cause, but remains unconfirmed ([OpenWebif adapter data](https://github.com/E2OpenPlugins/e2openplugin-OpenWebif/blob/master/plugin/controllers/models/info.py),
+[About endpoint](https://github.com/E2OpenPlugins/e2openplugin-OpenWebif/blob/master/plugin/controllers/web.py)).
+The subsequent GUI restart performed by the user restored MAC reporting in this
+attempt. The earlier assumption of a missing LAN adapter was incorrect; OpenWebif
+identifies the interface as `wlan0`. A regression
+test reproduces the actual incomplete response. All **11 discovery tests passed**
+under HA 2026.9.1 / Python 3.14.7. The separate hardware check also confirms that
+the original connection data and registered entity identifiers remain intact
+when adoption is rejected. Local evidence:
+`.work/quality-live/dhcp-baseline.json`, `new-identity.json`,
+`dhcp-before-gui-restart.json` and `dhcp-changed.json`. Credentials are excluded
+from these reports. Another twelve-second Bonjour observation after the GUI
+restart found no matching service (`octagon-discovery-after-restart-Windows.json`).
+Automatic receipt of an actual DHCP announcement in running HA and Bonjour setup
+remain pending. Version **1.1.0-dev.7** updates documentation and version metadata;
+the tested integration code is unchanged.
+
+## Extended hardware and integration checks
+
+On **2026-09-13**, the merged code after reconciling `main` through `640de18`
+passed **269 integration tests** in **465.79 seconds**. Coverage remains
+**99.70% statements**, **97.86% branches** and **99.29% combined**; configuration
+flows achieve 100% in both measurements, and all 23 modules pass the Silver gate.
+The **28 blog-monitor tests** also passed. Additional dependencies used for the
+local UI check are not added to integration requirements or the lockfile.
+
+**HTTPS on the real Octagon:** Strict verification rejects the untrusted
+certificate. Only in the isolated test, `verify_ssl=False` was then used: HTTP
+and HTTPS returned the same hardware identity, and HTTPS setup, all nine
+platforms, refresh, duplicate prevention and unloading passed with 16 read
+requests. This does not establish a trusted certificate chain; production TLS
+settings were not changed.
+
+**Live video/audio:** A sample of roughly 3 MiB from the already selected channel
+was examined only in memory. FFmpeg decoded two H.264 frames at 1920 × 1080 pixels
+and one second of six-channel AC3 audio at 48 kHz. The channel did not change,
+and no content was saved. This verifies technical decoding, not subjective
+picture/audio quality on a TV or speaker, nor HA stream playback.
+
+**Real HA interface:** Using frontend 20260826.6 matching the HA version, the
+Octagon device page, brand artwork, icons and three disabled signal diagnostics
+were visually checked. Options menus and field descriptions display correctly
+in German and English. A deliberately invalid FFmpeg path in the temporary HA
+instance produced the expected repair issue and remediation text in both
+languages. Deselecting the snapshot source through the options dialog reloaded
+the entry; the repairs page then reported no pending repairs. Receiver credentials
+and test configuration stayed local. Production HA settings and receiver control
+states were unchanged. The test interface was subsequently stopped. Evidence:
+`ui-server.log` and `ui-repair-server.log` under `.work/quality-live/`, plus browser
+views inspected in this session. The missing FFmpeg path was a test condition;
+receiver requests and the frontend were real.
+
+**Bonjour:** A further twelve-second observation directly on Windows found no
+HTTP/HTTPS announcement from this receiver. Real Bonjour setup evidence therefore
+remains pending. Physical DHCP testing requires a controlled address change on
+the router; the completed attempt and its identity issue are documented above.
+
+**Recording thumbnail and controls:** The production snapshot path produced a
+fully decodable JPEG at 640 × 360 pixels from an existing recording (17,007 bytes
+after normalization). Transfer was capped at 64 MiB; no image content was saved,
+and the channel and standby state stayed unchanged. Twelve subsequent checks
+with bounded control actions passed: changing and restoring volume, muting
+including repeated identical target states, a three-second screen message, and
+creating, enabling, disabling and removing an owned future zap timer. Volume
+and mute were restored; the six existing timers and seven recordings in the
+non-recursive comparison list remained unchanged. There were no cleanup errors.
+This verifies API controls; the message was not visually confirmed on the TV.
+Evidence: `octagon-recording-image.json` and `controls-results.json` under
+`.work/quality-live/`.
+
+Evidence: `.work/quality-live/integrated-tests.log`, `coverage-integrated.json`,
+`octagon-https.json`, `octagon-stream.json` and `octagon-discovery-Windows.json`.
+Documentation and version metadata advance to **1.1.0-dev.5**.
 
 ## Current read-only Octagon acceptance
 
@@ -34,9 +135,9 @@ No channel, volume, timer, recording or power state was changed.
 
 A twelve-second Bonjour observation from WSL received no matching announcements.
 The observation path means this does not establish that the receiver advertises
-no services; Bonjour evidence remains pending. Also pending: physical DHCP change,
-HTTPS acceptance, live picture/audio playback, recording artwork, control actions
-and visual inspection of the new HA interfaces in both languages.
+no services; Bonjour evidence remains pending. The subsequently completed HTTPS,
+media, control and interface checks are described above. Automatic receipt of
+actual DHCP announcements and subjective picture/audio checks remain pending.
 
 Evidence: `.work/quality-live/octagon-acceptance-dev3.json`, `octagon-images.json`
 and `octagon-discovery.json`. Credentials remain in the local, Git-ignored file

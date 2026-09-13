@@ -4,14 +4,33 @@
 
 ## Inhaltsverzeichnis
 
-- [1.1.0-dev.4](#110-dev4)
+- [1.1.0-dev.7](#110-dev7)
 - [1.0.2](#102)
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 1.1.0-dev.4
+## 1.1.0-dev.7
 
 Unveröffentlichte Entwicklerversion.
+
+- Tatsächlichen DHCP-Adresswechsel am Octagon geprüft: Fehlende MAC-Daten nach
+  dem Schnittstellen-Neustart verhindern die Übernahme erwartungsgemäß. Nach
+  GUI-Neustart bestanden Identitätsprüfung und Adressübernahme mit erhaltenen
+  Kennungen, Anmeldung und HTTPS-Einstellungen. Regressionstest und Bedienhilfe
+  ergänzt; automatischer Empfang der DHCP-Meldung bleibt separat offen.
+
+- Aufnahme-Snapshot und zwölf begrenzte Bedienprüfungen am Octagon bestanden;
+  ursprüngliche Lautstärke, Stummschaltung und vorhandene Timer/Aufnahmen erhalten.
+
+- Markenbilder, Symbole, deaktivierte Signaldiagnosen und Optionsdialoge in der
+  echten HA-Oberfläche geprüft; FFmpeg-Reparaturhinweis und Abhilfe auf Deutsch
+  und Englisch erfolgreich kontrolliert.
+- HTTPS am echten Octagon einschließlich Zertifikatsablehnung und vollständigem
+  HA-Leseablauf geprüft; ein begrenzter Live-Stream-Ausschnitt liefert dekodierbares
+  1080p-Video und Mehrkanalton ohne Senderwechsel. Native Bonjour-Beobachtung,
+  verbleibende Hardware-Grenzen und Remote-Abgleich sind dokumentiert.
+- Neuere Änderungen von `main` einschließlich Blog-Monitor-Korrektur und
+  Optionsdialog-Test übernommen; bestehende Versionshistorie erhalten.
 
 - Lesende Hardware-Abnahme am Octagon SF8008 mit HA 2026.9.1 nachgewiesen:
   neun Plattformen, aktivierte Entitäten verfügbar, Signaldiagnosen deaktiviert,

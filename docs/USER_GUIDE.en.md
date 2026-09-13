@@ -80,17 +80,21 @@ the image and its Bonjour/Avahi configuration determine this.
 
 For paired receivers, Home Assistant can adopt a new IP detected through DHCP.
 The known MAC address must match the identity returned by OpenWebif. Port,
-authentication and TLS settings are preserved. If identity cannot be confirmed
-or the receiver has no MAC identity, change its address through **Reconfigure**.
-Another announcement never disables HTTPS.
+authentication and TLS settings are preserved. Another announcement never disables HTTPS.
+
+If OpenWebif device information is missing after restarting the network interface,
+restarting the receiver's user interface (Enigma2/GUI) may help. Choose a time with
+no recording in progress. Once the known MAC is reported again, you can change
+the address through **Reconfigure** if needed. For an entry paired by MAC, this
+also remains blocked while its hardware identity is missing or different.
 
 ### Supported devices
 
 The OpenWebif JSON API is required. Brand names or Enigma2 alone do not prove
 compatibility. These existing checks took place on 13 September 2026 against
 version 0.1.0. In addition, current read-only acceptance passed on the Octagon:
-setup, entities, refresh, screenshot and picon. The earlier control-action checks
-were not repeated in this run:
+setup, entities, refresh, screenshot and picon. Additional checks covered recording
+artwork, bounded control actions and address adoption after an actual DHCP change:
 
 | Receiver / OpenWebif | Verified scope and limitation |
 | --- | --- |
@@ -99,9 +103,10 @@ were not repeated in this run:
 | Other Enigma2 receivers / images | May work with a compatible OpenWebif API; no specific hardware evidence yet. Optional data may be absent. |
 | Receivers without the OpenWebif JSON API | Unsupported; an HTML web interface alone is insufficient. |
 
-New discovery and address updates have been tested with simulated announcements
-and real HA configuration flows. Verification with actual receiver announcements
-is still pending. See the [validation overview](VALIDATION.en.md#current-read-only-octagon-acceptance)
+New discovery and address updates have been tested with explicitly triggered
+announcements and real HA configuration flows, including the Octagon's new IP.
+Automatic discovery of actual network announcements remains pending.
+See the [validation overview](VALIDATION.en.md#current-read-only-octagon-acceptance)
 for the precise hardware scope.
 
 ## Control your receiver
