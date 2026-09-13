@@ -4,8 +4,17 @@
 
 ## Inhaltsverzeichnis
 
+- [1.0.2](#102)
 - [1.0.1](#101)
 - [1.0.0](#100)
+
+## 1.0.2
+
+Unveröffentlicht.
+
+- Der Blog-Workflow verwendet Gemini 3.8 Flash mit niedriger Denkstufe und
+  den aktuellen Anfrageparametern. Der erste echte Aufruf von Gemini 2.5 Flash
+  hatte HTTP 404 geliefert. Wochenrhythmus und feste Anfragegrenzen bleiben erhalten.
 
 ## 1.0.1
 

@@ -7,6 +7,16 @@ This is a technical report, not release or hardware approval. Version history:
 [changelog](../CHANGELOG.en.md). Reproduction commands:
 [developer guide](DEVELOPMENT.en.md#development-environment-and-checks).
 
+## API correction 1.0.2
+
+The first [live trial](https://github.com/topic2k/enigma2-connect/actions/runs/34765832835)
+reached Google using the repository secret but received HTTP 404 for Gemini 2.5
+Flash. The workflow therefore uses Gemini 3.8 Flash and `thinkingLevel: low`
+without the old temperature parameter. Google lists free input and output for
+this model in its [Free Tier](https://ai.google.dev/gemini-api/docs/pricing#gemini-3.8-flash).
+The 28 offline tests also verify the model path and request parameters. Actual
+API success will be checked again in a GitHub Actions trial.
+
 ## Blog workflow 1.0.1
 
 On 2026-09-13, the isolated workflow based on `main` / `1.0.0` passed 28 offline

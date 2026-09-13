@@ -17,7 +17,7 @@ try:
 except ImportError:  # Direct invocation from the repository root.
     from ha_blog_monitor import DEFAULT_SINCE, UPSTREAM, github_request, inline, read_posts
 
-MODEL = "gemini-2.5-flash"
+MODEL = "gemini-3.8-flash"
 MAX_POSTS = 5
 MAX_INPUT_BYTES = 400_000
 MAX_OUTPUT_TOKENS = 8192
@@ -182,9 +182,8 @@ def generate(prompt, api_key):
         "systemInstruction": {"parts": [{"text": INSTRUCTIONS}]},
         "contents": [{"role": "user", "parts": [{"text": prompt}]}],
         "generationConfig": {
-            "temperature": 0,
             "maxOutputTokens": MAX_OUTPUT_TOKENS,
-            "thinkingConfig": {"thinkingBudget": 1024},
+            "thinkingConfig": {"thinkingLevel": "LOW"},
             "responseMimeType": "application/json",
             "responseJsonSchema": SCHEMA,
         },
