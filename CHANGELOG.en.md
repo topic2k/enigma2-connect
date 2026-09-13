@@ -4,14 +4,19 @@
 
 ## Contents
 
-- [1.1.0-dev.9](#110-dev9)
+- [1.1.0-dev.10](#110-dev10)
 - [1.0.2](#102)
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 1.1.0-dev.9
+## 1.1.0-dev.10
 
 Unreleased development version.
+
+- Replaced vulnerable transitive test dependency `cryptography 48.0.1` with
+  `50.0.1` (CVE-2026-69247), together with compatible `pyOpenSSL 26.4.0`.
+  The temporary uv override for Home Assistant's exact pins is documented and
+  affects only the development/test environment.
 
 - Migrated GitHub Actions to Node.js 24: `checkout@v7`, `setup-uv@v10.1.0` and
   `upload-artifact@v7` across all affected workflows, replacing the deprecated

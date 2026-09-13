@@ -1,6 +1,6 @@
 [project]
 name = "enigma2-connect"
-version = "1.1.0-dev.9"
+version = "1.1.0-dev.10"
 description = "Enigma2 Connect: Home Assistant integration for Enigma2 receivers using OpenWebif"
 requires-python = ">=3.14.2"
 license = "Apache-2.0"
@@ -19,6 +19,15 @@ asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
 testpaths = ["tests"]
 addopts = "-q"
+
+[tool.uv]
+# Test-environment security override for GHSA-g6cj-pr64-35w5.
+# HA 2026.9.1/2026.9.2 pin cryptography 48.0.1 and pyOpenSSL 26.2.0.
+# Remove when the upstream test stack allows patched cryptography (>=50).
+override-dependencies = [
+    "cryptography==50.0.1",
+    "pyopenssl==26.4.0",
+]
 
 [tool.ruff]
 target-version = "py314"

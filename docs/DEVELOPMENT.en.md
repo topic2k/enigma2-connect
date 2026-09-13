@@ -70,6 +70,20 @@ resolution. After a version change, run `uv lock --offline` and verify that only
 the expected project metadata changed. Do not update dependencies incidentally.
 A fresh environment needs access to package sources for its first sync.
 
+**Temporary security override:** Home Assistant 2026.9.1 and 2026.9.2 pin
+`cryptography==48.0.1` and `pyOpenSSL==26.2.0`. To address
+[CVE-2026-69247](https://github.com/pyca/cryptography/security/advisories/GHSA-g6cj-pr64-35w5),
+`[tool.uv].override-dependencies` selects `cryptography==50.0.1` and
+`pyopenssl==26.4.0` in the development environment. The second upgrade is necessary
+because pyOpenSSL 26.2.0 requires cryptography below 49, while 26.4.0 supports 50.
+This deliberately differs from Home Assistant's package metadata and is checked
+by our integration tests; it is not a general HA compatibility certification.
+When updating the HA test stack, remove the override once its requirements allow
+patched cryptography from version 50, then recheck the lockfile and tests.
+The custom integration does not install these packages itself; its manifest
+requirements remain empty. Production HA installations retain their own package
+versions, which this repository change does not update.
+
 Python tests use the real Home Assistant framework with simulated receiver
 responses and transports. They cover configuration, device targeting, platforms,
 errors, calendars, recordings, media sources and translations. JavaScript tests

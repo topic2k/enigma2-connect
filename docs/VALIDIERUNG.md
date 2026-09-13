@@ -2,10 +2,35 @@
 
 # Prüfübersicht
 
-Prüfdatum: **13.09.2026**. Gemeinsamer Entwicklungsstand: **1.1.0-dev.9**.
+Prüfdatum: **13.09.2026**. Gemeinsamer Entwicklungsstand: **1.1.0-dev.10**.
 Dies ist ein technischer Prüfbericht, keine Release- oder Hardwarefreigabe.
 Versionshistorie: [Changelog](../CHANGELOG.md). Reproduktionsbefehle:
 [Entwicklerdokumentation](ENTWICKLUNG.md#entwicklungsumgebung-und-prüfungen).
+
+## Dependabot: cryptography und CVE-2026-69247
+
+[Dependabot-Hinweis 1](https://github.com/topic2k/enigma2-connect/security/dependabot/1)
+meldet `cryptography 48.0.1` in `uv.lock`. Laut
+[Herstellerhinweis](https://github.com/pyca/cryptography/security/advisories/GHSA-g6cj-pr64-35w5)
+sind PKCS#7-EnvelopedData-Entschlüsselungsfunktionen ab 44 und vor 50 betroffen;
+Version 50 behebt unterscheidbare Fehler und Laufzeiten bei der RSA-Schlüsselentschlüsselung.
+Die Suche im Integrationscode fand keinen Aufruf dieser Funktionen. Das ist
+keine Aussage über sämtliche Funktionen einer produktiven Home-Assistant-Installation.
+
+Die Abhängigkeit kommt hier über die Entwicklungsgruppe und das HA-Testpaket.
+Sowohl HA 2026.9.1 als auch das geprüfte aktuelle 2026.9.2 verlangen weiterhin
+cryptography 48.0.1 und pyOpenSSL 26.2.0. Die dokumentierte uv-Ausnahme ersetzt
+diese im Teststack durch **cryptography 50.0.1** und **pyOpenSSL 26.4.0**.
+Letzteres erlaubt laut Paketmetadaten cryptography ab 49 und unter 51.
+Alle übrigen Paketdatensätze bleiben gegenüber `80f9eda` unverändert; nur die
+beiden Pakete und die Projektversion wurden in der Lockdatei angepasst.
+Die Ausnahme gilt für Entwicklung/CI, nicht als Änderung an einer installierten
+HA-Laufzeit. Die Integrationsanforderungen im Manifest bleiben leer.
+
+Die Prüfung verwendet eine separate Umgebung unter `.work/security-env`; frühere
+Receiver-Nachweise beziehen sich weiterhin auf den damaligen Paketstand.
+Der Dependabot-Hinweis auf dem Standardbranch bleibt bis zur Übernahme des Fixes
+nach `main` offen; er wird nicht manuell als Fehlalarm geschlossen.
 
 ## GitHub-CI und FFmpeg-Voraussetzung
 

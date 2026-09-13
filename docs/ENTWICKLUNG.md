@@ -72,6 +72,20 @@ prüfen, dass nur die erwarteten Projektmetadaten geändert wurden. Keine
 Abhängigkeiten nebenbei aktualisieren. Eine frische Umgebung benötigt beim
 ersten Synchronisieren Zugriff auf die Paketquellen.
 
+**Befristete Sicherheitsausnahme:** Home Assistant 2026.9.1 und 2026.9.2 binden
+`cryptography==48.0.1` und `pyOpenSSL==26.2.0`. Wegen
+[CVE-2026-69247](https://github.com/pyca/cryptography/security/advisories/GHSA-g6cj-pr64-35w5)
+setzt `[tool.uv].override-dependencies` in der Entwicklungsumgebung stattdessen
+`cryptography==50.0.1` und `pyopenssl==26.4.0`. Die zweite Anhebung ist erforderlich,
+weil pyOpenSSL 26.2.0 nur cryptography unter 49 erlaubt; 26.4.0 unterstützt 50.
+Dies weicht bewusst von Home Assistants Paketmetadaten ab und wird mit unseren
+Integrationstests geprüft, nicht als allgemeine HA-Freigabe behauptet. Bei einem
+späteren Update des HA-Teststacks die Ausnahme entfernen, sobald dessen Vorgaben
+eine reparierte cryptography-Version ab 50 zulassen, und Lockdatei/Tests erneut prüfen.
+Die Custom-Integration installiert diese Pakete nicht selbst; ihre Manifest-
+Anforderungen bleiben leer. Für eine produktive HA-Installation gelten deren
+eigene Paketversionen, die durch diese Repository-Änderung nicht aktualisiert werden.
+
 Die Python-Tests verwenden das echte Home-Assistant-Framework; Receiver-Antworten
 und Transporte sind simuliert. Sie prüfen unter anderem Config Flow,
 Gerätezuordnung, Plattformen, Fehlerfälle, Kalender, Aufnahmen, Medienquelle und

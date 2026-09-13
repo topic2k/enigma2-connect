@@ -2,10 +2,34 @@
 
 # Verification summary
 
-Checked on **2026-09-13**. Shared development version: **1.1.0-dev.9**.
+Checked on **2026-09-13**. Shared development version: **1.1.0-dev.10**.
 This is a technical report, not release or hardware approval. Version history:
 [changelog](../CHANGELOG.en.md). Reproduction commands:
 [developer guide](DEVELOPMENT.en.md#development-environment-and-checks).
+
+## Dependabot: cryptography and CVE-2026-69247
+
+[Dependabot alert 1](https://github.com/topic2k/enigma2-connect/security/dependabot/1)
+reports `cryptography 48.0.1` in `uv.lock`. According to the
+[upstream advisory](https://github.com/pyca/cryptography/security/advisories/GHSA-g6cj-pr64-35w5),
+PKCS#7 EnvelopedData decryption functions from version 44 and before 50 are
+affected; version 50 fixes distinguishable errors and timing during RSA key
+decryption. Searching the integration code found no calls to these functions.
+This does not assess every feature of a production Home Assistant installation.
+
+Here, the dependency enters through the development group and HA test package.
+Both HA 2026.9.1 and the checked current 2026.9.2 still require cryptography 48.0.1
+and pyOpenSSL 26.2.0. The documented uv override replaces these in the test stack
+with **cryptography 50.0.1** and **pyOpenSSL 26.4.0**. The latter allows cryptography
+from 49 and below 51 according to its package metadata. All other package records
+remain unchanged from `80f9eda`; only these two packages and the project version
+changed in the lockfile. The override applies to development/CI, not an installed
+HA runtime. Integration requirements in the manifest remain empty.
+
+Verification uses a separate environment under `.work/security-env`; earlier
+receiver evidence still applies to its original package versions. The Dependabot
+alert on the default branch remains open until the fix is merged into `main`;
+it is not manually dismissed as a false positive.
 
 ## GitHub CI and the FFmpeg prerequisite
 

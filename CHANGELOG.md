@@ -4,14 +4,19 @@
 
 ## Inhaltsverzeichnis
 
-- [1.1.0-dev.9](#110-dev9)
+- [1.1.0-dev.10](#110-dev10)
 - [1.0.2](#102)
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 1.1.0-dev.9
+## 1.1.0-dev.10
 
 Unveröffentlichte Entwicklerversion.
+
+- Verwundbare transitive Testabhängigkeit `cryptography 48.0.1` durch `50.0.1`
+  ersetzt (CVE-2026-69247); `pyOpenSSL` auf das passende `26.4.0` angehoben.
+  Die befristete uv-Ausnahme für Home Assistants feste Versionsvorgaben ist
+  dokumentiert und betrifft ausschließlich die Entwicklungs-/Testumgebung.
 
 - GitHub Actions auf Node.js 24 umgestellt: `checkout@v7`, `setup-uv@v10.1.0` und
   `upload-artifact@v7` in allen betroffenen Workflows. Die veralteten
