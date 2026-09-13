@@ -1,6 +1,19 @@
 # SPDX-License-Identifier: Apache-2.0
 """Recording artwork with throttled preparation and a bounded private cache."""
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Literal, overload
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
+    from typing import Any
+
+    from homeassistant.core import HomeAssistant
+
+    from .coordinator import EnigmaConfigEntry, EnigmaCoordinator
+    from .models import JsonObject, Snapshot
+
 import asyncio
 import json
 from collections import OrderedDict
@@ -8,15 +21,17 @@ from contextlib import suppress
 from hashlib import sha256
 from io import BytesIO
 from pathlib import Path
+from shutil import which
 from string import Formatter
 from time import time
 from urllib.parse import quote
 
 import aiohttp
 from aiohttp import web
-from homeassistant.components.http import HomeAssistantView
 from homeassistant.config_entries import ConfigEntryState
+from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.http import HomeAssistantView
 from PIL import Image, UnidentifiedImageError
 from yarl import URL
 
@@ -40,7 +55,28 @@ BACKGROUND_DELAY = 5
 FALLBACK = b'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 90"><rect width="160" height="90" fill="#263238"/><path d="M62 25v40l38-20z" fill="#b0bec5"/></svg>'
 
 
-def custom_image_url(template, movie):
+async def async_check_snapshot_support(hass: HomeAssistant, entry: EnigmaConfigEntry) -> None:
+    """Report a missing decoder with concrete recovery steps, without blocking I/O."""
+    issue_id = f"{entry.entry_id}_snapshot_binary"
+    manager = hass.data.get("ffmpeg")
+    binary = manager.binary if manager else "ffmpeg"
+    if "snapshot" in entry.options.get(CONF_IMAGE_SOURCES, DEFAULT_IMAGE_SOURCES) and not (
+        await hass.async_add_executor_job(which, binary)
+    ):
+        ir.async_create_issue(
+            hass,
+            DOMAIN,
+            issue_id,
+            is_fixable=False,
+            severity=ir.IssueSeverity.WARNING,
+            translation_key="snapshot_binary",
+            translation_placeholders={"receiver": entry.title},
+        )
+    else:
+        ir.async_delete_issue(hass, DOMAIN, issue_id)
+
+
+def custom_image_url(template: str, movie: JsonObject) -> URL:
     """Expand encoded values, never interpret a URL as code or expose receiver paths."""
     values = {
         "title": movie.get("eventname") or recording_path(movie).stem,
@@ -58,7 +94,7 @@ def custom_image_url(template, movie):
     return result
 
 
-def image_version(entry, movie):
+def image_version(entry: EnigmaConfigEntry, movie: JsonObject) -> str:
     settings = {
         key: entry.options.get(key, default)
         for key, default in (
@@ -81,7 +117,7 @@ def image_version(entry, movie):
     return sha256(json.dumps([settings, metadata], sort_keys=True).encode()).hexdigest()[:24]
 
 
-def recording_thumbnail(entry, movie):
+def recording_thumbnail(entry: EnigmaConfigEntry, movie: JsonObject) -> str | None:
     if not entry.options.get(CONF_IMAGE_SOURCES, DEFAULT_IMAGE_SOURCES):
         return None
     digest = sha256(movie["serviceref"].encode()).hexdigest()
@@ -90,7 +126,7 @@ def recording_thumbnail(entry, movie):
     )
 
 
-def validate_image_options(options):
+def validate_image_options(options: Mapping[str, Any]) -> dict[str, str]:
     errors = {}
     selected = options.get(CONF_IMAGE_SOURCES, DEFAULT_IMAGE_SOURCES)
     for source, field in (("tmdb", CONF_TMDB_KEY), ("omdb", CONF_OMDB_KEY)):
@@ -110,7 +146,7 @@ def validate_image_options(options):
     return errors
 
 
-def normalize_image(content):
+def normalize_image(content: bytes) -> bytes:
     """Bound decoded dimensions and store only small JPEGs, never remote active content."""
     with Image.open(BytesIO(content)) as image:
         if image.format not in ("JPEG", "PNG", "WEBP") or image.width * image.height > 20_000_000:
@@ -122,27 +158,27 @@ def normalize_image(content):
 
 
 class RecordingImages:
-    def __init__(self, hass, coordinator):
+    def __init__(self, hass: HomeAssistant, coordinator: EnigmaCoordinator) -> None:
         self.hass = hass
         self.coordinator = coordinator
         self.cache = Path(
             hass.config.path(".storage", f"{DOMAIN}_thumbnails", coordinator.entry.entry_id)
         )
-        self._pending = {}
-        self._failed = OrderedDict()
+        self._pending: dict[str, asyncio.Task[bytes | None]] = {}
+        self._failed: OrderedDict[str, float] = OrderedDict()
         self._lock = asyncio.Lock()
-        self._queue = OrderedDict()
-        self._prepared = {}
-        self._worker = None
+        self._queue: OrderedDict[str, JsonObject] = OrderedDict()
+        self._prepared: dict[str, float] = {}
+        self._worker: asyncio.Task[None] | None = None
         self._started = False
         self._closed = False
-        self._snapshot = None
+        self._snapshot: Snapshot | None = None
 
-    def _image_key(self, movie):
+    def _image_key(self, movie: JsonObject) -> str:
         digest = sha256(movie["serviceref"].encode()).hexdigest()
         return f"{digest}-{image_version(self.coordinator.entry, movie)}"
 
-    def _snapshot_ready(self, movie):
+    def _snapshot_ready(self, movie: JsonObject) -> bool:
         """Do not repeatedly extract midpoint frames from a still-growing recording."""
         snapshot = self._snapshot
         if snapshot is None:
@@ -173,12 +209,12 @@ class RecordingImages:
             )
         return True
 
-    def async_start(self):
+    def async_start(self) -> None:
         """Start after platform setup; never hold integration startup for artwork."""
         self._started = True
         self.async_catalog_updated(self.coordinator.data)
 
-    def async_catalog_updated(self, snapshot):
+    def async_catalog_updated(self, snapshot: Snapshot) -> None:
         """Reconcile on existing catalog polls, including unchanged lists and expiry."""
         self._snapshot = snapshot
         options = self.coordinator.entry.options
@@ -219,7 +255,7 @@ class RecordingImages:
                 self._prepare_catalog(), f"{DOMAIN} prepare recording artwork", eager_start=False
             )
 
-    def _cache_index(self):
+    def _cache_index(self) -> dict[str, float]:
         try:
             return {
                 file.stem: file.stat().st_mtime + CACHE_TTL for file in self.cache.glob("*.jpg")
@@ -227,7 +263,7 @@ class RecordingImages:
         except OSError:
             return {}
 
-    async def _prepare_catalog(self):
+    async def _prepare_catalog(self) -> None:
         try:
             cached = await self.hass.async_add_executor_job(self._cache_index)
             self._prepared.update(
@@ -260,7 +296,7 @@ class RecordingImages:
         finally:
             self._worker = None
 
-    def _read_cache(self, key):
+    def _read_cache(self, key: str) -> bytes | None:
         path = self.cache / f"{key}.jpg"
         try:
             if time() - path.stat().st_mtime < CACHE_TTL:
@@ -269,7 +305,7 @@ class RecordingImages:
             pass
         return None
 
-    def _write_cache(self, key, content):
+    def _write_cache(self, key: str, content: bytes) -> None:
         self.cache.mkdir(parents=True, exist_ok=True)
         path = self.cache / f"{key}.jpg"
         temporary = path.with_suffix(".tmp")
@@ -281,7 +317,7 @@ class RecordingImages:
         for file in files[CACHE_LIMIT:]:
             file.unlink(missing_ok=True)
 
-    async def async_close(self):
+    async def async_close(self) -> None:
         self._closed = True
         self._queue.clear()
         worker = self._worker
@@ -293,7 +329,7 @@ class RecordingImages:
             *([worker] if worker else []), *list(self._pending.values()), return_exceptions=True
         )
 
-    async def async_image(self, movie):
+    async def async_image(self, movie: JsonObject) -> bytes | None:
         entry = self.coordinator.entry
         if self._closed or not entry.options.get(CONF_IMAGE_SOURCES, DEFAULT_IMAGE_SOURCES):
             return None
@@ -310,7 +346,7 @@ class RecordingImages:
         task = self._pending[key]
         return await asyncio.shield(task)
 
-    async def _generate(self, key, movie):
+    async def _generate(self, key: str, movie: JsonObject) -> bytes | None:
         if cached := await self.hass.async_add_executor_job(self._read_cache, key):
             return cached
         async with self._lock:
@@ -341,7 +377,27 @@ class RecordingImages:
                 self._failed.popitem(last=False)
         return None
 
-    async def _fetch(self, url, *, params=None, json_response=False):
+    @overload
+    async def _fetch(
+        self,
+        url: str | URL,
+        *,
+        params: dict[str, Any] | None = None,
+        json_response: Literal[False] = False,
+    ) -> bytes: ...
+
+    @overload
+    async def _fetch(
+        self,
+        url: str | URL,
+        *,
+        params: dict[str, Any] | None = None,
+        json_response: Literal[True],
+    ) -> Any: ...
+
+    async def _fetch(
+        self, url: str | URL, *, params: dict[str, Any] | None = None, json_response: bool = False
+    ) -> Any:
         url = URL(url)
         if url.scheme not in ("https", "http") or not url.host or url.user is not None:
             raise ValueError("Unsupported image URL")
@@ -360,7 +416,9 @@ class RecordingImages:
                     raise ValueError("Image response too large")
             return json.loads(content) if json_response else bytes(content)
 
-    async def _from_source(self, source, movie, options):
+    async def _from_source(
+        self, source: str, movie: JsonObject, options: Mapping[str, Any]
+    ) -> bytes | None:
         title = movie.get("eventname") or recording_path(movie).stem
         if source == "custom":
             return await self._fetch(custom_image_url(options.get(CONF_IMAGE_URL, ""), movie))
@@ -424,11 +482,13 @@ class RecordingThumbnailView(HomeAssistantView):
     name = f"api:{DOMAIN}:recording_thumbnail"
     requires_auth = True
 
-    def __init__(self, hass):
+    def __init__(self, hass: HomeAssistant) -> None:
         self.hass = hass
 
-    async def get(self, request, entry_id, digest, version):
-        entry = self.hass.config_entries.async_get_entry(entry_id)
+    async def get(
+        self, request: web.Request, entry_id: str, digest: str, version: str
+    ) -> web.Response:
+        entry: EnigmaConfigEntry | None = self.hass.config_entries.async_get_entry(entry_id)
         if not entry or entry.domain != DOMAIN or entry.state is not ConfigEntryState.LOADED:
             raise web.HTTPNotFound()
         coordinator = entry.runtime_data

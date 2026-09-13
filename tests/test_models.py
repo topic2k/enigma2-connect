@@ -8,9 +8,22 @@ from custom_components.enigma2_connect.models import (
     boolean,
     identity,
     number,
+    picon_candidates,
     services,
+    signal_snr_db,
     timer_range,
 )
+
+
+def test_malformed_optional_metadata_is_ignored():
+    assert signal_snr_db(None) is None
+    assert identity({"ifaces": [None, {}, {"mac": "00:00:00:00:00:00"}]}) is None
+    assert services([None, [1, "invalid"], ["ref", ""], {}, ["only-one"]]) == {}
+    assert ReceiverState.parse({"inStandby": False}, {"next": ["invalid"]}).next_title is None
+    assert picon_candidates("1:0:0:0:0:0:0:0:0:0:/recording.ts", "***") == [
+        "/picon/starstarstar.png"
+    ]
+    assert picon_candidates("unknown", "---") == []
 
 
 @pytest.mark.parametrize(

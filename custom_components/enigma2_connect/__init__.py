@@ -1,16 +1,24 @@
 # SPDX-License-Identifier: Apache-2.0
 """Enigma2 Connect: a local OpenWebif integration."""
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from typing import Any
+
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import config_validation as cv
+from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
 
 from .api import OpenWebifClient, power_command_middleware
 from .channel_media import ChannelPiconView
 from .const import DEFAULT_INTERVAL, DOMAIN
 from .coordinator import EnigmaConfigEntry, EnigmaCoordinator
-from .recording_images import RecordingThumbnailView
+from .recording_images import RecordingThumbnailView, async_check_snapshot_support
 from .services import register_services
 
 PLATFORMS = [
@@ -27,7 +35,7 @@ PLATFORMS = [
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 
-async def async_setup(hass: HomeAssistant, config: dict) -> bool:
+async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:
     register_services(hass)
     hass.http.register_view(RecordingThumbnailView(hass))
     hass.http.register_view(ChannelPiconView(hass))
@@ -50,6 +58,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: EnigmaConfigEntry) -> bo
     )
     await coordinator.async_config_entry_first_refresh()
     entry.runtime_data = coordinator
+    await async_check_snapshot_support(hass, entry)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     coordinator.recording_images.async_start()
     return True
@@ -60,3 +69,8 @@ async def async_unload_entry(hass: HomeAssistant, entry: EnigmaConfigEntry) -> b
     if unloaded:
         await entry.runtime_data.recording_images.async_close()
     return unloaded
+
+
+async def async_remove_entry(hass: HomeAssistant, entry: EnigmaConfigEntry) -> None:
+    """Discard the receiver-specific repair when its configuration is removed."""
+    ir.async_delete_issue(hass, DOMAIN, f"{entry.entry_id}_snapshot_binary")

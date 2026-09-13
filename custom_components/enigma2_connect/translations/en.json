@@ -11,6 +11,14 @@
           "password": "Password",
           "use_https": "Use HTTPS",
           "verify_ssl": "Verify TLS certificate"
+        },
+        "data_description": {
+          "host": "Hostname or IP address only, without http://, https://, port or path.",
+          "port": "Use the port configured in OpenWebif; usually 80 for HTTP or 443 for HTTPS.",
+          "username": "Leave empty if OpenWebif does not require authentication.",
+          "password": "OpenWebif password. Leave empty if authentication is disabled.",
+          "use_https": "Enable only if OpenWebif is configured to accept HTTPS connections.",
+          "verify_ssl": "Verify the HTTPS certificate. Disable only for a trusted receiver with a self-signed certificate."
         }
       },
       "reauth_confirm": {
@@ -22,6 +30,14 @@
           "password": "Password",
           "use_https": "Use HTTPS",
           "verify_ssl": "Verify TLS certificate"
+        },
+        "data_description": {
+          "host": "Hostname or IP address only, without http://, https://, port or path.",
+          "port": "Use the port configured in OpenWebif; usually 80 for HTTP or 443 for HTTPS.",
+          "username": "Leave empty if OpenWebif does not require authentication.",
+          "password": "OpenWebif password. Leave empty if authentication is disabled.",
+          "use_https": "Enable only if OpenWebif is configured to accept HTTPS connections.",
+          "verify_ssl": "Verify the HTTPS certificate. Disable only for a trusted receiver with a self-signed certificate."
         }
       },
       "reconfigure": {
@@ -33,6 +49,14 @@
           "password": "Password",
           "use_https": "Use HTTPS",
           "verify_ssl": "Verify TLS certificate"
+        },
+        "data_description": {
+          "host": "Hostname or IP address only, without http://, https://, port or path.",
+          "port": "Use the port configured in OpenWebif; usually 80 for HTTP or 443 for HTTPS.",
+          "username": "Leave empty if OpenWebif does not require authentication.",
+          "password": "OpenWebif password. Leave empty if authentication is disabled.",
+          "use_https": "Enable only if OpenWebif is configured to accept HTTPS connections.",
+          "verify_ssl": "Verify the HTTPS certificate. Disable only for a trusted receiver with a self-signed certificate."
         }
       }
     },
@@ -46,8 +70,11 @@
       "already_configured": "Receiver already configured.",
       "wrong_device": "This is a different receiver.",
       "reauth_successful": "Authentication updated.",
-      "reconfigure_successful": "Configuration updated."
-    }
+      "reconfigure_successful": "Configuration updated.",
+      "discovery_failed": "The new address could not be verified. The saved connection is unchanged.",
+      "not_registered": "This receiver is not configured. Add it through Enigma2 Connect."
+    },
+    "flow_title": "OpenWebif ({host})"
   },
   "options": {
     "error": {
@@ -541,5 +568,11 @@
     "recordings": "Enigma2 recordings",
     "recording": "Recording",
     "channels": "Channels"
+  },
+  "issues": {
+    "snapshot_binary": {
+      "title": "FFmpeg is missing for recording thumbnails",
+      "description": "Recording thumbnails for {receiver} use snapshots, but the FFmpeg executable was not found. Install FFmpeg in the Home Assistant runtime or correct its configured path, then reload Enigma2 Connect. Alternatively, open Receiver settings and deselect **Snapshot from recording** or choose another source. Receiver controls remain available."
+    }
   }
 }

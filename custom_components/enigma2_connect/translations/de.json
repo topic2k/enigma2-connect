@@ -11,6 +11,14 @@
           "password": "Passwort",
           "use_https": "HTTPS verwenden",
           "verify_ssl": "TLS-Zertifikat prüfen"
+        },
+        "data_description": {
+          "host": "Nur Hostname oder IP-Adresse, ohne http://, https://, Port oder Pfad.",
+          "port": "Port aus den OpenWebif-Einstellungen; üblicherweise 80 für HTTP oder 443 für HTTPS.",
+          "username": "Leer lassen, wenn OpenWebif keine Anmeldung verlangt.",
+          "password": "OpenWebif-Passwort. Leer lassen, wenn keine Anmeldung erforderlich ist.",
+          "use_https": "Nur aktivieren, wenn OpenWebif für HTTPS-Verbindungen eingerichtet ist.",
+          "verify_ssl": "HTTPS-Zertifikat prüfen. Nur bei einem vertrauenswürdigen Receiver mit selbstsigniertem Zertifikat deaktivieren."
         }
       },
       "reauth_confirm": {
@@ -22,6 +30,14 @@
           "password": "Passwort",
           "use_https": "HTTPS verwenden",
           "verify_ssl": "TLS-Zertifikat prüfen"
+        },
+        "data_description": {
+          "host": "Nur Hostname oder IP-Adresse, ohne http://, https://, Port oder Pfad.",
+          "port": "Port aus den OpenWebif-Einstellungen; üblicherweise 80 für HTTP oder 443 für HTTPS.",
+          "username": "Leer lassen, wenn OpenWebif keine Anmeldung verlangt.",
+          "password": "OpenWebif-Passwort. Leer lassen, wenn keine Anmeldung erforderlich ist.",
+          "use_https": "Nur aktivieren, wenn OpenWebif für HTTPS-Verbindungen eingerichtet ist.",
+          "verify_ssl": "HTTPS-Zertifikat prüfen. Nur bei einem vertrauenswürdigen Receiver mit selbstsigniertem Zertifikat deaktivieren."
         }
       },
       "reconfigure": {
@@ -33,6 +49,14 @@
           "password": "Passwort",
           "use_https": "HTTPS verwenden",
           "verify_ssl": "TLS-Zertifikat prüfen"
+        },
+        "data_description": {
+          "host": "Nur Hostname oder IP-Adresse, ohne http://, https://, Port oder Pfad.",
+          "port": "Port aus den OpenWebif-Einstellungen; üblicherweise 80 für HTTP oder 443 für HTTPS.",
+          "username": "Leer lassen, wenn OpenWebif keine Anmeldung verlangt.",
+          "password": "OpenWebif-Passwort. Leer lassen, wenn keine Anmeldung erforderlich ist.",
+          "use_https": "Nur aktivieren, wenn OpenWebif für HTTPS-Verbindungen eingerichtet ist.",
+          "verify_ssl": "HTTPS-Zertifikat prüfen. Nur bei einem vertrauenswürdigen Receiver mit selbstsigniertem Zertifikat deaktivieren."
         }
       }
     },
@@ -46,8 +70,11 @@
       "already_configured": "Receiver bereits eingerichtet.",
       "wrong_device": "Dies ist ein anderer Receiver.",
       "reauth_successful": "Anmeldung aktualisiert.",
-      "reconfigure_successful": "Konfiguration aktualisiert."
-    }
+      "reconfigure_successful": "Konfiguration aktualisiert.",
+      "discovery_failed": "Die neue Adresse konnte nicht bestätigt werden. Die gespeicherte Verbindung bleibt erhalten.",
+      "not_registered": "Dieser Receiver ist noch nicht eingerichtet. Füge ihn über Enigma2 Connect hinzu."
+    },
+    "flow_title": "OpenWebif ({host})"
   },
   "options": {
     "error": {
@@ -541,5 +568,11 @@
     "recordings": "Enigma2-Aufnahmen",
     "recording": "Aufnahme",
     "channels": "Sender"
+  },
+  "issues": {
+    "snapshot_binary": {
+      "title": "FFmpeg für Aufnahmebilder fehlt",
+      "description": "Für die Aufnahmebilder von {receiver} ist FFmpeg als Bildquelle ausgewählt, aber das Programm wurde nicht gefunden. Installiere FFmpeg in der Home-Assistant-Laufzeit oder korrigiere den konfigurierten FFmpeg-Pfad. Lade anschließend Enigma2 Connect neu. Alternativ öffne die Receiver-Einstellungen und entferne die Bildquelle **Snapshot aus der Aufnahme** oder wähle eine andere Quelle. Die Receiver-Bedienung funktioniert weiterhin."
+    }
   }
 }

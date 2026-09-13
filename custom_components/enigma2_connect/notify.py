@@ -1,6 +1,16 @@
 # SPDX-License-Identifier: Apache-2.0
 """Screen messages through the current notify entity interface."""
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from homeassistant.core import HomeAssistant
+    from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
+
+    from .coordinator import EnigmaConfigEntry
+
 from homeassistant.components.notify import NotifyEntity, NotifyEntityFeature
 
 from .entity import EnigmaEntity
@@ -8,7 +18,11 @@ from .entity import EnigmaEntity
 PARALLEL_UPDATES = 0
 
 
-async def async_setup_entry(hass, entry, async_add_entities):
+async def async_setup_entry(
+    hass: HomeAssistant,
+    entry: EnigmaConfigEntry,
+    async_add_entities: AddConfigEntryEntitiesCallback,
+) -> None:
     async_add_entities([EnigmaNotify(entry.runtime_data, "message")])
 
 

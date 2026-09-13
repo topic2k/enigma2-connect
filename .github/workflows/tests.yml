@@ -10,8 +10,10 @@ jobs:
       - uses: astral-sh/setup-uv@v6
         with:
           python-version: '3.14'
-      - run: uv sync --group dev
+      - run: uv sync --locked --group dev
       - run: uv run ruff check .
       - run: uv run ruff format --check .
-      - run: uv run pytest --cov=custom_components.enigma2_connect --cov-report=term-missing
+      - run: uv run mypy
+      - run: uv run pytest --cov=custom_components.enigma2_connect --cov-branch --cov-report=term-missing --cov-report=json:coverage.json
+      - run: uv run python scripts/check_config_flow_coverage.py coverage.json --silver
       - run: node --test tests/frontend.test.cjs

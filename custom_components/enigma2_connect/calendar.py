@@ -1,6 +1,16 @@
 # SPDX-License-Identifier: Apache-2.0
 """A timer calendar. Repeated receiver timers are expanded in receiver local time."""
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, cast
+
+if TYPE_CHECKING:
+    from homeassistant.core import HomeAssistant
+    from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
+
+    from .coordinator import EnigmaConfigEntry
+
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
@@ -19,16 +29,20 @@ def _local_time_exists(value: datetime) -> bool:
     return restored.replace(tzinfo=None) == value.replace(tzinfo=None)
 
 
-async def async_setup_entry(hass, entry, async_add_entities):
+async def async_setup_entry(
+    hass: HomeAssistant,
+    entry: EnigmaConfigEntry,
+    async_add_entities: AddConfigEntryEntitiesCallback,
+) -> None:
     async_add_entities([EnigmaCalendar(entry.runtime_data, "calendar")])
 
 
 class EnigmaCalendar(EnigmaEntity, CalendarEntity):
     @property
-    def available(self):
+    def available(self) -> bool:
         return super().available and self.coordinator.data.timers is not None
 
-    def events(self, lower, upper):
+    def events(self, lower: datetime, upper: datetime) -> list[CalendarEvent]:
         lower_stamp, upper_stamp = lower.timestamp(), upper.timestamp()
         if upper_stamp <= lower_stamp:
             return []
@@ -87,10 +101,10 @@ class EnigmaCalendar(EnigmaEntity, CalendarEntity):
                             uid=f"{timer.get('serviceref', '')}:{timer['begin']}:{int(start.timestamp())}",
                         )
                     )
-        return sorted(events, key=lambda event: event.start.timestamp())
+        return sorted(events, key=lambda event: cast(datetime, event.start).timestamp())
 
     @property
-    def event(self):
+    def event(self) -> CalendarEvent | None:
         now = dt_util.utcnow()
         events = self.events(now, now + timedelta(days=8))
         if events:
@@ -98,5 +112,7 @@ class EnigmaCalendar(EnigmaEntity, CalendarEntity):
         # A one-shot timer may be further in the future.
         return next(iter(self.events(now, now + timedelta(days=366))), None)
 
-    async def async_get_events(self, hass, start_date, end_date):
+    async def async_get_events(
+        self, hass: HomeAssistant, start_date: datetime, end_date: datetime
+    ) -> list[CalendarEvent]:
         return self.events(start_date, end_date)

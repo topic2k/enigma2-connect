@@ -11,6 +11,10 @@ from datetime import datetime
 from html import unescape
 from typing import Any
 
+# OpenWebif adds image-specific fields; validate values when projecting this
+# transport boundary into the typed receiver state and service models below.
+type JsonObject = dict[str, Any]
+
 
 def boolean(value: Any) -> bool | None:
     """Do not confuse the string 'false' with True or missing with False."""
@@ -35,7 +39,7 @@ def number(value: Any) -> float | None:
     return result if math.isfinite(result) else None
 
 
-def signal_snr_db(signal: dict | None) -> float | None:
+def signal_snr_db(signal: dict[str, Any] | None) -> float | None:
     """Ignore OpenWebif's integer percentage fallback in the dB field."""
     if not signal:
         return None
@@ -52,7 +56,7 @@ def text(value: Any) -> str | None:
     return unescape(str(value)).replace("\u0086", "").replace("\u0087", "")
 
 
-def identity(info: dict) -> str | None:
+def identity(info: dict[str, Any]) -> str | None:
     """Prefer a stable, non-loopback hardware address."""
     for iface in info.get("ifaces", []):
         if not isinstance(iface, dict):
@@ -69,7 +73,7 @@ class Service:
     name: str
 
 
-def services(rows: list, *, channels: bool = False) -> dict[str, Service]:
+def services(rows: list[Any], *, channels: bool = False) -> dict[str, Service]:
     """Preserve references; make duplicate display names selectable."""
     parsed: dict[str, Service] = {}
     for row in rows:
@@ -133,7 +137,7 @@ class ReceiverState:
     picon_path: str | None = None
 
     @classmethod
-    def parse(cls, raw: dict, current: dict | None = None) -> ReceiverState:
+    def parse(cls, raw: dict[str, Any], current: dict[str, Any] | None = None) -> ReceiverState:
         standby = boolean(raw.get("inStandby"))
         if standby is None:
             raise ValueError("Missing or invalid standby state")
@@ -189,7 +193,8 @@ def picon_candidates(
             parts = reference.rsplit("/", 1)[-1].split(" - ")
             if len(parts) >= 3:
                 name = parts[1]
-        expanded = name.translate(str.maketrans({"&": "and", "+": "plus", "*": "star"}))
+        replacements: dict[str, str | int | None] = {"&": "and", "+": "plus", "*": "star"}
+        expanded = name.translate(str.maketrans(replacements))
         normalized = unicodedata.normalize("NFKD", expanded).lower()
         filename = "".join(
             char for char in normalized if char in "abcdefghijklmnopqrstuvwxyz0123456789"
@@ -204,10 +209,10 @@ class Snapshot:
     # All entities consume the same poll result. For optional lists, None means
     # unavailable; an empty list means the receiver reported no entries.
     state: ReceiverState
-    signal: dict | None = None
-    info: dict = field(default_factory=dict)
-    timers: list[dict] | None = None
-    movies: list[dict] | None = None
+    signal: JsonObject | None = None
+    info: JsonObject = field(default_factory=dict)
+    timers: list[JsonObject] | None = None
+    movies: list[JsonObject] | None = None
     bouquets: dict[str, Service] = field(default_factory=dict)
     channels: dict[str, Service] = field(default_factory=dict)
     bouquet: str | None = None

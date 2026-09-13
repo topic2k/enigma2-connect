@@ -1,11 +1,24 @@
 # SPDX-License-Identifier: Apache-2.0
 """A shared recordings tile, with receiver-owned playback identifiers."""
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from typing import NoReturn
+
+    from homeassistant.components.media_source import MediaSourceItem
+    from homeassistant.core import HomeAssistant
+
+    from .coordinator import EnigmaConfigEntry
+    from .models import JsonObject
+
 from hashlib import sha256
 from pathlib import PurePosixPath
 from urllib.parse import quote, unquote
 
-from homeassistant.components.media_player import MediaClass
+from homeassistant.components.media_player.const import MediaClass
 from homeassistant.components.media_player.errors import BrowseError
 from homeassistant.components.media_source import (
     BrowseMediaSource,
@@ -30,7 +43,7 @@ from .recordings import async_recording_labels, browse_recordings, recording_pat
 CONF_RECORDINGS_LAYOUT = "recordings_layout"
 
 
-def recordings_layout(hass):
+def recordings_layout(hass: HomeAssistant) -> str:
     """The shared option is mirrored across receiver entries by the options flow."""
     return next(
         (
@@ -42,17 +55,19 @@ def recordings_layout(hass):
     )
 
 
-def recording_identifier(entry, movie):
+def recording_identifier(entry: EnigmaConfigEntry, movie: JsonObject) -> str:
     # Keep receiver file paths out of media IDs while retaining stable catalog lookup.
     digest = sha256(movie["serviceref"].encode()).hexdigest()
     return f"recording/{entry.entry_id}/{digest}"
 
 
-def recording_from_identifier(hass, identifier):
+def recording_from_identifier(
+    hass: HomeAssistant, identifier: str | None
+) -> tuple[EnigmaConfigEntry, JsonObject]:
     """Resolve only current catalog entries; never accept arbitrary receiver paths."""
     kind, separator, remainder = (identifier or "").partition("/")
     entry_id, _, digest = remainder.partition("/")
-    entry = hass.config_entries.async_get_entry(entry_id)
+    entry: EnigmaConfigEntry | None = hass.config_entries.async_get_entry(entry_id)
     if (
         kind != "recording"
         or not separator
@@ -69,23 +84,29 @@ def recording_from_identifier(hass, identifier):
     raise Unresolvable(translation_domain=DOMAIN, translation_key="recording_unavailable")
 
 
-async def async_get_media_source(hass):
+async def async_get_media_source(hass: HomeAssistant) -> EnigmaRecordingSource:
     await async_recording_labels(hass)
     return EnigmaRecordingSource(hass)
 
 
 class EnigmaRecordingSource(MediaSource):
-    def __init__(self, hass):
+    def __init__(self, hass: HomeAssistant) -> None:
         self.hass = hass
+        self._name_override: str | None = None
         super().__init__(DOMAIN)
 
     @property
-    def name(self):
-        return async_get_cached_translations(
+    def name(self) -> str:
+        return self._name_override or async_get_cached_translations(
             self.hass, self.hass.config.language, "common", DOMAIN
         ).get(f"component.{DOMAIN}.common.recordings", "Enigma2 recordings")
 
-    def _entries(self):
+    @name.setter
+    def name(self, value: str | None) -> None:
+        """Honor MediaSource's writable name while retaining dynamic translations."""
+        self._name_override = value
+
+    def _entries(self) -> list[EnigmaConfigEntry]:
         return sorted(
             (
                 entry
@@ -96,7 +117,9 @@ class EnigmaRecordingSource(MediaSource):
         )
 
     @staticmethod
-    def _folder(identifier, title, children=None):
+    def _folder(
+        identifier: str | None, title: str, children: list[BrowseMediaSource] | None = None
+    ) -> BrowseMediaSource:
         return BrowseMediaSource(
             domain=DOMAIN,
             identifier=identifier,
@@ -108,7 +131,7 @@ class EnigmaRecordingSource(MediaSource):
             children=children,
         )
 
-    async def async_browse_media(self, item):
+    async def async_browse_media(self, item: MediaSourceItem) -> BrowseMediaSource:
         labels = await async_recording_labels(self.hass)
         identifier = item.identifier or ""
         entries = self._entries()
@@ -144,14 +167,14 @@ class EnigmaRecordingSource(MediaSource):
             directory = unquote(remainder) if remainder else "/"
             title = self.name
         elif kind == "receiver":
-            entry_id, _, path = remainder.partition("/")
+            entry_id, _, folder_path = remainder.partition("/")
             entries = [entry for entry in entries if entry.entry_id == entry_id]
             if not entries:
                 raise BrowseError(
                     translation_domain=DOMAIN, translation_key="recording_unavailable"
                 )
             prefix = f"receiver/{entry_id}"
-            directory = unquote(path) if path else "/"
+            directory = unquote(folder_path) if folder_path else "/"
             title = entries[0].title
         else:
             raise BrowseError(translation_domain=DOMAIN, translation_key="unknown_recording_folder")
@@ -193,7 +216,7 @@ class EnigmaRecordingSource(MediaSource):
             fallback_title=labels["recording"],
         )
         children = []
-        for child in catalog.children:
+        for child in catalog.children or ():
             if child.can_expand:
                 children.append(
                     self._folder(
@@ -221,7 +244,7 @@ class EnigmaRecordingSource(MediaSource):
                 children.insert(0, channel_folder(entries[0], labels["channels"]))
         return self._folder(identifier or None, catalog.title, children)
 
-    async def async_resolve_media(self, item):
+    async def async_resolve_media(self, item: MediaSourceItem) -> NoReturn:
         if (item.identifier or "").startswith("channel/"):
             entry, _ = channel_from_identifier(self.hass, item.identifier)
             raise Unresolvable(
