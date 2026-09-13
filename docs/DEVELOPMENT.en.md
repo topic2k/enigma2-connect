@@ -10,6 +10,7 @@ and everyday use, see the [user guide](USER_GUIDE.en.md). The
 
 - [Project and requirements](#project-and-requirements)
 - [Development environment and checks](#development-environment-and-checks)
+- [Monitor the Home Assistant developer blog](#monitor-the-home-assistant-developer-blog)
 - [Structure and data flow](#structure-and-data-flow)
 - [Implementation rules](#implementation-rules)
 - [Documentation and changes](#documentation-and-changes)
@@ -68,6 +69,108 @@ documented build.
 The existing local WSL environment can use `.work/run_tests.sh`; it is not part
 of a fresh installation. On the Windows mount, `--capture=sys` avoids known
 pytest capture issues. The validation document records further local paths and reports.
+
+## Monitor the Home Assistant developer blog
+
+The [Home Assistant developer blog](../.github/workflows/ha-developer-blog.yml)
+workflow checks the complete posts in the official
+[blog repository](https://github.com/home-assistant/developers.home-assistant/tree/master/blog)
+on **Mondays at 07:23 UTC**. It considers new and edited posts from **2026-09-01**.
+Each run assesses at most **five posts together in one Gemini request**. No new
+posts means no AI call. Additional posts remain pending for the next run; source
+code is never silently truncated.
+
+The [Gemini script](../scripts/ha_blog_gemini.py) uses Google's API directly with
+`gemini-2.5-flash`. One fixed request avoids variable agent loops. There are no
+tools, web searches, automatic retries or model fallbacks. Limits are 400,000 UTF-8
+input bytes and 8,192 output tokens, including a thinking budget of 1,024 tokens.
+Oversized batches are reduced. If even one post with the complete code exceeds
+the input cap, the run fails and requires manual review.
+
+Google receives the blog text and an allowlist of publishable sources: integration
+Python modules, manifest, translations, icons, quality checklist, service definitions, dashboard card,
+project and HACS metadata. Local archives, `.env`, receiver data and test data are
+excluded. Every new post is assessed; the former keyword filter does not select
+posts for AI. The [heuristic script](../scripts/ha_blog_monitor.py) remains available
+as an independent local tool, not as a silent substitute for AI.
+
+Each post receives two independent assessments. Compatibility results are
+`impacted` (concrete adaptation required), `no-impact` (no impact
+identified), or `uncertain` (manual clarification required), with reasons, next
+steps, HA versions/deadlines when stated and code references. File paths, line
+numbers and exact source lines are validated locally. This verifies the citation,
+not the AI's conclusion. The complete batch must be valid before an issue is
+created. AI assessments do not replace Home Assistant compatibility tests.
+
+Gemini also reviews **enhancements and improvements**: new features, usability,
+performance, reliability and maintainability. The `opportunity` field contains
+`recommended` (concrete proposal), `none` (no useful proposal) or `uncertain`
+(requires investigation), with benefits, implementation steps, prerequisites and
+tradeoffs. Recommendations require a validated source citation as an integration
+point; the new API need not already be used. A `no-impact` post can therefore
+still recommend an enhancement; required adaptations and optional improvements
+can also coexist. Existing features and mandatory migrations are not enhancements.
+Missing assessments or required evidence prevent report publication. Both reviews
+use the same weekly request. Reports propose changes; implementation is decided
+separately.
+
+Each successful run with new posts creates **one combined report issue**, even
+when all assessments are `no-impact`. Hidden markers durably record the reviewed
+post content. Closed reports also count and are never edited or reopened; preserve
+reports and markers. Content changes trigger another review, code-only changes
+do not. Previous heuristic issues are not AI review receipts. The summary and
+JSON reports are also retained as Actions artifacts for 30 days.
+
+### Configure free Google access
+
+1. In [Google AI Studio](https://aistudio.google.com/api-keys), create a key for a
+   dedicated **Free Tier project without paid billing enabled**. Do not link a
+   billing account or upgrade to a Paid Tier.
+2. Check the active model limits in AI Studio. Google's
+   [pricing page](https://ai.google.dev/gemini-api/docs/pricing#free) lists free
+   input/output for Gemini 2.5 Flash; request/token limits are
+   [project-dependent](https://ai.google.dev/gemini-api/docs/rate-limits).
+   One small request per week is expected to fit but cannot be guaranteed before
+   a real trial with that project. The Free Tier prevents paid usage; the workflow
+   cannot inspect a key's billing status. A key from a Paid Tier project may incur costs.
+3. In GitHub, open **Settings → Secrets and variables → Actions → New repository
+   secret** and store the key as **GEMINI_API_KEY**. Never put it in files, issues
+   or chat messages.
+4. After an approved PR merges the workflow into `main`, open **Actions → Home
+   Assistant developer blog → Run workflow** and select the default branch.
+   Keep **Run Gemini and generate a report; do not create an issue** enabled for
+   the first trial. This consumes AI quota but does not save durable review
+   markers. Inspect the report and the JSON `usage` field.
+5. Disable the dry-run switch to publish an issue manually. Scheduled weekly
+   runs publish the combined report automatically.
+
+Google processes the supplied sources under its Free Tier terms; the
+[pricing page](https://ai.google.dev/gemini-api/docs/pricing#free) links to the terms
+governing use of content for product improvement. Use only repository content
+suitable for this disclosure.
+
+HTTP 429, other API errors, a missing key or an invalid response fail the run
+visibly. Posts without a saved report remain pending for the next run; there is
+no automatic paid fallback. After an ambiguous issue publication response, the
+next run finds any report that was already saved by its markers.
+
+The publishing job only runs in the original repository on its default branch.
+Pushes and PRs only run offline tests; forks do not publish reports. Permissions
+are `contents: read` and `issues: write`; Actions and Issues must be enabled.
+Concurrent runs are serialized. GitHub can delay schedules and disables them
+for public repositories after 60 days without repository activity
+([GitHub schedules](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule)).
+
+Local preparation without Google requests or GitHub writes:
+
+```sh
+python -m unittest discover -s scripts/tests -v
+python scripts/ha_blog_gemini.py --blog-dir /path/to/developers.home-assistant/blog --prepare-only
+```
+
+Without `--prepare-only`, `GEMINI_API_KEY` is required and a real AI call may occur.
+GitHub writes additionally require explicit `--publish`.
+
 
 ## Structure and data flow
 

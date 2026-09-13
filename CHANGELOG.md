@@ -4,7 +4,21 @@
 
 ## Inhaltsverzeichnis
 
+- [1.0.1](#101)
 - [1.0.0](#100)
+
+## 1.0.1
+
+Unveröffentlicht.
+
+- Wöchentlicher GitHub-Workflow prüft neue und geänderte Home-Assistant-Blogbeiträge
+  ab September 2026 mit Gemini anhand des Integrationscodes. Er bewertet nötige
+  Anpassungen und sinnvolle Ergänzungen unabhängig mit Nutzen, Umsetzungsschritten
+  und überprüften Code-Belegen. Höchstens eine KI-Anfrage für fünf Beiträge je Lauf;
+  zusammengefasste Berichts-Issues vermeiden doppelte Prüfungen.
+- Einrichtung mit einem Google-Free-Tier-Projekt, manueller Probelauf und
+  lokale Vorbereitung ohne KI-Aufruf sind dokumentiert. Offline-Tests prüfen
+  Auswahl, Antwortvalidierung, Verbesserungsvorschläge und Fehlerfälle.
 
 ## 1.0.0
 

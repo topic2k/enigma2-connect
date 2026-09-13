@@ -7,6 +7,22 @@ This is a technical report, not release or hardware approval. Version history:
 [changelog](../CHANGELOG.en.md). Reproduction commands:
 [developer guide](DEVELOPMENT.en.md#development-environment-and-checks).
 
+## Blog workflow 1.0.1
+
+On 2026-09-13, the isolated workflow based on `main` / `1.0.0` passed 28 offline
+tests under WSL/Python 3.14.7. They cover both assessments (compatibility and
+improvements), source evidence, duplicate protection, request limits and failures
+without issue publication. Ruff, formatting, Python syntax and offline lock
+verification passed; the lockfile only changes the local project version to
+`1.0.1` (154 packages). Four existing September posts and the source snapshot
+fit into 230,009 UTF-8 input bytes. This is not a measured token count.
+
+Gemini responses and GitHub writes are simulated in these tests. `GEMINI_API_KEY`
+is stored as a repository secret. A real trial will run through GitHub Actions
+after merging; its run report provides evidence of the live connection. The
+weekly review proposes changes without editing integration code. These checks
+do not provide a new receiver/interface acceptance test.
+
 ## Current local checks
 
 The complete `1.0.0` release candidate was checked:
