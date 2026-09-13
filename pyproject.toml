@@ -1,6 +1,6 @@
 [project]
 name = "enigma2-connect"
-version = "1.1.0-dev.10"
+version = "1.1.0"
 description = "Enigma2 Connect: Home Assistant integration for Enigma2 receivers using OpenWebif"
 requires-python = ">=3.14.2"
 license = "Apache-2.0"

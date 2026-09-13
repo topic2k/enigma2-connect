@@ -4,14 +4,14 @@
 
 ## Contents
 
-- [1.1.0-dev.10](#110-dev10)
+- [1.1.0](#110)
 - [1.0.2](#102)
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 1.1.0-dev.10
+## 1.1.0
 
-Unreleased development version.
+Unreleased.
 
 - Replaced vulnerable transitive test dependency `cryptography 48.0.1` with
   `50.0.1` (CVE-2026-69247), together with compatible `pyOpenSSL 26.4.0`.

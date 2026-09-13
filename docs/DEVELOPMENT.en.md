@@ -290,8 +290,8 @@ This is an internal assessment of the current custom integration, not a Core rev
 | --- | --- |
 | Bronze | All 20 criteria implemented internally, including local brands. Flows must retain 100% statement and branch coverage. |
 | Silver | All 10 additional criteria implemented internally; each of the 23 Python modules must retain above 95% combined coverage. |
-| Gold | All 21 additional criteria implemented internally. Discovery is based on documented OpenWebif Bonjour services and simulated HA flows; actual receiver announcements and DHCP address changes still need hardware verification. |
-| Platinum | All three additional criteria implemented internally: async client, injected session and strict typing enforced in CI. A successful GitHub CI run for the future commit remains a separate check. |
+| Gold | All 21 additional criteria implemented internally. An actual DHCP address change passed with an explicitly triggered HA handler; actual Bonjour announcements and automatic DHCP receipt in running HA remain pending. |
+| Platinum | All three additional criteria implemented internally: async client, injected session and strict typing enforced in CI. CI evidence applies to the commits named in the verification summary; releases require another check of the final commit. |
 
 ### Discovery and device lifecycle
 

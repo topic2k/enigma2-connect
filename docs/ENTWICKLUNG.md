@@ -308,8 +308,8 @@ der aktuellen Custom-Integration, keine Anerkennung durch ein Core-Review.
 | --- | --- |
 | Bronze | Alle 20 Kriterien intern umgesetzt, einschließlich lokaler Brands. Dialoge müssen weiterhin 100 % Anweisungs- und Zweigabdeckung erreichen. |
 | Silber | Alle 10 zusätzlichen Kriterien intern umgesetzt; jede der 23 Python-Dateien muss über 95 % kombinierte Abdeckung behalten. |
-| Gold | Alle 21 zusätzlichen Kriterien intern umgesetzt. Die Erkennung beruht auf nachgewiesenen OpenWebif-Bonjour-Diensten und simulierten HA-Abläufen; echte Ankündigungen und DHCP-Adresswechsel müssen noch am Receiver geprüft werden. |
-| Platin | Alle drei zusätzlichen Kriterien intern umgesetzt: asynchroner Client, injizierte Session und strikte Typprüfung in CI. Eine neue GitHub-CI-Ausführung ist erst für den späteren Commit nachgewiesen, wenn sie erfolgreich gelaufen ist. |
+| Gold | Alle 21 zusätzlichen Kriterien intern umgesetzt. Ein echter DHCP-Adresswechsel ist mit gezielt ausgelöstem HA-Verarbeitungsschritt geprüft; echte Bonjour-Ankündigungen und der automatische DHCP-Empfang in laufendem HA bleiben offen. |
+| Platin | Alle drei zusätzlichen Kriterien intern umgesetzt: asynchroner Client, injizierte Session und strikte Typprüfung in CI. Die CI-Nachweise gelten für die im Prüfbericht genannten Commits; für Veröffentlichungen wird der endgültige Commit erneut geprüft. |
 
 ### Erkennung und Geräte-Lebenszyklus
 
