@@ -118,9 +118,9 @@ posts means no AI call. Additional posts remain pending for the next run; source
 code is never silently truncated.
 
 The [Gemini script](../scripts/ha_blog_gemini.py) uses Google's API directly with
-`gemini-2.5-flash`. One fixed request avoids variable agent loops. There are no
+`gemini-3.8-flash`. One fixed request avoids variable agent loops. There are no
 tools, web searches, automatic retries or model fallbacks. Limits are 400,000 UTF-8
-input bytes and 8,192 output tokens, including a thinking budget of 1,024 tokens.
+input bytes and 8,192 output tokens, including thinking tokens at thinking level `low`.
 Oversized batches are reduced. If even one post with the complete code exceeds
 the input cap, the run fails and requires manual review.
 
@@ -165,7 +165,7 @@ JSON reports are also retained as Actions artifacts for 30 days.
    billing account or upgrade to a Paid Tier.
 2. Check the active model limits in AI Studio. Google's
    [pricing page](https://ai.google.dev/gemini-api/docs/pricing#free) lists free
-   input/output for Gemini 2.5 Flash; request/token limits are
+   input/output for Gemini 3.8 Flash; request/token limits are
    [project-dependent](https://ai.google.dev/gemini-api/docs/rate-limits).
    One small request per week is expected to fit but cannot be guaranteed before
    a real trial with that project. The Free Tier prevents paid usage; the workflow
@@ -207,6 +207,7 @@ python scripts/ha_blog_gemini.py --blog-dir /path/to/developers.home-assistant/b
 
 Without `--prepare-only`, `GEMINI_API_KEY` is required and a real AI call may occur.
 GitHub writes additionally require explicit `--publish`.
+
 
 ## Quality tiers and next steps
 

@@ -5,6 +5,8 @@
 ## Inhaltsverzeichnis
 
 - [1.1.0-dev.4](#110-dev4)
+- [1.0.2](#102)
+- [1.0.1](#101)
 - [1.0.0](#100)
 
 ## 1.1.0-dev.4
@@ -36,15 +38,6 @@ Unveröffentlichte Entwicklerversion.
   Entwicklungsabhängigkeit in CI ausgeführt. Receiver-Metadaten bleiben eine
   ausdrücklich gekennzeichnete flexible JSON-Grenze.
 
-- Wöchentlicher GitHub-Workflow bewertet neue und geänderte Home-Assistant-
-  Blogbeiträge ab September 2026 mit Google Gemini anhand des Integrationscodes.
-  Neben Kompatibilitätsanpassungen bewertet jeder Beitrag unabhängig sinnvolle
-  Ergänzungen und Verbesserungen mit Nutzen, Umsetzungsschritten und Code-Belegen.
-  Höchstens eine KI-Anfrage für fünf Beiträge pro Lauf, zusammengefasste
-  Berichts-Issues, überprüfte Code-Verweise und Duplikatschutz begrenzen Aufwand
-  und Wiederholungen. Vorbereitung ohne KI-Aufruf und Dokumentation zur Nutzung
-  eines eigenen Google-Free-Tier-Projekts; Kontingentfehler lassen Beiträge offen.
-
 - **Listen aktualisieren** wartet auch bei direkt wiederholten Aufrufen auf einen
   neuen Abruf und meldet Verbindungsfehler als übersetzte Aktionsfehler.
 - Zusätzliche Transport-, Bedienungs-, Bild- und Kalenderprüfungen sichern unter
@@ -64,6 +57,29 @@ Unveröffentlichte Entwicklerversion.
 - Qualitätscheckliste mit Nachweisen und offenen Arbeiten für Bronze bis Platin;
   Zweigabdeckung und eine CI-Prüfung für vollständige Konfigurationsfluss-Abdeckung.
   Die Integration bleibt eine Custom-Integration ohne offizielle Qualitätsstufe.
+
+## 1.0.2
+
+Unveröffentlicht.
+
+- Der Blog-Workflow verwendet Gemini 3.8 Flash mit niedriger Denkstufe und
+  den aktuellen Anfrageparametern. Der erste echte Aufruf von Gemini 2.5 Flash
+  hatte HTTP 404 geliefert. Wochenrhythmus und feste Anfragegrenzen bleiben erhalten.
+
+## 1.0.1
+
+Unveröffentlicht.
+
+- Wöchentlicher GitHub-Workflow prüft neue und geänderte Home-Assistant-Blogbeiträge
+  ab September 2026 mit Gemini anhand des Integrationscodes. Er bewertet nötige
+  Anpassungen und sinnvolle Ergänzungen unabhängig mit Nutzen, Umsetzungsschritten
+  und überprüften Code-Belegen. Höchstens eine KI-Anfrage für fünf Beiträge je Lauf;
+  zusammengefasste Berichts-Issues vermeiden doppelte Prüfungen.
+- Einrichtung mit einem Google-Free-Tier-Projekt, manueller Probelauf und
+  lokale Vorbereitung ohne KI-Aufruf sind dokumentiert. Offline-Tests prüfen
+  Auswahl, Antwortvalidierung, Verbesserungsvorschläge und Fehlerfälle.
+- Der Optionsdialog-Test isoliert den automatischen Neuladevorgang und prüft
+  dessen Aufruf, damit kein Hintergrund-Timer den CI-Testabschluss stört.
 
 ## 1.0.0
 

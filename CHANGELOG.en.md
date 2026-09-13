@@ -5,6 +5,8 @@
 ## Contents
 
 - [1.1.0-dev.4](#110-dev4)
+- [1.0.2](#102)
+- [1.0.1](#101)
 - [1.0.0](#100)
 
 ## 1.1.0-dev.4
@@ -34,15 +36,6 @@ Unreleased development version.
 - All 23 integration modules are strictly typed; pinned mypy 2.3.1 runs in CI.
   Receiver metadata remains an explicitly identified flexible JSON boundary.
 
-- A weekly GitHub workflow assesses new and edited Home Assistant blog posts
-  from September 2026 with Google Gemini against the integration code. Each post
-  independently assesses compatibility adaptations and useful enhancements with
-  benefits, implementation steps and source evidence. At most
-  one AI request for five posts per run, combined report issues, validated code
-  references and duplicate protection bound usage. Includes preparation without
-  AI calls and instructions for a dedicated Google Free Tier project; quota
-  failures leave posts pending.
-
 - **Refresh lists** waits for a fresh fetch even on immediately repeated calls
   and reports connection failures as translated action errors.
 - Additional transport, control, artwork and calendar checks cover decoder
@@ -61,6 +54,29 @@ Unreleased development version.
 - Quality checklist with evidence and remaining Bronze through Platinum work;
   branch coverage and a CI gate for complete config-flow coverage.
   This remains a custom integration without an official quality tier.
+
+## 1.0.2
+
+Unreleased.
+
+- The blog workflow uses Gemini 3.8 Flash with low thinking effort and current
+  request parameters. The first real Gemini 2.5 Flash request returned HTTP 404.
+  Weekly scheduling and fixed request limits are preserved.
+
+## 1.0.1
+
+Unreleased.
+
+- A weekly GitHub workflow reviews new and edited Home Assistant blog posts
+  from September 2026 with Gemini against the integration code. It independently
+  assesses required adaptations and useful enhancements with benefits, implementation
+  steps and validated source evidence. At most one AI request for five posts per run;
+  combined report issues prevent duplicate reviews.
+- Documents setup with a Google Free Tier project, a manual dry run and local
+  preparation without AI calls. Offline tests cover selection, response validation,
+  enhancement proposals and failure handling.
+- The options-flow test isolates and verifies automatic reload, preventing a
+  background timer from interfering with CI test cleanup.
 
 ## 1.0.0
 
