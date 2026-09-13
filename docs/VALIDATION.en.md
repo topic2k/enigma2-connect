@@ -26,8 +26,15 @@ remain unchanged from `80f9eda`; only these two packages and the project version
 changed in the lockfile. The override applies to development/CI, not an installed
 HA runtime. Integration requirements in the manifest remain empty.
 
-Verification uses a separate environment under `.work/security-env`; earlier
-receiver evidence still applies to its original package versions. The Dependabot
+The full [CI on `65be728`](https://github.com/topic2k/enigma2-connect/actions/runs/34772846926)
+confirmed installation of cryptography 50.0.1 and pyOpenSSL 26.4.0. **270 Python tests**
+passed in 8.45 seconds, along with **8 frontend tests**, Ruff, formatting, mypy
+and the coverage gate: config flow 100%, all 23 modules above 95%.
+[Hassfest and HACS](https://github.com/topic2k/enigma2-connect/actions/runs/34772846924)
+also passed. Local checks covered documentation, syntax, versions and the limited
+package changes. The additional run in the separate `.work/security-env` environment
+was stopped after successful CI and is not counted as a passed local full test.
+Earlier receiver evidence still applies to its original package versions. The Dependabot
 alert on the default branch remains open until the fix is merged into `main`;
 it is not manually dismissed as a false positive.
 

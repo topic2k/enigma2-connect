@@ -27,8 +27,16 @@ beiden Pakete und die Projektversion wurden in der Lockdatei angepasst.
 Die Ausnahme gilt für Entwicklung/CI, nicht als Änderung an einer installierten
 HA-Laufzeit. Die Integrationsanforderungen im Manifest bleiben leer.
 
-Die Prüfung verwendet eine separate Umgebung unter `.work/security-env`; frühere
-Receiver-Nachweise beziehen sich weiterhin auf den damaligen Paketstand.
+Die vollständige [CI auf `65be728`](https://github.com/topic2k/enigma2-connect/actions/runs/34772846926)
+installierte nachweislich cryptography 50.0.1 und pyOpenSSL 26.4.0. **270 Python-Tests**
+bestanden in 8,45 Sekunden, außerdem **8 Frontend-Tests**, Ruff, Formatierung,
+mypy und die Coverage-Sperre: Config Flow 100 %, alle 23 Module über 95 %.
+[Hassfest und HACS](https://github.com/topic2k/enigma2-connect/actions/runs/34772846924)
+bestanden ebenfalls. Lokal wurden Dokumentation, Syntax, Versionen und die
+Begrenzung der Paketänderungen geprüft. Der zusätzliche Lauf in der separaten
+Umgebung `.work/security-env` wurde nach erfolgreicher CI beendet und wird
+nicht als bestandener lokaler Volltest gewertet. Frühere Receiver-Nachweise
+beziehen sich weiterhin auf den damaligen Paketstand.
 Der Dependabot-Hinweis auf dem Standardbranch bleibt bis zur Übernahme des Fixes
 nach `main` offen; er wird nicht manuell als Fehlalarm geschlossen.
 
