@@ -10,6 +10,7 @@ die [README](../README.md) bleibt der kurze Einstieg für Anwender.
 
 - [Projekt und Voraussetzungen](#projekt-und-voraussetzungen)
 - [Entwicklungsumgebung und Prüfungen](#entwicklungsumgebung-und-prüfungen)
+- [Home-Assistant-Entwicklerblog überwachen](#home-assistant-entwicklerblog-überwachen)
 - [Aufbau und Datenfluss](#aufbau-und-datenfluss)
 - [Verhaltensregeln für Implementierungen](#verhaltensregeln-für-implementierungen)
 - [Dokumentation und Änderungen](#dokumentation-und-änderungen)
@@ -71,6 +72,117 @@ Die vorhandene lokale WSL-Umgebung kann über `.work/run_tests.sh` verwendet
 werden; sie ist kein Bestandteil einer frischen Installation. Auf dem
 Windows-Mount vermeidet `--capture=sys` bekannte Probleme der pytest-Erfassung.
 Weitere lokale Pfade und Berichte stehen im Validierungsdokument.
+
+## Home-Assistant-Entwicklerblog überwachen
+
+Der Workflow [Home Assistant developer blog](../.github/workflows/ha-developer-blog.yml)
+prüft **montags um 07:23 UTC** die vollständigen Beiträge im offiziellen
+[Blog-Repository](https://github.com/home-assistant/developers.home-assistant/tree/master/blog).
+Er berücksichtigt neue und inhaltlich geänderte Beiträge ab **2026-09-01**.
+Pro Lauf werden höchstens **fünf Beiträge gemeinsam in einer Gemini-Anfrage**
+bewertet. Ohne neue Beiträge erfolgt kein KI-Aufruf. Weitere Beiträge bleiben
+für den nächsten Lauf offen; Quelltexte werden nicht stillschweigend gekürzt.
+
+Das [Gemini-Prüfskript](../scripts/ha_blog_gemini.py) verwendet die Google-API
+direkt mit `gemini-2.5-flash`. Eine feste Anfrage vermeidet variable Agentenschleifen.
+Es gibt keine Werkzeuge, Websuche, automatische Wiederholung oder Umschaltung auf
+andere Modelle. Die Grenzen sind 400.000 UTF-8-Eingabebytes und 8.192 Ausgabetokens
+einschließlich eines Denkbudgets von 1.024 Tokens. Bei zu großer Eingabe verkleinert
+das Skript die Beitragsgruppe. Passt schon ein Beitrag mit dem vollständigen
+Code nicht hinein, schlägt der Lauf fehl und verlangt eine manuelle Prüfung.
+
+An Google gehen die Blogtexte und eine feste Auswahl veröffentlichbarer Quellen:
+Python-Module der Integration, Manifest, Übersetzungen, Icons, Qualitätscheckliste, Aktionsdefinitionen,
+Dashboardkarte sowie Projekt- und HACS-Metadaten. Lokale Archive, `.env`, Receiverdaten
+und Testdaten gehören nicht dazu. Jeder neue Beitrag wird analysiert; der frühere
+Schlagwortfilter entscheidet nicht über die Auswahl. Das bisherige
+[heuristische Skript](../scripts/ha_blog_monitor.py) bleibt als unabhängige lokale
+Prüfmöglichkeit verfügbar, wird aber nicht als stille Ersatz-KI verwendet.
+
+Jeder Beitrag erhält zwei unabhängige Bewertungen. Zur Kompatibilität sind die
+Ergebnisse `impacted` (konkreter Anpassungsbedarf), `no-impact` (keine
+Auswirkung erkennbar) oder `uncertain` (manuelle Klärung erforderlich). Sie enthalten
+Begründung, nächste Schritte, HA-Version/Frist soweit angegeben und Code-Verweise.
+Dateien, Zeilennummern und wörtliche Quellzeilen werden lokal validiert. Das bestätigt
+die Fundstelle, nicht die Schlussfolgerung der KI. Der gesamte Stapel muss gültig
+und vollständig sein, bevor ein Issue entsteht. Eine KI-Einschätzung ersetzt keine
+Home-Assistant-Kompatibilitätsprüfung.
+
+Zusätzlich prüft Gemini **Ergänzungen und Verbesserungen**: neue Funktionen,
+Bedienkomfort, Leistung, Zuverlässigkeit und Wartbarkeit. Das Feld `opportunity`
+enthält `recommended` (konkrete Empfehlung), `none` (kein sinnvoller Vorschlag)
+oder `uncertain` (noch zu prüfen), jeweils mit Nutzen, Umsetzungsschritten,
+Voraussetzungen und möglichen Nachteilen. Empfehlungen benötigen eine überprüfte
+Code-Fundstelle als Ansatzpunkt; die neue API muss noch nicht verwendet werden.
+Ein `no-impact`-Beitrag kann somit trotzdem eine Verbesserung empfehlen; auch
+Anpassungsbedarf und optionale Ergänzung können gemeinsam auftreten. Bereits
+umgesetzte Funktionen und reine Pflichtmigrationen gelten nicht als Ergänzung.
+Fehlt eine der beiden Bewertungen oder ein erforderlicher Beleg, entsteht kein
+Berichts-Issue. Beide Bewertungen erfolgen in derselben wöchentlichen Anfrage.
+Der Bericht schlägt Änderungen vor; die Umsetzung wird separat entschieden.
+
+Pro erfolgreichem Lauf mit neuen Beiträgen entsteht **ein zusammengefasstes
+Berichts-Issue**, auch wenn alle Beiträge als `no-impact` bewertet wurden. Seine
+unsichtbaren Marker speichern die geprüften Beitragsinhalte dauerhaft. Geschlossene
+Berichte zählen ebenfalls; sie werden nicht verändert oder erneut geöffnet.
+Berichte und Marker daher erhalten. Inhaltliche Änderungen erzeugen einen neuen
+Prüfbedarf, reine Änderungen am Integrationscode nicht. Die früheren heuristischen
+Issues gelten nicht als KI-Prüfnachweis. Zusammenfassung und JSON-Berichte liegen
+zusätzlich 30 Tage als Actions-Artefakt vor.
+
+### Kostenlosen Google-Zugang einrichten
+
+1. In [Google AI Studio](https://aistudio.google.com/api-keys) einen Schlüssel für
+   ein eigenes Projekt im **Free Tier ohne aktivierte kostenpflichtige Abrechnung**
+   erstellen. Kein Billing-Konto verknüpfen und kein Paid-Tier-Upgrade aktivieren.
+2. Die aktiven Modelllimits in AI Studio prüfen. Google nennt auf der
+   [Preisseite](https://ai.google.dev/gemini-api/docs/pricing?hl=de#free) kostenlose
+   Ein- und Ausgabe für Gemini 2.5 Flash; konkrete Anfrage-/Tokenlimits sind
+   [projektabhängig](https://ai.google.dev/gemini-api/docs/rate-limits).
+   Eine kleine Anfrage pro Woche dürfte ausreichen, kann ohne echten Probelauf
+   mit dem Projekt aber nicht garantiert werden. Der Free Tier schützt vor
+   kostenpflichtiger Nutzung; der Workflow kann den Billing-Status eines Schlüssels
+   nicht selbst prüfen. Ein Schlüssel aus einem Paid-Tier-Projekt kann Kosten verursachen.
+3. Im GitHub-Repository unter **Settings → Secrets and variables → Actions →
+   New repository secret** den Schlüssel als **GEMINI_API_KEY** speichern.
+   Den Schlüssel nicht in Dateien, Issues oder Chats eintragen.
+4. Nach freigegebener Übernahme des Workflows per PR nach `main` unter **Actions →
+   Home Assistant developer blog → Run workflow** den Standardbranch auswählen.
+   **Run Gemini and generate a report; do not create an issue** für den ersten
+   Probelauf aktiviert lassen. Dieser Probelauf nutzt das KI-Kontingent, speichert
+   aber keine dauerhaften Prüfmarker. Bericht und `usage` im JSON kontrollieren.
+5. Für manuelle Issue-Veröffentlichung den Probelauf-Schalter deaktivieren.
+   Geplante Wochenläufe veröffentlichen den zusammengefassten Bericht automatisch.
+
+Gemini verarbeitet diese Quellen nach den Google-Bedingungen für den Free Tier;
+die [Preisseite](https://ai.google.dev/gemini-api/docs/pricing?hl=de#free) verweist
+auf die Bedingungen zur Verwendung von Inhalten zur Produktverbesserung.
+Nur für diese Weitergabe geeignete Repository-Inhalte verwenden.
+
+Bei HTTP 429, anderen API-Fehlern, fehlendem Schlüssel oder ungültiger Antwort
+schlägt der Lauf sichtbar fehl. Ohne gespeicherten Bericht bleiben die Beiträge
+für den nächsten Lauf offen; es gibt keinen automatischen Paid-Fallback. Bei
+unklarem Ausgang einer Issue-Veröffentlichung findet der nächste Lauf einen
+eventuell bereits gespeicherten Bericht anhand der Marker.
+
+Der schreibende Job läuft ausschließlich im ursprünglichen Repository auf dem
+Standardbranch. Pushes und Pull Requests führen nur Offline-Tests aus, Forks
+veröffentlichen keine Berichte. Berechtigungen: `contents: read`, `issues: write`;
+GitHub Actions und Issues müssen aktiviert sein. Parallele Läufe werden serialisiert.
+GitHub kann Zeitpläne verzögern und deaktiviert geplante Workflows öffentlicher
+Repositories nach 60 Tagen ohne Repository-Aktivität
+([GitHub-Zeitpläne](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule)).
+
+Lokale Vorbereitung ohne Google-Aufruf und ohne GitHub-Schreibzugriff:
+
+```sh
+python -m unittest discover -s scripts/tests -v
+python scripts/ha_blog_gemini.py --blog-dir /path/to/developers.home-assistant/blog --prepare-only
+```
+
+Ohne `--prepare-only` ist `GEMINI_API_KEY` erforderlich und ein echter KI-Aufruf
+möglich. GitHub-Schreibzugriffe erfordern zusätzlich ausdrücklich `--publish`.
+
 
 ## Aufbau und Datenfluss
 

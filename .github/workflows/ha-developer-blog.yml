@@ -1,0 +1,96 @@
+name: Home Assistant developer blog
+
+on:
+  schedule:
+    - cron: '23 7 * * 1'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Run Gemini and generate a report; do not create an issue'
+        type: boolean
+        default: true
+      since:
+        description: 'Include posts from this date (YYYY-MM-DD)'
+        type: string
+        default: '2026-09-01'
+  push:
+    paths:
+      - '.github/workflows/ha-developer-blog.yml'
+      - 'scripts/ha_blog_monitor.py'
+      - 'scripts/ha_blog_gemini.py'
+      - 'scripts/tests/**'
+  pull_request:
+    paths:
+      - '.github/workflows/ha-developer-blog.yml'
+      - 'scripts/ha_blog_monitor.py'
+      - 'scripts/ha_blog_gemini.py'
+      - 'scripts/tests/**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ha-developer-blog-${{ github.repository }}
+  cancel-in-progress: false
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: '3.14'
+      - run: uv run --no-project --python 3.14 python -m unittest discover -s scripts/tests -v
+
+  monitor:
+    needs: test
+    if: >-
+      (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') &&
+      github.repository == 'topic2k/enigma2-connect' &&
+      github.ref_name == github.event.repository.default_branch
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: home-assistant/developers.home-assistant
+          ref: master
+          path: .work/ha-developer-blog
+          sparse-checkout: blog
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: '3.14'
+      - name: Assess blog posts
+        env:
+          GH_TOKEN: ${{ github.token }}
+          # Use a dedicated AI Studio Free Tier project WITHOUT paid billing.
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          SINCE: ${{ inputs.since || '2026-09-01' }}
+          PUBLISH: ${{ github.event_name == 'schedule' || inputs.dry_run == false }}
+        shell: bash
+        run: |
+          export BLOG_SHA="$(git -C .work/ha-developer-blog rev-parse HEAD)"
+          args=()
+          if [ "$PUBLISH" = "true" ]; then
+            args+=(--publish)
+          fi
+          uv run --no-project --python 3.14 python scripts/ha_blog_gemini.py \
+            --blog-dir .work/ha-developer-blog/blog --since "$SINCE" "${args[@]}"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ha-developer-blog-report
+          path: .work/blog-monitor/gemini-report/
+          include-hidden-files: true
+          retention-days: 30

@@ -4,7 +4,23 @@
 
 ## Contents
 
+- [1.0.1](#101)
 - [1.0.0](#100)
+
+## 1.0.1
+
+Unreleased.
+
+- A weekly GitHub workflow reviews new and edited Home Assistant blog posts
+  from September 2026 with Gemini against the integration code. It independently
+  assesses required adaptations and useful enhancements with benefits, implementation
+  steps and validated source evidence. At most one AI request for five posts per run;
+  combined report issues prevent duplicate reviews.
+- Documents setup with a Google Free Tier project, a manual dry run and local
+  preparation without AI calls. Offline tests cover selection, response validation,
+  enhancement proposals and failure handling.
+- The options-flow test isolates and verifies automatic reload, preventing a
+  background timer from interfering with CI test cleanup.
 
 ## 1.0.0
 
