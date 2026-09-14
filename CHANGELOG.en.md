@@ -4,11 +4,23 @@
 
 ## Contents
 
+- [1.1.2-dev.1](#112-dev1)
 - [1.1.1](#111)
 - [1.1.0](#110)
 - [1.0.2](#102)
 - [1.0.1](#101)
 - [1.0.0](#100)
+
+## 1.1.2-dev.1
+
+Unreleased development version.
+
+- Added a 1280 × 640 GitHub social preview: device symbol centered above the
+  wordmark on white, with PNG, SVG source and `-SocialOnly` export.
+- Use a separate branch for every task and an additional worktree for larger
+  tasks. Merge checked, completed changes into `develop` and push it.
+  Prepare and open a PR into `main` only after user approval; merging and
+  releasing also require their respective explicit approvals.
 
 ## 1.1.1
 

@@ -15,9 +15,19 @@ Entwicklungsumgebung und Projektaufbau stehen in der
 ## Entwicklung und Branches
 
 Es gelten die [Projektvorgaben](AGENTS.md), übernommen aus BT-RC.
-Änderungen entstehen auf `develop` oder einem Arbeitsbranch, niemals direkt auf
-`main`. Die Übernahme nach `main` erfolgt ausschließlich per Pull Request nach
-ausdrücklicher Nutzerfreigabe. Eine Merge-Freigabe ist keine Release-Freigabe.
+Für jede Aufgabe vom aktuellen `develop` einen eigenen, passend benannten Branch
+anlegen. Kleine Änderungen im bestehenden Arbeitsverzeichnis bearbeiten;
+für umfangreichere Aufgaben zusätzlich einen eigenen Worktree erstellen.
+Fertige Änderungen nach passenden Prüfungen auf dem Arbeitsbranch committen,
+nach `develop` übernehmen und `develop` pushen; dafür ist keine weitere Freigabe nötig.
+`develop` sammelt abgeschlossene Änderungen. Keine direkte Implementierung auf
+`develop` oder `main`.
+
+Erst nach ausdrücklicher Nutzerfreigabe den gesammelten Stand für einen Pull Request
+von `develop` nach `main` vorbereiten und den PR eröffnen. Die Übernahme nach `main`
+erfolgt ausschließlich über diesen PR und benötigt ebenfalls die Nutzerfreigabe.
+Ein Release einschließlich Entwurf oder Tag benötigt eine separate ausdrückliche
+Anweisung; eine PR- oder Merge-Freigabe ist keine Release-Freigabe.
 
 Die Version automatisch anhand des gesamten unveröffentlichten Umfangs seit dem
 letzten stabilen Release erhöhen: Patch für Korrekturen, interne Änderungen und

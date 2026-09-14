@@ -1,3 +1,4 @@
+param([switch]$SocialOnly)
 # Reproducible vector construction and PNG export; Windows PowerShell 5.1 / System.Drawing.
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Drawing
@@ -72,11 +73,11 @@ public static class EnigmaBrandExport {
         using(var m=new Matrix(scale,0,0,scale,x,y)) copy.Transform(m);
         return copy;
     }
-    static void Png(string file, List<GraphicsPath> paths, Color[] colors, RectangleF view, int w,int h) {
+    static void Png(string file, List<GraphicsPath> paths, Color[] colors, RectangleF view, int w,int h, Color? backgroundColor = null) {
         const int supersample=3;
         using(var hi=new Bitmap(w*supersample,h*supersample,PixelFormat.Format32bppArgb)) {
             using(var g=Graphics.FromImage(hi)) {
-                g.Clear(Color.Transparent); g.SmoothingMode=SmoothingMode.AntiAlias;
+                g.Clear(backgroundColor ?? Color.Transparent); g.SmoothingMode=SmoothingMode.AntiAlias;
                 g.CompositingQuality=CompositingQuality.HighQuality;
                 g.ScaleTransform(w*supersample/view.Width,h*supersample/view.Height);
                 g.TranslateTransform(-view.X,-view.Y);
@@ -84,7 +85,7 @@ public static class EnigmaBrandExport {
             }
             using(var output=new Bitmap(w,h,PixelFormat.Format32bppArgb)) {
                 using(var g=Graphics.FromImage(output)) {
-                    g.Clear(Color.Transparent); g.CompositingMode=CompositingMode.SourceCopy;
+                    g.Clear(backgroundColor ?? Color.Transparent); g.CompositingMode=backgroundColor.HasValue ? CompositingMode.SourceOver : CompositingMode.SourceCopy;
                     g.InterpolationMode=InterpolationMode.HighQualityBicubic; g.PixelOffsetMode=PixelOffsetMode.HighQuality;
                     using(var attrs=new ImageAttributes()) {
                         attrs.SetWrapMode(WrapMode.TileFlipXY);
@@ -100,6 +101,33 @@ public static class EnigmaBrandExport {
         b.Append("<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\""+N(v.X)+" "+N(v.Y)+" "+N(v.Width)+" "+N(v.Height)+"\" role=\"img\" aria-label=\"Enigma2 Connect\">\n<title>Enigma2 Connect</title>\n");
         for(int i=0;i<paths.Count;i++) b.Append("<path fill=\""+ColorTranslator.ToHtml(colors[i])+"\" fill-rule=\"evenodd\" d=\""+PathData(paths[i])+"\"/>\n");
         b.Append("</svg>\n"); File.WriteAllText(file,b.ToString(),new UTF8Encoding(false));
+    }
+
+    public static void Social(string sourceDir, string outputDir) {
+        Directory.CreateDirectory(outputDir);
+        using(var fonts=new PrivateFontCollection()) {
+            fonts.AddFontFile(Path.Combine(sourceDir,"Poppins-ExtraBold.ttf"));
+            var family=fonts.Families[0];
+            var style=family.IsStyleAvailable(FontStyle.Regular)?FontStyle.Regular:FontStyle.Bold;
+            using(var receiver=Receiver()) using(var remote=RemoteTop()) using(var buttons=Buttons())
+            using(var word=new GraphicsPath()) using(var background=new GraphicsPath()) {
+                word.AddString("Enigma2 Connect",family,(int)style,142,new PointF(0,0),StringFormat.GenericTypographic);
+                var bounds=word.GetBounds();
+                float scale=960f/bounds.Width;
+                using(var matrix=new Matrix(scale,0,0,scale,160-bounds.X*scale,414-bounds.Y*scale)) word.Transform(matrix);
+                background.AddRectangle(new RectangleF(0,0,1280,640));
+                var paths=new List<GraphicsPath> {
+                    background,Transform(receiver,.5f,420,90),
+                    Transform(remote,.5f,420,90),Transform(buttons,.5f,420,90),word
+                };
+                var navy=ColorTranslator.FromHtml("#15346F");
+                var colors=new[]{Color.White,navy,ColorTranslator.FromHtml("#006BFF"),navy,navy};
+                var view=new RectangleF(0,0,1280,640);
+                Png(Path.Combine(outputDir,"social-preview.png"),paths,colors,view,1280,640,Color.White);
+                Svg(Path.Combine(sourceDir,"social-preview.svg"),paths,colors,view);
+                for(int i=1;i<=3;i++)paths[i].Dispose();
+            }
+        }
     }
     public static void Run(string sourceDir,string brandDir) {
         Directory.CreateDirectory(brandDir);
@@ -140,6 +168,6 @@ Add-Type -TypeDefinition $source -ReferencedAssemblies System.Drawing
 $sourceDir = Join-Path $PSScriptRoot 'source'
 $projectDir = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
 $brandDir = Join-Path $projectDir 'custom_components\enigma2_connect\brand'
-[EnigmaBrandExport]::Run($sourceDir,$brandDir)
-Get-ChildItem -LiteralPath $brandDir | Select-Object Name,Length
-
+if (!$SocialOnly) { [EnigmaBrandExport]::Run($sourceDir,$brandDir) }
+[EnigmaBrandExport]::Social($sourceDir,$PSScriptRoot)
+Get-Item -LiteralPath (Join-Path $PSScriptRoot 'social-preview.png') | Select-Object Name,Length

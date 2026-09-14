@@ -485,3 +485,11 @@ and explicit approvals in [RELEASING.en.md](../RELEASING.en.md) before publicati
 Browser/Cast streaming, Wake-on-LAN, creating recurring
 timers and receiving screen-message answers are not implemented. Further edge
 cases are covered in the developer guide.
+
+## Social preview – 2026-09-14
+
+Exported and visually checked the new 1280 × 640 GitHub image for 1.1.2-dev.1.
+Checked PNG dimensions, fully opaque background, SVG structure and reproducible
+export using `-SocialOnly`. The eight HA brand files and integration logic remain
+unchanged, so the quality checklist is unaffected. No new HA/receiver test.
+Source and export instructions: [Branding](../assets/branding/README.md).

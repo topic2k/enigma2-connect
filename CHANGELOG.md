@@ -4,11 +4,23 @@
 
 ## Inhaltsverzeichnis
 
+- [1.1.2-dev.1](#112-dev1)
 - [1.1.1](#111)
 - [1.1.0](#110)
 - [1.0.2](#102)
 - [1.0.1](#101)
 - [1.0.0](#100)
+
+## 1.1.2-dev.1
+
+Unveröffentlichte Entwicklerversion.
+
+- GitHub-Social-Preview in 1280 × 640 Pixeln ergänzt: Gerätesymbol mittig über
+  der Wortmarke auf weißem Hintergrund, mit PNG, SVG-Quelle und `-SocialOnly`-Export.
+- Aufgaben auf eigenen Branches bearbeiten, umfangreichere Aufgaben zusätzlich
+  in eigenen Worktrees. Fertige Änderungen geprüft nach `develop` übernehmen
+  und pushen. PR-Vorbereitung und PR nach `main` erst nach Nutzerfreigabe;
+  Merge und Release erfordern ebenfalls die jeweils ausdrückliche Freigabe.
 
 ## 1.1.1
 
