@@ -4,7 +4,7 @@ on:
   schedule:
     - cron: '23 7 * * 1'
     # Other days only retry entries already due; they do not scan for new posts.
-    - cron: '23 7 * * 2-7'
+    - cron: '23 7 * * 0,2-6'
   workflow_dispatch:
     inputs:
       dry_run:
