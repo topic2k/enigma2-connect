@@ -508,3 +508,12 @@ Freigaben aus [RELEASING.md](../RELEASING.md).
 Browser-/Cast-Streaming, Wake-on-LAN, neue
 wiederkehrende Timer und Antworten auf Bildschirmnachrichten sind nicht
 implementiert. Weitere Sonderfälle stehen in der Entwicklerdokumentation.
+
+## Social Preview – 14.09.2026
+
+Für 1.1.2-dev.1 das neue GitHub-Bild in 1280 × 640 Pixeln exportiert und
+visuell geprüft. PNG-Abmessungen, vollständig deckender Hintergrund,
+SVG-Struktur und reproduzierbarer Export mit `-SocialOnly` geprüft.
+Die acht HA-Brand-Dateien und die Integrationslogik bleiben unverändert;
+die Qualitätscheckliste ist dadurch nicht betroffen. Kein neuer HA-/Receiver-Test.
+Quelle und Exportanleitung: [Branding](../assets/branding/README.md).

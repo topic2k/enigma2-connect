@@ -55,10 +55,16 @@ bleibt verpflichtend.
 
 ## Branches, Freigabe und Releases
 
-- Änderungen zuerst auf `develop` oder bei Bedarf auf einem neuen Arbeitsbranch
-  umsetzen; keine direkten Änderungen oder Commits auf `main`.
-- Änderungen erst nach ausdrücklicher Freigabe durch den Nutzer und ausschließlich
-  per Pull Request nach `main` übernehmen.
+- Für jede Aufgabe einen eigenen, passend benannten Branch vom aktuellen `develop`
+  erstellen. Kleine Änderungen im bestehenden Arbeitsverzeichnis bearbeiten;
+  für umfangreichere Aufgaben zusätzlich einen eigenen Worktree anlegen.
+- Fertige, passend geprüfte Änderungen auf dem Arbeitsbranch committen, danach
+  nach `develop` übernehmen und `develop` pushen. Dafür ist keine weitere
+  Freigabe erforderlich. `develop` sammelt abgeschlossene Änderungen;
+  keine direkte Implementierung auf `develop` oder `main`.
+- Erst nach ausdrücklicher Nutzerfreigabe einen Pull Request von `develop` nach
+  `main` vorbereiten und eröffnen. Änderungen ausschließlich über diesen PR nach
+  `main` übernehmen; auch der Merge benötigt die Nutzerfreigabe.
 - Ein neues Release nur auf ausdrückliche Anweisung des Nutzers erstellen.
   Die Freigabe von Änderungen oder eines Pull Requests ist keine Release-Freigabe.
 - Die folgenden Versionierungsregeln erlauben keine automatische Veröffentlichung.

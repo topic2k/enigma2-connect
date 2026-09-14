@@ -54,10 +54,16 @@ rules; the remote comparison before a PR remains mandatory.
 
 ## Branches, approval and releases
 
-- Implement changes on `develop` first, or on a new working branch when needed;
-  do not make changes or commits directly on `main`.
-- Merge changes into `main` exclusively through a pull request and only after
-  explicit approval from the user.
+- Create a separate, descriptively named branch from current `develop` for every
+  task. Use the existing working directory for small changes; also create a
+  separate worktree for larger tasks.
+- Commit completed changes on the working branch after appropriate checks,
+  then merge them into `develop` and push `develop` without further approval.
+  `develop` collects completed changes; do not implement directly on `develop`
+  or `main`.
+- Prepare and open a pull request from `develop` into `main` only after explicit
+  user approval. Merge changes into `main` exclusively through that PR;
+  merging also requires user approval.
 - Create a new release only when explicitly instructed by the user.
   Approval of changes or a pull request does not authorize a release.
 - The versioning rules below do not authorize automatic publication.
