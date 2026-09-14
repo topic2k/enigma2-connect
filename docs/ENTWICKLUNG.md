@@ -146,16 +146,39 @@ prüft **montags um 07:23 UTC** die vollständigen Beiträge im offiziellen
 [Blog-Repository](https://github.com/home-assistant/developers.home-assistant/tree/master/blog).
 Er berücksichtigt neue und inhaltlich geänderte Beiträge ab **2026-09-01**.
 Pro Lauf werden höchstens **fünf Beiträge gemeinsam in einer Gemini-Anfrage**
-bewertet. Ohne neue Beiträge erfolgt kein KI-Aufruf. Weitere Beiträge bleiben
-für den nächsten Lauf offen; Quelltexte werden nicht stillschweigend gekürzt.
+bewertet. Ohne neue oder zur Wiederholung fällige Beiträge erfolgt kein KI-Aufruf.
+Weitere neue Beiträge bleiben für die nächste Wochenprüfung offen; Quelltexte
+werden nicht stillschweigend gekürzt.
+
+Der [Scheduler](../scripts/ha_blog_scheduler.py) merkt sich erstmals fehlgeschlagene
+Beiträge und beendet diesen Lauf ohne Fehlerstatus. Dienstags bis sonntags um
+07:23 UTC bearbeitet er ausschließlich fällige Wiederholungen. Ein Beitrag wird
+frühestens am folgenden UTC-Kalendertag erneut versucht; verpasste Termine werden
+beim nächsten verfügbaren Lauf nachgeholt. Scheitert derselbe Beitragsinhalt beim
+zweiten Versuch, wird dieser Lauf rot. Danach erfolgen keine weiteren automatischen
+Versuche für diesen Inhalt; andere und inhaltlich geänderte Beiträge bleiben prüfbar.
+Gültige Teilergebnisse werden veröffentlicht, nur fehlende oder ungültige Ergebnisse
+bleiben offen. Ein erneuter Lauf am selben Tag verbraucht keinen zweiten Versuch.
+
+Der Status liegt dauerhaft als `.github/ha-blog-state.json` auf dem separaten Branch
+`ha-blog-monitor-state`: Beitragsinhalt und dessen Hash, ursprünglicher Blog-Commit,
+Versuchszähler, Datum und Fehlerstelle. Der Branch wird beim ersten schreibenden
+Lauf angelegt und darf nicht gelöscht oder nach `main` gemergt werden. Es werden
+weder Zugangsdaten noch Integrationsquelltexte im Status-JSON gespeichert. Der
+Wiederholungsversuch verwendet den gespeicherten Beitrag und den aktuellen
+Integrationscode. Erfolgreiche Berichtsmarker verhindern auch nach einer unklaren
+GitHub-Antwort doppelte Bearbeitung. Scheitert das Lesen oder Sichern des Status,
+meldet der Lauf sofort einen Infrastrukturfehler, da sonst kein verlässliches
+Merken und Wiederholen möglich ist. Auch Runner-/Checkout-Fehler bleiben sichtbar.
 
 Das [Gemini-Prüfskript](../scripts/ha_blog_gemini.py) verwendet die Google-API
 direkt mit `gemini-3.8-flash`. Eine feste Anfrage vermeidet variable Agentenschleifen.
-Es gibt keine Werkzeuge, Websuche, automatische Wiederholung oder Umschaltung auf
+Es gibt keine Werkzeuge, Websuche, sofortige Wiederholung oder Umschaltung auf
 andere Modelle. Die Grenzen sind 400.000 UTF-8-Eingabebytes und 8.192 Ausgabetokens
 einschließlich Denktokens bei Denkstufe `low`. Bei zu großer Eingabe verkleinert
 das Skript die Beitragsgruppe. Passt schon ein Beitrag mit dem vollständigen
-Code nicht hinein, schlägt der Lauf fehl und verlangt eine manuelle Prüfung.
+Code nicht hinein, gilt auch dafür der erste vorgemerkte und zweite fehlgeschlagene
+Versuch; dabei erfolgt kein KI-Aufruf.
 
 An Google gehen die Blogtexte und eine feste Auswahl veröffentlichbarer Quellen:
 Python-Module der Integration, Manifest, Übersetzungen, Icons, Qualitätscheckliste, Aktionsdefinitionen,
@@ -170,8 +193,8 @@ Ergebnisse `impacted` (konkreter Anpassungsbedarf), `no-impact` (keine
 Auswirkung erkennbar) oder `uncertain` (manuelle Klärung erforderlich). Sie enthalten
 Begründung, nächste Schritte, HA-Version/Frist soweit angegeben und Code-Verweise.
 Dateien, Zeilennummern und wörtliche Quellzeilen werden lokal validiert. Das bestätigt
-die Fundstelle, nicht die Schlussfolgerung der KI. Der gesamte Stapel muss gültig
-und vollständig sein, bevor ein Issue entsteht. Eine KI-Einschätzung ersetzt keine
+die Fundstelle, nicht die Schlussfolgerung der KI. Jeder veröffentlichte Beitrag
+muss vollständig gültig sein. Eine KI-Einschätzung ersetzt keine
 Home-Assistant-Kompatibilitätsprüfung.
 
 Zusätzlich prüft Gemini **Ergänzungen und Verbesserungen**: neue Funktionen,
@@ -183,8 +206,8 @@ Code-Fundstelle als Ansatzpunkt; die neue API muss noch nicht verwendet werden.
 Ein `no-impact`-Beitrag kann somit trotzdem eine Verbesserung empfehlen; auch
 Anpassungsbedarf und optionale Ergänzung können gemeinsam auftreten. Bereits
 umgesetzte Funktionen und reine Pflichtmigrationen gelten nicht als Ergänzung.
-Fehlt eine der beiden Bewertungen oder ein erforderlicher Beleg, entsteht kein
-Berichts-Issue. Beide Bewertungen erfolgen in derselben wöchentlichen Anfrage.
+Fehlt eine der beiden Bewertungen oder ein erforderlicher Beleg, wird dieser
+Beitrag zur Wiederholung vorgemerkt. Beide Bewertungen erfolgen in derselben Anfrage.
 Der Bericht schlägt Änderungen vor; die Umsetzung wird separat entschieden.
 
 Pro erfolgreichem Lauf mit neuen Beiträgen entsteht **ein zusammengefasstes
@@ -219,6 +242,9 @@ zusätzlich 30 Tage als Actions-Artefakt vor.
    aber keine dauerhaften Prüfmarker. Bericht und `usage` im JSON kontrollieren.
 5. Für manuelle Issue-Veröffentlichung den Probelauf-Schalter deaktivieren.
    Geplante Wochenläufe veröffentlichen den zusammengefassten Bericht automatisch.
+6. Nach zwei Fehlschlägen bei Bedarf **Retry exhausted entries only** aktivieren
+   und **dry_run** deaktivieren. Dies versucht die markierten Beiträge ausdrücklich
+   erneut; ein weiterer Fehlschlag bleibt rot. Probeläufe ändern keine Versuchszähler.
 
 Gemini verarbeitet diese Quellen nach den Google-Bedingungen für den Free Tier;
 die [Preisseite](https://ai.google.dev/gemini-api/docs/pricing?hl=de#free) verweist
@@ -226,14 +252,16 @@ auf die Bedingungen zur Verwendung von Inhalten zur Produktverbesserung.
 Nur für diese Weitergabe geeignete Repository-Inhalte verwenden.
 
 Bei HTTP 429, anderen API-Fehlern, fehlendem Schlüssel oder ungültiger Antwort
-schlägt der Lauf sichtbar fehl. Ohne gespeicherten Bericht bleiben die Beiträge
-für den nächsten Lauf offen; es gibt keinen automatischen Paid-Fallback. Bei
-unklarem Ausgang einer Issue-Veröffentlichung findet der nächste Lauf einen
-eventuell bereits gespeicherten Bericht anhand der Marker.
+gilt für die betroffenen Beiträge: erster Versuch vorgemerkt, zweiter Versuch rot.
+Die Zusammenfassung nennt Beitrag, Versuch, Fälligkeit und Fehlerstelle. Im
+Fehlerfall kann zur Wochenanfrage eine weitere KI-Anfrage am Folgetag hinzukommen;
+es gibt keinen automatischen Paid-Fallback. Fehlende sichere Zustandsspeicherung
+ist hiervon ausgenommen und wird sofort als Infrastrukturfehler gemeldet.
 
 Der schreibende Job läuft ausschließlich im ursprünglichen Repository auf dem
 Standardbranch. Pushes und Pull Requests führen nur Offline-Tests aus, Forks
-veröffentlichen keine Berichte. Berechtigungen: `contents: read`, `issues: write`;
+veröffentlichen keine Berichte. Berechtigungen des Monitor-Jobs: `contents: write`
+für den Statusbranch und `issues: write` für Berichte; der Test-Job bleibt lesend.
 GitHub Actions und Issues müssen aktiviert sein. Parallele Läufe werden serialisiert.
 GitHub kann Zeitpläne verzögern und deaktiviert geplante Workflows öffentlicher
 Repositories nach 60 Tagen ohne Repository-Aktivität

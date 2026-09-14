@@ -268,7 +268,10 @@ def render_report(posts, results, repository, revision, upstream_revision, defer
     for post in posts:
         key = post_id(post)
         result = by_id[key]
-        source = f"{UPSTREAM}/blob/{upstream_revision}/blog/{quote(post['path'], safe='/')}"
+        blog_revision = (
+            upstream_revision[key] if isinstance(upstream_revision, dict) else upstream_revision
+        )
+        source = f"{UPSTREAM}/blob/{blog_revision}/blog/{quote(post['path'], safe='/')}"
         lines.extend(
             [
                 f"<!-- ha-blog-gemini:{key} -->",

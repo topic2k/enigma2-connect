@@ -4,10 +4,22 @@
 
 ## Contents
 
+- [1.1.1](#111)
 - [1.1.0](#110)
 - [1.0.2](#102)
 - [1.0.1](#101)
 - [1.0.0](#100)
+
+## 1.1.1
+
+Unreleased.
+
+- Failed blog posts are durably queued after the weekly check and retried on
+  the following day. Only a second failure for the same content fails the run;
+  partial successes are completed separately.
+- A state branch records attempt counts and original posts. Daily retry runs
+  do not select new posts; exhausted entries can be retried manually. Reports
+  distinguish Gemini, response validation and GitHub publication failures.
 
 ## 1.1.0
 
