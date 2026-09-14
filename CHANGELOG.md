@@ -4,10 +4,22 @@
 
 ## Inhaltsverzeichnis
 
+- [1.1.1](#111)
 - [1.1.0](#110)
 - [1.0.2](#102)
 - [1.0.1](#101)
 - [1.0.0](#100)
+
+## 1.1.1
+
+Unveröffentlicht.
+
+- Fehlgeschlagene Blogbeiträge werden nach dem wöchentlichen Check dauerhaft
+  vorgemerkt und am Folgetag erneut versucht. Erst ein zweiter Fehlschlag für
+  denselben Inhalt macht den Lauf rot; Teilerfolge werden separat abgeschlossen.
+- Statusbranch mit Versuchszähler und Originalbeitrag, täglicher Nachholtermin
+  ohne neue Beitragsauswahl und manueller Neustart nach zwei Fehlern. Berichte
+  unterscheiden Gemini-, Antwortvalidierungs- und GitHub-Veröffentlichungsfehler.
 
 ## 1.1.0
 

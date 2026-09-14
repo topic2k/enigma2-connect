@@ -140,16 +140,35 @@ The [Home Assistant developer blog](../.github/workflows/ha-developer-blog.yml)
 workflow checks the complete posts in the official
 [blog repository](https://github.com/home-assistant/developers.home-assistant/tree/master/blog)
 on **Mondays at 07:23 UTC**. It considers new and edited posts from **2026-09-01**.
-Each run assesses at most **five posts together in one Gemini request**. No new
-posts means no AI call. Additional posts remain pending for the next run; source
-code is never silently truncated.
+Each run assesses at most **five posts together in one Gemini request**. Without
+new posts or due retries there is no AI call. Additional new posts remain pending
+for the next weekly review; source code is never silently truncated.
+
+The [scheduler](../scripts/ha_blog_scheduler.py) remembers posts that fail for the
+first time and finishes that run without an error status. Tuesday through Sunday
+at 07:23 UTC it processes due retries only. A post is retried no earlier than the
+next UTC calendar day; missed runs are caught up at the next available run. A
+second failure for the same content makes that run fail. No further automatic
+attempts are made for that content; other and edited posts remain eligible. Valid
+partial results are published; only missing or invalid results remain pending.
+A same-day rerun does not spend another attempt.
+
+Durable state is stored in `.github/ha-blog-state.json` on the dedicated branch
+`ha-blog-monitor-state`: blog content and its hash, original blog revision, attempt
+count, dates and failure stage. The first publishing run creates this branch;
+do not delete it or merge it into `main`. The JSON contains no credentials or
+integration source code. Retries use the saved post and current integration code.
+Successful report markers prevent duplicate processing even after an ambiguous
+GitHub response. Failure to read or save state immediately fails the run because
+reliable persistence and retry would otherwise be impossible. Runner/checkout
+failures also remain visible.
 
 The [Gemini script](../scripts/ha_blog_gemini.py) uses Google's API directly with
 `gemini-3.8-flash`. One fixed request avoids variable agent loops. There are no
-tools, web searches, automatic retries or model fallbacks. Limits are 400,000 UTF-8
+tools, web searches, immediate retries or model fallbacks. Limits are 400,000 UTF-8
 input bytes and 8,192 output tokens, including thinking tokens at thinking level `low`.
 Oversized batches are reduced. If even one post with the complete code exceeds
-the input cap, the run fails and requires manual review.
+the input cap, the same first-pending / second-failure policy applies, without an AI call.
 
 Google receives the blog text and an allowlist of publishable sources: integration
 Python modules, manifest, translations, icons, quality checklist, service definitions, dashboard card,
@@ -163,8 +182,8 @@ Each post receives two independent assessments. Compatibility results are
 identified), or `uncertain` (manual clarification required), with reasons, next
 steps, HA versions/deadlines when stated and code references. File paths, line
 numbers and exact source lines are validated locally. This verifies the citation,
-not the AI's conclusion. The complete batch must be valid before an issue is
-created. AI assessments do not replace Home Assistant compatibility tests.
+not the AI's conclusion. Every published post must be fully valid.
+AI assessments do not replace Home Assistant compatibility tests.
 
 Gemini also reviews **enhancements and improvements**: new features, usability,
 performance, reliability and maintainability. The `opportunity` field contains
@@ -174,8 +193,8 @@ tradeoffs. Recommendations require a validated source citation as an integration
 point; the new API need not already be used. A `no-impact` post can therefore
 still recommend an enhancement; required adaptations and optional improvements
 can also coexist. Existing features and mandatory migrations are not enhancements.
-Missing assessments or required evidence prevent report publication. Both reviews
-use the same weekly request. Reports propose changes; implementation is decided
+Missing assessments or required evidence defer that post for retry. Both reviews
+use the same request. Reports propose changes; implementation is decided
 separately.
 
 Each successful run with new posts creates **one combined report issue**, even
@@ -207,20 +226,25 @@ JSON reports are also retained as Actions artifacts for 30 days.
    markers. Inspect the report and the JSON `usage` field.
 5. Disable the dry-run switch to publish an issue manually. Scheduled weekly
    runs publish the combined report automatically.
+6. To explicitly retry posts after two failures, enable **Retry exhausted entries
+   only** and disable **dry_run**. Another failure remains an error. Dry runs do
+   not change attempt counters.
 
 Google processes the supplied sources under its Free Tier terms; the
 [pricing page](https://ai.google.dev/gemini-api/docs/pricing#free) links to the terms
 governing use of content for product improvement. Use only repository content
 suitable for this disclosure.
 
-HTTP 429, other API errors, a missing key or an invalid response fail the run
-visibly. Posts without a saved report remain pending for the next run; there is
-no automatic paid fallback. After an ambiguous issue publication response, the
-next run finds any report that was already saved by its markers.
+HTTP 429, other API errors, a missing key or invalid responses defer affected posts
+on their first attempt and fail on the second. The summary records each post,
+attempt, due date and failure stage. A failed weekly request may be followed by
+one more AI request on the next day; there is no automatic paid fallback. Failure
+to securely read or save retry state is an immediate infrastructure error.
 
 The publishing job only runs in the original repository on its default branch.
 Pushes and PRs only run offline tests; forks do not publish reports. Permissions
-are `contents: read` and `issues: write`; Actions and Issues must be enabled.
+are `contents: write` for the state branch and `issues: write` for reports;
+the test job remains read-only. Actions and Issues must be enabled.
 Concurrent runs are serialized. GitHub can delay schedules and disables them
 for public repositories after 60 days without repository activity
 ([GitHub schedules](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule)).

@@ -2,6 +2,17 @@
 
 # Verification summary
 
+## Blog check retries – 1.1.1
+
+On 2026-09-14, 45 offline tests passed, including 17 new scheduler/state tests.
+Coverage includes non-error first failures, second failures on the following day,
+no duplicate same-day attempts, late catch-up, partial successes, original post
+content during retries, manual recovery and GitHub state writes protected against
+lost updates. Ruff, formatting, Python syntax and offline lock verification
+(159 packages) passed. Tests simulate Google, GitHub and multiple calendar days;
+they do not establish an actual next-day scheduled run or additional Home Assistant/
+receiver acceptance. PR CI checks the complete repository state.
+
 Checked on **2026-09-13**. Shared development version: **1.1.0-dev.10**.
 This is a technical report, not release or hardware approval. Version history:
 [changelog](../CHANGELOG.en.md). Reproduction commands:

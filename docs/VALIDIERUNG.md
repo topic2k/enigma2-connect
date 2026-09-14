@@ -2,6 +2,18 @@
 
 # Prüfübersicht
 
+## Wiederholung des Blog-Checks – 1.1.1
+
+Am 14.09.2026: 45 Offline-Tests bestanden, darunter 17 neue Scheduler-/Statustests.
+Geprüft wurden erster Fehlschlag ohne Fehlerstatus, zweite Fehlermeldung am
+Folgetag, kein doppelter Versuch am selben Tag, spätere Nachholung, Teilerfolge,
+unveränderte Originalbeiträge beim Wiederholen, manuelle Wiederaufnahme sowie
+GitHub-Statusspeicherung mit Schutz vor überschriebenen Zwischenständen.
+Ruff, Formatierung, Python-Syntax und Offline-Lockprüfung (159 Pakete) bestanden.
+Die Tests simulieren Google und GitHub sowie mehrere Kalendertage. Sie sind
+kein Nachweis eines tatsächlich am Folgetag gelaufenen GitHub-Jobs und keine
+zusätzliche Home-Assistant-/Receiverabnahme. Der PR-CI-Lauf prüft den Gesamtstand.
+
 Prüfdatum: **13.09.2026**. Gemeinsamer Entwicklungsstand: **1.1.0-dev.10**.
 Dies ist ein technischer Prüfbericht, keine Release- oder Hardwarefreigabe.
 Versionshistorie: [Changelog](../CHANGELOG.md). Reproduktionsbefehle:

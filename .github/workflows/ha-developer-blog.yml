@@ -3,6 +3,8 @@ name: Home Assistant developer blog
 on:
   schedule:
     - cron: '23 7 * * 1'
+    # Other days only retry entries already due; they do not scan for new posts.
+    - cron: '23 7 * * 2-7'
   workflow_dispatch:
     inputs:
       dry_run:
@@ -13,17 +15,23 @@ on:
         description: 'Include posts from this date (YYYY-MM-DD)'
         type: string
         default: '2026-09-01'
+      retry_failed:
+        description: 'Retry exhausted entries only (requires dry_run=false)'
+        type: boolean
+        default: false
   push:
     paths:
       - '.github/workflows/ha-developer-blog.yml'
       - 'scripts/ha_blog_monitor.py'
       - 'scripts/ha_blog_gemini.py'
+      - 'scripts/ha_blog_scheduler.py'
       - 'scripts/tests/**'
   pull_request:
     paths:
       - '.github/workflows/ha-developer-blog.yml'
       - 'scripts/ha_blog_monitor.py'
       - 'scripts/ha_blog_gemini.py'
+      - 'scripts/ha_blog_scheduler.py'
       - 'scripts/tests/**'
 
 permissions:
@@ -55,7 +63,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
-      contents: read
+      # Write retry state only on ha-blog-monitor-state, never on main.
+      contents: write
       issues: write
     steps:
       - uses: actions/checkout@v7
@@ -78,6 +87,8 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           SINCE: ${{ inputs.since || '2026-09-01' }}
           PUBLISH: ${{ github.event_name == 'schedule' || inputs.dry_run == false }}
+          RETRY_ONLY: ${{ (github.event_name == 'schedule' && github.event.schedule != '23 7 * * 1') || inputs.retry_failed == true }}
+          RETRY_FAILED: ${{ inputs.retry_failed == true }}
         shell: bash
         run: |
           export BLOG_SHA="$(git -C .work/ha-developer-blog rev-parse HEAD)"
@@ -85,7 +96,13 @@ jobs:
           if [ "$PUBLISH" = "true" ]; then
             args+=(--publish)
           fi
-          uv run --no-project --python 3.14 python scripts/ha_blog_gemini.py \
+          if [ "$RETRY_ONLY" = "true" ]; then
+            args+=(--retry-only)
+          fi
+          if [ "$RETRY_FAILED" = "true" ]; then
+            args+=(--retry-failed)
+          fi
+          uv run --no-project --python 3.14 python scripts/ha_blog_scheduler.py \
             --blog-dir .work/ha-developer-blog/blog --since "$SINCE" "${args[@]}"
       - uses: actions/upload-artifact@v7
         if: always()

@@ -149,10 +149,11 @@ def marker(path):
     return "<!-- ha-developer-blog:" + hashlib.sha256(path.encode()).hexdigest() + " -->"
 
 
-def github_request(repository, token, endpoint, payload=None):
+def github_request(repository, token, endpoint, payload=None, *, method=None):
     request = Request(
         f"https://api.github.com/repos/{repository}/{endpoint}",
         data=None if payload is None else json.dumps(payload).encode(),
+        method=method,
         headers={
             "Authorization": f"Bearer {token}",
             "Accept": "application/vnd.github+json",
