@@ -2,6 +2,27 @@
 
 # Prüfübersicht
 
+## Cloudflare-Einzelprüfung – 1.1.2-dev.2
+
+Am 15.09.2026 wurde die getrennte Verarbeitung mit 52 lokalen Skripttests,
+Ruff, Python-Syntax, Lockdatei sowie Workflow-/Dokumentationsprüfung geprüft.
+Die Tests belegen eine Beitrags-ID je API-Anfrage, Ablehnung fremder IDs und
+Erhalt erfolgreicher Teilergebnisse einschließlich Verbrauch bei einem späteren Fehler.
+Qualitätscheckliste und Integrationslaufzeit bleiben unverändert.
+
+Der echte [Modbus-Einzeltest 34993573743](https://github.com/topic2k/enigma2-connect/actions/runs/34993573743)
+auf `6ab68a7` verarbeitete 70.336 Eingabe- und 541 Ausgabetokens für 2.274,84 Neurons.
+Die deutsche Begründung ist dem richtigen Beitrag zugeordnet und die Einstufung
+no-impact passt zur fehlenden Modbus-Nutzung. Es gibt keine irrelevanten Codebelege.
+Die Entfernungsfrist **2027.10** fehlt weiterhin; nur 2026.10 wird genannt.
+Vier ähnlich große Einzelanfragen würden rechnerisch etwa 9.100 Neurons benötigen,
+fünf etwa 11.375 und damit mehr als das tägliche kostenlose Kontingent. Dies ist
+nur eine Hochrechnung, keine Verbrauchsgarantie für andere Beiträge.
+
+Die übrigen drei Einzeltests sind noch offen. Wegen des heutigen Kontingents
+ist die einmalige Fortsetzung in Codex für den 16.09.2026 um 08:30 Uhr geplant.
+Kein produktiver Anbieterwechsel, keine Issues, Statusänderungen oder Releases.
+
 ## Cloudflare-Probelauf – 1.1.2-dev.2
 
 Am 15.09.2026 wurden Cloudflare Workers AI und `@cf/openai/gpt-oss-120b`

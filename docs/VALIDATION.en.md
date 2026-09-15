@@ -2,6 +2,25 @@
 
 # Verification summary
 
+## Cloudflare per-post trial – 1.1.2-dev.2
+
+On 2026-09-15, per-post processing passed 52 local script tests, Ruff, Python
+syntax, lockfile and workflow/documentation checks. Tests verify one post ID per
+API call, rejection of foreign IDs and retention of completed results and usage
+when a later request fails. The quality checklist and integration runtime are unchanged.
+
+The live [Modbus trial 34993573743](https://github.com/topic2k/enigma2-connect/actions/runs/34993573743)
+at `6ab68a7` used 70,336 input / 541 output tokens and 2,274.84 neurons. The German
+explanation belongs to the correct post and no-impact agrees with the absence of
+Modbus usage. No irrelevant source evidence is cited. The removal deadline
+**2027.10** is still missing; only 2026.10 is reported. Four similar requests
+would use approximately 9,100 neurons; five would use 11,375, exceeding the daily
+free allocation. This is an estimate, not a usage guarantee for other posts.
+
+The three remaining individual trials are pending. Due to today's quota, a one-time
+Codex continuation is scheduled for 2026-09-16 at 08:30 local time. No production
+provider change, issues, state updates or releases.
+
 ## Cloudflare trial – 1.1.2-dev.2
 
 On 2026-09-15, Cloudflare Workers AI and `@cf/openai/gpt-oss-120b` were tested
