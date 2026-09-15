@@ -7,8 +7,12 @@
 The isolated trial affects development scripts and workflow only. Quality
 checklist impact review: integration runtime, quality criteria and coverage
 thresholds remain unchanged. This trial provides no additional receiver or
-Home Assistant hardware evidence. Local script tests and a live Cloudflare
-request are still pending.
+Home Assistant hardware evidence. 49 local script tests, Python syntax, Ruff, lockfile and 72 documentation
+links passed. Branch CI at `145d21e` passed, including existing integration and
+coverage checks. The first live Cloudflare run
+[34991469621](https://github.com/topic2k/enigma2-connect/actions/runs/34991469621)
+received a successful API response but failed in the response adapter (KeyError).
+It produced no successful analysis report; usage and model quality remain unverified.
 
 ## Blog check retries – 1.1.1
 

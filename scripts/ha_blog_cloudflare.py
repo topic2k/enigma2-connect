@@ -65,7 +65,24 @@ def generate(prompt, token, account, *, output_dir=None):
         safe = json.dumps(data, ensure_ascii=False, indent=2).replace(token, "[REDACTED]")
         (output_dir / "provider-response.json").write_text(safe, encoding="utf-8")
     result = data["result"]
-    answer = result["response"]
+    return parse_result(result)
+
+
+def parse_result(result):
+    """Accept the observed chat-completion envelope and documented JSON-mode form."""
+    if "choices" in result:
+        choices = result["choices"]
+        if not isinstance(choices, list) or len(choices) != 1:
+            raise ValueError("Missing or ambiguous completion")
+        choice = choices[0]
+        if choice.get("finish_reason") != "stop":
+            raise ValueError("Incomplete or blocked completion")
+        message = choice["message"]
+        if message.get("refusal") or message.get("tool_calls") or message.get("function_call"):
+            raise ValueError("Refused or unexpected tool response")
+        answer = message["content"]
+    else:
+        answer = result["response"]
     if isinstance(answer, str):
         answer = json.loads(answer)
     if not isinstance(answer, dict):

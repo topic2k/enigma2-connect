@@ -8,7 +8,13 @@ Der isolierte Test betrifft nur Entwicklungsskripte und Workflow. Die
 Qualitätscheckliste wurde auf Auswirkungen geprüft: Integrationslaufzeit,
 Qualitätskriterien und Abdeckungsgrenzen bleiben unverändert. Keine zusätzlichen
 Receiver- oder Home-Assistant-Praxisnachweise aus diesem Test.
-Lokale Skripttests und echte Cloudflare-Prüfung stehen noch aus.
+49 lokale Skripttests, Python-Syntax, Ruff, Lockdatei und 72 Dokumentationslinks
+bestanden. Branch-CI für Commit `145d21e` erfolgreich, einschließlich der
+bestehenden Integrations- und Abdeckungsprüfungen. Der erste echte Cloudflare-Lauf
+[34991469621](https://github.com/topic2k/enigma2-connect/actions/runs/34991469621)
+erhielt eine erfolgreiche API-Antwort, scheiterte aber am noch nicht passenden
+Antwortparser (KeyError). Kein erfolgreicher Analysebericht aus diesem Lauf;
+Verbrauch und Modellqualität sind damit noch nicht belegt.
 
 ## Wiederholung des Blog-Checks – 1.1.1
 

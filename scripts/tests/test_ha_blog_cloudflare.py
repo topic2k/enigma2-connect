@@ -11,6 +11,25 @@ from scripts import ha_blog_cloudflare as cf
 
 
 class CloudflareTests(unittest.TestCase):
+    def test_observed_chat_completion_uses_final_content_only(self):
+        result = {
+            "choices": [
+                {
+                    "finish_reason": "stop",
+                    "message": {
+                        "content": '{"results": []}',
+                        "reasoning": "not JSON",
+                        "refusal": None,
+                    },
+                }
+            ],
+            "usage": {"neurons": 19.3},
+        }
+        self.assertEqual(cf.parse_result(result), ({"results": []}, {"neurons": 19.3}))
+        result["choices"][0]["finish_reason"] = "length"
+        with self.assertRaises(ValueError):
+            cf.parse_result(result)
+
     def test_structured_and_string_response(self):
         answer = {"results": []}
         for response in (answer, json.dumps(answer)):
