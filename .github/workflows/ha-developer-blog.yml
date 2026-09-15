@@ -11,6 +11,10 @@ on:
         description: 'Read-only Cloudflare trial of stored failed entries'
         type: boolean
         default: false
+      cloudflare_smoke:
+        description: 'Use only a tiny connection diagnostic with the Cloudflare trial'
+        type: boolean
+        default: false
       dry_run:
         description: 'Run Gemini and generate a report; do not create an issue'
         type: boolean
@@ -146,9 +150,15 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
-        run: >-
-          uv run --no-project --python 3.14 python scripts/ha_blog_cloudflare.py
-          --state .work/blog-state/.github/ha-blog-state.json
+          SMOKE: ${{ inputs.cloudflare_smoke }}
+        shell: bash
+        run: |
+          args=()
+          if [ "$SMOKE" = "true" ]; then
+            args+=(--smoke)
+          fi
+          uv run --no-project --python 3.14 python scripts/ha_blog_cloudflare.py \
+            --state .work/blog-state/.github/ha-blog-state.json "${args[@]}"
       - uses: actions/upload-artifact@v7
         if: always()
         with:

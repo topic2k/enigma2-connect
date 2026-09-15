@@ -32,7 +32,7 @@ def provider_codes(data):
     return ",".join(codes[:5]) or "unknown"
 
 
-def generate(prompt, token, account):
+def generate(prompt, token, account, *, output_dir=None):
     """Make one bounded request to the fixed Cloudflare model, without fallback."""
     if not token or not re.fullmatch(r"[a-f0-9]{32}", account):
         raise ValueError("Missing token or invalid account ID")
@@ -60,6 +60,10 @@ def generate(prompt, token, account):
         raise CloudflareError(f"HTTP {error.code}; Cloudflare codes: {codes}") from None
     if not isinstance(data, dict) or data.get("success") is not True:
         raise CloudflareError(f"Cloudflare codes: {provider_codes(data)}")
+    if output_dir is not None:
+        # Preserve provider output for offline parser diagnosis without another AI call.
+        safe = json.dumps(data, ensure_ascii=False, indent=2).replace(token, "[REDACTED]")
+        (output_dir / "provider-response.json").write_text(safe, encoding="utf-8")
     result = data["result"]
     answer = result["response"]
     if isinstance(answer, str):
@@ -70,6 +74,15 @@ def generate(prompt, token, account):
 
 
 def run(args):
+    if args.smoke:
+        args.output_dir.mkdir(parents=True, exist_ok=True)
+        generate(
+            'Return {"results": []}. This is a connection test without blog posts.',
+            os.environ.get("CLOUDFLARE_API_TOKEN", ""),
+            os.environ.get("CLOUDFLARE_ACCOUNT_ID", ""),
+            output_dir=args.output_dir,
+        )
+        return
     state = validate_state(json.loads(args.state.read_text(encoding="utf-8")))
     entries = state["entries"]
     sources = common.source_snapshot(args.root)
@@ -93,6 +106,7 @@ def run(args):
         prompt,
         os.environ.get("CLOUDFLARE_API_TOKEN", ""),
         os.environ.get("CLOUDFLARE_ACCOUNT_ID", ""),
+        output_dir=args.output_dir,
     )
     results = common.validate_results(data, posts, sources)
     report.update(results=results, usage=usage)
@@ -114,6 +128,7 @@ def run(args):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--state", type=Path, required=True)
+    parser.add_argument("--smoke", action="store_true")
     parser.add_argument("--root", type=Path, default=Path("."))
     parser.add_argument(
         "--output-dir", type=Path, default=Path(".work/blog-monitor/cloudflare-report")
