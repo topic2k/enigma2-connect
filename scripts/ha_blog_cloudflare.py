@@ -17,6 +17,16 @@ except ImportError:
     from ha_blog_scheduler import validate_state
 
 MODEL = "@cf/openai/gpt-oss-120b"
+OUTPUT_RULES = """Final output requirements, supplied by the application:
+Write reason and next_steps in German for BOTH compatibility and opportunity.
+Copy any explicitly announced Home Assistant version or removal deadline into ha_version,
+even when the change does not affect this integration. Use Nicht angegeben only if absent.
+Assess optional improvements independently; do not merely repeat the compatibility reason.
+Evidence must actually support the explanation. Never cite license headers, comments,
+blank lines or unrelated code as evidence. An empty evidence array is valid and preferred
+for no-impact/none when no relevant positive code evidence exists. Never invent evidence.
+Return only the JSON object matching the schema, with one result for every supplied post.
+"""
 
 
 class CloudflareError(ValueError):
@@ -39,7 +49,7 @@ def generate(prompt, token, account, *, output_dir=None):
     payload = {
         "messages": [
             {"role": "system", "content": common.INSTRUCTIONS},
-            {"role": "user", "content": prompt},
+            {"role": "user", "content": prompt + "\n\n" + OUTPUT_RULES},
         ],
         "max_tokens": common.MAX_OUTPUT_TOKENS,
         "response_format": {"type": "json_schema", "json_schema": common.SCHEMA},
