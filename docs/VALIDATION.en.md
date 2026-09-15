@@ -2,7 +2,7 @@
 
 # Verification summary
 
-## Cloudflare trial – 1.1.2-dev.1
+## Cloudflare trial – 1.1.2-dev.2
 
 On 2026-09-15, Cloudflare Workers AI and `@cf/openai/gpt-oss-120b` were tested
 on an isolated branch using the four stored September posts. 50 local script tests,

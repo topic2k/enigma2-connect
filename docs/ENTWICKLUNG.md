@@ -281,6 +281,13 @@ möglich. GitHub-Schreibzugriffe erfordern zusätzlich ausdrücklich `--publish`
 
 ## Cloudflare-Probelauf
 
+Mit `cloudflare_individual=true` wird jeder gespeicherte Beitrag getrennt mit
+derselben vollständigen Codeauswahl analysiert. `cloudflare_post` begrenzt den
+Test auf einen exakten gespeicherten Dateinamen. Höchstens fünf Anfragen laufen
+seriell; bei Fehlern stoppt der Test, bereits erfolgreiche Ergebnisse und der
+bisherige Verbrauch bleiben im Artefakt. Die getrennten Aufrufe vervielfachen
+den Eingabeverbrauch; das tägliche Free-Tier-Limit gilt weiterhin.
+
 **Teststand 15.09.2026:** API und Budget funktionieren; die gemeinsame Analyse
 vertauscht jedoch Begründungen zwischen Beiträgen. Noch nicht für den automatischen
 Betrieb freigegeben. Ergebnisse: [Prüfübersicht](VALIDIERUNG.md).

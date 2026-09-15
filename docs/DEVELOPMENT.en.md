@@ -263,6 +263,12 @@ GitHub writes additionally require explicit `--publish`.
 
 ## Cloudflare trial
 
+Set `cloudflare_individual=true` to analyze each stored post separately with
+the same complete source snapshot. `cloudflare_post` selects one exact stored
+filename. At most five requests run sequentially; an error stops the test while
+retaining completed results and usage in the artifact. Separate requests multiply
+input usage; the daily free-tier limit still applies.
+
 **Trial status 2026-09-15:** API and budget work, but batch analysis mixes up
 explanations between posts. Not approved for scheduled use. Results:
 [validation overview](VALIDATION.en.md).

@@ -15,6 +15,14 @@ on:
         description: 'Use only a tiny connection diagnostic with the Cloudflare trial'
         type: boolean
         default: false
+      cloudflare_individual:
+        description: 'Analyze one stored post per Cloudflare request'
+        type: boolean
+        default: false
+      cloudflare_post:
+        description: 'Optional exact stored filename for a targeted Cloudflare test'
+        type: string
+        default: ''
       dry_run:
         description: 'Run Gemini and generate a report; do not create an issue'
         type: boolean
@@ -129,7 +137,7 @@ jobs:
       github.event_name == 'workflow_dispatch' && inputs.cloudflare_test == true &&
       github.repository == 'topic2k/enigma2-connect'
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 20
     permissions:
       contents: read
     steps:
@@ -151,11 +159,19 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
           SMOKE: ${{ inputs.cloudflare_smoke }}
+          INDIVIDUAL: ${{ inputs.cloudflare_individual }}
+          POST: ${{ inputs.cloudflare_post }}
         shell: bash
         run: |
           args=()
           if [ "$SMOKE" = "true" ]; then
             args+=(--smoke)
+          fi
+          if [ "$INDIVIDUAL" = "true" ]; then
+            args+=(--individual)
+          fi
+          if [ -n "$POST" ]; then
+            args+=(--post "$POST")
           fi
           uv run --no-project --python 3.14 python scripts/ha_blog_cloudflare.py \
             --state .work/blog-state/.github/ha-blog-state.json "${args[@]}"

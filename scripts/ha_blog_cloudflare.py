@@ -115,9 +115,14 @@ def run(args):
     state = validate_state(json.loads(args.state.read_text(encoding="utf-8")))
     entries = state["entries"]
     sources = common.source_snapshot(args.root)
-    posts, prompt, deferred = common.select_batch(
-        [entry["post"] for entry in entries.values()], set(), sources
-    )
+    pending = [entry["post"] for entry in entries.values()]
+    if args.post:
+        pending = [post for post in pending if post["path"] == args.post]
+        if not pending:
+            raise ValueError("Requested post is not in stored state")
+    if args.individual:
+        return run_individual(args, pending, sources, entries)
+    posts, prompt, deferred = common.select_batch(pending, set(), sources)
     report = {
         "model": MODEL,
         "dry_run": True,
@@ -154,10 +159,86 @@ def run(args):
     common.append_summary(summary)
 
 
+def run_individual(args, posts, sources, entries):
+    """Send exactly one post per request, preserving completed reports if a later call fails."""
+    if not posts:
+        raise ValueError("No stored posts to test")
+    selected = posts[: common.MAX_POSTS]
+    report = {
+        "model": MODEL,
+        "dry_run": True,
+        "mode": "individual",
+        "selected": [p["path"] for p in selected],
+        "deferred": len(posts) - len(selected),
+        "results": [],
+        "requests": [],
+        "usage": {},
+    }
+    args.output_dir.mkdir(parents=True, exist_ok=True)
+    for post in selected:
+        key = common.post_id(post)
+        post_dir = args.output_dir / key
+        post_dir.mkdir(exist_ok=True)
+        _, prompt, _ = common.select_batch([post], set(), sources)
+        request_info = {
+            "post": post["path"],
+            "id": key,
+            "input_bytes": len((common.INSTRUCTIONS + prompt + OUTPUT_RULES).encode()),
+        }
+        report["requests"].append(request_info)
+        (post_dir / "request-info.json").write_text(
+            json.dumps(request_info, indent=2), encoding="utf-8"
+        )
+        try:
+            data, usage = generate(
+                prompt,
+                os.environ.get("CLOUDFLARE_API_TOKEN", ""),
+                os.environ.get("CLOUDFLARE_ACCOUNT_ID", ""),
+                output_dir=post_dir,
+            )
+            request_info["usage"] = usage
+            for metric in ("prompt_tokens", "completion_tokens", "total_tokens", "neurons"):
+                value = usage.get(metric)
+                if type(value) in (int, float):
+                    report["usage"][metric] = report["usage"].get(metric, 0) + value
+            results = common.validate_results(data, [post], sources)
+            report["results"].extend(results)
+            request_info["status"] = "validated"
+        except (ValueError, OSError, URLError, KeyError, TypeError) as error:
+            request_info["status"] = "failed"
+            request_info["error"] = (
+                str(error) if isinstance(error, CloudflareError) else type(error).__name__
+            )
+            raise
+        finally:
+            (args.output_dir / "report.json").write_text(
+                json.dumps(report, indent=2), encoding="utf-8"
+            )
+            completed = [
+                p for p in selected if common.post_id(p) in {r["id"] for r in report["results"]}
+            ]
+            summary = "Cloudflare-Einzelprüfung: keine Issues oder Statusänderungen.\n\n"
+            if completed:
+                summary += common.render_report(
+                    completed,
+                    report["results"],
+                    os.environ["GITHUB_REPOSITORY"],
+                    os.environ["GITHUB_SHA"],
+                    {k: e["upstream"] for k, e in entries.items()},
+                    len(posts) - len(completed),
+                    model=MODEL,
+                )
+            summary += "\n\nVerbrauch dieser Einzelprüfungen: " + json.dumps(report["usage"]) + "\n"
+            (args.output_dir / "summary.md").write_text(summary, encoding="utf-8")
+    common.append_summary(summary)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--state", type=Path, required=True)
     parser.add_argument("--smoke", action="store_true")
+    parser.add_argument("--individual", action="store_true")
+    parser.add_argument("--post", help="Test only this exact stored blog filename")
     parser.add_argument("--root", type=Path, default=Path("."))
     parser.add_argument(
         "--output-dir", type=Path, default=Path(".work/blog-monitor/cloudflare-report")

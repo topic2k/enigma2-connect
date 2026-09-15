@@ -2,7 +2,7 @@
 
 # Prüfübersicht
 
-## Cloudflare-Probelauf – 1.1.2-dev.1
+## Cloudflare-Probelauf – 1.1.2-dev.2
 
 Am 15.09.2026 wurden Cloudflare Workers AI und `@cf/openai/gpt-oss-120b`
 auf einem isolierten Branch mit den vier gespeicherten September-Beiträgen getestet.

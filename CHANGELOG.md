@@ -4,16 +4,19 @@
 
 ## Inhaltsverzeichnis
 
-- [1.1.2-dev.1](#112-dev1)
+- [1.1.2-dev.2](#112-dev2)
 - [1.1.1](#111)
 - [1.1.0](#110)
 - [1.0.2](#102)
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 1.1.2-dev.1
+## 1.1.2-dev.2
 
 Unveröffentlichte Entwicklerversion.
+
+- Cloudflare-Einzelprüfung mit einer Anfrage je Beitrag, gezielter Dateiauswahl,
+  Verbrauchssummen und Erhalt bereits erfolgreicher Teilberichte bei späteren Fehlern.
 
 - Manueller Cloudflare-Probelauf mit gpt-oss-120b für gespeicherte Blogbeiträge;
   gleiche Codebeleg-Prüfung, nur Berichtsartefakte, keine Issues oder Statusänderungen.
