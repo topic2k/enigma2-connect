@@ -12,6 +12,7 @@ and everyday use, see the [user guide](USER_GUIDE.en.md). The
 - [Development environment and checks](#development-environment-and-checks)
 - [Read-only receiver acceptance](#read-only-receiver-acceptance)
 - [Monitor the Home Assistant developer blog](#monitor-the-home-assistant-developer-blog)
+- [Cloudflare trial](#cloudflare-trial)
 - [Quality tiers and next steps](#quality-tiers-and-next-steps)
 - [Structure and data flow](#structure-and-data-flow)
 - [Implementation rules](#implementation-rules)
@@ -258,6 +259,26 @@ python scripts/ha_blog_gemini.py --blog-dir /path/to/developers.home-assistant/b
 
 Without `--prepare-only`, `GEMINI_API_KEY` is required and a real AI call may occur.
 GitHub writes additionally require explicit `--publish`.
+
+
+## Cloudflare trial
+
+**Trial status 2026-09-15:** API and budget work, but batch analysis mixes up
+explanations between posts. Not approved for scheduled use. Results:
+[validation overview](VALIDATION.en.md).
+
+The manual workflow input `cloudflare_test=true` tests stored posts using
+`@cf/openai/gpt-oss-120b`. It requires the `CLOUDFLARE_API_TOKEN` secret
+(Workers AI Read/Edit for one account) and the `CLOUDFLARE_ACCOUNT_ID` Actions
+variable. Use Workers Free without upgrading to paid billing. The trial reads
+the state branch, sends the same allowlisted source snapshot and validates
+responses using the existing evidence checks. It writes only the
+`ha-blog-cloudflare-test` artifact, without issues or retry state updates.
+It makes one request with no automatic provider fallback.
+`cloudflare_smoke=true` limits the trial to a small connection check. The artifact
+also includes the provider response for offline re-evaluation; request headers
+and the token are not stored. The scheduled Gemini
+monitor remains unchanged; quality and availability still need evaluation.
 
 
 ## Quality tiers and next steps
@@ -699,15 +720,3 @@ optional card under `www/` separately. Exclude `.work/`, `.local-archive/`, loca
 test environments and caches. Required instructions must not exist only in the
 local archive. Before a PR, inspect new files and removed old paths as well;
 `git diff --check` alone checks neither untracked files nor documentation links.
-
-## Cloudflare trial
-
-The manual workflow input `cloudflare_test=true` tests stored posts using
-`@cf/openai/gpt-oss-120b`. It requires the `CLOUDFLARE_API_TOKEN` secret
-(Workers AI Read/Edit for one account) and the `CLOUDFLARE_ACCOUNT_ID` Actions
-variable. Use Workers Free without upgrading to paid billing. The trial reads
-the state branch, sends the same allowlisted source snapshot and validates
-responses using the existing evidence checks. It writes only the
-`ha-blog-cloudflare-test` artifact, without issues or retry state updates.
-It makes one request with no automatic provider fallback. The scheduled Gemini
-monitor remains unchanged; quality and availability still need evaluation.

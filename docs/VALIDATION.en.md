@@ -4,15 +4,31 @@
 
 ## Cloudflare trial – 1.1.2-dev.1
 
-The isolated trial affects development scripts and workflow only. Quality
-checklist impact review: integration runtime, quality criteria and coverage
-thresholds remain unchanged. This trial provides no additional receiver or
-Home Assistant hardware evidence. 49 local script tests, Python syntax, Ruff, lockfile and 72 documentation
-links passed. Branch CI at `145d21e` passed, including existing integration and
-coverage checks. The first live Cloudflare run
-[34991469621](https://github.com/topic2k/enigma2-connect/actions/runs/34991469621)
-received a successful API response but failed in the response adapter (KeyError).
-It produced no successful analysis report; usage and model quality remain unverified.
+On 2026-09-15, Cloudflare Workers AI and `@cf/openai/gpt-oss-120b` were tested
+on an isolated branch using the four stored September posts. 50 local script tests,
+Python syntax, Ruff, lockfile and 72 documentation links passed. Branch CI at
+`b1ff764` and `f771ab5` passed. Quality checklist impact review: integration runtime,
+criteria and coverage thresholds are unchanged; no new HA/receiver hardware evidence.
+
+- Initial run [34991469621](https://github.com/topic2k/enigma2-connect/actions/runs/34991469621):
+  successful API response, but parser error. The adapter was corrected against an
+  actual small diagnostic response and verified offline.
+- Full run [34992280735](https://github.com/topic2k/enigma2-connect/actions/runs/34992280735):
+  72,212 input / 1,975 output tokens, 2,432.30 neurons. Schema and source-line checks
+  passed, but prose was English, deadlines missing and license citations irrelevant.
+- Refined instructions, run [34992652727](https://github.com/topic2k/enigma2-connect/actions/runs/34992652727):
+  72,344 input / 1,957 output tokens, 2,435.27 neurons. German prose and empty rather
+  than irrelevant evidence, but explanations were mixed up between Modbus, selectors
+  and OAuth2. The Modbus removal deadline 2027.10 was still missing; the selector
+  post received a version that its text did not state.
+
+**Assessment:** Access and free-tier budget work for a combined weekly request.
+Structural validation does not detect semantically misassigned explanations.
+The tested model and batch approach are not sufficiently reliable to replace the
+scheduled monitor. No issues published, state updates or main-branch deployment.
+State remained at `fa6aa32eda38a2454d30fd3b11aab0d8198dc972`. Per-post analysis or another
+model needs a separate quality and budget trial. These four no-impact examples
+provide no evidence of long-term availability or reliable detection of real impact.
 
 ## Blog check retries – 1.1.1
 

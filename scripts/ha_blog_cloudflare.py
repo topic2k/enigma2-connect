@@ -46,6 +46,8 @@ def generate(prompt, token, account, *, output_dir=None):
     """Make one bounded request to the fixed Cloudflare model, without fallback."""
     if not token or not re.fullmatch(r"[a-f0-9]{32}", account):
         raise ValueError("Missing token or invalid account ID")
+    if len((common.INSTRUCTIONS + prompt + OUTPUT_RULES).encode()) > common.MAX_INPUT_BYTES:
+        raise ValueError("Cloudflare input exceeds size limit")
     payload = {
         "messages": [
             {"role": "system", "content": common.INSTRUCTIONS},
@@ -121,7 +123,7 @@ def run(args):
         "dry_run": True,
         "selected": [p["path"] for p in posts],
         "deferred": deferred,
-        "input_bytes": len((common.INSTRUCTIONS + prompt).encode()),
+        "input_bytes": len((common.INSTRUCTIONS + prompt + OUTPUT_RULES).encode()),
     }
     args.output_dir.mkdir(parents=True, exist_ok=True)
     (args.output_dir / "request-info.json").write_text(

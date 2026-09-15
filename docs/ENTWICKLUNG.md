@@ -12,6 +12,7 @@ die [README](../README.md) bleibt der kurze Einstieg für Anwender.
 - [Entwicklungsumgebung und Prüfungen](#entwicklungsumgebung-und-prüfungen)
 - [Lesende Receiver-Abnahme](#lesende-receiver-abnahme)
 - [Home-Assistant-Entwicklerblog überwachen](#home-assistant-entwicklerblog-überwachen)
+- [Cloudflare-Probelauf](#cloudflare-probelauf)
 - [Qualitätsstufen und nächste Schritte](#qualitätsstufen-und-nächste-schritte)
 - [Aufbau und Datenfluss](#aufbau-und-datenfluss)
 - [Verhaltensregeln für Implementierungen](#verhaltensregeln-für-implementierungen)
@@ -276,6 +277,26 @@ python scripts/ha_blog_gemini.py --blog-dir /path/to/developers.home-assistant/b
 
 Ohne `--prepare-only` ist `GEMINI_API_KEY` erforderlich und ein echter KI-Aufruf
 möglich. GitHub-Schreibzugriffe erfordern zusätzlich ausdrücklich `--publish`.
+
+
+## Cloudflare-Probelauf
+
+**Teststand 15.09.2026:** API und Budget funktionieren; die gemeinsame Analyse
+vertauscht jedoch Begründungen zwischen Beiträgen. Noch nicht für den automatischen
+Betrieb freigegeben. Ergebnisse: [Prüfübersicht](VALIDIERUNG.md).
+
+Der manuelle Workflow-Eingang `cloudflare_test=true` testet gespeicherte Beiträge
+mit `@cf/openai/gpt-oss-120b`. Voraussetzung sind das Secret `CLOUDFLARE_API_TOKEN`
+(Workers AI Read/Edit für genau ein Konto) und die Actions-Variable
+`CLOUDFLARE_ACCOUNT_ID`. Den Workers-Free-Tarif ohne kostenpflichtiges Upgrade verwenden.
+Der Test liest den Statusbranch, sendet dieselbe freigegebene Codeauswahl und
+prüft Antworten mit der bestehenden Belegvalidierung. Er schreibt ausschließlich
+das Artefakt `ha-blog-cloudflare-test`, keine Issues und keinen Wiederholungsstatus.
+Es gibt genau eine Anfrage, keinen automatischen Anbieterwechsel.
+`cloudflare_smoke=true` beschränkt den Test auf eine kleine Verbindungsprüfung.
+Das Artefakt enthält auch die Anbieterantwort für eine erneute Offline-Auswertung;
+Request-Header und Token werden nicht gespeichert. Der geplante
+Gemini-Monitor bleibt unverändert; Qualität und Verfügbarkeit werden erst erprobt.
 
 
 ## Qualitätsstufen und nächste Schritte
@@ -734,15 +755,3 @@ ausliefern; die optionale Karte unter `www/` separat bereitstellen. `.work/`,
 Dokumentation darf keine benötigten Schritte ausschließlich im lokalen Archiv
 beschreiben. Vor dem PR auch neue Dateien und die entfernten alten Pfade prüfen;
 `git diff --check` allein prüft keine unversionierten Dateien oder Dokumentationslinks.
-
-## Cloudflare-Probelauf
-
-Der manuelle Workflow-Eingang `cloudflare_test=true` testet gespeicherte Beiträge
-mit `@cf/openai/gpt-oss-120b`. Voraussetzung sind das Secret `CLOUDFLARE_API_TOKEN`
-(Workers AI Read/Edit für genau ein Konto) und die Actions-Variable
-`CLOUDFLARE_ACCOUNT_ID`. Den Workers-Free-Tarif ohne kostenpflichtiges Upgrade verwenden.
-Der Test liest den Statusbranch, sendet dieselbe freigegebene Codeauswahl und
-prüft Antworten mit der bestehenden Belegvalidierung. Er schreibt ausschließlich
-das Artefakt `ha-blog-cloudflare-test`, keine Issues und keinen Wiederholungsstatus.
-Es gibt genau eine Anfrage, keinen automatischen Anbieterwechsel. Der geplante
-Gemini-Monitor bleibt unverändert; Qualität und Verfügbarkeit werden erst erprobt.

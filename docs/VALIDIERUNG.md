@@ -4,17 +4,34 @@
 
 ## Cloudflare-Probelauf – 1.1.2-dev.1
 
-Der isolierte Test betrifft nur Entwicklungsskripte und Workflow. Die
-Qualitätscheckliste wurde auf Auswirkungen geprüft: Integrationslaufzeit,
-Qualitätskriterien und Abdeckungsgrenzen bleiben unverändert. Keine zusätzlichen
-Receiver- oder Home-Assistant-Praxisnachweise aus diesem Test.
-49 lokale Skripttests, Python-Syntax, Ruff, Lockdatei und 72 Dokumentationslinks
-bestanden. Branch-CI für Commit `145d21e` erfolgreich, einschließlich der
-bestehenden Integrations- und Abdeckungsprüfungen. Der erste echte Cloudflare-Lauf
-[34991469621](https://github.com/topic2k/enigma2-connect/actions/runs/34991469621)
-erhielt eine erfolgreiche API-Antwort, scheiterte aber am noch nicht passenden
-Antwortparser (KeyError). Kein erfolgreicher Analysebericht aus diesem Lauf;
-Verbrauch und Modellqualität sind damit noch nicht belegt.
+Am 15.09.2026 wurden Cloudflare Workers AI und `@cf/openai/gpt-oss-120b`
+auf einem isolierten Branch mit den vier gespeicherten September-Beiträgen getestet.
+50 lokale Skripttests, Python-Syntax, Ruff, Lockdatei und 72 Dokumentationslinks
+bestanden. Branch-CI für `b1ff764` und `f771ab5` erfolgreich. Die Qualitätscheckliste
+wurde auf Auswirkungen geprüft: Integrationslaufzeit, Kriterien und
+Abdeckungsgrenzen bleiben unverändert; keine neuen HA-/Receiver-Praxisnachweise.
+
+- Erstlauf [34991469621](https://github.com/topic2k/enigma2-connect/actions/runs/34991469621):
+  erfolgreiche API-Antwort, aber Parserfehler. Der Adapter wurde anhand der echten
+  Antwort einer kleinen Diagnoseanfrage korrigiert und offline nachgetestet.
+- Vollständiger Lauf [34992280735](https://github.com/topic2k/enigma2-connect/actions/runs/34992280735):
+  72.212 Eingabe-, 1.975 Ausgabetokens, 2.432,30 Neurons. Schema und Codezeilenprüfung
+  bestanden, aber englische Texte, ausgelassene Fristen und unbrauchbare Lizenzbelege.
+- Präzisierte Ausgabevorgaben, Lauf [34992652727](https://github.com/topic2k/enigma2-connect/actions/runs/34992652727):
+  72.344 Eingabe-, 1.957 Ausgabetokens, 2.435,27 Neurons. Deutsche Texte und leere
+  statt irrelevanter Belege, aber vertauschte Begründungen zwischen Modbus,
+  Selektoren und OAuth2. Die Modbus-Entfernungsfrist 2027.10 fehlt weiterhin;
+  der Selektor-Beitrag erhält eine dort nicht genannte Versionsangabe.
+
+**Bewertung:** Zugang und Free-Tier-Budget sind für einen gemeinsamen Wochenlauf
+belegt. Die formale Antwortprüfung erkennt semantisch vertauschte Begründungen
+nicht. Die inhaltliche Qualität dieses Modells im getesteten Batchverfahren reicht
+nicht für die Übernahme als automatischer Monitor. Keine Issues veröffentlicht,
+keinen Status geändert und keine Umstellung auf main vorgenommen. Die Zustandsreferenz
+blieb `fa6aa32eda38a2454d30fd3b11aab0d8198dc972`. Einzelbeitragsanalyse oder ein anderes
+Modell benötigen einen gesonderten Qualitäts- und Budgettest. Dauerhafte
+Verfügbarkeit und zuverlässige Erkennung tatsächlich relevanter Änderungen sind
+mit diesen vier nicht betroffenen Beispielen nicht belegt.
 
 ## Wiederholung des Blog-Checks – 1.1.1
 
