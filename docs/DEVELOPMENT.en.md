@@ -699,3 +699,15 @@ optional card under `www/` separately. Exclude `.work/`, `.local-archive/`, loca
 test environments and caches. Required instructions must not exist only in the
 local archive. Before a PR, inspect new files and removed old paths as well;
 `git diff --check` alone checks neither untracked files nor documentation links.
+
+## Cloudflare trial
+
+The manual workflow input `cloudflare_test=true` tests stored posts using
+`@cf/openai/gpt-oss-120b`. It requires the `CLOUDFLARE_API_TOKEN` secret
+(Workers AI Read/Edit for one account) and the `CLOUDFLARE_ACCOUNT_ID` Actions
+variable. Use Workers Free without upgrading to paid billing. The trial reads
+the state branch, sends the same allowlisted source snapshot and validates
+responses using the existing evidence checks. It writes only the
+`ha-blog-cloudflare-test` artifact, without issues or retry state updates.
+It makes one request with no automatic provider fallback. The scheduled Gemini
+monitor remains unchanged; quality and availability still need evaluation.

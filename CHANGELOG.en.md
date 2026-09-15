@@ -4,11 +4,19 @@
 
 ## Contents
 
+- [1.1.2-dev.1](#112-dev1)
 - [1.1.1](#111)
 - [1.1.0](#110)
 - [1.0.2](#102)
 - [1.0.1](#101)
 - [1.0.0](#100)
+
+## 1.1.2-dev.1
+
+Unreleased development version.
+
+- Manual Cloudflare trial with gpt-oss-120b for stored blog posts, using the same
+  source evidence validation; report artifacts only, no issues or state changes.
 
 ## 1.1.1
 

@@ -7,6 +7,10 @@ on:
     - cron: '23 7 * * 0,2-6'
   workflow_dispatch:
     inputs:
+      cloudflare_test:
+        description: 'Read-only Cloudflare trial of stored failed entries'
+        type: boolean
+        default: false
       dry_run:
         description: 'Run Gemini and generate a report; do not create an issue'
         type: boolean
@@ -25,6 +29,7 @@ on:
       - 'scripts/ha_blog_monitor.py'
       - 'scripts/ha_blog_gemini.py'
       - 'scripts/ha_blog_scheduler.py'
+      - 'scripts/ha_blog_cloudflare.py'
       - 'scripts/tests/**'
   pull_request:
     paths:
@@ -32,6 +37,7 @@ on:
       - 'scripts/ha_blog_monitor.py'
       - 'scripts/ha_blog_gemini.py'
       - 'scripts/ha_blog_scheduler.py'
+      - 'scripts/ha_blog_cloudflare.py'
       - 'scripts/tests/**'
 
 permissions:
@@ -58,6 +64,7 @@ jobs:
     needs: test
     if: >-
       (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') &&
+      inputs.cloudflare_test != true &&
       github.repository == 'topic2k/enigma2-connect' &&
       github.ref_name == github.event.repository.default_branch
     runs-on: ubuntu-latest
@@ -109,5 +116,43 @@ jobs:
         with:
           name: ha-developer-blog-report
           path: .work/blog-monitor/gemini-report/
+          include-hidden-files: true
+          retention-days: 30
+
+  cloudflare-test:
+    needs: test
+    if: >-
+      github.event_name == 'workflow_dispatch' && inputs.cloudflare_test == true &&
+      github.repository == 'topic2k/enigma2-connect'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@v7
+        with:
+          ref: ha-blog-monitor-state
+          path: .work/blog-state
+          sparse-checkout: .github/ha-blog-state.json
+          sparse-checkout-cone-mode: false
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@v10.1.0
+        with:
+          python-version: '3.14'
+      - name: Test Cloudflare on stored posts
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+        run: >-
+          uv run --no-project --python 3.14 python scripts/ha_blog_cloudflare.py
+          --state .work/blog-state/.github/ha-blog-state.json
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: ha-blog-cloudflare-test
+          path: .work/blog-monitor/cloudflare-report/
           include-hidden-files: true
           retention-days: 30

@@ -2,6 +2,14 @@
 
 # Prüfübersicht
 
+## Cloudflare-Probelauf – 1.1.2-dev.1
+
+Der isolierte Test betrifft nur Entwicklungsskripte und Workflow. Die
+Qualitätscheckliste wurde auf Auswirkungen geprüft: Integrationslaufzeit,
+Qualitätskriterien und Abdeckungsgrenzen bleiben unverändert. Keine zusätzlichen
+Receiver- oder Home-Assistant-Praxisnachweise aus diesem Test.
+Lokale Skripttests und echte Cloudflare-Prüfung stehen noch aus.
+
 ## Wiederholung des Blog-Checks – 1.1.1
 
 Am 14.09.2026: 45 Offline-Tests bestanden, darunter 17 neue Scheduler-/Statustests.

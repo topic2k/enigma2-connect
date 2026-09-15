@@ -2,6 +2,14 @@
 
 # Verification summary
 
+## Cloudflare trial – 1.1.2-dev.1
+
+The isolated trial affects development scripts and workflow only. Quality
+checklist impact review: integration runtime, quality criteria and coverage
+thresholds remain unchanged. This trial provides no additional receiver or
+Home Assistant hardware evidence. Local script tests and a live Cloudflare
+request are still pending.
+
 ## Blog check retries – 1.1.1
 
 On 2026-09-14, 45 offline tests passed, including 17 new scheduler/state tests.

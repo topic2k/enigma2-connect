@@ -734,3 +734,15 @@ ausliefern; die optionale Karte unter `www/` separat bereitstellen. `.work/`,
 Dokumentation darf keine benötigten Schritte ausschließlich im lokalen Archiv
 beschreiben. Vor dem PR auch neue Dateien und die entfernten alten Pfade prüfen;
 `git diff --check` allein prüft keine unversionierten Dateien oder Dokumentationslinks.
+
+## Cloudflare-Probelauf
+
+Der manuelle Workflow-Eingang `cloudflare_test=true` testet gespeicherte Beiträge
+mit `@cf/openai/gpt-oss-120b`. Voraussetzung sind das Secret `CLOUDFLARE_API_TOKEN`
+(Workers AI Read/Edit für genau ein Konto) und die Actions-Variable
+`CLOUDFLARE_ACCOUNT_ID`. Den Workers-Free-Tarif ohne kostenpflichtiges Upgrade verwenden.
+Der Test liest den Statusbranch, sendet dieselbe freigegebene Codeauswahl und
+prüft Antworten mit der bestehenden Belegvalidierung. Er schreibt ausschließlich
+das Artefakt `ha-blog-cloudflare-test`, keine Issues und keinen Wiederholungsstatus.
+Es gibt genau eine Anfrage, keinen automatischen Anbieterwechsel. Der geplante
+Gemini-Monitor bleibt unverändert; Qualität und Verfügbarkeit werden erst erprobt.
