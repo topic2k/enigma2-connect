@@ -12,7 +12,7 @@
       "attempts": 2,
       "last_attempt": "2026-09-15",
       "due": null,
-      "error": "Versuch gestartet; Abschluss noch nicht gespeichert"
+      "error": "Gemini-Anfrage: HTTP 503"
     },
     "c4252e2dc5f9b53b5a029457de2bd01f3cea9ad09583cfdbbe12e7508a89552c": {
       "post": {
@@ -25,7 +25,7 @@
       "attempts": 2,
       "last_attempt": "2026-09-15",
       "due": null,
-      "error": "Versuch gestartet; Abschluss noch nicht gespeichert"
+      "error": "Gemini-Anfrage: HTTP 503"
     },
     "ef62db3f88734b20e1309a683038b24d3e36f5cc9512ff9b889afac82ff5af6a": {
       "post": {
@@ -38,7 +38,7 @@
       "attempts": 2,
       "last_attempt": "2026-09-15",
       "due": null,
-      "error": "Versuch gestartet; Abschluss noch nicht gespeichert"
+      "error": "Gemini-Anfrage: HTTP 503"
     },
     "fa2796a548ecc556abb978896a54194313c760015fbbf37c7b7a2b76dddf387b": {
       "post": {
@@ -51,7 +51,7 @@
       "attempts": 2,
       "last_attempt": "2026-09-15",
       "due": null,
-      "error": "Versuch gestartet; Abschluss noch nicht gespeichert"
+      "error": "Gemini-Anfrage: HTTP 503"
     }
   }
 }
