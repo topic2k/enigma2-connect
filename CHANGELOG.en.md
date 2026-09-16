@@ -4,16 +4,19 @@
 
 ## Contents
 
-- [1.1.2-dev.2](#112-dev2)
+- [1.1.2-dev.3](#112-dev3)
 - [1.1.1](#111)
 - [1.1.0](#110)
 - [1.0.2](#102)
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 1.1.2-dev.2
+## 1.1.2-dev.3
 
 Unreleased development version.
+
+- Documented Cloudflare follow-up: the API rejected the first request with
+  HTTP 429/4006 despite a reset dashboard counter; remaining tests stopped.
 
 - Cloudflare per-post trial with one request per article, exact filename selection,
   aggregate usage and preservation of completed reports when a later request fails.

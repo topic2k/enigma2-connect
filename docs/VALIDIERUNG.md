@@ -2,6 +2,33 @@
 
 # Prüfübersicht
 
+## Cloudflare-Fortsetzung am 16.09.2026 – 1.1.2-dev.3
+
+Der autorisierte Folgetagstest wurde um 08:30 Uhr MESZ begonnen. Die frisch
+neu geladene Cloudflare-Anzeige meldete vor der Anfrage **0/10.000 Neurons heute**;
+im separaten 24-Stunden-Diagramm standen rund 10.020 Neurons vom Vortag.
+Das ist keine Bestätigung, dass die serverseitige Zugriffssperre zurückgesetzt war.
+
+Der [Selektor-Einzeltest 35064196248](https://github.com/topic2k/enigma2-connect/actions/runs/35064196248)
+auf `fb1b55b` bestand die 52 Skripttests, wurde aber bei der einzigen
+Cloudflare-Anfrage mit **HTTP 429 / internem Code 4006** abgelehnt. Eingabe:
+267.346 Bytes, keine Modellergebnisse, keine Verbrauchsmetadaten in der Antwort.
+Ein unbekannter Verbrauch ist nicht als gemessener Nullverbrauch zu verstehen.
+
+Gemäß der Freigabe bei Quotenfehlern gestoppt: OAuth2- und Rasenmäher-Einzeltests
+wurden nicht gestartet; auch kein zusätzlicher Test der fehlenden Modbus-Frist.
+Die [offizielle Fehlerliste](https://developers.cloudflare.com/workers-ai/platform/errors/)
+nennt 3036 für ein ausgeschöpftes Tageskontingent und 3040 für Kapazitätsengpässe,
+führt 4006 jedoch nicht auf. Die genaue Ursache der widersprüchlichen
+Dashboard-/API-Anzeige bleibt deshalb ungeklärt.
+
+Der inhaltliche Stand vom 15.09. bleibt bestehen: Die Einzelzuordnung war beim
+Modbus-Beitrag besser, aber 2027.10 fehlte. Die drei weiteren Einzelbewertungen
+sind nicht nachgewiesen. Kein Wechsel des produktiven Monitors, keine Issues,
+Statusschreibzugriffe, neuen Zugangsdaten, Tarifänderungen oder Releases.
+Diese Dokumentationsänderung betrifft keine Integrationsfunktionen oder
+Qualitätskriterien; fremde lokale Änderungen blieben erhalten.
+
 ## Cloudflare-Einzelprüfung – 1.1.2-dev.2
 
 Am 15.09.2026 wurde die getrennte Verarbeitung mit 52 lokalen Skripttests,
@@ -19,8 +46,8 @@ Vier ähnlich große Einzelanfragen würden rechnerisch etwa 9.100 Neurons benö
 fünf etwa 11.375 und damit mehr als das tägliche kostenlose Kontingent. Dies ist
 nur eine Hochrechnung, keine Verbrauchsgarantie für andere Beiträge.
 
-Die übrigen drei Einzeltests sind noch offen. Wegen des heutigen Kontingents
-ist die einmalige Fortsetzung in Codex für den 16.09.2026 um 08:30 Uhr geplant.
+Die Fortsetzung vom 16.09.2026 ist oben dokumentiert; die übrigen drei
+Einzelbewertungen bleiben wegen der API-Ablehnung offen.
 Kein produktiver Anbieterwechsel, keine Issues, Statusänderungen oder Releases.
 
 ## Cloudflare-Probelauf – 1.1.2-dev.2

@@ -4,16 +4,19 @@
 
 ## Inhaltsverzeichnis
 
-- [1.1.2-dev.2](#112-dev2)
+- [1.1.2-dev.3](#112-dev3)
 - [1.1.1](#111)
 - [1.1.0](#110)
 - [1.0.2](#102)
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 1.1.2-dev.2
+## 1.1.2-dev.3
 
 Unveröffentlichte Entwicklerversion.
+
+- Fortsetzung des Cloudflare-Tests dokumentiert: API lehnt erste Anfrage trotz
+  zurückgesetzter Dashboard-Anzeige mit HTTP 429/4006 ab; weitere Tests gestoppt.
 
 - Cloudflare-Einzelprüfung mit einer Anfrage je Beitrag, gezielter Dateiauswahl,
   Verbrauchssummen und Erhalt bereits erfolgreicher Teilberichte bei späteren Fehlern.

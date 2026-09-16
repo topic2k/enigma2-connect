@@ -288,9 +288,10 @@ seriell; bei Fehlern stoppt der Test, bereits erfolgreiche Ergebnisse und der
 bisherige Verbrauch bleiben im Artefakt. Die getrennten Aufrufe vervielfachen
 den Eingabeverbrauch; das tägliche Free-Tier-Limit gilt weiterhin.
 
-**Teststand 15.09.2026:** API und Budget funktionieren; die gemeinsame Analyse
-vertauscht jedoch Begründungen zwischen Beiträgen. Noch nicht für den automatischen
-Betrieb freigegeben. Ergebnisse: [Prüfübersicht](VALIDIERUNG.md).
+**Teststand 16.09.2026:** Gestern erfolgreiche API-Aufrufe, heute HTTP 429/4006
+trotz Dashboard-Anzeige 0/10.000. Die Batchanalyse vertauschte Begründungen; die
+einzeln geprüfte Modbus-Bewertung ließ eine Frist aus. Weitere Einzeltests wurden
+wegen der API-Sperre gestoppt. Noch nicht für den automatischen Betrieb freigegeben. Ergebnisse: [Prüfübersicht](VALIDIERUNG.md).
 
 Der manuelle Workflow-Eingang `cloudflare_test=true` testet gespeicherte Beiträge
 mit `@cf/openai/gpt-oss-120b`. Voraussetzung sind das Secret `CLOUDFLARE_API_TOKEN`
@@ -299,7 +300,8 @@ mit `@cf/openai/gpt-oss-120b`. Voraussetzung sind das Secret `CLOUDFLARE_API_TOK
 Der Test liest den Statusbranch, sendet dieselbe freigegebene Codeauswahl und
 prüft Antworten mit der bestehenden Belegvalidierung. Er schreibt ausschließlich
 das Artefakt `ha-blog-cloudflare-test`, keine Issues und keinen Wiederholungsstatus.
-Es gibt genau eine Anfrage, keinen automatischen Anbieterwechsel.
+Im Batchmodus gibt es eine Anfrage, im Einzelmodus eine je Beitrag;
+kein automatischer Anbieterwechsel.
 `cloudflare_smoke=true` beschränkt den Test auf eine kleine Verbindungsprüfung.
 Das Artefakt enthält auch die Anbieterantwort für eine erneute Offline-Auswertung;
 Request-Header und Token werden nicht gespeichert. Der geplante

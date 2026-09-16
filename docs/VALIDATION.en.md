@@ -2,6 +2,30 @@
 
 # Verification summary
 
+## Cloudflare follow-up on 2026-09-16 – 1.1.2-dev.3
+
+The authorized next-day trial started at 08:30 CEST. After a fresh dashboard
+reload, Cloudflare showed **0/10,000 neurons today** before the request; the
+separate 24-hour chart showed about 10,020 neurons from the previous day.
+This does not prove that the server-side access restriction had reset.
+
+The [selector trial 35064196248](https://github.com/topic2k/enigma2-connect/actions/runs/35064196248)
+at `fb1b55b` passed its 52 script tests, but its single Cloudflare request was
+rejected with **HTTP 429 / internal code 4006**. Input: 267,346 bytes. No model
+results or usage metadata were returned. Unknown usage is not measured zero usage.
+
+Stopped as authorized for quota errors: no OAuth2 or lawn-mower requests and no
+additional Modbus deadline test. The [official error list](https://developers.cloudflare.com/workers-ai/platform/errors/)
+lists 3036 for daily allocation exhaustion and 3040 for capacity shortages,
+but does not list 4006. The exact reason for the dashboard/API discrepancy
+therefore remains unresolved.
+
+The 2026-09-15 quality assessment still applies: per-post association improved
+for Modbus, but 2027.10 was omitted. The other three individual assessments
+remain unverified. No production switch, issues, state writes, new credentials,
+plan changes or releases. This documentation update affects no integration
+behavior or quality criteria; unrelated local changes were preserved.
+
 ## Cloudflare per-post trial – 1.1.2-dev.2
 
 On 2026-09-15, per-post processing passed 52 local script tests, Ruff, Python
@@ -17,8 +41,8 @@ Modbus usage. No irrelevant source evidence is cited. The removal deadline
 would use approximately 9,100 neurons; five would use 11,375, exceeding the daily
 free allocation. This is an estimate, not a usage guarantee for other posts.
 
-The three remaining individual trials are pending. Due to today's quota, a one-time
-Codex continuation is scheduled for 2026-09-16 at 08:30 local time. No production
+The 2026-09-16 follow-up is documented above; the other three individual
+assessments remain pending because the API rejected the request. No production
 provider change, issues, state updates or releases.
 
 ## Cloudflare trial – 1.1.2-dev.2

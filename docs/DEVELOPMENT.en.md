@@ -269,8 +269,10 @@ filename. At most five requests run sequentially; an error stops the test while
 retaining completed results and usage in the artifact. Separate requests multiply
 input usage; the daily free-tier limit still applies.
 
-**Trial status 2026-09-15:** API and budget work, but batch analysis mixes up
-explanations between posts. Not approved for scheduled use. Results:
+**Trial status 2026-09-16:** API calls succeeded yesterday, but today returned
+HTTP 429/4006 despite a 0/10,000 dashboard counter. Batch analysis mixed up
+explanations; the Modbus per-post assessment omitted a deadline. Remaining
+individual trials stopped due to API rejection. Not approved for scheduled use. Results:
 [validation overview](VALIDATION.en.md).
 
 The manual workflow input `cloudflare_test=true` tests stored posts using
@@ -280,7 +282,8 @@ variable. Use Workers Free without upgrading to paid billing. The trial reads
 the state branch, sends the same allowlisted source snapshot and validates
 responses using the existing evidence checks. It writes only the
 `ha-blog-cloudflare-test` artifact, without issues or retry state updates.
-It makes one request with no automatic provider fallback.
+Batch mode makes one request; individual mode makes one per post.
+There is no automatic provider fallback.
 `cloudflare_smoke=true` limits the trial to a small connection check. The artifact
 also includes the provider response for offline re-evaluation; request headers
 and the token are not stored. The scheduled Gemini
