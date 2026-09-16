@@ -4,7 +4,7 @@
 
 ## Contents
 
-- [1.2.0-dev.9](#120-dev9)
+- [1.2.0-dev.10](#120-dev10)
 - [1.1.3](#113)
 - [1.1.2](#112)
 - [1.1.1](#111)
@@ -13,9 +13,13 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 1.2.0-dev.9
+## 1.2.0-dev.10
 
 Unreleased development version.
+
+- Use explicit video timestamps in the HLS seek test so AAC encoder delay cannot
+  shift the target across colour/segment boundaries. Additionally verify the
+  start timestamp of every test segment; streaming processing remains unchanged.
 
 - Recording playback and repeated forward/backward seeks confirmed in real
   Home Assistant through user testing and debug logs. Original video is preserved

@@ -2,6 +2,19 @@
 
 # Prüfübersicht
 
+## CI-Spultest: Korrektur 1.2.0-dev.10
+
+Der [CI-Lauf zu dev.9](https://github.com/topic2k/enigma2-connect/actions/runs/35132768651)
+bestand 413 Tests; zwei Varianten des HLS-Farbtests scheiterten mit FFmpeg 6.1.1.
+Die einzelnen Segmente enthielten die erwarteten Farben. Der relative Sprung
+um 12,8 Sekunden lag durch den AAC-Vorlauf vor dem gewünschten Videobild:
+Containerstart 0,978667, Videostart 1,000000 Sekunden. Die korrigierte Prüfung
+verwendet die absolute Videozeit 13,8 Sekunden und kontrolliert zusätzlich jeden
+Segmentstart auf einen 90-kHz-Tick genau. Keine gelockerten Farbprüfungen,
+Überspringungen, abgesenkten Abdeckungsgrenzen oder Änderungen am Integrationscode.
+Die Qualitätscheckliste bleibt unverändert. Neue CI-Ergebnisse müssen die Korrektur
+mit der Runner-Version bestätigen; der dokumentierte HA-Praxistest bleibt erhalten.
+
 ## HA-Aufnahmewiedergabe und Sprünge: Nutzerabnahme 1.2.0-dev.9
 
 Am **16.09.2026** hat der Nutzer eine Aufnahme im realen Home Assistant gestreamt,

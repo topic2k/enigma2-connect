@@ -274,6 +274,25 @@ async def test_real_recording_seek_decodes_requested_colours(
             ):
                 segment = tmp_path / f"segment{index}.ts"
                 segment.write_bytes(await stream.vod.read(f"segment{index:08d}.ts"))
+                probe = await asyncio.create_subprocess_exec(
+                    "ffprobe",
+                    "-v",
+                    "error",
+                    "-select_streams",
+                    "v:0",
+                    "-show_entries",
+                    "stream=start_time",
+                    "-of",
+                    "json",
+                    str(segment),
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE,
+                )
+                metadata, errors = await probe.communicate()
+                assert probe.returncode == 0 and not errors, errors
+                assert float(json.loads(metadata)["streams"][0]["start_time"]) == pytest.approx(
+                    1 + index * 6.4, abs=1 / 90000
+                )
                 decode = await asyncio.create_subprocess_exec(
                     "ffmpeg",
                     "-v",
@@ -300,13 +319,18 @@ async def test_real_recording_seek_decodes_requested_colours(
                 )
             assert any(value and value != "bytes=0-0" for value in ranges)
             stream.vod.cache.clear()
+            # AAC encoder delay puts the container start before video PTS 1.0.
+            # Seek on the verified video clock: relative -ss 12.8 targets a time
+            # before the green frame and older FFmpeg can return the last blue frame.
             # A real HLS client must select the late segment from the full timeline.
             decode = await asyncio.create_subprocess_exec(
                 "ffmpeg",
                 "-v",
                 "error",
+                "-seek_timestamp",
+                "1",
                 "-ss",
-                "12.8",
+                "13.8",
                 "-i",
                 str(server.make_url("/hls/index.m3u8")),
                 "-frames:v",

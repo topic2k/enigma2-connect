@@ -4,7 +4,7 @@
 
 ## Inhaltsverzeichnis
 
-- [1.2.0-dev.9](#120-dev9)
+- [1.2.0-dev.10](#120-dev10)
 - [1.1.3](#113)
 - [1.1.2](#112)
 - [1.1.1](#111)
@@ -13,9 +13,13 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 1.2.0-dev.9
+## 1.2.0-dev.10
 
 Unveröffentlichte Entwicklerversion.
+
+- HLS-Spultest auf explizite Videozeitstempel umgestellt: AAC-Vorlauf darf das
+  Sprungziel an Farb-/Segmentgrenzen nicht verschieben. Startzeitpunkte sämtlicher
+  Testsegmente werden zusätzlich geprüft; Streaming-Verarbeitung unverändert.
 
 - Aufnahme-Streaming und mehrfache Vor-/Rücksprünge im realen Home Assistant
   durch Nutzerprüfung und Debuglog bestätigt. Originalvideo bleibt erhalten,
