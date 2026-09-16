@@ -15,7 +15,7 @@
 
 ## 1.2.0
 
-Unveröffentlicht.
+Veröffentlicht am 16.09.2026.
 
 - Vor der Übernahme nach `main` erfolgreiche CI für den aktuellen PR-Stand,
   weiterhin erfüllte Integrationsqualitätsvorgaben und einen unveränderten oder

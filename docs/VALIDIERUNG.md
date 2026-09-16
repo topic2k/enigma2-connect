@@ -2,6 +2,24 @@
 
 # Prüfübersicht
 
+## Veröffentlichung 1.2.0
+
+Am **16.09.2026** ausdrücklich zur Veröffentlichung beauftragt. Die Release-Pflege
+ändert nur die beiden Changelogs und Prüfübersichten. Integrationscode, Tests,
+Abhängigkeiten, Qualitätscheckliste und Prüfgrenzen bleiben gegenüber `97ebd0f`
+unverändert. Dessen [PR-Tests](https://github.com/topic2k/enigma2-connect/actions/runs/35136701709),
+[Hassfest/HACS](https://github.com/topic2k/enigma2-connect/actions/runs/35136701707)
+und CodeQL sind erfolgreich. Nach dieser Dokumentationsänderung werden die
+aktuellen PR-Prüfungen und nach dem Merge die Prüfungen des tatsächlichen
+Release-Commits vor Tag und Veröffentlichung erneut kontrolliert; die endgültigen
+CI-Links werden im [Release 1.2.0](https://github.com/topic2k/enigma2-connect/releases/tag/v1.2.0)
+festgehalten.
+
+Die Hardware-Nachweise behalten ihren dokumentierten Umfang. Reale HA-Aufnahme-
+wiedergabe und wiederholte Sprünge sind durch Nutzerprüfung und Log belegt;
+Cast, Dauerlauf, reale parallele Zuschauer und die übrigen genannten Praxisgrenzen
+bleiben offen. Diese Veröffentlichung erweitert keine Geräteabnahme.
+
 ## PR-Vorbereitung: 1.2.0
 
 Am **16.09.2026** Remote-Branches, Tags und veröffentlichte Releases abgeglichen:

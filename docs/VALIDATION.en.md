@@ -2,6 +2,22 @@
 
 # Verification summary
 
+## Release 1.2.0
+
+Explicit publication instruction received on **2026-09-16**. Release preparation
+changes only the two changelogs and verification summaries. Integration code,
+tests, dependencies, quality checklist and check thresholds are unchanged from
+`97ebd0f`. Its [PR tests](https://github.com/topic2k/enigma2-connect/actions/runs/35136701709),
+[Hassfest/HACS](https://github.com/topic2k/enigma2-connect/actions/runs/35136701707)
+and CodeQL passed. After this documentation update, current PR checks and then
+checks for the actual merged release commit will be verified again before tagging
+and publication. Final CI links will be recorded in [release 1.2.0](https://github.com/topic2k/enigma2-connect/releases/tag/v1.2.0).
+
+Hardware evidence retains its documented scope. Real HA recording playback and
+repeated seeks are supported by user testing and logs; Cast, endurance, real
+concurrent viewers and other listed practical limitations remain pending.
+This release does not extend device acceptance.
+
 ## PR preparation: 1.2.0
 
 Remote branches, tags and published releases checked on **2026-09-16**:

@@ -15,7 +15,7 @@
 
 ## 1.2.0
 
-Unreleased.
+Released on 2026-09-16.
 
 - Require successful CI for the current PR state, continued compliance with all
   integration quality requirements and maintained or improved quality status
