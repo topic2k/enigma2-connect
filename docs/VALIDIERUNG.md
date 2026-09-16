@@ -12,8 +12,12 @@ Containerstart 0,978667, Videostart 1,000000 Sekunden. Die korrigierte Prüfung
 verwendet die absolute Videozeit 13,8 Sekunden und kontrolliert zusätzlich jeden
 Segmentstart auf einen 90-kHz-Tick genau. Keine gelockerten Farbprüfungen,
 Überspringungen, abgesenkten Abdeckungsgrenzen oder Änderungen am Integrationscode.
-Die Qualitätscheckliste bleibt unverändert. Neue CI-Ergebnisse müssen die Korrektur
-mit der Runner-Version bestätigen; der dokumentierte HA-Praxistest bleibt erhalten.
+Die Qualitätscheckliste bleibt unverändert. Der [Korrekturlauf](https://github.com/topic2k/enigma2-connect/actions/runs/35134405193)
+mit FFmpeg 6.1.1 besteht sämtliche Python- und Frontend-Tests, die unveränderten
+Abdeckungsgrenzen, Ruff, Formatierung und mypy. [Hassfest und HACS](https://github.com/topic2k/enigma2-connect/actions/runs/35134405186)
+sind ebenfalls grün. Beide betroffenen Tests bestanden zusätzlich lokal mit
+FFmpeg 8.1; Python-Syntax und Offline-Lockprüfung bestanden. Der dokumentierte
+HA-Praxistest bleibt erhalten; die Testkorrektur enthält keine neue Geräteabnahme.
 
 ## HA-Aufnahmewiedergabe und Sprünge: Nutzerabnahme 1.2.0-dev.9
 
