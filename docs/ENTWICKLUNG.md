@@ -166,11 +166,16 @@ Schritt prüft Beitrags-ID, Ergebnisstruktur, Dateipfade, Zeilennummern und wör
 Belege gegen den vor der Analyse gesicherten Quellstand. Eine KI-Einschätzung
 ersetzt keine ausgeführten Kompatibilitätstests und kann inhaltlich falsch sein.
 
-Erfolgreiche Bewertungen erscheinen gesammelt in einem GitHub-Issue, auch wenn
-keine Anpassung nötig ist. Inhaltsbasierte Marker verhindern erneute Analyse
-bereits berichteter Beiträge; geschlossene Issues zählen weiterhin. Bestehende
-Marker aus der Gemini-Zeit bleiben kompatibel. Quelländerungen allein lösen
-keine erneute Prüfung aus. Bericht und strukturierte Ergebnisse bleiben
+Ein GitHub-Issue enthält nur Beiträge mit notwendigen Anpassungen, empfohlenen
+Ergänzungen oder noch unklarem Prüfbedarf. Wenn alle Bewertungen zugleich
+`no-impact` und `none` ergeben, wird kein Issue erstellt. Auch in gemischten
+Läufen bleiben solche unauffälligen Beiträge aus dem Issue heraus.
+
+Erfolgreich geprüfte Inhalts-IDs werden mit Prüfdatum im Statusbranch gespeichert,
+auch ohne Issue. Inhaltsbasierte Marker in bestehenden und geschlossenen Issues
+zählen weiterhin; Marker aus der Gemini-Zeit bleiben kompatibel. Geänderte
+Blogtexte werden neu geprüft, Quelländerungen allein lösen keine erneute Prüfung
+aus. Strukturierte Ergebnisse und Kosten bleiben zur technischen Nachvollziehbarkeit
 30 Tage als Artefakt `ha-developer-blog-report` erhalten.
 
 ### Wiederholung und Berechtigungen
@@ -185,7 +190,8 @@ nachgeholt. Danach sind weitere Versuche nur ausdrücklich manuell möglich.
 
 Der Branch `ha-blog-monitor-state` enthält unter `.github/ha-blog-state.json`
 Beitragsinhalt, ursprünglichen Blog-Commit, Versuchsanzahl, Fälligkeit und einen
-bereinigten Fehlerhinweis. Versuche werden vor dem KI-Auftrag reserviert, damit
+bereinigten Fehlerhinweis sowie unter `reviewed` die erfolgreich geprüften
+Inhalts-IDs mit Prüfdatum. Vorhandene Statusdateien ohne `reviewed` bleiben gültig. Versuche werden vor dem KI-Auftrag reserviert, damit
 abgebrochene Läufe nicht unbemerkt mehrfach Credits verbrauchen. Erfolgreiche
 Teilberichte bleiben erhalten. Unsichere Zustandsspeicherung ist ein
 Infrastrukturfehler und wird unmittelbar gemeldet.

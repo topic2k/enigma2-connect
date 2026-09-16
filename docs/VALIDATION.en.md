@@ -2,6 +2,27 @@
 
 # Verification summary
 
+## Silent blog reviews – 1.1.3
+
+70 offline script tests passed. New cases cover entirely uneventful results
+without issues, mixed findings with an independent improvement, uncertainty
+still reported for review, publication failure alongside silent success, failed
+state persistence and invalid review receipts. After reloading state, unchanged
+posts stay completed while edited content becomes eligible again. Python syntax
+and Ruff passed.
+
+The four stored real Junie responses from
+[run 35125959582](https://github.com/topic2k/enigma2-connect/actions/runs/35125959582)
+were replayed locally through the new completion logic: four silent receipts,
+no issue calls, no retries and no selection the following Monday. This neither
+changed GitHub state nor called AI services. Live deployment of this filter has
+not yet been verified by this replay.
+
+The quality checklist is unchanged: integration code (except metadata version),
+frontend, integration tests and coverage thresholds are unaffected. No new
+receiver or Home Assistant runtime checks were performed; existing outstanding
+evidence remains outstanding. Current successful CI checks are required before merge.
+
 ## Automated Junie monitor – 1.1.2
 
 64 offline script tests cover individual post packets, first and second failures,
