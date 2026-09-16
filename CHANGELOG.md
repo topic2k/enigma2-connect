@@ -4,16 +4,20 @@
 
 ## Inhaltsverzeichnis
 
-- [1.1.2-dev.4](#112-dev4)
+- [1.1.2](#112)
 - [1.1.1](#111)
 - [1.1.0](#110)
 - [1.0.2](#102)
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 1.1.2-dev.4
+## 1.1.2
 
-Unveröffentlichte Entwicklerversion.
+Unveröffentlicht.
+
+- Blog-Monitor auf Junie-Einzelanalysen umgestellt: wöchentlich neue Beiträge,
+  Wiederholung fehlgeschlagener Beiträge am Folgetag, getrennte Prüfung und
+  Veröffentlichung sowie nachvollziehbare Modellkosten im Bericht.
 
 - Junie-Probelauf erfolgreich: deutsche Bewertung mit vollständigen Modbus-Fristen;
   gemeldete Modellkosten rund 0,048 USD, tatsächliche Top-up-Abbuchung noch offen.

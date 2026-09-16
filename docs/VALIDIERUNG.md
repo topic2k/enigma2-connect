@@ -2,6 +2,20 @@
 
 # Prüfübersicht
 
+## Automatischer Junie-Monitor – 1.1.2
+
+62 Offline-Skripttests prüfen unter anderem einzelne Beitragspakete, erste und
+zweite Fehlschläge, erfolgreiche Teilberichte, Wiederholung am Folgetag,
+falsche Beitrags-IDs, erfundene Quellbelege, unabhängige Verbesserungsvorschläge,
+Kostenmetadaten und nebenwirkungsfreie Probeläufe. Ruff, Python-Syntax,
+Workflow-/Shell-Syntax, Lockdatei sowie Versions-/Dokumentationslinks bestanden.
+Die bestehende Retry-Logik wird für die getrennten Jobs wiederverwendet.
+
+Die Qualitätscheckliste wurde auf Auswirkungen geprüft: keine Änderung an
+Integrationsverhalten, Abdeckungsanforderungen oder verbleibenden Hardware- und
+Home-Assistant-Nachweisen. Die vollständige PR-CI und der produktive Ablauf
+werden vor Übernahme geprüft; fehlende Live-Nachweise sind noch nicht bestanden.
+
 ## Junie-Einzeltest am 16.09.2026 – 1.1.2-dev.4
 
 Der [Testlauf 35120165171](https://github.com/topic2k/enigma2-connect/actions/runs/35120165171)

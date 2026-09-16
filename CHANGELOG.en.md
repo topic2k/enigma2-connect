@@ -4,16 +4,19 @@
 
 ## Contents
 
-- [1.1.2-dev.4](#112-dev4)
+- [1.1.2](#112)
 - [1.1.1](#111)
 - [1.1.0](#110)
 - [1.0.2](#102)
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 1.1.2-dev.4
+## 1.1.2
 
-Unreleased development version.
+Unreleased.
+
+- Switched the blog monitor to individual Junie assessments: weekly discovery,
+  next-day retries, separate validation/publication and reported model costs.
 
 - Junie trial succeeded: German assessment with complete Modbus deadlines;
   reported model cost about USD 0.048, actual top-up deduction still unconfirmed.

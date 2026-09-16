@@ -2,6 +2,19 @@
 
 # Verification summary
 
+## Automated Junie monitor – 1.1.2
+
+62 offline script tests cover individual post packets, first and second failures,
+partial success, next-day retry, wrong post IDs, fabricated source citations,
+independent enhancement proposals, usage metadata and side-effect-free dry runs.
+Ruff, Python syntax, workflow/shell syntax, lock consistency and version/documentation
+links passed. Existing retry logic is reused across the separated jobs.
+
+The quality checklist was reviewed for impact: no change to integration behavior,
+coverage requirements or outstanding hardware and Home Assistant evidence.
+Full PR CI and production execution will be checked before adoption; missing
+live evidence is not treated as passed.
+
 ## Junie single-post trial on 2026-09-16 – 1.1.2-dev.4
 
 [Run 35120165171](https://github.com/topic2k/enigma2-connect/actions/runs/35120165171)
