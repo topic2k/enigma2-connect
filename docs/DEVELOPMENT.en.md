@@ -635,6 +635,16 @@ Receiver HLS uses its own window. A known total duration alone would not enable
 full seeking there. Browser buffers are separate; long pauses and saved resume
 positions remain unimplemented.
 
+### Time base in the HLS seek test
+
+The synthetic colour test checks each generated segment's video start against
+`1 + segment index × 6.4` seconds (within one 90 kHz tick). AAC encoder delay can
+start audio earlier: measured at 0.978667 instead of 1.000000 seconds. FFmpeg's
+relative input `-ss` uses the container start. The colour-boundary check therefore
+uses the absolute video time `-seek_timestamp 1 -ss 13.8`. The expected green frame,
+third-segment request and complete decoding across segment boundaries remain
+mandatory checks. This changes neither the production timeline nor stream encoding.
+
 ## Implementation rules
 
 The regenerate action stores a random per-receiver `recording_image_generation`

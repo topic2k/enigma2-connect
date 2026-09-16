@@ -2,6 +2,22 @@
 
 # Verification summary
 
+## CI seek test: correction 1.2.0-dev.10
+
+The [dev.9 CI run](https://github.com/topic2k/enigma2-connect/actions/runs/35132768651)
+passed 413 tests; two HLS colour-test variants failed with FFmpeg 6.1.1.
+Individual segments contained the expected colours. AAC encoder delay put the
+relative 12.8-second seek before the intended video frame: container start
+0.978667, video start 1.000000 seconds. The corrected check uses absolute video
+time 13.8 seconds and additionally verifies each segment start within one 90 kHz
+tick. No relaxed colour checks, skips, reduced coverage thresholds or integration
+code changes. The quality checklist is unchanged. The [corrected CI run](https://github.com/topic2k/enigma2-connect/actions/runs/35134405193)
+with FFmpeg 6.1.1 passes all Python/frontend tests, unchanged coverage thresholds,
+Ruff, formatting and mypy. [Hassfest and HACS](https://github.com/topic2k/enigma2-connect/actions/runs/35134405186)
+also pass. Both affected tests additionally passed locally with FFmpeg 8.1;
+Python syntax and offline lock checks passed. Documented HA user acceptance
+is retained; this test correction adds no new device acceptance.
+
 ## HA recording playback and seeking: user acceptance 1.2.0-dev.9
 
 On **2026-09-16**, the user streamed a recording in real Home Assistant, sought

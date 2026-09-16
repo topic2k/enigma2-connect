@@ -677,6 +677,17 @@ Gesamtlänge allein würde dort kein vollständiges Spulen ermöglichen.
 Browser-Puffer sind unabhängig davon; lange Pausen und gespeicherte
 Fortsetzungspositionen sind weiterhin nicht implementiert.
 
+### Zeitbasis im HLS-Spultest
+
+Der synthetische Farbtest prüft den Video-Start jedes erzeugten Segments auf
+`1 + Segmentindex × 6,4` Sekunden (Genauigkeit eines 90-kHz-Ticks). AAC kann wegen
+des Encoder-Vorlaufs früher beginnen: gemessen 0,978667 statt 1,000000 Sekunden.
+FFmpegs relatives Eingabe-`-ss` bezieht sich auf den Containerstart. Deshalb nutzt
+die Bildprüfung beim Farbwechsel die absolute Videozeit `-seek_timestamp 1 -ss 13.8`.
+Der erwartete grüne Frame, der Abruf des dritten Segments und das vollständige
+Dekodieren über Segmentgrenzen bleiben verpflichtende Prüfungen. Das ändert weder
+die produktive Zeitleiste noch die Stream-Kodierung.
+
 ## Verhaltensregeln für Implementierungen
 
 Die Optionsaktion zur Bild-Neugenerierung speichert pro Receiver einen
