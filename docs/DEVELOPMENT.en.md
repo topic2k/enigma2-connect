@@ -69,6 +69,12 @@ was developed with assistance from generative AI.
 
 ## Development environment and checks
 
+Select targeted local checks appropriate to the change. The command list below
+is a reference for the full check scope. Current successful CI results do not
+require a complete local rerun. Before merging, follow the
+[release guide's quality requirements](../RELEASING.en.md#checks); additionally
+check affected requirements outside CI.
+
 FFmpeg must be on PATH for the actual recording-frame extraction test (on
 Debian/Ubuntu: `sudo apt-get install ffmpeg`). Without it, this test is skipped
 locally and the Silver coverage gate may fail. CI explicitly installs FFmpeg

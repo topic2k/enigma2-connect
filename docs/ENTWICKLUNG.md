@@ -73,6 +73,12 @@ nicht veröffentlicht. Die Software wurde mit Unterstützung generativer KI entw
 
 ## Entwicklungsumgebung und Prüfungen
 
+Lokal die zur Änderung passenden, gezielten Prüfungen auswählen. Die folgende
+Befehlsliste ist eine Referenz für den vollständigen Prüfumfang. Aktuelle erfolgreiche
+CI-Ergebnisse müssen nicht vollständig lokal wiederholt werden. Vor dem Merge
+gelten die [Qualitätsvorgaben der Release-Anleitung](../RELEASING.md#prüfungen);
+betroffene Anforderungen außerhalb der CI sind zusätzlich zu prüfen.
+
 Im Projektverzeichnis unter Linux/WSL mit Python ab 3.14.2:
 
 FFmpeg muss für den Test zur tatsächlichen Aufnahmebild-Extraktion im Suchpfad

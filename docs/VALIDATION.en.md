@@ -2,6 +2,29 @@
 
 # Verification summary
 
+## PR preparation: 1.2.0
+
+Remote branches, tags and published releases checked on **2026-09-16**:
+`main` is at `271444a` (1.1.3), and the latest stable release is `v1.1.0`.
+The backward-compatible streaming feature results in target version **1.2.0**;
+the manifest, project metadata, lockfile and both changelogs use this version
+without a development suffix. The version remains unreleased.
+
+Pending local documentation changes have been combined with `develop`.
+Current streaming descriptions, numbered ideas, branding and existing CI evidence
+are preserved. Both languages now include the quality requirements for merging
+into `main`. Integration code, tests, coverage thresholds and the quality checklist
+are unchanged from `b1feaae`.
+
+The [test run on `b1feaae`](https://github.com/topic2k/enigma2-connect/actions/runs/35135760298)
+and [Hassfest/HACS](https://github.com/topic2k/enigma2-connect/actions/runs/35135760314)
+passed. Successful CI for the new PR state is required again before merging.
+Documented receiver/HA user checks retain their stated scope; this adds no
+acceptance of Cast, endurance, real concurrent viewers or other listed practical
+limitations. The coverage data branch will be published after successful `main` tests.
+
+Local final checks passed: 122 local file links, 56 Python syntax checks, version consistency, preserved changelog history and unchanged dependencies. `uv lock --offline`, `uv lock --check --offline` and `git diff --check` passed.
+
 ## CI seek test: correction 1.2.0-dev.10
 
 The [dev.9 CI run](https://github.com/topic2k/enigma2-connect/actions/runs/35132768651)

@@ -2,6 +2,30 @@
 
 # Prüfübersicht
 
+## PR-Vorbereitung: 1.2.0
+
+Am **16.09.2026** Remote-Branches, Tags und veröffentlichte Releases abgeglichen:
+`main` steht auf `271444a` (1.1.3), das letzte stabile Release ist `v1.1.0`.
+Die rückwärtskompatible Streaming-Erweiterung ergibt die Zielversion **1.2.0**;
+Manifest, Projektmetadaten, Lockdatei und beide Changelogs verwenden diese
+Versionskennung ohne Entwicklungssuffix. Die Version bleibt unveröffentlicht.
+
+Offene lokale Dokumentationsänderungen sind mit `develop` zusammengeführt.
+Aktuelle Streaming-Beschreibung, nummerierte Ideenliste, Branding und bestehende
+CI-Nachweise bleiben erhalten. Die Qualitätsregeln vor der Übernahme nach `main`
+sind in beiden Sprachen ergänzt. Integrationscode, Tests, Abdeckungsgrenzen und
+Qualitätscheckliste bleiben gegenüber `b1feaae` unverändert.
+
+Der [Testlauf auf `b1feaae`](https://github.com/topic2k/enigma2-connect/actions/runs/35135760298)
+und [Hassfest/HACS](https://github.com/topic2k/enigma2-connect/actions/runs/35135760314)
+sind erfolgreich. Für den neuen PR-Stand sind vor dem Merge erneut erfolgreiche
+CI-Ergebnisse erforderlich. Die dokumentierten Receiver-/HA-Nutzerprüfungen
+behalten ihren jeweiligen Umfang; Cast, Dauerlauf, reale parallele Zuschauer
+und weitere dort genannte Praxisgrenzen sind damit nicht zusätzlich abgenommen.
+Der Coverage-Datenbranch wird erst nach erfolgreichem `main`-Testlauf veröffentlicht.
+
+Lokale Abschlussprüfung bestanden: 122 lokale Dateiverweise, 56 Python-Syntaxprüfungen, Versionskonsistenz, erhaltene Changelog-Historie und unveränderte Abhängigkeiten. `uv lock --offline`, `uv lock --check --offline` und `git diff --check` bestanden.
+
 ## CI-Spultest: Korrektur 1.2.0-dev.10
 
 Der [CI-Lauf zu dev.9](https://github.com/topic2k/enigma2-connect/actions/runs/35132768651)

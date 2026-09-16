@@ -4,7 +4,7 @@
 
 ## Contents
 
-- [1.2.0-dev.11](#120-dev11)
+- [1.2.0](#120)
 - [1.1.3](#113)
 - [1.1.2](#112)
 - [1.1.1](#111)
@@ -13,9 +13,16 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 1.2.0-dev.11
+## 1.2.0
 
-Unreleased development version.
+Unreleased.
+
+- Require successful CI for the current PR state, continued compliance with all
+  integration quality requirements and maintained or improved quality status
+  before merging into `main`. Targeted local checks are sufficient; current CI
+  evidence does not require a complete local rerun. Additionally check affected
+  requirements outside CI. Aligned project, release and developer instructions in
+  both languages; completed release commands with existing type and coverage checks.
 
 - Added `flat-square` README badges for releases, requirements, license, tests,
   Hassfest/HACS, coverage, HACS installation and documentation. After successful

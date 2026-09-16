@@ -4,7 +4,7 @@
 
 ## Inhaltsverzeichnis
 
-- [1.2.0-dev.11](#120-dev11)
+- [1.2.0](#120)
 - [1.1.3](#113)
 - [1.1.2](#112)
 - [1.1.1](#111)
@@ -13,9 +13,17 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 1.2.0-dev.11
+## 1.2.0
 
-Unveröffentlichte Entwicklerversion.
+Unveröffentlicht.
+
+- Vor der Übernahme nach `main` erfolgreiche CI für den aktuellen PR-Stand,
+  weiterhin erfüllte Integrationsqualitätsvorgaben und einen unveränderten oder
+  verbesserten Qualitätsstatus verbindlich nachweisen. Lokal genügen passende,
+  gezielte Prüfungen; aktuelle CI-Nachweise erfordern keine vollständige lokale
+  Wiederholung. Betroffene Anforderungen außerhalb der CI zusätzlich prüfen.
+  Projekt-, Release- und Entwicklervorgaben in beiden Sprachen abgestimmt;
+  Release-Prüfbefehle um bestehende Typ- und Testabdeckungsprüfungen vervollständigt.
 
 - README-Badges für Release, Voraussetzungen, Lizenz, Tests, Hassfest/HACS,
   Coverage, HACS-Installation und Dokumentation im Stil `flat-square` ergänzt.
