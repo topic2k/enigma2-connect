@@ -55,6 +55,7 @@ bleibt verpflichtend.
 
 ## Branches, Freigabe und Releases
 
+- Neue Worktrees für dieses Projekt immer unter `V:\enigma2-connect-worktrees` anlegen.
 - Änderungen zuerst auf `develop` oder bei Bedarf auf einem neuen Arbeitsbranch
   umsetzen; keine direkten Änderungen oder Commits auf `main`.
 - Änderungen erst nach ausdrücklicher Freigabe durch den Nutzer und ausschließlich

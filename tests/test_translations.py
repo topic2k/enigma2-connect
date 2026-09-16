@@ -54,13 +54,13 @@ def test_translation_keys_and_placeholders_match():
     [
         (
             "de",
-            "Enigma2-Aufnahmen",
+            "Enigma2 Connect",
             "Aufnahme",
             "Kein Bild",
             "Unbekannte Fernbedienungstaste: nope",
         ),
-        ("en", "Enigma2 recordings", "Recording", "No artwork", "Unknown remote key: nope"),
-        ("fr", "Enigma2 recordings", "Recording", "No artwork", "Unknown remote key: nope"),
+        ("en", "Enigma2 Connect", "Recording", "No artwork", "Unknown remote key: nope"),
+        ("fr", "Enigma2 Connect", "Recording", "No artwork", "Unknown remote key: nope"),
     ],
 )
 async def test_localized_media_options_and_errors(

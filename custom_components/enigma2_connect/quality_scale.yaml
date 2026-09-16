@@ -23,7 +23,7 @@ rules:
     comment: 100 percent statement and branch coverage; tests/test_config_flow.py covers recovery and identity. CI enforces both.
   dependency-transparency:
     status: done
-    comment: No additional runtime packages in manifest requirements; the Apache-2.0 API client is included.
+    comment: No additional Python runtime packages in manifest requirements; the Apache-2.0 API client is included. Optional external playback requires FFmpeg with libx264/AAC, documented in both user guides.
   docs-actions:
     status: done
     comment: User guides describe actions and examples in the messages and automations chapter.
@@ -69,7 +69,7 @@ rules:
     comment: Services validate targets; coordinator.perform translates failures. The refresh button waits for its own fetch and reports failure.
   config-entry-unloading:
     status: done
-    comment: Platforms unload and async_close cancels recording-image jobs; lifecycle tests cover both.
+    comment: Platforms unload; async_close cancels recording-image jobs and external HLS processes/relays/files. Lifecycle tests cover unload and HA stop.
   docs-configuration-parameters:
     status: done
     comment: Both user guides list all user-facing options, defaults, ranges and their per-receiver or shared scope.
@@ -93,7 +93,7 @@ rules:
     comment: ConfigEntryAuthFailed and action failures initiate reauth; UI recovery and wrong-device tests exist.
   test-coverage:
     status: done
-    comment: All 23 modules exceed 95 percent combined statement/branch coverage (minimum 96.25). CI checks each module and requires complete config flows.
+    comment: All production modules exceed 95 percent combined statement/branch coverage; changed streaming modules are remeasured and unchanged sources retain verified evidence. CI checks each module and requires complete config flows.
   # Gold
   devices:
     status: done
@@ -167,4 +167,4 @@ rules:
     comment: OpenWebifClient receives a Home Assistant managed aiohttp session.
   strict-typing:
     status: done
-    comment: All 23 production modules pass mypy strict with typed EnigmaConfigEntry throughout, explicit JSON boundaries, overloads and py.typed. Pinned mypy runs in CI.
+    comment: All production modules pass mypy strict with typed EnigmaConfigEntry throughout, explicit JSON boundaries, overloads and py.typed. Pinned mypy runs in CI.

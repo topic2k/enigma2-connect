@@ -54,6 +54,7 @@ rules; the remote comparison before a PR remains mandatory.
 
 ## Branches, approval and releases
 
+- Always create new worktrees for this project under `V:\enigma2-connect-worktrees`.
 - Implement changes on `develop` first, or on a new working branch when needed;
   do not make changes or commits directly on `main`.
 - Merge changes into `main` exclusively through a pull request and only after

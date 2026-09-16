@@ -4,10 +4,67 @@
 
 ## Contents
 
+- [1.2.0-dev.9](#120-dev9)
 - [1.1.0](#110)
 - [1.0.2](#102)
 - [1.0.1](#101)
 - [1.0.0](#100)
+
+## 1.2.0-dev.9
+
+Unreleased development version.
+
+- Recording playback and repeated forward/backward seeks confirmed in real
+  Home Assistant through user testing and debug logs. Original video is preserved
+  and only MP2 audio is converted to AAC; feature approved for integration into `develop`.
+
+- Optimized recording streams: preserve suitable original H.264 video, frame rate
+  and quality; copy compatible AAC or convert audio only. Existing Enigma2 indexes
+  provide keyframe-aligned HLS seeking without a full scan. Index/FFmpeg validation,
+  explicit fallback logs and a 32 MiB total segment cache per session. Compatibility
+  mode remains available.
+
+- Seeking in completed TS recordings through a full HLS VOD timeline and
+  on-demand generation of requested sections with continuous timestamps.
+  Bounded caching, independent playback sessions and automatic fallback when
+  receiver prerequisites are missing. VOD fallback uses HA H.264/AAC encoding with the
+  existing quality settings.
+
+- Media source consistently named “Enigma2 Connect” in all languages.
+  Updated navigation instructions and documented HLS duration and seeking limits
+  in the developer guides; existing quality settings remain documented.
+
+- Streaming debug logs include an independent session identifier, detected codecs,
+  video/audio parameters, processing path, fallback reasons and pool events.
+  Credentials and playback URLs are excluded from these messages.
+
+- Multiple external streams per receiver: configurable limit defaulting to 5,
+  with 0 for unlimited. Additional starts do not end existing streams. Viewers
+  share the same live channel; recordings start independently. Concurrent startup
+  requests respect the limit; at capacity, only the extra start is rejected with
+  a translated message.
+
+- Automatic stream processing: relay suitable receiver HLS, copy compatible
+  video/audio tracks and check receiver transcoding before software conversion.
+  Only incompatible tracks are re-encoded. Compatibility mode can force the
+  previous full conversion when needed.
+
+- Fixed browser playback: HLS now uses the exact MIME type expected by Home
+  Assistant's media dialog, `application/x-mpegURL`. This selects the built-in
+  HLS player instead of the unsupported-media message. A regression test
+  verifies the exact spelling.
+
+- Idea no. 13: optional external playback of live TV and TS recordings through
+  the HA media source. Software video conversion produces H.264 up to 720p/25 fps;
+  compatible original tracks retain their quality.
+- Receiver credentials stay in the backend; random playback URLs expire on
+  inactivity, unload or after six hours at most. Multiple streams per receiver
+  have independent resources and lifetimes. Suitable recordings provide a full
+  timeline; fallback recording playback uses a limited sliding window.
+- Live TV port and HTTPS are configurable independently of OpenWebif. Added
+  German/English guidance, simulated tests and local FFmpeg tests. Browser/Cast
+  device acceptance is recorded separately.
+- New project worktrees must be located under `V:\enigma2-connect-worktrees`.
 
 ## 1.1.0
 

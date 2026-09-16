@@ -14,6 +14,8 @@ die [README](../README.md) bleibt der kurze Einstieg für Anwender.
 - [Home-Assistant-Entwicklerblog überwachen](#home-assistant-entwicklerblog-überwachen)
 - [Qualitätsstufen und nächste Schritte](#qualitätsstufen-und-nächste-schritte)
 - [Aufbau und Datenfluss](#aufbau-und-datenfluss)
+- [Externe Wiedergabe](#externe-wiedergabe)
+- [Streaming-Diagnose und Qualität](#streaming-diagnose-und-qualität)
 - [Verhaltensregeln für Implementierungen](#verhaltensregeln-für-implementierungen)
 - [Dokumentation und Änderungen](#dokumentation-und-änderungen)
 - [Identität und Datenverarbeitung](#identität-und-datenverarbeitung)
@@ -404,6 +406,7 @@ Vor der Hardware-/Veröffentlichungsfreigabe bleibt folgende Abnahme offen:
 | `services.py` / `services.yaml` | Validierung und Beschreibung der Geräteaktionen |
 | `recordings.py` / `media_source.py` | Aufnahmeordner, Titel und gemeinsame Medienkachel |
 | `channel_media.py` | Optionale Senderordner, Receiver-Zuordnung und authentifizierte Picons |
+| `media_stream.py` / `stream_codec.py` / `stream_receiver.py` | Externe Wiedergabe, Codec-Prüfung und begrenzte Receiver-Stream-Weitergabe |
 | `recording_images.py` / `recording_snapshot.py` | Vorschaubilder, Bildanbieter, privater Cache und begrenzte FFmpeg-Bildgewinnung |
 | `diagnostics.py` | Diagnoseexport mit erlaubten technischen Feldern |
 | `strings.json` / `translations/` | Texte, Fehler und deutsche/englische Übersetzungen |
@@ -425,6 +428,232 @@ werden auf Anforderung geladen und fünf Sekunden zwischengespeichert.
 Die Dashboardkarte ruft ausschließlich `remote.send_command` in Home Assistant
 auf und verwendet keine Receiver-Zugangsdaten. Installation und Update der Karte
 beschreibt das [Benutzerhandbuch](BENUTZERHANDBUCH.md#fernbedienung-im-dashboard).
+
+## Externe Wiedergabe
+
+Die Option `external_playback` schaltet die generische Medienauflösung für
+`recording/…` und `channel/…` frei. Katalogzuordnung und vorhandene Receiver-
+Wiedergabe bleiben erhalten. TS-Aufnahmen verwenden `/file?action=download&file=…`;
+Live-TV verwendet die gespeicherte Receiver-Adresse mit `stream_port` (8001) und
+`stream_https` (false). `stream_mode` ist standardmäßig `auto`; `compatible`
+erzwingt die bisherige vollständige Umwandlung. `stream.m3u` und `streamnew.m3u`
+werden wegen möglicher `zapstream`-Nebenwirkungen nicht aufgerufen. Stattdessen
+werden `/web/streamhls.m3u` ohne `zap` und `/web/video.m3u?device=phone` verwendet.
+Es werden weder beliebige Benutzer-URLs noch neue Receiver-Dateipfade akzeptiert.
+
+Die Medienauflösung meldet exakt `application/x-mpegURL`. Home Assistants
+[Medien-Dialog](https://github.com/home-assistant/frontend/blob/dev/src/panels/media-browser/hui-dialog-web-browser-play-media.ts)
+aktiviert nur dafür `ha-hls-player`; `application/vnd.apple.mpegurl` wird an dieser
+Stelle trotz gültigem HLS-Stream als nicht unterstützter Medientyp abgewiesen.
+Der eingebaute HLS-Player verwendet hls.js beziehungsweise native HLS-Wiedergabe.
+
+`stream_receiver.py` prüft für Live-TV einen optionalen Receiver-HLS-Ausgang.
+Nur dessen erwartete 307-Antwort wird ausgewertet; sie wird nicht automatisch
+verfolgt. Adressen müssen HTTP(S) auf dem gespeicherten Receiver-Host verwenden.
+Eingebettete Zugangsdaten werden entfernt; verwendet wird die gespeicherte Anmeldung.
+Separate HLS-Zugangsdaten werden derzeit nicht unterstützt. Bei aktiviertem
+HTTPS für Live-TV werden HTTP-Kandidaten verworfen. Unterstützt werden
+unverschlüsselte MPEG-TS-Medienplaylists mit höchstens 64 Segmenten und einer
+Zieldauer bis 30 Sekunden. Masterplaylists, fMP4, Schlüssel, Byte-Ranges und unbekannte
+Tags führen zum lokalen Rückfall. Playlists sind auf 256 KiB, Segmente auf 32 MiB
+begrenzt; maximal 128 Segmentadressen bleiben für laufende Abrufe bekannt. Alle
+Segmentadressen müssen denselben Ursprung wie die Receiver-HLS-Playlist haben.
+Sie werden in token-geschützte HA-Adressen umgeschrieben. Dabei entsteht kein
+lokales HLS-Verzeichnis und kein dauerhafter FFmpeg-Prozess.
+
+`stream_codec.py` prüft die erste Video-/Audiospur mit einem kurzlebigen ffprobe-
+Prozess über ein privates Loopback-Relay. Timeout sechs Sekunden, Ausgabe maximal
+64 KiB, Eingang ausschließlich MPEG-TS über HTTP/TCP. ffprobe wird neben dem
+konfigurierten FFmpeg-Programm oder im Suchpfad gesucht. Konservativ unverändert
+bleiben progressives H.264 mit 8-Bit-YUV420, Baseline/Main/High bis Level 4.2 sowie
+AAC-LC mit höchstens zwei Kanälen und 44,1/48 kHz. Fehlende oder unklare Angaben
+führen zur Umwandlung. Bei ungeeignetem Live-TV wird vorher ein separater
+Receiver-Transcoding-Ausgang geprüft und nur bei kompatiblem Video übernommen.
+Aufnahmen verwenden den Original-Dateizugang. Zuerst wird spulbares VOD versucht;
+nur dessen Fallback verwendet die oben beschriebene Codec-Prüfung.
+
+`MediaStream` in `media_stream.py` verwaltet einen Pool unabhängiger
+`StreamSession`-Objekte pro Receiver. `stream_limit` ist standardmäßig 5; 0 bedeutet
+unbegrenzt. Die Zulassungsprüfung reserviert Plätze unter einem Lock, bevor
+asynchrone Starts parallel beginnen. Auch laufende Startversuche zählen. Bei
+erreichter Grenze folgt `stream_limit_reached` mit der eingestellten Anzahl;
+vorhandene Streams werden nicht verdrängt. Geschlossene, abgelaufene oder
+fehlgeschlagene Sitzungen werden vor der Zulassung aufgeräumt.
+
+Live-TV mit identischer Quell-URL nutzt dieselbe Sitzung und dieselbe Capability,
+auch bei gleichzeitig eintreffenden Auflösungen. Aufnahmen werden nicht geteilt,
+sondern starten separat am Anfang. Ein abgebrochener Auflösungsaufruf beendet
+keinen von weiteren Zuschauern erwarteten gemeinsamen Start (`asyncio.shield`).
+Ein verwaister Start bleibt durch Start- und Inaktivitätsfristen begrenzt.
+Der HTTP-Endpunkt ordnet jeden Abruf anhand des Tokens seiner Sitzung zu.
+Entladen und HA-Stopp brechen alle ausstehenden Starts ab und schließen alle
+Sitzungen. Das Speichern von Optionen verwendet weiterhin HA-Neuladen und
+beendet deshalb die laufenden Streams dieses Receivers.
+
+Jede `StreamSession` startet höchstens einen dauerhaften FFmpeg-Prozess. Nur das
+Relay kennt Receiver-Adresse und Anmeldung; TLS-Prüfung, Redirect-Verbot und
+einzelne validierte Byte-Ranges bleiben erhalten. Geeignete Spuren verwenden
+`-c:v copy` beziehungsweise `-c:a copy`. Nur die Video-Umwandlung setzt H.264 Main,
+maximal 720p/25 fps, zwei Encoder-Threads und begrenzte Bitrate; die Ton-Umwandlung
+liefert AAC Stereo. Nur der Aufnahme-Fallback wird in Echtzeit gelesen (`-re`). Dessen
+HLS behält acht Segmente mit Zieldauer zwei Sekunden; kopierte Schlüsselbildabstände
+können diese verlängern. Dateien werden atomar veröffentlicht und alte Segmente
+gelöscht. Bei optimiertem Startfehler erfolgt ein weiterer Start mit vollständiger
+Umwandlung; beide Versuche sind jeweils auf 30 Sekunden begrenzt. Laufende
+Browser-Decodierfehler lassen sich über den Kompatibilitätsmodus umgehen.
+Debug-Logging meldet Formate und Verarbeitung ohne Receiver-Adressen; Details folgen unten.
+
+Der HA-Endpunkt verwendet zufällige 256-Bit-Capabilities statt Receiver-Anmeldung.
+Jeder Playlist-/Segmentabruf prüft Token, geladenen Eintrag, Option und Ablaufzeit.
+Die Dateinamens-Allowlist lässt keine Pfade zu. Tokens laufen nach 120 Sekunden
+ohne gültigen Abruf, nach sechs Stunden und beim Entladen ab. Eine neue Auswahl
+eines anderen Streams verändert bestehende Tokens nicht.
+Ein Hintergrundlauf räumt spätestens 15 Sekunden nach Ablauf auf; HA-Stopp beendet
+auch den Prozess. Im Browser und auf Cast-Geräten stehen ausschließlich HA-URLs.
+Diese URLs sind bis zum Ablauf vertraulich zu behandeln.
+
+Automatisierte Prüfungen verwenden simulierte Receiver. Echte FFmpeg-Tests
+prüfen synthetisches MPEG-2/MP2 mit vollständiger Umwandlung, H.264/AAC mit Kopie
+beider Spuren sowie H.264/MP2 mit alleiniger Tonumwandlung und decodieren die
+HLS-Ausgabe. Ein synthetischer Receiver-HLS-Test prüft die Weitergabe ohne Encoder.
+Das ersetzt keine Browser-/Cast-Abnahme. Mehrfachstreams, gemeinsames Live-TV,
+separate Aufnahmen, Reservierung der Obergrenze, Abbruch und Aufräumen werden mit
+simulierten Receivern geprüft. VOD wird zusätzlich mit synthetischen Farbszenen
+und einem echten FFmpeg-HLS-Client geprüft; die Browser-/Cast-Abnahme bleibt offen.
+Audio-only-Streams sind weiterhin nicht enthalten. Bedienung steht im [Benutzerhandbuch](BENUTZERHANDBUCH.md#auf-anderen-geräten-abspielen).
+
+Quellen: [OpenWebif-Controller](https://github.com/oe-alliance/OpenWebif/blob/main/plugin/controllers/web.py),
+[FFmpeg HLS](https://ffmpeg.org/ffmpeg-formats.html#hls-2).
+
+## Streaming-Diagnose und Qualität
+
+Die Debugprotokollierung der Integration enthält Meldungen der Module
+`media_stream`, `stream_codec` und `stream_vod`. Die unabhängige Kennung `[stream=…]` ordnet
+Start, Codec-Prüfung, Verarbeitungsweg, gemeinsame Live-Nutzung und Aufräumen
+derselben Sitzung zu. Neue parallele Sitzungen erhalten eigene Kennungen.
+Eine volle Stream-Grenze wird mit aktueller Belegung und Grenze protokolliert.
+Es werden keine Sender-/Aufnahmetitel, Receiver-Adressen, Zugangsdaten oder
+geheimen Wiedergabe-URLs in diesen Diagnosemeldungen ausgegeben.
+
+`Input original`, `Input receiver_transcoding` und `Input receiver_hls` unterscheiden
+die untersuchten Quellen. Die Prüfung liest MPEG-TS; bei HLS wird ein TS-Segment
+untersucht. Erfasst werden die erste Video-/Audiospur mit Codec, Profil,
+Pixelformat, Halbbildreihenfolge, Level, Auflösung, Bildrate, Bitrate, Kanalzahl und
+Abtastrate, soweit ffprobe Werte liefert. `unknown` bedeutet unbekannt,
+`track=absent` keine erkannte Spur. Das sind Eingangsparameter, keine Messung der
+tatsächlich zum Browser übertragenen Bitrate. Im linearen Kompatibilitätsmodus
+wird die Prüfung übersprungen (`not_probed`). VOD benötigt auch dort seine
+Laufzeitprüfung; `Input recording_vod` meldet deren Ergebnisse.
+
+`Started: processing=…` meldet den tatsächlich gestarteten Weg:
+`copy_video`/`copy_audio` übernehmen Spuren, `encode_video`/`encode_audio` kodieren
+sie in HA neu. `copy_audio` kann auch eine fehlende Audiospur bedeuten.
+Das Präfix `receiver_transcoding+` bezeichnet den ausgewählten separaten
+Transcoding-Endpunkt; `receiver_hls` reicht Receiver-HLS ohne HA-Kodierung weiter.
+Ob und wie der Receiver intern kodiert, kann HA dabei nicht beweisen.
+`recording_vod+copy_video+copy_audio` beziehungsweise
+`recording_vod+copy_video+encode_audio` kennzeichnen spulbare Aufnahmen mit
+Originalvideo; `recording_vod+encode_video+encode_audio` kennzeichnet vollständige
+Umwandlung. `VOD remux`/`VOD render` zeigen angeforderte Zeitabschnitte;
+`VOD remux unavailable` erklärt den Rückfall zur VOD-Kodierung. `VOD unavailable` erklärt den
+Rückfall auf das begrenzte Fenster. `HA output` beziehungsweise `HA VOD output`
+nennt die gewählten Ausgabevorgaben. Fehler enthalten sichere lokale
+Validierungsgründe bzw. den Ausnahmetyp, keine ungefilterten Fehlermeldungen.
+Codec-Unverträglichkeit, fehlende Verbesserung durch Receiver-Transcoding,
+Probe-Fehler und Rückfall auf den Kompatibilitätsmodus werden sichtbar.
+
+Aktuell wird eine HLS-Qualitätsstufe angeboten (`variants=1`), keine adaptive
+Bitratenumschaltung. Durchgereichte Spuren behalten ihre Quellqualität.
+Bei Receiver-Transcoding gelten dessen Einstellungen; HA-Videokodierung verwendet
+H.264 Main/Level 3.1 innerhalb von 1280 × 720 bei 25 Bildern/s, Zielbitrate
+2 Mbit/s und Maxrate 2,5 Mbit/s. Neu kodierter Ton ist AAC, Stereo, 48 kHz,
+128 kbit/s. Diese Vorgaben sind derzeit nicht als Qualitätsoptionen einstellbar.
+Für adaptive HLS-Wiedergabe müsste der Anbieter mehrere Qualitätsvarianten
+bereitstellen; der Player wählt daraus anhand von Durchsatz und Puffer.
+
+### HLS-Laufzeit und Spulen
+
+`RecordingVOD` in `stream_vod.py` bietet abgeschlossene TS-Aufnahmen als feste
+HLS-VOD-Playlist an. `#EXTINF` gibt die Segmentdauer an, `#EXT-X-PLAYLIST-TYPE:VOD`
+kennzeichnet die unveränderliche Liste und `#EXT-X-ENDLIST` deren Ende. Die Summe
+der Segmentdauern entspricht der ermittelten Laufzeit. Die Playlist referenziert
+alle Abschnitte, obwohl diese erst auf Anforderung erzeugt werden. Grundlage:
+[RFC 8216](https://www.rfc-editor.org/rfc/rfc8216.html).
+
+Vor dem Start werden Byte-Ranges durch `bytes=0-0`, HTTP 206, passende
+`Content-Range`/`Content-Length` und eine gleichbleibende Dateigröße geprüft.
+ffprobe ermittelt die Video-Laufzeit, ersatzweise die Container-Laufzeit; zulässig
+sind endliche positive Werte bis 24 Stunden. Ein Audio-Nachlauf kleiner als ein
+Ausgabebild wird an einer Segmentgrenze abgeschnitten, damit keine leere letzte
+Videosequenz angekündigt wird. Der erste Abschnitt wird vor der Freigabe der
+Zeitleiste tatsächlich erzeugt. Die VOD-Vorbereitung ist insgesamt auf 20 Sekunden
+begrenzt. Bei fehlenden Voraussetzungen folgt das bisherige Streaming-Fenster.
+Die unveränderte Dateigröße wird vor jeder neuen Abschnittserzeugung erneut geprüft;
+eine später wachsende/veränderte Aufnahme kann deshalb zu einem Wiedergabefehler führen.
+
+**Originalvideo übernehmen:** Im automatischen Modus prüft `copy_codecs` die
+vorhandenen Spuren. Bei geeignetem progressivem H.264 liest `RecordingRemux`
+(`stream_remux.py`) den zugehörigen `.ts.ap`-Index über einen ausschließlich
+lokalen Relay-Endpunkt. Zugangsdaten bleiben im Backend. Das Enigma2-Datenformat
+besteht aus Big-Endian-Paaren von 64-Bit-Dateioffset und 90-kHz-Zeitstempel;
+Formatreferenz: [Enigma2-Aufnahmeindex](https://github.com/openatv/enigma2/blob/master/lib/dvb/pvrparse.cpp).
+Es wird kein fremder Implementierungscode übernommen.
+
+Der Index ist auf 4 MiB begrenzt. Paketgrenzen, streng steigende Offsets und
+Zeitstempel, Dateigröße, Anfang/Ende und maximale Schlüsselbildabstände werden
+geprüft. Zeitstempelüberläufe, Sprünge und unpassende Indizes führen zum Rückfall.
+Die unveränderliche Playlist gruppiert vorhandene Schlüsselbilder mit mindestens
+6,4 Sekunden Abstand; ihre `EXTINF`-Werte und `TARGETDURATION` folgen den realen
+Grenzen. Ein Schlussrest unter einer Sekunde bleibt beim vorherigen Abschnitt.
+Die Zeitleiste beginnt am ersten indizierten Schlüsselbild.
+
+FFmpeg erhält `-c:v copy`; kompatibler AAC-Ton erhält `-c:a copy`, anderer Ton
+wird zu AAC gewandelt. Es gibt weder Skalierung noch Bildratenbegrenzung für
+kopiertes Video. `-copyts` und ein gemeinsamer Ausgabeversatz erhalten die
+Zeitbasis. Der Bitstreamfilter `noise=amount=0:drop=...` entfernt ausschließlich
+Pakete außerhalb der Abschnittsgrenzen; `amount=0` verändert keine Nutzdaten.
+Seine `drop`-Funktion wird vorab geprüft (lokal mit FFmpeg 8.1 getestet; FFmpeg 4.4
+besitzt sie nicht). Ein fehlender Filter löst einen erklärten Rückfall aus.
+Der Lesevorlauf entspricht dem größten Indexabstand plus einer Sekunde, mindestens
+zwei Sekunden. Damit werden nur kurze Dateibereiche gelesen, ohne Videodekodierung.
+Audiokodierung trimmt anhand derselben absoluten Zeitbasis.
+
+**Vollständige Umwandlung als Rückfall:** Bei ungeeignetem Video, fehlendem Index,
+nicht unterstützten Zeitstempeln oder explizitem Kompatibilitätsmodus bleibt der
+vorhandene VOD-Encoder verfügbar. Abschnitte dauern 6,4 Sekunden, der letzte entsprechend kürzer. Das entspricht
+160 Videobildern bei 25 fps und 300 AAC-Paketen bei 48 kHz; begrenzte
+Bild-/Paketanzahlen verhindern Überlappungen an den Abschnittsgrenzen. Bei verfügbarem
+Paketfilter begrenzt dieser zusätzlich die Ausgabe: Neuere FFmpeg-Versionen können
+nach der vorgegebenen Anzahl Encoder-Eingabebilder noch ein AAC-Paket ausgeben. FFmpeg springt
+mit eingabeseitigem `-ss` über das private HTTP-Relay bis zu zehn Sekunden vor
+die gewünschte Zeit. Bild und Ton werden anhand derselben Zeitbasis exakt auf
+den gewünschten Abschnitt getrimmt; nur dieser Abschnitt wird kodiert. `-output_ts_offset` ordnet die Ausgabe der absoluten
+Aufnahmezeit zu; so funktioniert das Spulen über die vollständige Zeitleiste.
+Jeder Abschnitt beginnt mit einem neuen Schlüsselbild. H.264 Main/Level 3.1,
+720p/25 fps und AAC Stereo verwenden dieselben Qualitätsvorgaben wie die
+bisherige HA-Kodierung (`encoding_args` in `stream_codec.py`). Dieser Rückfall kodiert beide
+Spuren; der automatische Remux-Weg erhält geeignete Originalspuren.
+Siehe [FFmpeg-Seeking](https://ffmpeg.org/ffmpeg.html) und
+[Zeitstempeloptionen](https://ffmpeg.org/ffmpeg-formats.html).
+
+Pro Aufnahme-Sitzung laufen höchstens ein Encoder und vier ausstehende
+Abschnittsaufträge. Gleiche Anfragen teilen einen Auftrag; das Abbrechen eines
+HTTP-Aufrufs beendet keine gemeinsam erwartete Erzeugung. Der LRU-Cache umfasst
+höchstens acht Abschnitte und insgesamt maximal 32 MiB pro Sitzung.
+Ein kodierter Abschnitt ist auf 4 MiB, ein Remux-Abschnitt auf 16 MiB begrenzt.
+Die höhere Einzelgrenze erlaubt die ursprüngliche Video-Bitrate; bei Erreichen
+der Gesamtgrenze werden ältere Abschnitte verdrängt.
+Verdrängte Abschnitte können erneut erzeugt werden. Jeder Encoderlauf ist auf
+20 Sekunden begrenzt. Entladen oder Sitzungsablauf brechen auch wartende Aufträge
+ab, beenden Prozesse und leeren den Cache. Ein kompletter Download oder eine
+vollständige Vorab-Konvertierung der Aufnahme ist nicht nötig.
+
+Live-TV und der Aufnahme-Fallback behalten ihr bisheriges Sliding Window:
+acht Segmente mit zwei Sekunden Zieldauer, gegebenenfalls länger bei kopierten
+Schlüsselbildabständen. Receiver-HLS verwendet dessen Fenster. Eine bekannte
+Gesamtlänge allein würde dort kein vollständiges Spulen ermöglichen.
+Browser-Puffer sind unabhängig davon; lange Pausen und gespeicherte
+Fortsetzungspositionen sind weiterhin nicht implementiert.
 
 ## Verhaltensregeln für Implementierungen
 
@@ -526,7 +755,8 @@ Receiver-Antworten. Die Senderbilder werden nicht im Voraus abgefragt.
   Nachrichteninhalte protokollieren. Diagnoseexporte verwenden eine Allowlist.
 - Die Aufnahmekachel ist für alle Receiver gemeinsam. Ihre Darstellungsoption
   wird bei allen Einträgen gespeichert. Wiedergabe muss den Receiver prüfen, dem
-  die Aufnahme gehört; eine aufgelöste Aufnahme ist kein Browser-/Cast-Stream.
+  die Aufnahme gehört. Generische HLS-Auflösung benötigt die explizite Option
+  `external_playback`; Zugangsdaten bleiben im Relay.
 - Die Firmware liefert keinen verlässlichen Pausezustand. Den angenommenen
   Wiedergabestatus nicht als bestätigte Pause-/Timeshift-Rückmeldung darstellen.
 - Backend-Texte und Übersetzungsschlüssel gemeinsam pflegen. Die Karte nutzt die
@@ -600,7 +830,8 @@ kein fertiges Bild für jede Firmware.
 Signalwerte werden normalisiert. Ein ganzzahliger Prozent-Ersatzwert im dB-Feld
 wird nicht als echter dB-Wert veröffentlicht; BER bleibt ohne erfundene Einheit.
 Temperatur, freier RAM/Plattenspeicher und Uptime sind nicht implementiert.
-Browser-/Cast-Streaming, Wake-on-LAN und neue wiederkehrende Timer gehören ebenfalls nicht zum aktuellen Umfang.
+Wake-on-LAN und neue wiederkehrende Timer gehören nicht zum aktuellen Umfang.
+Die externe HLS-Wiedergabe hat die oben beschriebenen Grenzen.
 
 ## Validierung von Aktionen
 
@@ -637,21 +868,21 @@ Quellcode untersucht; ihre zusätzliche Funktionalität ist damit nicht auf den
 beiden Testreceivern oder in einer echten HA-Installation geprüft. Unterstützung
 und Rückgabeformate vor einer Umsetzung je OpenWebif-Version und Image prüfen.
 
-| Priorität | Idee | Nutzen, Schnittstelle und Grenzen |
-| --- | --- | --- |
-| Hoch | EPG durchsuchen und direkt aufnehmen | Sendungen nach Titel finden, Wiederholungstermine suchen und Treffer ohne manuelle Zeitangaben aufnehmen. Grundlage: `epgsearch`, `epgsimilar`, `timeraddbyeventid`. Die laufende/nächste Sendung wird bereits angezeigt; ergänzt würden Suche und Aufnahme aus einem Treffer. [EPG-API][ideas-api] |
-| Hoch | Timer bearbeiten und Wochenserien anlegen | Vorhandene Timer verlängern, Wochentage, Aufnahmeordner und Tags festlegen. Anlegen, Löschen, Aktivieren/Deaktivieren und lesende Kalenderwiederholungen sind vorhanden. Ergänzung über `timerchange` und `repeated`; einzelne Kalenderinstanzen nicht mit dem gesamten Receiver-Timer verwechseln. [Timerimplementierung][ideas-timers] |
-| Hoch | Aufnahmekonflikte gezielt auswerten | Kollidierende Sendungen mit Zeiten anzeigen und Automationen zugänglich machen. Beim Anlegen/Bearbeiten liefert OpenWebif strukturierte `conflicts`. Das wäre eine Erweiterung der bisherigen Fehlerauswertung, keine belegte separate Konfliktvorhersage. [Timerimplementierung][ideas-timers] |
-| Hoch | Sofortaufnahme als eigene Aktion | Dashboard-Button oder Sprachaktion „Aktuelle Sendung aufnehmen“ über `recordnow`. Der Ereignismodus benötigt EPG; der alternativ „unendlich“ genannte Modus ist im untersuchten Code auf zehn Stunden begrenzt. [Timerimplementierung][ideas-timers] |
-| Hoch | Aufnahmebibliothek erweitern | Aufnahmeordner und HA-Medienquelle sind inzwischen vorhanden. Weitere Ausbaustufen: Tags/Filter, zusätzliche Metadaten wie Dateigröße und bisheriger Wiedergabefortschritt sowie Umbenennen, Verschieben und Löschen. OpenWebif bietet `movielist`, `fullmovielist` und Verwaltungsaktionen. Lösch-/Papierkorbverhalten je Image berücksichtigen. [Aufnahmeverwaltung][ideas-movies] |
-| Mittel | Festplattenspeicher und Systemdiagnose | Freien Aufnahmeplatz überwachen; RAM und Uptime als optionale Diagnosesensoren ergänzen. `about` liefert die Grundlagen. Einheiten normalisieren und langsam abfragen; als frei gemeldeter RAM enthält im untersuchten Code auch Buffer und Cache. [Informationsmodell][ideas-info] |
-| Mittel | Tonspur auswählen | Originalton, alternative Sprache oder Audiodeskription per dynamischer `select`-Entität wählen. Grundlage: `getaudiotracks` und `selectaudiotrack`; Auswahl nach Senderwechsel aktualisieren. [Audio-API][ideas-api] |
-| Mittel | Timeshift gezielt steuern und anzeigen | Start-/Stopp-Aktionen und „Timeshift aktiv“ über `tsstart`, `tsstop`, `tsstate`. `timeshiftEnabled` ist kein verlässlicher Pausezustand; der untersuchte Stopp-Pfad unterdrückt die Speicherrückfrage. [Controller][ideas-controller] |
-| Mittel | Wiedergabeposition bei Aufnahmen | Fortschritt und Restzeit im Medienplayer anzeigen. Das bereits abgefragte `getcurrent` liefert für bestimmte lokale Aufnahmen eine Position in Sekunden. Diese allein erlaubt keine sichere Pauseerkennung. [Controller][ideas-controller] |
-| Mittel | Receiver-Sleeptimer | „In 30 Minuten Standby“ mit Statusanzeige über den geräteeigenen `sleeptimer`. Verfügbare Felder und Verhalten unterscheiden sich nach Image. [Timerimplementierung][ideas-timers] |
-| Optional | Einschalten ohne Mitwecken des Fernsehers | Für Radio oder Hintergrundautomationen: `supports_powerup_without_waking_tv` und `set_powerup_without_waking_tv` sind dokumentiert. Image-Unterstützung prüfen; die Funktion ersetzt kein Aufwecken aus Tiefschlaf. [Steuerungs-API][ideas-api] |
-| Optional | Text an Eingabefelder senden | Suchbegriffe direkt eingeben, statt einzelne Fernbedienungstasten zu senden. `remotecontrol` besitzt einen `text`-Parameter; das aktive Eingabefeld am Receiver bleibt entscheidend. [Controller][ideas-controller] |
-| Größeres Projekt | Live-TV und Aufnahmen auf anderen Geräten abspielen | Die vorhandene Aufnahme-Medienquelle um verifizierte Browser-/Cast-Wiedergabe und Live-TV erweitern. OpenWebif bietet Stream-/Playlist-Endpunkte einschließlich eines HLS-Einstiegs. Codec-Unterstützung, Authentifizierung und gegebenenfalls Transcoding separat lösen; ein API-Endpunkt belegt keine funktionierende Wiedergabe auf jedem Zielgerät. [Streaming-Endpunkte][ideas-controller] |
+| Nr. | Priorität | Idee | Nutzen, Schnittstelle und Grenzen |
+| --- | --- | --- | --- |
+| 1 | Hoch | EPG durchsuchen und direkt aufnehmen | Sendungen nach Titel finden, Wiederholungstermine suchen und Treffer ohne manuelle Zeitangaben aufnehmen. Grundlage: `epgsearch`, `epgsimilar`, `timeraddbyeventid`. Die laufende/nächste Sendung wird bereits angezeigt; ergänzt würden Suche und Aufnahme aus einem Treffer. [EPG-API][ideas-api] |
+| 2 | Hoch | Timer bearbeiten und Wochenserien anlegen | Vorhandene Timer verlängern, Wochentage, Aufnahmeordner und Tags festlegen. Anlegen, Löschen, Aktivieren/Deaktivieren und lesende Kalenderwiederholungen sind vorhanden. Ergänzung über `timerchange` und `repeated`; einzelne Kalenderinstanzen nicht mit dem gesamten Receiver-Timer verwechseln. [Timerimplementierung][ideas-timers] |
+| 3 | Hoch | Aufnahmekonflikte gezielt auswerten | Kollidierende Sendungen mit Zeiten anzeigen und Automationen zugänglich machen. Beim Anlegen/Bearbeiten liefert OpenWebif strukturierte `conflicts`. Das wäre eine Erweiterung der bisherigen Fehlerauswertung, keine belegte separate Konfliktvorhersage. [Timerimplementierung][ideas-timers] |
+| 4 | Hoch | Sofortaufnahme als eigene Aktion | Dashboard-Button oder Sprachaktion „Aktuelle Sendung aufnehmen“ über `recordnow`. Der Ereignismodus benötigt EPG; der alternativ „unendlich“ genannte Modus ist im untersuchten Code auf zehn Stunden begrenzt. [Timerimplementierung][ideas-timers] |
+| 5 | Hoch | Aufnahmebibliothek erweitern | Aufnahmeordner und HA-Medienquelle sind inzwischen vorhanden. Weitere Ausbaustufen: Tags/Filter, zusätzliche Metadaten wie Dateigröße und bisheriger Wiedergabefortschritt sowie Umbenennen, Verschieben und Löschen. OpenWebif bietet `movielist`, `fullmovielist` und Verwaltungsaktionen. Lösch-/Papierkorbverhalten je Image berücksichtigen. [Aufnahmeverwaltung][ideas-movies] |
+| 6 | Mittel | Festplattenspeicher und Systemdiagnose | Freien Aufnahmeplatz überwachen; RAM und Uptime als optionale Diagnosesensoren ergänzen. `about` liefert die Grundlagen. Einheiten normalisieren und langsam abfragen; als frei gemeldeter RAM enthält im untersuchten Code auch Buffer und Cache. [Informationsmodell][ideas-info] |
+| 7 | Mittel | Tonspur auswählen | Originalton, alternative Sprache oder Audiodeskription per dynamischer `select`-Entität wählen. Grundlage: `getaudiotracks` und `selectaudiotrack`; Auswahl nach Senderwechsel aktualisieren. [Audio-API][ideas-api] |
+| 8 | Mittel | Timeshift gezielt steuern und anzeigen | Start-/Stopp-Aktionen und „Timeshift aktiv“ über `tsstart`, `tsstop`, `tsstate`. `timeshiftEnabled` ist kein verlässlicher Pausezustand; der untersuchte Stopp-Pfad unterdrückt die Speicherrückfrage. [Controller][ideas-controller] |
+| 9 | Mittel | Wiedergabeposition bei Aufnahmen | Fortschritt und Restzeit im Medienplayer anzeigen. Das bereits abgefragte `getcurrent` liefert für bestimmte lokale Aufnahmen eine Position in Sekunden. Diese allein erlaubt keine sichere Pauseerkennung. [Controller][ideas-controller] |
+| 10 | Mittel | Receiver-Sleeptimer | „In 30 Minuten Standby“ mit Statusanzeige über den geräteeigenen `sleeptimer`. Verfügbare Felder und Verhalten unterscheiden sich nach Image. [Timerimplementierung][ideas-timers] |
+| 11 | Optional | Einschalten ohne Mitwecken des Fernsehers | Für Radio oder Hintergrundautomationen: `supports_powerup_without_waking_tv` und `set_powerup_without_waking_tv` sind dokumentiert. Image-Unterstützung prüfen; die Funktion ersetzt kein Aufwecken aus Tiefschlaf. [Steuerungs-API][ideas-api] |
+| 12 | Optional | Text an Eingabefelder senden | Suchbegriffe direkt eingeben, statt einzelne Fernbedienungstasten zu senden. `remotecontrol` besitzt einen `text`-Parameter; das aktive Eingabefeld am Receiver bleibt entscheidend. [Controller][ideas-controller] |
+| 13 | Größeres Projekt | Live-TV und Aufnahmen auf anderen Geräten abspielen | Erste Ausbaustufe als optionale [HLS-Wiedergabe](#externe-wiedergabe) umgesetzt; VOD-Spulen für geeignete TS-Aufnahmen ist umgesetzt. Die konkrete Browser-/Cast-Abnahme bleibt offen. OpenWebif bietet Stream-/Playlist-Endpunkte einschließlich eines HLS-Einstiegs. Codec-Unterstützung, Authentifizierung und gegebenenfalls Transcoding separat lösen; ein API-Endpunkt belegt keine funktionierende Wiedergabe auf jedem Zielgerät. [Streaming-Endpunkte][ideas-controller] |
 
 Als mögliche erste Ausbaustufe bietet sich **Sofortaufnahme → Timerbearbeitung
 mit Konfliktdetails → EPG-Suche mit Aufnahmeaktion** an. Das ist eine vorgeschlagene

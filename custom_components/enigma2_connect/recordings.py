@@ -29,7 +29,7 @@ async def async_recording_labels(hass: HomeAssistant) -> dict[str, str]:
     return {
         key: translations.get(f"component.{DOMAIN}.common.{key}", fallback)
         for key, fallback in {
-            "recordings": "Enigma2 recordings",
+            "recordings": "Enigma2 Connect",
             "recording": "Recording",
             "channels": "Channels",
         }.items()

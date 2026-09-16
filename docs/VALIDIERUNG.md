@@ -2,6 +2,286 @@
 
 # Prüfübersicht
 
+## HA-Aufnahmewiedergabe und Sprünge: Nutzerabnahme 1.2.0-dev.9
+
+Am **16.09.2026** hat der Nutzer eine Aufnahme im realen Home Assistant gestreamt,
+mehrfach vor- und zurückgesprungen und das Feature vorbehaltlich unauffälliger
+Logprüfung zur Übernahme nach `develop` freigegeben. Der geprüfte Ausschnitt
+19:57:48–19:58:21 enthält keine Streamingfehler, keine Remux-Rückfälle und keine
+Enigma2-Connect-Warnungen. Die allgemeine HA-Warnung zu Custom-Integrationen
+beim Start ist kein Streamingfehler; der ESPHome-Traceback beim Umschalten des
+Loglevels betrifft eine nicht verbundene ESPHome-Fernbedienung.
+
+Belegt: automatischer Aufnahme-Modus; H.264 High 1280 × 720 bei 50 fps unverändert
+übernommen; MP2 Stereo 48 kHz/256 kbit/s zu AAC Stereo 48 kHz/128 kbit/s umgewandelt;
+Ausgabe HLS/MPEG-TS mit einer Qualitätsstufe. Vom Startauftrag bis `Started`
+vergehen 3,949 Sekunden. 14 Remux-Aufträge umfassen Sprünge auf 580,980 Sekunden
+(9:41), 1705,600 (28:26), 2029,840 (33:50) und zurück auf 957,920 (15:58), gefolgt
+von jeweils weiteren Abschnitten. Unterschiedliche Segmentdauern um 6,6–7,1
+Sekunden entsprechen den vorhandenen Schlüsselbildern. Der Pool meldet zwei
+belegte Plätze bei konfigurierter Grenze vier; das ist kein Beleg für zwei
+gleichzeitig aktiv schauende Personen. Alle protokollierten Koordinatorabrufe
+enden erfolgreich, einer dauert 5,234 Sekunden.
+
+Der konkrete Browser und dessen Version sind nicht angegeben. Diese Abnahme
+ersetzt keine gesonderte Cast-, Dauerlauf-, Ablauf-/Aufräum- oder subjektive
+Bild-/Tonsynchronitätsprüfung. Der Ausschnitt endet während laufender Wiedergabe.
+Das Feature gilt für den vom Nutzer geprüften Umfang vorerst als abgeschlossen.
+
+Beleg: lokal bereitgestelltes `home-assistant_enigma2_connect_2026-09-16T17-58-29.053Z.log`,
+SHA-256 `e6960bfa8ad13e4fa744ca61f6c305175ca27c9280f7d9362ce3b3da80015d0a`. Das vollständige HA-Log bleibt wegen der enthaltenen
+projektfremden Betriebsdaten außerhalb des Repositorys.
+Diese Abnahme ändert keinen Python- oder Testcode; SHA-256-Abgleich mit dem
+bestandenen dev.8-Nachweis bestätigt den Stand. Für die Übernahme werden nur
+Dokumentation, Versionskonsistenz und die Zusammenführung mit `develop` geprüft;
+die ausführlichen Streamingtests sind unten dokumentiert. Aktuelle CI und der
+Qualitätsabgleich bleiben vor einer späteren Übernahme nach `main` erforderlich.
+
+## Originalspuren und spulbares Remux: 1.2.0-dev.8
+
+Geprüft am **15.09.2026**, Python 3.14.7 / HA 2026.9.1 / FFmpeg 8.1.
+Im größeren Streaminglauf bestanden **158 von 160 Tests**; zwei Medientests
+überschritten unter paralleler Prüf-/Receiverlast ihre Zeitgrenzen. Die gezielte
+MP2-Wiederholung bestand. Nach abschließender Sicherung kurzer Originalvideo-
+Schlussabschnitte bestanden **52 VOD-/Remux-Tests** ohne parallele Last mit
+lokal kopiertem FFmpeg. Diese Gruppe enthält beide betroffenen Fälle und
+überschneidet sich mit dem breiten Lauf. Die übrigen 110 Streamingtests bestanden
+im breiten Lauf; dessen unveränderte Module sind per SHA-256 abgeglichen.
+
+Die Medientests vergleichen SHA-256-Prüfsummen aller ursprünglichen H.264-Pakete
+mit den remuxten Abschnitten: Video und 50 fps bleiben erhalten. Bei AAC werden
+auch Audio-Pakete verglichen; MP2 wird zu AAC umgewandelt. Vor-/Rücksprünge,
+vollständige HLS-Decodierung, kurze Schlussabschnitte, Indexgrenzen, veraltete/
+inkonsistente Indizes, FFmpeg-Funktionsausfall, Kompatibilitätsmodus und die
+32-MiB-Gesamtgrenze sind abgedeckt. FFmpeg 8.1 deckte zuvor ein zusätzliches AAC-
+Ausgabepaket im alten VOD-Encoder auf; eine Paketbegrenzung korrigiert dies.
+
+**Echter Receiver:** Die freigegebene Aufnahme „Böhmi brutzelt“ am SF8008 liefert
+HTTP-Byte-Ranges und einen 55.696-Byte-Index mit 3.481 Einträgen. Erkannt wurden
+H.264 High, 1280 × 720, 50 fps und MP2 als erste Tonspur. Vier kurze Abschnitte
+am Anfang/in der Mitte sowie ein echter FFmpeg-HLS-Sprung auf ca. 18:52 Minuten
+decodierten fehlerfrei; Verarbeitung `recording_vod+copy_video+encode_audio`.
+Beim verkürzten Lesevorlauf dauerte die Vorbereitung lokal rund 4,2 Sekunden,
+neue Abschnitte rund 2,0 Sekunden (Momentaufnahme, keine Geschwindigkeitsgarantie
+für den HA-Host). Kein vollständiger Download. Die letzte Dauer-Randkorrektur
+ändert diesen Aufnahmefall nicht; sie ist durch den abschließenden Test abgedeckt.
+Browseroberfläche, Cast und subjektive Bild-/Tonübergänge auf HA bleiben offen.
+
+Ruff, Formatierung, mypy (**28 Module**), Syntax, Offline-Lockprüfung und lokales
+Hassfest bestanden. Alle 28 Module liegen über 95 % kombinierter Statement-/
+Branch-Abdeckung (Minimum 96.25 %). Unveränderte Module behalten ihren
+geprüften Nachweis, die vier geänderten/neuen Streamingmodule wurden neu gemessen.
+Kein neuer Volltest der gesamten Integration und kein Remote-CI-Lauf.
+Lokale Belege: `.work/remux-full-tests.log`, `.work/remux-final-tests.log`,
+zugehörige `*-inventory.json`, `.work/remux-verified-coverage.json` und
+`.work/remux-checks.log`. Receiver-Prüfbeleg im lokalen Werkzeugordner des
+Haupt-Checkouts: `.work/remux-receiver-validation.json`. Zugangsdaten sind nicht
+Bestandteil der Nachweise oder des Git-Bestands.
+
+## Spulen in Aufnahmen: 1.2.0-dev.7
+
+Geprüft am **14.09.2026**, Python 3.14.7 / HA 2026.9.1. Im breiten Streaminglauf
+bestanden **133 Tests**; eine zusätzliche Cache-Testassertion verglich 2.8 exakt
+mit 2.8000000000000007 und wurde auf numerische Toleranz korrigiert. Danach
+bestanden **25 gezielte VOD-Tests**, einschließlich dieser Prüfung und des neu
+ergänzten verkürzten Schlusssegments. Die Gruppen überschneiden sich.
+Die Produktivdateien sind in beiden Läufen identisch; SHA-256 bestätigt den Stand.
+
+Ein echtes FFmpeg-Testvideo mit verschiedenen Farbszenen prüft Vor-/Rücksprünge,
+einen HLS-Client-Sprung anhand der vollständigen Playlist sowie vollständiges
+Decodieren ohne Zeitstempelfehler. Paketmessungen führten zur gemeinsamen
+Zeitbasis, begrenztem Dekodiervorlauf und ausgerichteten Bild-/Audioabschnitten.
+Frühere Versuche mit zurückgesetzten oder überlappenden Zeitstempeln wurden
+verworfen. Weitere Fälle: Byte-Range-Prüfung, ungültige/instabile Laufzeit,
+Dateiänderungen, Cache-Verdrängung und erneute Erzeugung, gemeinsamer Abruf,
+begrenzte Warteschlange, Abbruch/Prozessende, HA-URLs und parallele Sitzungen.
+
+Ruff, Formatierung, mypy (**27 Module**), Syntax, Offline-Lockprüfung und lokales
+Hassfest bestanden. Alle **27 Module liegen über 95 %** kombinierter Statement-/
+Branch-Abdeckung (Minimum 96.25 %); unveränderte Module behalten ihren
+geprüften Nachweis, die drei VOD-betroffenen Module wurden vollständig neu gemessen.
+Qualitätscheckliste geprüft: keine neue Abhängigkeit, Plattform oder abgesenkte
+Prüfgrenze. Lokale Belege: `.work/vod-full-tests.log`, `.work/vod-final-tests.log`,
+deren `*-inventory.json`, `.work/vod-verified-coverage.json` und `.work/vod-checks.log`.
+
+Receiver und HA-Browseranfragen sind simuliert; FFmpeg verarbeitet echte synthetische
+Mediendaten. Kein neuer Volltest/Remote-CI-Lauf. Spulen und subjektive Bild-/Ton-
+Übergänge am realen SF8008 mit Firefox, Edge und Cast bleiben praktisch zu prüfen.
+
+## Name der Medienquelle und HLS-Dokumentation: 1.2.0-dev.6
+
+Geprüft am **14.09.2026**: **9 Medienquellen-/Übersetzungstests** bestanden,
+einschließlich der HA-Medienkachel, der deutschen/englischen Beschriftung und
+der Fallback-Sprache. Ruff, Formatprüfung, mypy (26 Module), Python-Syntax,
+Offline-Lockprüfung und lokales Hassfest (Core 2026.9.1) bestanden.
+Versionsstellen und lokale Dokumentationslinks stimmen überein.
+
+Die Python-Änderung beschränkt sich auf zwei Fallback-Beschriftungen;
+SHA-256-Abgleich nach Rückersetzung dieser Texte bestätigt ansonsten den
+identischen Code aus dev.5. Keine geänderte Streaming-/Seek-Logik und keine
+neue Plattform oder Abhängigkeit. Der gezielte Lauf ersetzt nicht den früheren
+umfassenderen Abdeckungsnachweis. Kein erneuter Volltest oder realer
+Receiver-/Browser-Test. Belege: `.work/source-name-tests.log`,
+`.work/source-name-inventory.json` und `.work/source-name-checks.log`.
+
+## Streaming-Diagnose: 1.2.0-dev.5
+
+Geprüft am **14.09.2026**: **110 Streaming-/Medienquellen-/Übersetzungstests**
+bestanden. Der erste Lauf hatte 109 bestandene Tests und einen fehlgeschlagenen
+Aufräumtest: Eine neue Logmeldung prüfte den Ablauf ein zweites Mal. Entscheidung
+und Log verwenden jetzt denselben Prüfwert; der vollständige gezielte Lauf wurde
+mit dem korrigierten Stand erfolgreich wiederholt.
+Neue Prüfungen sichern die Ausgabe erkannter Formate, Zuordnung paralleler Streams,
+Pool-Grenze, gemeinsame Wiedergabe, Rückfallgründe sowie den Ausschluss von
+Zugangsdaten, URLs und ungefilterten Ausnahme-/Metadaten aus den Diagnosemeldungen.
+Ruff, Formatprüfung, Python-Syntax, mypy (26 Module), Offline-Lockprüfung und
+lokales Hassfest (Core 2026.9.1, keine ungültige Integration) bestanden.
+
+Alle **26 Python-Module liegen weiterhin über 95 %** kombinierter Statement-/Branch-
+Abdeckung (Minimum 96.25 %); Config Flow unverändert bei **100 %**.
+Die Messungen für die zwei geänderten Module wurden vollständig ersetzt;
+unveränderte Module übernehmen den SHA-256-geprüften Nachweis aus dev.4.
+Lokale Belege: `.work/diagnostics-tests.log`, `.work/diagnostics-final-tests.log`,
+die zugehörigen `*-inventory.json`, `.work/diagnostics-verified-coverage.json`
+und `.work/diagnostics-checks.log`.
+
+Python 3.14.7 / HA 2026.9.1. Receiver-/Browser-Anfragen sind simuliert; vorhandene
+Tests mit synthetischen FFmpeg-Medien bleiben enthalten. Kein neuer Volltest,
+Remote-CI- oder realer SF8008-/Browser-Abnahmelauf für diesen Stand.
+Qualitätscheckliste geprüft: keine neue Plattform/Abhängigkeit und keine
+Absenkung der bisherigen Kriterien; reale Geräteabnahme bleibt offen.
+
+## Mehrere externe Streams: 1.2.0-dev.4
+
+Geprüft am **14.09.2026** im bestehenden Feature-Worktree. **104 Streaming-,
+Medienquellen- und Übersetzungstests** sowie **64 Einrichtungs-/Optionstests**
+bestanden. Die Gruppen überschneiden sich teilweise. Zusätzlich: Ruff,
+Formatierung, mypy (26 Module), Python-Syntax, Offline-Lockprüfung,
+**8 Frontend-Tests** und lokales Hassfest auf dem Core-Prüfstand **2026.9.1**.
+
+Neue Fälle prüfen zwei weiterlaufende Browser-URLs für unterschiedliche Sender,
+fünf gleichzeitig reservierte Plätze und Ablehnung des sechsten Starts ohne
+Verdrängung, konfigurierbare Grenzen und 0 = unbegrenzt, gemeinsames Live-TV
+(auch während des Starts), getrennte Aufnahme-Wiedergaben, Freigabe abgelaufener
+oder fehlgeschlagener Sitzungen sowie Entladen mit ausstehenden Starts.
+Der Abbruch eines Zuschauers beendet keinen gemeinsamen Start für einen anderen.
+Die bisherigen Codec-/HLS-Tests mit echten synthetischen Videodaten bestehen weiter.
+
+Config Flow erreicht **100 % Statement-/Branch-Abdeckung**; alle **26 Module
+liegen über 95 %** (Minimum 96.25 %). Die Abdeckung der zwei geänderten
+Python-Module wurde vollständig neu gemessen und ersetzt ihre bisherigen Werte.
+Unveränderte Module behalten die vorherige Evidenz; SHA-256-Prüfungen bestätigen
+Dateiidentität und Übereinstimmung der geprüften Linux-Kopien mit dem Worktree.
+Kein erneuter Volltest/Remote-CI-/HACS-Lauf. Lokale Belege:
+`.work/pool-tests.log`, `.work/pool-config-tests.log`, deren `*-inventory.json`,
+`.work/pool-verified-coverage.json` und `.work/pool-hassfest.log`.
+
+Python 3.14.7 / HA 2026.9.1. Receiver und Browser-/Cast-HTTP-Anfragen sind simuliert.
+Die reale Anzahl gleichzeitig nutzbarer Tuner/Encoder und das Verhalten mehrerer
+Browser am SF8008 wurden für diesen Stand noch nicht praktisch geprüft.
+
+## Automatische Stream-Verarbeitung: 1.2.0-dev.3
+
+Geprüft am **14.09.2026** im bestehenden Feature-Worktree. Im vollständigen Lauf
+bestanden **340 Python-Tests**; ein neuer Fehlertest scheiterte an seinem
+Test-Dummy, dessen `__aexit__` die erwartete Ausnahme verschluckte. Der Dummy wurde
+korrigiert. Danach bestanden **89 gezielte Tests**, einschließlich dieses
+Falls, der abschließenden HTTPS-Absicherung und des verbesserten ffprobe-Aufräumens.
+Diese letzte Prüfung verwendet eine isolierte Kopie der endgültigen Änderungen;
+SHA-256-Vergleiche bestätigen die Übereinstimmung mit dem Worktree. Die Messdaten
+der beiden danach geänderten Produktionsmodule wurden vollständig durch die neue
+Messung ersetzt. Unveränderte Module behalten den geprüften Volltestnachweis.
+
+Alle **26 Integrationsmodule über 95 %** kombinierte Statement-/Branch-Abdeckung
+(Minimum 96.25 %); Config Flow erreicht 100 %. Ruff, Formatierung, mypy,
+Python-Syntax, Offline-Lockprüfung, **8 Frontend-Tests** und lokales Hassfest
+auf dem Core-Prüfstand **2026.9.1** bestanden. Keine Abhängigkeiten geändert.
+Remote-CI und HACS wurden nicht neu ausgeführt.
+
+Die Tests prüfen echte synthetische Videodaten: MPEG-2/MP2 mit vollständiger
+Umwandlung, H.264/AAC ohne erneute Kodierung, H.264/MP2 mit alleiniger
+Tonumwandlung sowie direkte Receiver-HLS-Weitergabe ohne FFmpeg-Encoder.
+Codec-Erkennung läuft mit echtem ffprobe; die erzeugten lokalen HLS-Segmente
+werden decodiert. Receiver-Endpunkte sind lokale HTTP-Testserver. Zusätzlich
+geprüft: fehlende/ungeeignete Receiver-Ausgänge, externe Playlist-Adressen,
+Authentifizierung, Größenlimits, Tokenwechsel während eines Abrufs, HTTPS-Erhalt,
+Probe-Abbruch und Kompatibilitäts-Rückfall. Python 3.14.7 / HA 2026.9.1.
+
+Lokale Belege: `.work/optimized-full-tests.log`, `.work/optimized-corrected-tests.log`,
+die zugehörigen `*-inventory.json`, `.work/optimized-verified-coverage.json` und
+`.work/optimized-hassfest.log`. Keine neuen Tests auf dem echten Receiver;
+Hardware-Transcoding, Browser-Bild/Ton und CPU-Last des optimierten Weges bleiben
+offen. Die Nutzerrückmeldung zu Firefox und Edge gilt für `dev.2`.
+
+## Browser-MIME-Korrektur: 1.2.0-dev.2
+
+Am **14.09.2026** nach der Nutzerrückmeldung zur Meldung „Medientyp nicht
+unterstützt“ in Firefox und Edge korrigiert. Home Assistants Medien-Dialog
+wählt seinen HLS-Player nur für exakt `application/x-mpegURL`; die bisherige
+Integration meldete `application/vnd.apple.mpegurl`. Das scheiterte bereits
+bei der Auswahl des Players, unabhängig von der eigentlichen Decodierung.
+
+**39 gezielte Streaming-, Medienquellen- und Übersetzungstests bestanden**,
+einschließlich echter synthetischer FFmpeg-Konvertierung. Ein Regressionstest
+prüft jetzt die von HA erwartete MIME-Schreibweise ausdrücklich im
+Auflösungsergebnis und im HTTP-Header, statt nur dieselbe Konstante zu vergleichen.
+Das Streamingmodul erreicht erneut 100 % Statement-/Branch-Abdeckung.
+Ruff, Formatierung, mypy (24 Module), Python-Syntax und Offline-Lockprüfung
+bestanden; es wurden keine Abhängigkeiten geändert. Kein neuer Volltest/CI-Lauf.
+Der frühere Volltestnachweis unten bleibt an `dev.1` gebunden.
+
+Die Tests liefen unter Python 3.14.7 / HA 2026.9.1 mit einer SHA-256-geprüften
+Linux-Kopie. Lokale Belege: `.work/browser-mime-tests.log` und
+`.work/browser-mime-inventory.json`. Anschließend bestätigte der Nutzer die
+Wiedergabe in Firefox und Edge. Ein zweiter gestarteter Stream beendete den ersten
+nach dessen Puffer erwartungsgemäß. Das ist eine Nutzerrückmeldung zur bisherigen
+vollständigen Umwandlung; Receiver-HLS, optimierte Verarbeitung, Safari und Cast
+sind damit nicht praktisch abgenommen.
+
+## Externe Wiedergabe: 1.2.0-dev.1
+
+Geprüft am **14.09.2026**, auf Branch `feature/external-media-playback` im Worktree
+`V:\enigma2-connect-worktrees\external-media-playback`. Unveröffentlichte
+Entwicklerversion; keine Release-, CI- oder Gerätefreigabe.
+
+- **291 Python-Tests** im vollständigen Lauf bestanden. Nach Ergänzung von
+  CORS und HEAD bestanden **35 gezielte Streaming-/Medienquellentests**.
+  Die Messdaten des geänderten Streamingmoduls wurden vor dieser Nachprüfung
+  verworfen und vollständig neu erhoben; unveränderte Module behalten den Volltestnachweis.
+- **100 % Statement-/Branch-Abdeckung** für Config Flow und das neue
+  `media_stream.py`; alle **24 Module über 95 %** (Minimum 96.25 %).
+  Die vorhandene Silber-Prüfsperre wurde unverändert bestanden.
+- Ruff, Formatierung, mypy (24 Module), Python-Syntax und **8 Frontend-Tests**
+  bestanden. Lokales Hassfest auf dem vorhandenen Core-Prüfstand **2026.9.1**:
+  eine Integration geprüft, keine ungültige Integration. HACS und Remote-CI
+  wurden für diesen unveröffentlichten Stand nicht neu ausgeführt.
+- Versionen in Manifest, `pyproject.toml`, beiden Changelogs und `uv.lock`
+  stimmen überein. `uv lock --offline` und `uv lock --check --offline` bestanden;
+  nur die lokale Projektversion änderte sich in der Lockdatei. Lokale Markdown-
+  Linkziele und `git diff --check` wurden geprüft.
+
+Laufzeit: **Python 3.14.7, Home Assistant 2026.9.1,
+pytest-homeassistant-custom-component 0.13.364** in der vorhandenen WSL-Umgebung.
+Receiver und Cast-HTTP-Anfragen sind simuliert. Der FFmpeg-Test erzeugt dagegen
+wirklich MPEG-2/MP2-Testmaterial, wandelt es über das authentifizierte lokale Relay
+in H.264/AAC-HLS um und prüft Codec, Auflösung und fehlerfreie Segment-Decodierung.
+Tokenprüfung, CORS, HEAD, Verzeichnis-/Dateinamenbeschränkung, Redirect-Ablehnung,
+Byte-Ranges, HTTPS-Zielwahl, Startfehler, Zeitablauf, Austausch, HA-Stopp und
+Entladen sind automatisiert geprüft. Es wurden keine Receiverbefehle gesendet.
+
+Der langsame erste Volltest direkt auf dem Windows-Mount wurde nach 143
+bestandenen Tests abgebrochen und zählt nicht als Volltest. Volltest und
+abschließende Medienprüfung liefen mit einer SHA-256-geprüften temporären
+Linux-Kopie des Worktrees. Lokale Berichte: `.work/external-linux-tests.log`,
+`.work/external-final-tests.log`, `.work/external-final-inventory.json` sowie
+`.work/external-hassfest.log`; sie werden nicht ausgeliefert.
+
+**Offene Praxisnachweise:** Bild/Ton auf realen Browsern und Cast-Geräten,
+Erreichbarkeit über die jeweilige HA-Adresse/Zertifikatskette, echte Receiver-
+Streamingauthentifizierung, freie Tuner/Entschlüsselung sowie längere Wiedergabe
+und CPU-Last. Vor einer entsprechenden Gerätefreigabe gesondert abnehmen.
+Die früheren Nachweise unten beziehen sich weiterhin auf ihre damaligen Versionen.
+
 Prüfdatum: **13.09.2026**. Gemeinsamer Entwicklungsstand: **1.1.0-dev.10**.
 Dies ist ein technischer Prüfbericht, keine Release- oder Hardwarefreigabe.
 Versionshistorie: [Changelog](../CHANGELOG.md). Reproduktionsbefehle:

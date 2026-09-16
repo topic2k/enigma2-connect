@@ -22,6 +22,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from .api import AuthenticationError, OpenWebifClient, PowerCommandUnconfirmed, ReceiverError
 from .channel_media import CONF_CHANNEL_BOUQUET, CONF_SHOW_CHANNELS
 from .const import CATALOG_INTERVAL, DOMAIN, SLOW_INTERVAL
+from .media_stream import MediaStream
 from .models import JsonObject, ReceiverState, Snapshot, services
 from .recording_images import RecordingImages
 
@@ -43,6 +44,7 @@ class EnigmaCoordinator(DataUpdateCoordinator[Snapshot]):
         self.client = client
         self.entry = entry
         self.recording_images = RecordingImages(hass, self)
+        self.media_stream = MediaStream(hass, self)
         self.info: dict[str, Any] = {}
         self._slow_due = 0.0
         self._catalog_due = 0.0
