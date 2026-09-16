@@ -764,3 +764,19 @@ ausliefern; die optionale Karte unter `www/` separat bereitstellen. `.work/`,
 Dokumentation darf keine benötigten Schritte ausschließlich im lokalen Archiv
 beschreiben. Vor dem PR auch neue Dateien und die entfernten alten Pfade prüfen;
 `git diff --check` allein prüft keine unversionierten Dateien oder Dokumentationslinks.
+
+## Manueller Junie-Test
+
+Der Dispatch-Eingang `junie_test=true` prüft genau den gespeicherten Modbus-Beitrag
+vom 02.09.2026 mit dem Repository-Secret `JUNIE_API_KEY`. Die offizielle Action
+v1.7.9 ist auf einen Commit fixiert und nutzt `silent_mode`, Junie CLI 3110.6
+und das Standardmodell. GitHub-Rechte sind ausschließlich lesend.
+
+Der bestehende Status wird nur gelesen. Ein Analyseauftrag prüft Pflichtanpassungen
+und optionale Verbesserungen auf Deutsch. Ergebnisstruktur und Quellbelege werden
+anschließend lokal validiert; die inhaltliche Richtigkeit bleibt manuell zu prüfen.
+Das Artefakt `ha-blog-junie-test` bleibt sieben Tage erhalten. Der Junie-Schritt
+ist auf sechs Minuten begrenzt. Das ist keine feste Credit-Obergrenze; ein
+Agentenauftrag kann mehrere Modellaufrufe benötigen. Keine automatische Wiederholung,
+kein Anbieterwechsel und keine Aktivierung im Wochenplan. Der Test nutzt
+vorhandenes Guthaben; er kauft keine Credits und ändert keinen Tarif.

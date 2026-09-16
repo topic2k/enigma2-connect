@@ -4,16 +4,19 @@
 
 ## Contents
 
-- [1.1.2-dev.3](#112-dev3)
+- [1.1.2-dev.4](#112-dev4)
 - [1.1.1](#111)
 - [1.1.0](#110)
 - [1.0.2](#102)
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 1.1.2-dev.3
+## 1.1.2-dev.4
 
 Unreleased development version.
+
+- Manual Junie single-post trial with read-only GitHub permissions and subsequent
+  validation of the result structure and source citations.
 
 - Documented Cloudflare follow-up: the API rejected the first request with
   HTTP 429/4006 despite a reset dashboard counter; remaining tests stopped.

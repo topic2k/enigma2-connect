@@ -4,16 +4,19 @@
 
 ## Inhaltsverzeichnis
 
-- [1.1.2-dev.3](#112-dev3)
+- [1.1.2-dev.4](#112-dev4)
 - [1.1.1](#111)
 - [1.1.0](#110)
 - [1.0.2](#102)
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 1.1.2-dev.3
+## 1.1.2-dev.4
 
 Unveröffentlichte Entwicklerversion.
+
+- Manueller Junie-Einzeltest mit rein lesenden GitHub-Rechten, einem Blogbeitrag
+  und anschließender Prüfung der Ergebnisstruktur und Quellbelege.
 
 - Fortsetzung des Cloudflare-Tests dokumentiert: API lehnt erste Anfrage trotz
   zurückgesetzter Dashboard-Anzeige mit HTTP 429/4006 ab; weitere Tests gestoppt.

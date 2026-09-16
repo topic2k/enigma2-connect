@@ -2,6 +2,12 @@
 
 # Verification summary
 
+## Junie preparation – 1.1.2-dev.4
+
+The isolated Junie trial affects only the developer blog monitor. Integration
+behavior and the quality checklist are unchanged. Live evidence remains pending
+until the trial; this does not replace receiver or Home Assistant practice tests.
+
 ## Cloudflare follow-up on 2026-09-16 – 1.1.2-dev.3
 
 The authorized next-day trial started at 08:30 CEST. After a fresh dashboard

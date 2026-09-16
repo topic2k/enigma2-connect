@@ -2,6 +2,13 @@
 
 # Prüfübersicht
 
+## Junie-Vorbereitung – 1.1.2-dev.4
+
+Der isolierte Junie-Test betrifft ausschließlich den Entwickler-Blog-Monitor.
+Integrationsfunktionen und die Qualitätscheckliste bleiben unverändert.
+Der Live-Nachweis steht bis zum Test aus; vorhandene Receiver- und
+Home-Assistant-Praxisprüfungen werden dadurch nicht ersetzt.
+
 ## Cloudflare-Fortsetzung am 16.09.2026 – 1.1.2-dev.3
 
 Der autorisierte Folgetagstest wurde um 08:30 Uhr MESZ begonnen. Die frisch

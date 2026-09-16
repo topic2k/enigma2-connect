@@ -729,3 +729,18 @@ optional card under `www/` separately. Exclude `.work/`, `.local-archive/`, loca
 test environments and caches. Required instructions must not exist only in the
 local archive. Before a PR, inspect new files and removed old paths as well;
 `git diff --check` alone checks neither untracked files nor documentation links.
+
+## Manual Junie trial
+
+The dispatch input `junie_test=true` assesses exactly the stored Modbus post
+dated 2026-09-02 using the repository secret `JUNIE_API_KEY`. The official action
+v1.7.9 is pinned to a commit and uses `silent_mode`, Junie CLI 3110.6 and the
+default model. GitHub permissions are read-only.
+
+Existing state is only read. One analysis task assesses required adaptations
+and optional improvements in German. Result structure and source citations are
+validated afterwards; semantic correctness still requires manual review.
+The `ha-blog-junie-test` artifact is retained for seven days. The Junie step
+has a six-minute timeout. This is not a hard credit limit; one agent task can
+make multiple model calls. No automatic retry, provider fallback or weekly
+activation. The trial uses existing credits; it purchases none and changes no plan.
