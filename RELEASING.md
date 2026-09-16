@@ -58,7 +58,8 @@ tatsächliche Remote- und Release-Basis erneut geprüft werden.
 3. Noch auf dem Quellbranch das vollständige `-dev.N` entfernen, alle Versionsstellen
    einschließlich Lockdatei und beide Changelog-Inhaltsverzeichnisse synchronisieren.
    Den Eintrag weiterhin als unveröffentlicht kennzeichnen; nur die Kennzeichnung
-   als Entwicklerversion entfällt. Die Prüfungen erneut ausführen.
+   als Entwicklerversion entfällt. Betroffene lokale Prüfungen ausführen;
+   die vollständigen CI-Ergebnisse müssen vor dem Merge erfolgreich vorliegen.
 4. Ohne aktuellen Remote-Abgleich ist die Vorbereitung unvollständig. Ändert sich
    `main` oder die Release-Basis während des offenen PR, den Abgleich vor dem Merge
    wiederholen und Anpassungen im Quellbranch vornehmen. Erst nach Nutzerfreigabe mergen.
@@ -68,13 +69,35 @@ Tags, Release-Entwürfe oder Veröffentlichungen.
 
 ## Prüfungen
 
-Unter Linux/WSL mit Python ab 3.14.2 im Projektverzeichnis:
+Vor der Übernahme nach `main` müssen alle erforderlichen CI-Prüfungen für den
+aktuellen PR-Stand erfolgreich sein. Alle Integrationsqualitätsvorgaben müssen
+weiterhin erfüllt bleiben; der erreichte Qualitätsstatus darf sich gegenüber dem
+bisherigen Stand und dem aktuellen `main` nicht verschlechtern.
+
+Die [Qualitätscheckliste](custom_components/enigma2_connect/quality_scale.yaml)
+auf Auswirkungen der Änderung prüfen. Nicht durch CI abgedeckte, von der Änderung
+betroffene Anforderungen zusätzlich prüfen und Nachweise in beiden Prüfübersichten
+aktualisieren. Erfüllte Kriterien, Testabdeckungsgrenzen und Prüfstrenge nicht
+absenken oder durch unbegründete Ausnahmen umgehen. Verschlechterungen und fehlende
+erforderliche Nachweise sperren den Merge; grüne CI allein belegt nicht die
+inhaltliche Erfüllung aller Qualitätskriterien.
+
+Lokal genügen zur Änderung passende, gezielte Prüfungen. Bereits durch aktuelle
+CI-Ergebnisse belegte Prüfungen müssen nicht vollständig lokal wiederholt werden.
+Ein PR darf zur Ausführung der CI eröffnet werden. Bei Änderungen am Quellbranch
+oder an `main` vor dem Merge aktuelle CI-Ergebnisse für den daraus entstehenden
+PR-Stand sicherstellen und den Qualitätsabgleich für betroffene Anforderungen erneuern.
+
+Die vollständigen Prüfbefehle dienen als Referenz und zur Fehleranalyse; je nach
+Änderung die passenden auswählen. Unter Linux/WSL mit Python ab 3.14.2 im Projektverzeichnis:
 
 ```sh
 uv sync --locked --group dev
 uv run --locked ruff check .
 uv run --locked ruff format --check .
-uv run --locked pytest --cov=custom_components.enigma2_connect --cov-report=term-missing
+uv run --locked mypy
+uv run --locked pytest --cov=custom_components.enigma2_connect --cov-branch --cov-report=term-missing --cov-report=json:coverage.json
+uv run --locked python scripts/check_config_flow_coverage.py coverage.json --silver
 uv run --locked python -m compileall -q custom_components tests
 node --test tests/frontend.test.cjs
 git diff --check
@@ -84,8 +107,12 @@ Nach einer Versionsänderung `uv lock --offline` ausführen und prüfen, dass nu
 erwarteten Projektmetadaten angepasst werden. Abhängigkeiten nicht beiläufig aktualisieren.
 Versionsstellen und beide Changelogs einschließlich Sprachlinks prüfen.
 Die Workflows `.github/workflows/tests.yml` und `.github/workflows/validate.yml`
-prüfen Tests, Ruff, Hassfest und HACS. Für ein Release müssen diese Prüfungen für
-den tatsächlich zu veröffentlichenden Commit erfolgreich sein.
+prüfen Tests, Ruff, Typen, Testabdeckung, Hassfest und HACS. Vor jedem Merge müssen
+die Jobs `test`, `hassfest` und `hacs` erfolgreich sein. Für eine technische
+Merge-Sperre müssen diese Checks zusätzlich in den GitHub-Schutzregeln für `main`
+verpflichtend hinterlegt sein; die Workflow-Dateien allein erzwingen das nicht.
+Für ein Release müssen die Prüfungen für den tatsächlich zu veröffentlichenden
+Commit erfolgreich sein.
 
 Prüfumfang, bekannte Grenzen und Hardware-Ergebnisse stehen in
 [der Prüfübersicht](docs/VALIDIERUNG.md). Neue Funktionen zusätzlich in

@@ -4,10 +4,32 @@
 
 ## Contents
 
+- [1.1.1-dev.4](#111-dev4)
 - [1.1.0](#110)
 - [1.0.2](#102)
 - [1.0.1](#101)
 - [1.0.0](#100)
+
+## 1.1.1-dev.4
+
+Unreleased development version.
+
+- Added `flat-square` README badges for releases, requirements, license, tests,
+  Hassfest/HACS, coverage, HACS installation and documentation. After successful
+  tests on `main`, coverage is updated on the separate `badges` data branch with
+  source commit and run link; existing quality checks remain in place. Updated
+  the HACS custom repository installation instructions.
+
+- Added a 1280 × 640 GitHub social preview with the selected device symbol
+  centered above the wordmark on white. Includes PNG, scalable SVG source
+  and targeted export using `-SocialOnly`.
+
+- Require successful CI for the current PR state, continued compliance with all
+  integration quality requirements and maintained or improved quality status
+  before merging into `main`. Targeted local checks are sufficient; current CI
+  evidence does not require a complete local rerun. Additionally check affected
+  requirements outside CI. Aligned project, release and developer instructions in
+  both languages; completed release commands with existing type and coverage checks.
 
 ## 1.1.0
 

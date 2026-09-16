@@ -14,6 +14,31 @@ CI evidence for the final commit is recorded in [release 1.1.0](https://github.c
 Actual Bonjour discovery, automatic DHCP receipt in running HA and subjective
 picture/audio playback remain pending.
 
+## README badges: 1.1.1-dev.4
+
+Locally checked on **2026-09-16**: YAML structure and publication guards,
+unchanged existing CI checks, six statement/branch coverage extraction cases
+and ten simulated GitHub API cases. Checks covered initial publication,
+updates preserving history/files, superseded runs, permission errors, missing
+commits and invalid measurements. Python syntax, version consistency and
+`uv lock --check --offline` passed.
+The nine already available badge URLs return HTTP 200 and the expected labels;
+the coverage endpoint awaits its first publication. Shields rejected the default
+Python client with HTTP 403; the read-only check with an identified test client
+succeeded. This does not verify image display inside the chat.
+
+Quality checklist reviewed: `docs-installation-instructions` covers the updated
+HACS guide; `config-flow-test-coverage` and `test-coverage` retain their existing
+checks and thresholds. Runtime code and HA compatibility are unchanged.
+GitHub release `v1.1.0` and absence from the default HACS catalog were confirmed
+with read-only queries. This did not include an actual HACS installation.
+
+API checks are simulations, not a successful GitHub publication run. Current CI
+for this working state and the first write to the `badges` data branch remain
+pending. The coverage endpoint becomes available only after successful `main`
+tests with the new workflow. Earlier CI and hardware evidence below remains
+limited to the versions stated there.
+
 ## Dependabot: cryptography and CVE-2026-69247
 
 [Dependabot alert 1](https://github.com/topic2k/enigma2-connect/security/dependabot/1)
@@ -474,3 +499,11 @@ and explicit approvals in [RELEASING.en.md](../RELEASING.en.md) before publicati
 Browser/Cast streaming, Wake-on-LAN, creating recurring
 timers and receiving screen-message answers are not implemented. Further edge
 cases are covered in the developer guide.
+
+## Social preview – 2026-09-14
+
+Exported and visually checked the new 1280 × 640 GitHub image for 1.1.1-dev.3.
+Checked PNG dimensions, fully opaque background, SVG structure and reproducible
+export using `-SocialOnly`. The eight HA brand files and integration logic remain
+unchanged, so the quality checklist is unaffected. No new HA/receiver test.
+Source and export instructions: [Branding](../assets/branding/README.md).

@@ -4,10 +4,33 @@
 
 ## Inhaltsverzeichnis
 
+- [1.1.1-dev.4](#111-dev4)
 - [1.1.0](#110)
 - [1.0.2](#102)
 - [1.0.1](#101)
 - [1.0.0](#100)
+
+## 1.1.1-dev.4
+
+Unveröffentlichte Entwicklerversion.
+
+- README-Badges für Release, Voraussetzungen, Lizenz, Tests, Hassfest/HACS,
+  Coverage, HACS-Installation und Dokumentation im Stil `flat-square` ergänzt.
+  Coverage wird nach erfolgreichen Tests auf `main` mit Quellcommit und Lauf-Link
+  auf dem separaten Datenbranch `badges` aktualisiert; bestehende Qualitätsprüfungen
+  bleiben erhalten. HACS-Anleitung für das benutzerdefinierte Repository aktualisiert.
+
+- GitHub-Social-Preview in 1280 × 640 Pixeln ergänzt: das ausgewählte
+  Gerätesymbol mittig über der Wortmarke auf weißem Hintergrund.
+  PNG, skalierbare SVG-Quelle und gezielter Export mit `-SocialOnly` enthalten.
+
+- Vor der Übernahme nach `main` erfolgreiche CI für den aktuellen PR-Stand,
+  weiterhin erfüllte Integrationsqualitätsvorgaben und einen unveränderten oder
+  verbesserten Qualitätsstatus verbindlich nachweisen. Lokal genügen passende,
+  gezielte Prüfungen; aktuelle CI-Nachweise erfordern keine vollständige lokale
+  Wiederholung. Betroffene Anforderungen außerhalb der CI zusätzlich prüfen.
+  Projekt-, Release- und Entwicklervorgaben in beiden Sprachen abgestimmt;
+  Release-Prüfbefehle um bestehende Typ- und Testabdeckungsprüfungen vervollständigt.
 
 ## 1.1.0
 

@@ -7,6 +7,19 @@
   <img src="custom_components/enigma2_connect/brand/logo@2x.png" alt="Enigma2 Connect" width="720">
 </picture>
 
+[![Release](https://img.shields.io/github/v/release/topic2k/enigma2-connect?style=flat-square&label=Release)](https://github.com/topic2k/enigma2-connect/releases/latest)
+[![Home Assistant 2026.9+](https://img.shields.io/badge/Home_Assistant-2026.9%2B-009AC7?style=flat-square&logo=homeassistant&logoColor=white)](#deutsch)
+[![OpenWebif 1.4.4+](https://img.shields.io/badge/OpenWebif-1.4.4%2B-007EC6?style=flat-square)](#deutsch)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue?style=flat-square)](LICENSE)
+
+[![Tests (main)](https://img.shields.io/github/actions/workflow/status/topic2k/enigma2-connect/tests.yml?branch=main&event=push&style=flat-square&label=Tests)](https://github.com/topic2k/enigma2-connect/actions/workflows/tests.yml?query=branch%3Amain)
+[![Validation: Hassfest + HACS (main)](https://img.shields.io/github/actions/workflow/status/topic2k/enigma2-connect/validate.yml?branch=main&style=flat-square&label=Validation)](https://github.com/topic2k/enigma2-connect/actions/workflows/validate.yml?query=branch%3Amain)
+[![Coverage (main, statements + branches)](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Ftopic2k%2Fenigma2-connect%2Fbadges%2Fcoverage.json&style=flat-square)](https://github.com/topic2k/enigma2-connect/blob/badges/coverage.json)
+
+[![HACS: Custom](https://img.shields.io/badge/HACS-Custom-41BDF5?style=flat-square)](docs/BENUTZERHANDBUCH.md#hacs)
+[![Python 3.14.2+](https://img.shields.io/badge/Python-3.14.2%2B-3776AB?style=flat-square&logo=python&logoColor=white)](docs/ENTWICKLUNG.md#projekt-und-voraussetzungen)
+[![Docs: DE / EN](https://img.shields.io/badge/Docs-DE_%2F_EN-007EC6?style=flat-square)](#documentation)
+
 ## Deutsch
 
 Bediene deinen Enigma2-Receiver direkt in Home Assistant: Sender wechseln,
@@ -38,7 +51,11 @@ Cast-Geräten wird nicht unterstützt.
 Weitere Receiver kannst du auf dieselbe Weise hinzufügen. Aufnahmen findest du
 unter **Medien → Enigma2-Aufnahmen**, Timer im Kalender von Home Assistant.
 
+<a id="documentation"></a>
+
 ### Anleitungen und Hilfe
+
+[Deutsch](docs/BENUTZERHANDBUCH.md) · [English](docs/USER_GUIDE.en.md)
 
 - [Benutzerhandbuch](docs/BENUTZERHANDBUCH.md): Einrichtung, Bedienung,
   Fernbedienungskarte, Automationen und Hilfe bei Problemen.

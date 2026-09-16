@@ -65,10 +65,13 @@ Weitere Receiver fügst du auf dieselbe Weise hinzu. Benenne sie eindeutig,
 zum Beispiel „Wohnzimmer“ und „Schlafzimmer“. Die Einrichtung erfolgt vollständig
 über die Oberfläche; eine YAML-Konfiguration ist nicht erforderlich.
 
-Für eine spätere Veröffentlichung ist HACS als benutzerdefiniertes Repository
-vorgesehen. Dann lässt sich das
+### HACS
+
+Du kannst das
 [Projekt-Repository](https://github.com/topic2k/enigma2-connect) über das HACS-Menü
-**Benutzerdefinierte Repositories** als Typ **Integration** hinzufügen. Die Schritte
+**Benutzerdefinierte Repositories** als Typ **Integration** hinzufügen und danach
+herunterladen. Starte Home Assistant anschließend neu und füge die Integration
+wie oben beschrieben hinzu. Die Schritte
 erklärt auch die [HACS-Anleitung](https://www.hacs.xyz/docs/faq/custom_repositories/).
 Eine Aufnahme in den HACS-Standardkatalog ist nicht zugesagt.
 
