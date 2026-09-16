@@ -5,6 +5,9 @@
 ## Inhaltsverzeichnis
 
 - [1.2.0-dev.9](#120-dev9)
+- [1.1.3](#113)
+- [1.1.2](#112)
+- [1.1.1](#111)
 - [1.1.0](#110)
 - [1.0.2](#102)
 - [1.0.1](#101)
@@ -65,6 +68,56 @@ Unveröffentlichte Entwicklerversion.
   englische Bedienhinweise sowie simulierte und lokale FFmpeg-Tests ergänzt.
   Browser-/Cast-Geräteabnahme bleibt gesondert auszuweisen.
 - Neue Projekt-Worktrees liegen verbindlich unter `V:\enigma2-connect-worktrees`.
+- GitHub-Social-Preview in 1280 × 640 Pixeln ergänzt: Gerätesymbol mittig über
+  der Wortmarke auf weißem Hintergrund, mit PNG, SVG-Quelle und `-SocialOnly`-Export.
+- Aufgaben auf eigenen Branches bearbeiten, umfangreichere Aufgaben zusätzlich
+  in eigenen Worktrees. Fertige Änderungen geprüft nach `develop` übernehmen
+  und pushen. PR-Vorbereitung und PR nach `main` erst nach Nutzerfreigabe;
+  Merge und Release erfordern ebenfalls die jeweils ausdrückliche Freigabe.
+- Aktuellen `main` mit Junie-Blog-Monitor und stillen Prüfvermerken nach
+  `develop` übernommen; Social-Preview und Branch-Regeln bleiben erhalten.
+
+## 1.1.3
+
+Unveröffentlicht.
+
+- Blog-Monitor veröffentlicht nur noch Beiträge mit Anpassungs-, Verbesserungs-
+  oder Prüfbedarf. Unauffällige Ergebnisse werden ohne Issue dauerhaft als geprüft
+  gespeichert; unveränderte Beiträge verbrauchen dadurch keine erneuten KI-Credits.
+
+## 1.1.2
+
+Unveröffentlicht.
+
+- Blog-Monitor auf Junie-Einzelanalysen umgestellt: wöchentlich neue Beiträge,
+  Wiederholung fehlgeschlagener Beiträge am Folgetag, getrennte Prüfung und
+  Veröffentlichung sowie nachvollziehbare Modellkosten im Bericht.
+
+- Junie-Probelauf erfolgreich: deutsche Bewertung mit vollständigen Modbus-Fristen;
+  gemeldete Modellkosten rund 0,048 USD, tatsächliche Top-up-Abbuchung noch offen.
+
+- Manueller Junie-Einzeltest mit rein lesenden GitHub-Rechten, einem Blogbeitrag
+  und anschließender Prüfung der Ergebnisstruktur und Quellbelege.
+
+- Fortsetzung des Cloudflare-Tests dokumentiert: API lehnt erste Anfrage trotz
+  zurückgesetzter Dashboard-Anzeige mit HTTP 429/4006 ab; weitere Tests gestoppt.
+
+- Cloudflare-Einzelprüfung mit einer Anfrage je Beitrag, gezielter Dateiauswahl,
+  Verbrauchssummen und Erhalt bereits erfolgreicher Teilberichte bei späteren Fehlern.
+
+- Manueller Cloudflare-Probelauf mit gpt-oss-120b für gespeicherte Blogbeiträge;
+  gleiche Codebeleg-Prüfung, nur Berichtsartefakte, keine Issues oder Statusänderungen.
+
+## 1.1.1
+
+Unveröffentlicht.
+
+- Fehlgeschlagene Blogbeiträge werden nach dem wöchentlichen Check dauerhaft
+  vorgemerkt und am Folgetag erneut versucht. Erst ein zweiter Fehlschlag für
+  denselben Inhalt macht den Lauf rot; Teilerfolge werden separat abgeschlossen.
+- Statusbranch mit Versuchszähler und Originalbeitrag, täglicher Nachholtermin
+  ohne neue Beitragsauswahl und manueller Neustart nach zwei Fehlern. Berichte
+  unterscheiden Gemini-, Antwortvalidierungs- und GitHub-Veröffentlichungsfehler.
 
 ## 1.1.0
 

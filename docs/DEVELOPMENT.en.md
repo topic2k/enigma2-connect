@@ -12,6 +12,7 @@ and everyday use, see the [user guide](USER_GUIDE.en.md). The
 - [Development environment and checks](#development-environment-and-checks)
 - [Read-only receiver acceptance](#read-only-receiver-acceptance)
 - [Monitor the Home Assistant developer blog](#monitor-the-home-assistant-developer-blog)
+- [Cloudflare trial](#cloudflare-trial)
 - [Quality tiers and next steps](#quality-tiers-and-next-steps)
 - [Structure and data flow](#structure-and-data-flow)
 - [External playback](#external-playback)
@@ -138,104 +139,124 @@ the hardware test file without acceptance configuration skips the test.
 
 ## Monitor the Home Assistant developer blog
 
-The [Home Assistant developer blog](../.github/workflows/ha-developer-blog.yml)
-workflow checks the complete posts in the official
-[blog repository](https://github.com/home-assistant/developers.home-assistant/tree/master/blog)
-on **Mondays at 07:23 UTC**. It considers new and edited posts from **2026-09-01**.
-Each run assesses at most **five posts together in one Gemini request**. No new
-posts means no AI call. Additional posts remain pending for the next run; source
-code is never silently truncated.
+The [workflow](../.github/workflows/ha-developer-blog.yml) checks new or changed
+posts in the official [blog repository](https://github.com/home-assistant/developers.home-assistant/tree/master/blog)
+on Mondays at **07:23 UTC** (09:23 CEST / 08:23 CET). Each run analyzes at most
+**five posts individually and sequentially using Junie**. Additional new posts
+wait for the next weekly run. No due posts means no AI task.
 
-The [Gemini script](../scripts/ha_blog_gemini.py) uses Google's API directly with
-`gemini-3.8-flash`. One fixed request avoids variable agent loops. There are no
-tools, web searches, automatic retries or model fallbacks. Limits are 400,000 UTF-8
-input bytes and 8,192 output tokens, including thinking tokens at thinking level `low`.
-Oversized batches are reduced. If even one post with the complete code exceeds
-the input cap, the run fails and requires manual review.
+### Assessment and report
 
-Google receives the blog text and an allowlist of publishable sources: integration
-Python modules, manifest, translations, icons, quality checklist, service definitions, dashboard card,
-project and HACS metadata. Local archives, `.env`, receiver data and test data are
-excluded. Every new post is assessed; the former keyword filter does not select
-posts for AI. The [heuristic script](../scripts/ha_blog_monitor.py) remains available
-as an independent local tool, not as a silent substitute for AI.
+Every post is assessed independently for **required adaptations** and **useful
+optional enhancements**, including usability, capabilities, reliability and
+maintainability. Mandatory migrations must not be repackaged as optional benefits.
+Junie is instructed to explain its findings in German, give actionable next
+steps and include every announced availability, deprecation and removal deadline.
+New opportunities are considered even if the API is not yet used by the code.
 
-Each post receives two independent assessments. Compatibility results are
-`impacted` (concrete adaptation required), `no-impact` (no impact
-identified), or `uncertain` (manual clarification required), with reasons, next
-steps, HA versions/deadlines when stated and code references. File paths, line
-numbers and exact source lines are validated locally. This verifies the citation,
-not the AI's conclusion. The complete batch must be valid before an issue is
-created. AI assessments do not replace Home Assistant compatibility tests.
+Concrete impact or recommended enhancements require exact existing source lines
+as integration points. A separate trusted job checks post identity, structure,
+paths, line numbers and quotations against the source snapshot captured before
+analysis. An AI assessment does not replace compatibility tests and can still
+be semantically wrong.
 
-Gemini also reviews **enhancements and improvements**: new features, usability,
-performance, reliability and maintainability. The `opportunity` field contains
-`recommended` (concrete proposal), `none` (no useful proposal) or `uncertain`
-(requires investigation), with benefits, implementation steps, prerequisites and
-tradeoffs. Recommendations require a validated source citation as an integration
-point; the new API need not already be used. A `no-impact` post can therefore
-still recommend an enhancement; required adaptations and optional improvements
-can also coexist. Existing features and mandatory migrations are not enhancements.
-Missing assessments or required evidence prevent report publication. Both reviews
-use the same weekly request. Reports propose changes; implementation is decided
-separately.
+A GitHub issue contains only posts requiring adaptation, recommending an
+improvement or needing further review. If every assessment is both `no-impact`
+and `none`, no issue is created. Such uneventful posts are also excluded from
+issues produced by mixed batches.
 
-Each successful run with new posts creates **one combined report issue**, even
-when all assessments are `no-impact`. Hidden markers durably record the reviewed
-post content. Closed reports also count and are never edited or reopened; preserve
-reports and markers. Content changes trigger another review, code-only changes
-do not. Previous heuristic issues are not AI review receipts. The summary and
-JSON reports are also retained as Actions artifacts for 30 days.
+Successfully reviewed content IDs and review dates are stored on the state branch,
+even without an issue. Content markers in existing and closed issues still count;
+Gemini-era markers remain compatible. Edited blog content is reassessed, whereas
+code changes alone do not trigger another assessment. Structured results and
+costs remain available for technical inspection in the `ha-developer-blog-report`
+artifact for 30 days.
 
-### Configure free Google access
+### Retries and permissions
 
-1. In [Google AI Studio](https://aistudio.google.com/api-keys), create a key for a
-   dedicated **Free Tier project without paid billing enabled**. Do not link a
-   billing account or upgrade to a Paid Tier.
-2. Check the active model limits in AI Studio. Google's
-   [pricing page](https://ai.google.dev/gemini-api/docs/pricing#free) lists free
-   input/output for Gemini 3.8 Flash; request/token limits are
-   [project-dependent](https://ai.google.dev/gemini-api/docs/rate-limits).
-   One small request per week is expected to fit but cannot be guaranteed before
-   a real trial with that project. The Free Tier prevents paid usage; the workflow
-   cannot inspect a key's billing status. A key from a Paid Tier project may incur costs.
-3. In GitHub, open **Settings → Secrets and variables → Actions → New repository
-   secret** and store the key as **GEMINI_API_KEY**. Never put it in files, issues
-   or chat messages.
-4. After an approved PR merges the workflow into `main`, open **Actions → Home
-   Assistant developer blog → Run workflow** and select the default branch.
-   Keep **Run Gemini and generate a report; do not create an issue** enabled for
-   the first trial. This consumes AI quota but does not save durable review
-   markers. Inspect the report and the JSON `usage` field.
-5. Disable the dry-run switch to publish an issue manually. Scheduled weekly
-   runs publish the combined report automatically.
+The [Junie monitor](../scripts/ha_blog_junie_monitor.py) reuses the established
+[state and retry logic](../scripts/ha_blog_scheduler.py). A first failure queues
+only the affected post for the next day and leaves the run successful. Other
+weekdays at 07:23 UTC retry only due stored posts. A second failure of the same
+post fails the run. Missed retries are caught up later. Exhausted entries require
+an explicit manual retry.
 
-Google processes the supplied sources under its Free Tier terms; the
-[pricing page](https://ai.google.dev/gemini-api/docs/pricing#free) links to the terms
-governing use of content for product improvement. Use only repository content
-suitable for this disclosure.
+The `ha-blog-monitor-state` branch stores `.github/ha-blog-state.json`, containing
+post text, original blog revision, attempts, due date and sanitized error detail.
+The optional `reviewed` map records successful content IDs and review dates;
+existing state files without this map remain valid.
+Attempts are reserved before AI work to avoid silently spending credits again
+after interrupted runs. Successful partial reports are retained. Unsafe state
+persistence is an infrastructure error and is reported immediately.
 
-HTTP 429, other API errors, a missing key or an invalid response fail the run
-visibly. Posts without a saved report remain pending for the next run; there is
-no automatic paid fallback. After an ambiguous issue publication response, the
-next run finds any report that was already saved by its markers.
+Planning, analysis and publication run in separate jobs. Only planning and
+publication have write permissions for state and issues. Junie receives **no
+write-capable GitHub token**. Publication independently downloads the original
+plan, revalidates agent output and refuses to overwrite concurrently changed
+state. Pushes and pull requests run offline tests only. Publication is restricted
+to the original repository and default branch; manual dry runs also work on
+work branches. Workflow runs are serialized.
 
-The publishing job only runs in the original repository on its default branch.
-Pushes and PRs only run offline tests; forks do not publish reports. Permissions
-are `contents: read` and `issues: write`; Actions and Issues must be enabled.
-Concurrent runs are serialized. GitHub can delay schedules and disables them
-for public repositories after 60 days without repository activity
-([GitHub schedules](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule)).
+### Access, costs and operation
 
-Local preparation without Google requests or GitHub writes:
+1. Create a CLI token in the [Junie account](https://junie.jetbrains.com/tokens)
+   and save it as the repository secret **JUNIE_API_KEY**. Never put the token in
+   code, issues or chat. Keep existing JetBrains credits available.
+2. Under **Actions → Home Assistant developer blog → Run workflow**, keep
+   **Run Junie without publishing issues or changing retry state** enabled for
+   a dry run. It consumes credits but changes neither issues nor attempt counts.
+   For manual publication, disable it and select the default branch.
+3. **Retry exhausted entries only** explicitly retries terminally failed posts.
+   It also supports dry runs.
+4. Review the assessment and **model costs reported by Junie**. Totals come from
+   `llmUsage[].cost`, model names from `llmUsage[].model`. Missing usage is shown
+   as unknown. These USD values do not establish actual JetBrains credit deductions.
 
-```sh
-python -m unittest discover -s scripts/tests -v
-python scripts/ha_blog_gemini.py --blog-dir /path/to/developers.home-assistant/blog --prepare-only
-```
+Production runs **Junie CLI 3110.6** directly, the same version tested through the
+official action. This gives separate control over per-post tasks, artifacts and
+error handling. JetBrains determines the default model, which may change; the
+first trial used Gemini 3.7 Flash and smaller helper models. One agent task can
+make multiple model calls. Each post has a five-minute process timeout, **not a
+hard credit cap**. No immediate retry, automatic Google/Cloudflare fallback or
+credit purchase is performed.
 
-Without `--prepare-only`, `GEMINI_API_KEY` is required and a real AI call may occur.
-GitHub writes additionally require explicit `--publish`.
+Junie receives public blog content and the established allowlist: integration
+Python files, manifest, translations, services, quality checklist, frontend card
+and project metadata. Analysis runs on a GitHub runner with the public repository.
+Plan and result artifacts are retained for seven days; raw Junie session logs are
+not uploaded by the production workflow. The heuristic script remains a separate
+local aid and does not prefilter posts for AI analysis.
+
+Offline checks: `python -m unittest discover -s scripts/tests -v`.
+Production no longer needs Google or Cloudflare credentials. Historical provider
+trials are documented in the [verification summary](VALIDATION.en.md).
+
+## Cloudflare trial
+
+Set `cloudflare_individual=true` to analyze each stored post separately with
+the same complete source snapshot. `cloudflare_post` selects one exact stored
+filename. At most five requests run sequentially; an error stops the test while
+retaining completed results and usage in the artifact. Separate requests multiply
+input usage; the daily free-tier limit still applies.
+
+**Trial status 2026-09-16:** API calls succeeded yesterday, but today returned
+HTTP 429/4006 despite a 0/10,000 dashboard counter. Batch analysis mixed up
+explanations; the Modbus per-post assessment omitted a deadline. Remaining
+individual trials stopped due to API rejection. Not approved for scheduled use. Results:
+[validation overview](VALIDATION.en.md).
+
+The manual workflow input `cloudflare_test=true` tests stored posts using
+`@cf/openai/gpt-oss-120b`. It requires the `CLOUDFLARE_API_TOKEN` secret
+(Workers AI Read/Edit for one account) and the `CLOUDFLARE_ACCOUNT_ID` Actions
+variable. Use Workers Free without upgrading to paid billing. The trial reads
+the state branch, sends the same allowlisted source snapshot and validates
+responses using the existing evidence checks. It writes only the
+`ha-blog-cloudflare-test` artifact, without issues or retry state updates.
+Batch mode makes one request; individual mode makes one per post.
+There is no automatic provider fallback.
+`cloudflare_smoke=true` limits the trial to a small connection check. The artifact
+also includes the provider response for offline re-evaluation; request headers
+and the token are not stored. The scheduled Junie monitor is independent; Cloudflare remains an optional comparison trial.
 
 
 ## Quality tiers and next steps
@@ -885,3 +906,22 @@ optional card under `www/` separately. Exclude `.work/`, `.local-archive/`, loca
 test environments and caches. Required instructions must not exist only in the
 local archive. Before a PR, inspect new files and removed old paths as well;
 `git diff --check` alone checks neither untracked files nor documentation links.
+
+## Manual Junie trial
+
+The dispatch input `junie_test=true` assesses exactly the stored Modbus post
+dated 2026-09-02 using the repository secret `JUNIE_API_KEY`. The official action
+v1.7.9 is pinned to a commit and uses `silent_mode`, Junie CLI 3110.6 and the
+default model. GitHub permissions are read-only.
+
+Existing state is only read. One analysis task assesses required adaptations
+and optional improvements in German. Result structure and source citations are
+validated afterwards; semantic correctness still requires manual review.
+The `ha-blog-junie-test` artifact is retained for seven days. The Junie step
+has a six-minute timeout. This is not a hard credit limit; one agent task can
+make multiple model calls. No automatic retry, provider fallback or weekly
+activation. The trial uses existing credits; it purchases none and changes no plan.
+
+Status on 2026-09-16: the Modbus trial succeeded and included every deadline.
+Junie reported about USD 0.048 in model costs; its default model was Gemini
+3.7 Flash. The top-up deduction is not yet confirmed. Production execution and further relevance cases are validated separately. See [verification summary](VALIDATION.en.md).

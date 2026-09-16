@@ -5,6 +5,9 @@
 ## Contents
 
 - [1.2.0-dev.9](#120-dev9)
+- [1.1.3](#113)
+- [1.1.2](#112)
+- [1.1.1](#111)
 - [1.1.0](#110)
 - [1.0.2](#102)
 - [1.0.1](#101)
@@ -65,6 +68,55 @@ Unreleased development version.
   German/English guidance, simulated tests and local FFmpeg tests. Browser/Cast
   device acceptance is recorded separately.
 - New project worktrees must be located under `V:\enigma2-connect-worktrees`.
+- Added a 1280 × 640 GitHub social preview: device symbol centered above the
+  wordmark on white, with PNG, SVG source and `-SocialOnly` export.
+- Use a separate branch for every task and an additional worktree for larger
+  tasks. Merge checked, completed changes into `develop` and push it.
+  Prepare and open a PR into `main` only after user approval; merging and
+  releasing also require their respective explicit approvals.
+- Merged current `main`, including the Junie blog monitor and silent review
+  receipts, into `develop`, preserving the social preview and branch rules.
+
+## 1.1.3
+
+Unreleased.
+
+- The blog monitor only publishes posts needing adaptation, enhancement or
+  review. Uneventful results are durably recorded without an issue, preventing
+  repeated AI credit consumption for unchanged posts.
+
+## 1.1.2
+
+Unreleased.
+
+- Switched the blog monitor to individual Junie assessments: weekly discovery,
+  next-day retries, separate validation/publication and reported model costs.
+
+- Junie trial succeeded: German assessment with complete Modbus deadlines;
+  reported model cost about USD 0.048, actual top-up deduction still unconfirmed.
+
+- Manual Junie single-post trial with read-only GitHub permissions and subsequent
+  validation of the result structure and source citations.
+
+- Documented Cloudflare follow-up: the API rejected the first request with
+  HTTP 429/4006 despite a reset dashboard counter; remaining tests stopped.
+
+- Cloudflare per-post trial with one request per article, exact filename selection,
+  aggregate usage and preservation of completed reports when a later request fails.
+
+- Manual Cloudflare trial with gpt-oss-120b for stored blog posts, using the same
+  source evidence validation; report artifacts only, no issues or state changes.
+
+## 1.1.1
+
+Unreleased.
+
+- Failed blog posts are durably queued after the weekly check and retried on
+  the following day. Only a second failure for the same content fails the run;
+  partial successes are completed separately.
+- A state branch records attempt counts and original posts. Daily retry runs
+  do not select new posts; exhausted entries can be retried manually. Reports
+  distinguish Gemini, response validation and GitHub publication failures.
 
 ## 1.1.0
 

@@ -17,9 +17,18 @@ For development setup and project structure, see the
 ## Development and branches
 
 Follow the [project instructions](AGENTS.en.md), adopted from BT-RC.
-Make changes on `develop` or a working branch, never directly on `main`.
-Merge into `main` only through a pull request after explicit user approval.
-Merge approval does not authorize a release.
+Create a separate, descriptively named branch from current `develop` for every task.
+Use the existing working directory for small changes; also create a separate
+worktree for larger tasks. Commit completed changes on the working branch after
+appropriate checks, merge them into `develop` and push `develop` without further
+approval. `develop` collects completed changes. Do not implement directly on
+`develop` or `main`.
+
+Prepare the collected changes for a pull request from `develop` into `main` and
+open that PR only after explicit user approval. Merge into `main` exclusively
+through that PR; merging also requires user approval. A release, including drafts
+or tags, requires a separate explicit instruction; PR or merge approval does not
+authorize a release.
 
 Automatically increase the version based on the entire unpublished scope since
 the latest stable release: patch for fixes, internal changes and documentation,

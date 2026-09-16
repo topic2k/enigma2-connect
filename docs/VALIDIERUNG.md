@@ -282,6 +282,198 @@ Streamingauthentifizierung, freie Tuner/Entschlüsselung sowie längere Wiederga
 und CPU-Last. Vor einer entsprechenden Gerätefreigabe gesondert abnehmen.
 Die früheren Nachweise unten beziehen sich weiterhin auf ihre damaligen Versionen.
 
+## Abgleich von develop mit main – 1.1.4-dev.1
+
+Der aktuelle `main` mit PR #6 und #8 ist in den Entwicklungsstand übernommen.
+Die Monitor-Implementierung einschließlich Workflow und Tests entspricht `main`;
+Social-Preview und Branch-Regeln aus `develop` sind unverändert erhalten.
+Konflikte betrafen ausschließlich Versionsstellen und beide Changelogs; die
+Entwicklungsversion ist synchron auf 1.1.4-dev.1 angehoben. Die vorhandenen
+Prüfnachweise beider Branches bleiben erhalten. 70 Offline-Blogtests, Python-Syntax,
+Versionskonsistenz und Lockdatei wurden nach dem Zusammenführen geprüft.
+Integrationscode und Qualitätscheckliste bleiben unverändert; es wurden keine
+zusätzlichen Receiver- oder Home-Assistant-Praxisprüfungen ausgeführt.
+
+## Stille Blogprüfungen – 1.1.3
+
+70 Offline-Skripttests bestanden. Neue Fälle prüfen ausschließlich unauffällige
+Ergebnisse ohne Issue, gemischte Ergebnisse mit unabhängigem Verbesserungsvorschlag,
+weiterhin gemeldete Unsicherheit, fehlgeschlagene Veröffentlichung bei gleichzeitigem
+stillem Erfolg, fehlerhafte Statusspeicherung und ungültige Prüfvermerke. Nach
+Neuladen des Status bleiben unveränderte Beiträge erledigt; geänderte Inhalte
+werden erneut ausgewählt. Python-Syntax und Ruff bestanden.
+
+Die vier gespeicherten echten Junie-Antworten aus
+[Lauf 35125959582](https://github.com/topic2k/enigma2-connect/actions/runs/35125959582)
+wurden lokal mit der neuen Abschlusslogik abgespielt: vier stille Prüfvermerke,
+kein Issue-Aufruf, keine Wiederholung und keine erneute Auswahl am nächsten
+Montag. Dabei wurden weder GitHub-Zustände verändert noch KI-Anfragen ausgeführt.
+Die Veröffentlichung dieser Filterung auf GitHub ist dadurch noch nicht live belegt.
+
+Die Qualitätscheckliste ist unverändert: Integrationscode (außer Metadatenversion),
+Frontend, Integrationstests und Abdeckungsgrenzen bleiben unberührt. Keine neuen
+Receiver- oder Home-Assistant-Praxisprüfungen; bisherige offene Nachweise bleiben
+bestehen. Vor dem Merge sind aktuelle erfolgreiche CI-Prüfungen erforderlich.
+
+## Automatischer Junie-Monitor – 1.1.2
+
+64 Offline-Skripttests prüfen unter anderem einzelne Beitragspakete, erste und
+zweite Fehlschläge, erfolgreiche Teilberichte, Wiederholung am Folgetag,
+falsche Beitrags-IDs, erfundene Quellbelege, unabhängige Verbesserungsvorschläge,
+Kostenmetadaten und nebenwirkungsfreie Probeläufe. Ruff, Python-Syntax,
+Workflow-/Shell-Syntax, Lockdatei sowie Versions-/Dokumentationslinks bestanden.
+Die bestehende Retry-Logik wird für die getrennten Jobs wiederverwendet.
+
+Die Qualitätscheckliste wurde auf Auswirkungen geprüft: keine Änderung an
+Integrationsverhalten, Abdeckungsanforderungen oder verbleibenden Hardware- und
+Home-Assistant-Nachweisen. Der [vollständige Probelauf 35123242339](https://github.com/topic2k/enigma2-connect/actions/runs/35123242339)
+auf `57e825a` bestand mit vier separaten Bewertungen. Modbus nennt 2026.9,
+2026.10 und 2027.10; Selektoren nennen korrekt keine angekündigte Version;
+OAuth2 und Rasenmäher nennen 2026.10. Alle vier deutschen Bewertungen sind
+passend zum jeweiligen Beitrag, ohne Auswirkung und ohne konkreten Zusatznutzen
+für die vorhandene OpenWebif-Integration. Diese Einordnungen wurden manuell
+gegen Blogtexte und Implementierung geprüft. Positive Auswirkungen und konkrete
+Verbesserungsvorschläge sind bislang durch simulierte Validierungstests, nicht
+durch einen passenden aktuellen Live-Blogfall belegt.
+
+Gemeldete Modellkosten des gesamten Probelaufs: **0,307334 USD** für vier
+Beiträge, keine fehlenden Verbrauchswerte. Die bestätigte Top-up-Abbuchung ist
+davon zu unterscheiden. Der Statusbranch blieb unverändert auf `fa6aa32`;
+der Probelauf erstellte keine Issues. Produktionsnahe Analyse, Sammlung,
+Validierung und Berichtserzeugung sind damit live geprüft. Die vollständige
+CI zu `57e825a` (Tests, hassfest, HACS und CodeQL) war grün. Danach wurden
+nur zwei Offline-Grenzfalltests und Dokumentationsnachweise ergänzt; vor dem
+Merge bleiben aktuelle grüne Prüfungen für den endgültigen PR-Stand erforderlich.
+
+## Junie-Einzeltest am 16.09.2026 – 1.1.2-dev.4
+
+Der [Testlauf 35120165171](https://github.com/topic2k/enigma2-connect/actions/runs/35120165171)
+auf `a6e4ba7` war erfolgreich: 52 Skripttests und anschließende Live-Analyse eines
+Modbus-Beitrags. Der Junie-Job dauerte 1 Minute 50 Sekunden, die eigentliche
+CLI-Ausführung rund 69 Sekunden. Der gespeicherte Kontext blieb unverändert.
+
+Die Antwort ist deutsch, korrekt zugeordnet und nennt alle drei Zeitpunkte:
+Verfügbarkeit 2026.9, Deprecation 2026.10 und Entfernung 2027.10. Die Bewertung
+`no-impact` passt zum bereitgestellten Code: Die Integration nutzt OpenWebif,
+keine Modbus-Komponenten oder `modbus-connection`. Die optionale Verbesserung
+wurde unabhängig mit `none` bewertet; hierfür wurde kein konkreter Nutzen
+gefunden. Leere Beleglisten sind für diese beiden Einstufungen zulässig.
+Die automatische Prüfung bestätigte Schema, Beitrags-ID und Belegformat;
+Zuordnung, Fristen und Begründung wurden zusätzlich manuell geprüft.
+
+Junies `llmUsage` und `taskCostUsd` melden **0,0483518 USD**. Gemeldete Tokens:
+65.759 Eingabe, 145.549 Cache-Eingabe und 6.475 Ausgabe. Hauptmodell war
+`gemini-3.7-flash`, Hilfsmodelle `gpt-4.1-mini-2025-04-14`,
+`gpt-4.1-2025-04-14` und `gpt-5.4-nano`. Das Standardmodell ist dynamisch;
+dieser erfolgreiche JetBrains-Zugang ist daher kein Gemini-unabhängiger Test.
+Die Top-up-Anzeige blieb bei der Nachkontrolle auf 3,77 Credits. Das beweist
+keinen kostenlosen Aufruf; die tatsächliche Kontobelastung ist dort noch nicht
+nachgewiesen. Vier gleich teure Beiträge pro Woche ergäben rechnerisch etwa
+0,77 USD für vier Wochen, ohne Garantie für andere Beiträge oder Modelle.
+
+Lokal bestanden Syntaxprüfung, Ruff, Workflow-/Shell-Prüfung, Lock-Prüfung,
+Versions-/Dokumentationslinks sowie eine Offline-Prüfung von Vorbereitung,
+Berichtserzeugung und Ablehnung einer falschen Beitrags-ID. Die 52 Skripttests
+liefen lokal und in GitHub erfolgreich. Diese Prüfungen ersetzen keine
+Receiver- oder Home-Assistant-Praxisprüfung. Integrationsfunktionen und
+Qualitätskriterien wurden nicht verändert.
+
+Ein einzelner negativer Relevanzfall belegt noch nicht die Qualität bei nötigen
+Migrationen oder sinnvollen Ergänzungen. Die übrigen drei Einzelbewertungen
+bleiben offen. Keine Issues, Statusschreibzugriffe, produktive Umstellung,
+Zusatzkäufe, Tarifänderungen, Merges oder Releases.
+
+## Cloudflare-Fortsetzung am 16.09.2026 – 1.1.2-dev.3
+
+Der autorisierte Folgetagstest wurde um 08:30 Uhr MESZ begonnen. Die frisch
+neu geladene Cloudflare-Anzeige meldete vor der Anfrage **0/10.000 Neurons heute**;
+im separaten 24-Stunden-Diagramm standen rund 10.020 Neurons vom Vortag.
+Das ist keine Bestätigung, dass die serverseitige Zugriffssperre zurückgesetzt war.
+
+Der [Selektor-Einzeltest 35064196248](https://github.com/topic2k/enigma2-connect/actions/runs/35064196248)
+auf `fb1b55b` bestand die 52 Skripttests, wurde aber bei der einzigen
+Cloudflare-Anfrage mit **HTTP 429 / internem Code 4006** abgelehnt. Eingabe:
+267.346 Bytes, keine Modellergebnisse, keine Verbrauchsmetadaten in der Antwort.
+Ein unbekannter Verbrauch ist nicht als gemessener Nullverbrauch zu verstehen.
+
+Gemäß der Freigabe bei Quotenfehlern gestoppt: OAuth2- und Rasenmäher-Einzeltests
+wurden nicht gestartet; auch kein zusätzlicher Test der fehlenden Modbus-Frist.
+Die [offizielle Fehlerliste](https://developers.cloudflare.com/workers-ai/platform/errors/)
+nennt 3036 für ein ausgeschöpftes Tageskontingent und 3040 für Kapazitätsengpässe,
+führt 4006 jedoch nicht auf. Die genaue Ursache der widersprüchlichen
+Dashboard-/API-Anzeige bleibt deshalb ungeklärt.
+
+Der inhaltliche Stand vom 15.09. bleibt bestehen: Die Einzelzuordnung war beim
+Modbus-Beitrag besser, aber 2027.10 fehlte. Die drei weiteren Einzelbewertungen
+sind nicht nachgewiesen. Kein Wechsel des produktiven Monitors, keine Issues,
+Statusschreibzugriffe, neuen Zugangsdaten, Tarifänderungen oder Releases.
+Diese Dokumentationsänderung betrifft keine Integrationsfunktionen oder
+Qualitätskriterien; fremde lokale Änderungen blieben erhalten.
+
+## Cloudflare-Einzelprüfung – 1.1.2-dev.2
+
+Am 15.09.2026 wurde die getrennte Verarbeitung mit 52 lokalen Skripttests,
+Ruff, Python-Syntax, Lockdatei sowie Workflow-/Dokumentationsprüfung geprüft.
+Die Tests belegen eine Beitrags-ID je API-Anfrage, Ablehnung fremder IDs und
+Erhalt erfolgreicher Teilergebnisse einschließlich Verbrauch bei einem späteren Fehler.
+Qualitätscheckliste und Integrationslaufzeit bleiben unverändert.
+
+Der echte [Modbus-Einzeltest 34993573743](https://github.com/topic2k/enigma2-connect/actions/runs/34993573743)
+auf `6ab68a7` verarbeitete 70.336 Eingabe- und 541 Ausgabetokens für 2.274,84 Neurons.
+Die deutsche Begründung ist dem richtigen Beitrag zugeordnet und die Einstufung
+no-impact passt zur fehlenden Modbus-Nutzung. Es gibt keine irrelevanten Codebelege.
+Die Entfernungsfrist **2027.10** fehlt weiterhin; nur 2026.10 wird genannt.
+Vier ähnlich große Einzelanfragen würden rechnerisch etwa 9.100 Neurons benötigen,
+fünf etwa 11.375 und damit mehr als das tägliche kostenlose Kontingent. Dies ist
+nur eine Hochrechnung, keine Verbrauchsgarantie für andere Beiträge.
+
+Die Fortsetzung vom 16.09.2026 ist oben dokumentiert; die übrigen drei
+Einzelbewertungen bleiben wegen der API-Ablehnung offen.
+Kein produktiver Anbieterwechsel, keine Issues, Statusänderungen oder Releases.
+
+## Cloudflare-Probelauf – 1.1.2-dev.2
+
+Am 15.09.2026 wurden Cloudflare Workers AI und `@cf/openai/gpt-oss-120b`
+auf einem isolierten Branch mit den vier gespeicherten September-Beiträgen getestet.
+50 lokale Skripttests, Python-Syntax, Ruff, Lockdatei und 72 Dokumentationslinks
+bestanden. Branch-CI für `b1ff764` und `f771ab5` erfolgreich. Die Qualitätscheckliste
+wurde auf Auswirkungen geprüft: Integrationslaufzeit, Kriterien und
+Abdeckungsgrenzen bleiben unverändert; keine neuen HA-/Receiver-Praxisnachweise.
+
+- Erstlauf [34991469621](https://github.com/topic2k/enigma2-connect/actions/runs/34991469621):
+  erfolgreiche API-Antwort, aber Parserfehler. Der Adapter wurde anhand der echten
+  Antwort einer kleinen Diagnoseanfrage korrigiert und offline nachgetestet.
+- Vollständiger Lauf [34992280735](https://github.com/topic2k/enigma2-connect/actions/runs/34992280735):
+  72.212 Eingabe-, 1.975 Ausgabetokens, 2.432,30 Neurons. Schema und Codezeilenprüfung
+  bestanden, aber englische Texte, ausgelassene Fristen und unbrauchbare Lizenzbelege.
+- Präzisierte Ausgabevorgaben, Lauf [34992652727](https://github.com/topic2k/enigma2-connect/actions/runs/34992652727):
+  72.344 Eingabe-, 1.957 Ausgabetokens, 2.435,27 Neurons. Deutsche Texte und leere
+  statt irrelevanter Belege, aber vertauschte Begründungen zwischen Modbus,
+  Selektoren und OAuth2. Die Modbus-Entfernungsfrist 2027.10 fehlt weiterhin;
+  der Selektor-Beitrag erhält eine dort nicht genannte Versionsangabe.
+
+**Bewertung:** Zugang und Free-Tier-Budget sind für einen gemeinsamen Wochenlauf
+belegt. Die formale Antwortprüfung erkennt semantisch vertauschte Begründungen
+nicht. Die inhaltliche Qualität dieses Modells im getesteten Batchverfahren reicht
+nicht für die Übernahme als automatischer Monitor. Keine Issues veröffentlicht,
+keinen Status geändert und keine Umstellung auf main vorgenommen. Die Zustandsreferenz
+blieb `fa6aa32eda38a2454d30fd3b11aab0d8198dc972`. Einzelbeitragsanalyse oder ein anderes
+Modell benötigen einen gesonderten Qualitäts- und Budgettest. Dauerhafte
+Verfügbarkeit und zuverlässige Erkennung tatsächlich relevanter Änderungen sind
+mit diesen vier nicht betroffenen Beispielen nicht belegt.
+
+## Wiederholung des Blog-Checks – 1.1.1
+
+Am 14.09.2026: 45 Offline-Tests bestanden, darunter 17 neue Scheduler-/Statustests.
+Geprüft wurden erster Fehlschlag ohne Fehlerstatus, zweite Fehlermeldung am
+Folgetag, kein doppelter Versuch am selben Tag, spätere Nachholung, Teilerfolge,
+unveränderte Originalbeiträge beim Wiederholen, manuelle Wiederaufnahme sowie
+GitHub-Statusspeicherung mit Schutz vor überschriebenen Zwischenständen.
+Ruff, Formatierung, Python-Syntax und Offline-Lockprüfung (159 Pakete) bestanden.
+Die Tests simulieren Google und GitHub sowie mehrere Kalendertage. Sie sind
+kein Nachweis eines tatsächlich am Folgetag gelaufenen GitHub-Jobs und keine
+zusätzliche Home-Assistant-/Receiverabnahme. Der PR-CI-Lauf prüft den Gesamtstand.
+
 Prüfdatum: **13.09.2026**. Gemeinsamer Entwicklungsstand: **1.1.0-dev.10**.
 Dies ist ein technischer Prüfbericht, keine Release- oder Hardwarefreigabe.
 Versionshistorie: [Changelog](../CHANGELOG.md). Reproduktionsbefehle:
@@ -776,3 +968,12 @@ Freigaben aus [RELEASING.md](../RELEASING.md).
 Browser-/Cast-Streaming, Wake-on-LAN, neue
 wiederkehrende Timer und Antworten auf Bildschirmnachrichten sind nicht
 implementiert. Weitere Sonderfälle stehen in der Entwicklerdokumentation.
+
+## Social Preview – 14.09.2026
+
+Für 1.1.2-dev.1 das neue GitHub-Bild in 1280 × 640 Pixeln exportiert und
+visuell geprüft. PNG-Abmessungen, vollständig deckender Hintergrund,
+SVG-Struktur und reproduzierbarer Export mit `-SocialOnly` geprüft.
+Die acht HA-Brand-Dateien und die Integrationslogik bleiben unverändert;
+die Qualitätscheckliste ist dadurch nicht betroffen. Kein neuer HA-/Receiver-Test.
+Quelle und Exportanleitung: [Branding](../assets/branding/README.md).

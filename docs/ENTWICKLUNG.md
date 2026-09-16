@@ -12,6 +12,7 @@ die [README](../README.md) bleibt der kurze Einstieg für Anwender.
 - [Entwicklungsumgebung und Prüfungen](#entwicklungsumgebung-und-prüfungen)
 - [Lesende Receiver-Abnahme](#lesende-receiver-abnahme)
 - [Home-Assistant-Entwicklerblog überwachen](#home-assistant-entwicklerblog-überwachen)
+- [Cloudflare-Probelauf](#cloudflare-probelauf)
 - [Qualitätsstufen und nächste Schritte](#qualitätsstufen-und-nächste-schritte)
 - [Aufbau und Datenfluss](#aufbau-und-datenfluss)
 - [Externe Wiedergabe](#externe-wiedergabe)
@@ -143,113 +144,134 @@ direkter Aufruf der Hardware-Testdatei ohne Prüfkonfiguration wird übersprunge
 
 ## Home-Assistant-Entwicklerblog überwachen
 
-Der Workflow [Home Assistant developer blog](../.github/workflows/ha-developer-blog.yml)
-prüft **montags um 07:23 UTC** die vollständigen Beiträge im offiziellen
+Der [Workflow](../.github/workflows/ha-developer-blog.yml) prüft montags um
+**07:23 UTC** neue oder geänderte Beiträge im offiziellen
 [Blog-Repository](https://github.com/home-assistant/developers.home-assistant/tree/master/blog).
-Er berücksichtigt neue und inhaltlich geänderte Beiträge ab **2026-09-01**.
-Pro Lauf werden höchstens **fünf Beiträge gemeinsam in einer Gemini-Anfrage**
-bewertet. Ohne neue Beiträge erfolgt kein KI-Aufruf. Weitere Beiträge bleiben
-für den nächsten Lauf offen; Quelltexte werden nicht stillschweigend gekürzt.
+Das entspricht 09:23 Uhr MESZ bzw. 08:23 Uhr MEZ. Pro Lauf werden höchstens
+**fünf Beiträge einzeln und nacheinander mit Junie** analysiert. Weitere neue
+Beiträge bleiben bis zum nächsten Wochenlauf zurückgestellt. Ohne fällige
+Beiträge wird kein KI-Auftrag gestartet.
 
-Das [Gemini-Prüfskript](../scripts/ha_blog_gemini.py) verwendet die Google-API
-direkt mit `gemini-3.8-flash`. Eine feste Anfrage vermeidet variable Agentenschleifen.
-Es gibt keine Werkzeuge, Websuche, automatische Wiederholung oder Umschaltung auf
-andere Modelle. Die Grenzen sind 400.000 UTF-8-Eingabebytes und 8.192 Ausgabetokens
-einschließlich Denktokens bei Denkstufe `low`. Bei zu großer Eingabe verkleinert
-das Skript die Beitragsgruppe. Passt schon ein Beitrag mit dem vollständigen
-Code nicht hinein, schlägt der Lauf fehl und verlangt eine manuelle Prüfung.
+### Inhalt und Bericht
 
-An Google gehen die Blogtexte und eine feste Auswahl veröffentlichbarer Quellen:
-Python-Module der Integration, Manifest, Übersetzungen, Icons, Qualitätscheckliste, Aktionsdefinitionen,
-Dashboardkarte sowie Projekt- und HACS-Metadaten. Lokale Archive, `.env`, Receiverdaten
-und Testdaten gehören nicht dazu. Jeder neue Beitrag wird analysiert; der frühere
-Schlagwortfilter entscheidet nicht über die Auswahl. Das bisherige
-[heuristische Skript](../scripts/ha_blog_monitor.py) bleibt als unabhängige lokale
-Prüfmöglichkeit verfügbar, wird aber nicht als stille Ersatz-KI verwendet.
+Jeder Beitrag wird getrennt auf **notwendige Anpassungen** und **sinnvolle
+Ergänzungen oder Verbesserungen** geprüft, etwa Bedienbarkeit, neue Fähigkeiten,
+Zuverlässigkeit und Wartbarkeit. Ein verpflichtender Umbau ist kein zusätzlicher
+Verbesserungsvorschlag. Junie soll auf Deutsch begründen, konkrete nächste
+Schritte nennen und sämtliche angekündigten Verfügbarkeits-, Deprecation- und
+Entfernungsfristen übernehmen. Neue Möglichkeiten werden auch dann geprüft,
+wenn die betreffende API noch nicht im Code vorkommt.
 
-Jeder Beitrag erhält zwei unabhängige Bewertungen. Zur Kompatibilität sind die
-Ergebnisse `impacted` (konkreter Anpassungsbedarf), `no-impact` (keine
-Auswirkung erkennbar) oder `uncertain` (manuelle Klärung erforderlich). Sie enthalten
-Begründung, nächste Schritte, HA-Version/Frist soweit angegeben und Code-Verweise.
-Dateien, Zeilennummern und wörtliche Quellzeilen werden lokal validiert. Das bestätigt
-die Fundstelle, nicht die Schlussfolgerung der KI. Der gesamte Stapel muss gültig
-und vollständig sein, bevor ein Issue entsteht. Eine KI-Einschätzung ersetzt keine
-Home-Assistant-Kompatibilitätsprüfung.
+Bewertungen mit konkreter Auswirkung oder empfohlenem Zusatznutzen müssen
+bestehende Quellzeilen als Ansatzpunkt belegen. Ein eigener, vertrauenswürdiger
+Schritt prüft Beitrags-ID, Ergebnisstruktur, Dateipfade, Zeilennummern und wörtliche
+Belege gegen den vor der Analyse gesicherten Quellstand. Eine KI-Einschätzung
+ersetzt keine ausgeführten Kompatibilitätstests und kann inhaltlich falsch sein.
 
-Zusätzlich prüft Gemini **Ergänzungen und Verbesserungen**: neue Funktionen,
-Bedienkomfort, Leistung, Zuverlässigkeit und Wartbarkeit. Das Feld `opportunity`
-enthält `recommended` (konkrete Empfehlung), `none` (kein sinnvoller Vorschlag)
-oder `uncertain` (noch zu prüfen), jeweils mit Nutzen, Umsetzungsschritten,
-Voraussetzungen und möglichen Nachteilen. Empfehlungen benötigen eine überprüfte
-Code-Fundstelle als Ansatzpunkt; die neue API muss noch nicht verwendet werden.
-Ein `no-impact`-Beitrag kann somit trotzdem eine Verbesserung empfehlen; auch
-Anpassungsbedarf und optionale Ergänzung können gemeinsam auftreten. Bereits
-umgesetzte Funktionen und reine Pflichtmigrationen gelten nicht als Ergänzung.
-Fehlt eine der beiden Bewertungen oder ein erforderlicher Beleg, entsteht kein
-Berichts-Issue. Beide Bewertungen erfolgen in derselben wöchentlichen Anfrage.
-Der Bericht schlägt Änderungen vor; die Umsetzung wird separat entschieden.
+Ein GitHub-Issue enthält nur Beiträge mit notwendigen Anpassungen, empfohlenen
+Ergänzungen oder noch unklarem Prüfbedarf. Wenn alle Bewertungen zugleich
+`no-impact` und `none` ergeben, wird kein Issue erstellt. Auch in gemischten
+Läufen bleiben solche unauffälligen Beiträge aus dem Issue heraus.
 
-Pro erfolgreichem Lauf mit neuen Beiträgen entsteht **ein zusammengefasstes
-Berichts-Issue**, auch wenn alle Beiträge als `no-impact` bewertet wurden. Seine
-unsichtbaren Marker speichern die geprüften Beitragsinhalte dauerhaft. Geschlossene
-Berichte zählen ebenfalls; sie werden nicht verändert oder erneut geöffnet.
-Berichte und Marker daher erhalten. Inhaltliche Änderungen erzeugen einen neuen
-Prüfbedarf, reine Änderungen am Integrationscode nicht. Die früheren heuristischen
-Issues gelten nicht als KI-Prüfnachweis. Zusammenfassung und JSON-Berichte liegen
-zusätzlich 30 Tage als Actions-Artefakt vor.
+Erfolgreich geprüfte Inhalts-IDs werden mit Prüfdatum im Statusbranch gespeichert,
+auch ohne Issue. Inhaltsbasierte Marker in bestehenden und geschlossenen Issues
+zählen weiterhin; Marker aus der Gemini-Zeit bleiben kompatibel. Geänderte
+Blogtexte werden neu geprüft, Quelländerungen allein lösen keine erneute Prüfung
+aus. Strukturierte Ergebnisse und Kosten bleiben zur technischen Nachvollziehbarkeit
+30 Tage als Artefakt `ha-developer-blog-report` erhalten.
 
-### Kostenlosen Google-Zugang einrichten
+### Wiederholung und Berechtigungen
 
-1. In [Google AI Studio](https://aistudio.google.com/api-keys) einen Schlüssel für
-   ein eigenes Projekt im **Free Tier ohne aktivierte kostenpflichtige Abrechnung**
-   erstellen. Kein Billing-Konto verknüpfen und kein Paid-Tier-Upgrade aktivieren.
-2. Die aktiven Modelllimits in AI Studio prüfen. Google nennt auf der
-   [Preisseite](https://ai.google.dev/gemini-api/docs/pricing?hl=de#free) kostenlose
-   Ein- und Ausgabe für Gemini 3.8 Flash; konkrete Anfrage-/Tokenlimits sind
-   [projektabhängig](https://ai.google.dev/gemini-api/docs/rate-limits).
-   Eine kleine Anfrage pro Woche dürfte ausreichen, kann ohne echten Probelauf
-   mit dem Projekt aber nicht garantiert werden. Der Free Tier schützt vor
-   kostenpflichtiger Nutzung; der Workflow kann den Billing-Status eines Schlüssels
-   nicht selbst prüfen. Ein Schlüssel aus einem Paid-Tier-Projekt kann Kosten verursachen.
-3. Im GitHub-Repository unter **Settings → Secrets and variables → Actions →
-   New repository secret** den Schlüssel als **GEMINI_API_KEY** speichern.
-   Den Schlüssel nicht in Dateien, Issues oder Chats eintragen.
-4. Nach freigegebener Übernahme des Workflows per PR nach `main` unter **Actions →
-   Home Assistant developer blog → Run workflow** den Standardbranch auswählen.
-   **Run Gemini and generate a report; do not create an issue** für den ersten
-   Probelauf aktiviert lassen. Dieser Probelauf nutzt das KI-Kontingent, speichert
-   aber keine dauerhaften Prüfmarker. Bericht und `usage` im JSON kontrollieren.
-5. Für manuelle Issue-Veröffentlichung den Probelauf-Schalter deaktivieren.
-   Geplante Wochenläufe veröffentlichen den zusammengefassten Bericht automatisch.
+Der [Junie-Monitor](../scripts/ha_blog_junie_monitor.py) verwendet die bewährte
+[Status- und Wiederholungslogik](../scripts/ha_blog_scheduler.py). Bei einem ersten
+Fehler wird ausschließlich der betroffene Beitrag für den Folgetag vorgemerkt;
+der Lauf bleibt erfolgreich. An den übrigen Wochentagen um 07:23 UTC werden nur
+fällige gespeicherte Beiträge erneut versucht. Erst der zweite Fehler desselben
+Beitrags führt zu einem fehlgeschlagenen Lauf. Verpasste Wiederholungen werden
+nachgeholt. Danach sind weitere Versuche nur ausdrücklich manuell möglich.
 
-Gemini verarbeitet diese Quellen nach den Google-Bedingungen für den Free Tier;
-die [Preisseite](https://ai.google.dev/gemini-api/docs/pricing?hl=de#free) verweist
-auf die Bedingungen zur Verwendung von Inhalten zur Produktverbesserung.
-Nur für diese Weitergabe geeignete Repository-Inhalte verwenden.
+Der Branch `ha-blog-monitor-state` enthält unter `.github/ha-blog-state.json`
+Beitragsinhalt, ursprünglichen Blog-Commit, Versuchsanzahl, Fälligkeit und einen
+bereinigten Fehlerhinweis sowie unter `reviewed` die erfolgreich geprüften
+Inhalts-IDs mit Prüfdatum. Vorhandene Statusdateien ohne `reviewed` bleiben gültig. Versuche werden vor dem KI-Auftrag reserviert, damit
+abgebrochene Läufe nicht unbemerkt mehrfach Credits verbrauchen. Erfolgreiche
+Teilberichte bleiben erhalten. Unsichere Zustandsspeicherung ist ein
+Infrastrukturfehler und wird unmittelbar gemeldet.
 
-Bei HTTP 429, anderen API-Fehlern, fehlendem Schlüssel oder ungültiger Antwort
-schlägt der Lauf sichtbar fehl. Ohne gespeicherten Bericht bleiben die Beiträge
-für den nächsten Lauf offen; es gibt keinen automatischen Paid-Fallback. Bei
-unklarem Ausgang einer Issue-Veröffentlichung findet der nächste Lauf einen
-eventuell bereits gespeicherten Bericht anhand der Marker.
+Planung, Analyse und Veröffentlichung laufen in getrennten Jobs. Nur Planung
+und Veröffentlichung besitzen Schreibrechte für den Statusbranch bzw. Issues.
+Junie bekommt **keinen schreibenden GitHub-Token**. Die Veröffentlichung lädt den
+ursprünglichen Plan unabhängig vom Agenten, validiert dessen Antworten nochmals
+und verweigert das Überschreiben zwischenzeitlich geänderter Zustände. Pushes
+und Pull Requests führen nur Offline-Tests aus. Veröffentlichungen sind auf das
+Originalrepository und den Standardbranch beschränkt; manuelle Probeläufe sind
+auch auf Arbeitsbranches möglich. Parallele Workflow-Läufe werden serialisiert.
 
-Der schreibende Job läuft ausschließlich im ursprünglichen Repository auf dem
-Standardbranch. Pushes und Pull Requests führen nur Offline-Tests aus, Forks
-veröffentlichen keine Berichte. Berechtigungen: `contents: read`, `issues: write`;
-GitHub Actions und Issues müssen aktiviert sein. Parallele Läufe werden serialisiert.
-GitHub kann Zeitpläne verzögern und deaktiviert geplante Workflows öffentlicher
-Repositories nach 60 Tagen ohne Repository-Aktivität
-([GitHub-Zeitpläne](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule)).
+### Zugang, Kosten und Bedienung
 
-Lokale Vorbereitung ohne Google-Aufruf und ohne GitHub-Schreibzugriff:
+1. Einen CLI-Token im [Junie-Konto](https://junie.jetbrains.com/tokens) erstellen
+   und als Repository-Secret **JUNIE_API_KEY** speichern. Den Token nicht in
+   Code, Issues oder Chats eintragen. Vorhandenes JetBrains-Guthaben bereithalten.
+2. Unter **Actions → Home Assistant developer blog → Run workflow** für einen
+   Probelauf **Run Junie without publishing issues or changing retry state**
+   aktiviert lassen. Probeläufe benötigen Credits, ändern aber weder Issues
+   noch Versuchszähler. Für reguläre manuelle Veröffentlichung den Schalter
+   deaktivieren und den Standardbranch wählen.
+3. **Retry exhausted entries only** versucht ausschließlich bereits endgültig
+   fehlgeschlagene Beiträge erneut. Dies ist auch als Probelauf möglich.
+4. Im Bericht die Bewertung und die **von Junie gemeldeten Modellkosten** prüfen.
+   Die Summe stammt aus `llmUsage[].cost`, die Modellnamen aus `llmUsage[].model`.
+   Fehlende Verbrauchsdaten werden als unbekannt ausgewiesen. Diese USD-Werte
+   sind keine bestätigte Abbuchung der Credits im JetBrains-Konto.
 
-```sh
-python -m unittest discover -s scripts/tests -v
-python scripts/ha_blog_gemini.py --blog-dir /path/to/developers.home-assistant/blog --prepare-only
-```
+Der produktive Ablauf nutzt direkt **Junie CLI 3110.6**, dieselbe Version wie der
+geprüfte offizielle Action-Probelauf. Dadurch lassen sich einzelne Aufträge,
+Ergebnisartefakte und Fehlerbehandlung unabhängig steuern. Das Standardmodell
+wird von JetBrains bestimmt und kann sich ändern; im ersten Test war es Gemini
+3.7 Flash mit kleineren Hilfsmodellen. Ein Agentenauftrag kann mehrere
+Modellaufrufe enthalten. Jeder Beitrag hat ein Prozesslimit von fünf Minuten;
+das ist **keine feste Credit-Obergrenze**. Es gibt keine unmittelbare Wiederholung,
+keinen automatischen Wechsel zu Google/Cloudflare und keinen Guthabenkauf.
 
-Ohne `--prepare-only` ist `GEMINI_API_KEY` erforderlich und ein echter KI-Aufruf
-möglich. GitHub-Schreibzugriffe erfordern zusätzlich ausdrücklich `--publish`.
+An Junie gehen die öffentlichen Blogtexte und dieselbe feste Quellauswahl:
+Integrations-Pythondateien, Manifest, Übersetzungen, Dienste, Qualitätscheckliste,
+Frontend-Karte und Projektmetadaten. Die Analyse erfolgt auf einem GitHub-Runner
+mit dem öffentlichen Repository. Plan- und Ergebnisartefakte werden sieben Tage
+aufbewahrt; rohe Junie-Sitzungsprotokolle werden im produktiven Ablauf nicht
+hochgeladen. Das bestehende heuristische Skript bleibt eine separate lokale
+Hilfe; es filtert keine Beiträge vor der KI aus.
+
+Lokale Offline-Prüfung: `python -m unittest discover -s scripts/tests -v`.
+Google- und Cloudflare-Zugangsdaten werden für den produktiven Monitor nicht mehr
+benötigt. Historische Vergleichstests stehen in der [Prüfübersicht](VALIDIERUNG.md).
+
+## Cloudflare-Probelauf
+
+Mit `cloudflare_individual=true` wird jeder gespeicherte Beitrag getrennt mit
+derselben vollständigen Codeauswahl analysiert. `cloudflare_post` begrenzt den
+Test auf einen exakten gespeicherten Dateinamen. Höchstens fünf Anfragen laufen
+seriell; bei Fehlern stoppt der Test, bereits erfolgreiche Ergebnisse und der
+bisherige Verbrauch bleiben im Artefakt. Die getrennten Aufrufe vervielfachen
+den Eingabeverbrauch; das tägliche Free-Tier-Limit gilt weiterhin.
+
+**Teststand 16.09.2026:** Gestern erfolgreiche API-Aufrufe, heute HTTP 429/4006
+trotz Dashboard-Anzeige 0/10.000. Die Batchanalyse vertauschte Begründungen; die
+einzeln geprüfte Modbus-Bewertung ließ eine Frist aus. Weitere Einzeltests wurden
+wegen der API-Sperre gestoppt. Noch nicht für den automatischen Betrieb freigegeben. Ergebnisse: [Prüfübersicht](VALIDIERUNG.md).
+
+Der manuelle Workflow-Eingang `cloudflare_test=true` testet gespeicherte Beiträge
+mit `@cf/openai/gpt-oss-120b`. Voraussetzung sind das Secret `CLOUDFLARE_API_TOKEN`
+(Workers AI Read/Edit für genau ein Konto) und die Actions-Variable
+`CLOUDFLARE_ACCOUNT_ID`. Den Workers-Free-Tarif ohne kostenpflichtiges Upgrade verwenden.
+Der Test liest den Statusbranch, sendet dieselbe freigegebene Codeauswahl und
+prüft Antworten mit der bestehenden Belegvalidierung. Er schreibt ausschließlich
+das Artefakt `ha-blog-cloudflare-test`, keine Issues und keinen Wiederholungsstatus.
+Im Batchmodus gibt es eine Anfrage, im Einzelmodus eine je Beitrag;
+kein automatischer Anbieterwechsel.
+`cloudflare_smoke=true` beschränkt den Test auf eine kleine Verbindungsprüfung.
+Das Artefakt enthält auch die Anbieterantwort für eine erneute Offline-Auswertung;
+Request-Header und Token werden nicht gespeichert. Der geplante
+Junie-Monitor ist davon unabhängig; Cloudflare bleibt ein optionaler Vergleichstest.
 
 
 ## Qualitätsstufen und nächste Schritte
@@ -937,3 +959,24 @@ ausliefern; die optionale Karte unter `www/` separat bereitstellen. `.work/`,
 Dokumentation darf keine benötigten Schritte ausschließlich im lokalen Archiv
 beschreiben. Vor dem PR auch neue Dateien und die entfernten alten Pfade prüfen;
 `git diff --check` allein prüft keine unversionierten Dateien oder Dokumentationslinks.
+
+## Manueller Junie-Test
+
+Der Dispatch-Eingang `junie_test=true` prüft genau den gespeicherten Modbus-Beitrag
+vom 02.09.2026 mit dem Repository-Secret `JUNIE_API_KEY`. Die offizielle Action
+v1.7.9 ist auf einen Commit fixiert und nutzt `silent_mode`, Junie CLI 3110.6
+und das Standardmodell. GitHub-Rechte sind ausschließlich lesend.
+
+Der bestehende Status wird nur gelesen. Ein Analyseauftrag prüft Pflichtanpassungen
+und optionale Verbesserungen auf Deutsch. Ergebnisstruktur und Quellbelege werden
+anschließend lokal validiert; die inhaltliche Richtigkeit bleibt manuell zu prüfen.
+Das Artefakt `ha-blog-junie-test` bleibt sieben Tage erhalten. Der Junie-Schritt
+ist auf sechs Minuten begrenzt. Das ist keine feste Credit-Obergrenze; ein
+Agentenauftrag kann mehrere Modellaufrufe benötigen. Keine automatische Wiederholung,
+kein Anbieterwechsel und keine Aktivierung im Wochenplan. Der Test nutzt
+vorhandenes Guthaben; er kauft keine Credits und ändert keinen Tarif.
+
+Teststand 16.09.2026: Der Modbus-Einzeltest war erfolgreich und nannte alle
+Fristen. Junie meldete rund 0,048 USD Modellkosten; das Standardmodell war
+Gemini 3.7 Flash. Die Top-up-Abbuchung ist noch nicht bestätigt. Der produktive Ablauf und weitere Relevanzfälle werden getrennt validiert.
+Siehe [Prüfübersicht](VALIDIERUNG.md).

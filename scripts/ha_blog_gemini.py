@@ -255,12 +255,14 @@ def validate_assessment(assessment, sources, evidence_required, *, include_versi
             raise ValueError("Evidence quote does not match source")
 
 
-def render_report(posts, results, repository, revision, upstream_revision, deferred):
+def render_report(
+    posts, results, repository, revision, upstream_revision, deferred, *, model=MODEL
+):
     by_id = {r["id"]: r for r in results}
     lines = [
         "## Wöchentliche Home-Assistant-Blogprüfung",
         "",
-        f"Modell: `{MODEL}` · Integrationsstand: `{revision}` · Zurückgestellt: {deferred}",
+        f"Modell: `{model}` · Integrationsstand: `{revision}` · Zurückgestellt: {deferred}",
         "KI-Einschätzung anhand des bereitgestellten Codes; keine ausgeführten Kompatibilitätstests.",
         "Auch die Einstufung ohne Auswirkung ist keine Kompatibilitätsgarantie.",
         "",
@@ -268,7 +270,10 @@ def render_report(posts, results, repository, revision, upstream_revision, defer
     for post in posts:
         key = post_id(post)
         result = by_id[key]
-        source = f"{UPSTREAM}/blob/{upstream_revision}/blog/{quote(post['path'], safe='/')}"
+        blog_revision = (
+            upstream_revision[key] if isinstance(upstream_revision, dict) else upstream_revision
+        )
+        source = f"{UPSTREAM}/blob/{blog_revision}/blog/{quote(post['path'], safe='/')}"
         lines.extend(
             [
                 f"<!-- ha-blog-gemini:{key} -->",
