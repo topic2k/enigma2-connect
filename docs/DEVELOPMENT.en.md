@@ -246,8 +246,7 @@ Batch mode makes one request; individual mode makes one per post.
 There is no automatic provider fallback.
 `cloudflare_smoke=true` limits the trial to a small connection check. The artifact
 also includes the provider response for offline re-evaluation; request headers
-and the token are not stored. The scheduled Gemini
-monitor remains unchanged; quality and availability still need evaluation.
+and the token are not stored. The scheduled Junie monitor is independent; Cloudflare remains an optional comparison trial.
 
 
 ## Quality tiers and next steps

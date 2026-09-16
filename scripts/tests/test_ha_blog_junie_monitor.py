@@ -7,7 +7,7 @@ import tempfile
 import unittest
 from datetime import date, timedelta
 from pathlib import Path
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 from scripts import ha_blog_gemini as common
 from scripts import ha_blog_junie_monitor as monitor
@@ -199,6 +199,34 @@ class JunieMonitorTests(unittest.TestCase):
         )
         self.assertFalse(plan["publish"])
         self.assertEqual(state, original)
+
+    def test_malformed_worker_envelope_only_retries_its_own_post(self):
+        plan = self.plan()
+        monitor.write_json(
+            self.root / "results" / f"junie-result-{common.post_id(self.posts[0])}" / "result.json",
+            ["invalid worker envelope"],
+        )
+        self.artifact(self.posts[1])
+        report = self.finish(plan)
+        self.assertEqual(len(report["results"]), 1)
+        self.assertEqual(len(report["retry_pending"]), 1)
+        self.assertEqual(report["failed"], [])
+
+    def test_concurrent_state_change_prevents_publication_and_overwrite(self):
+        self.plan(publish=True)
+        self.store.load.return_value = {"version": 1, "entries": {}}
+        self.store.save.reset_mock()
+        with (
+            patch("sys.argv", ["monitor", "finish"]),
+            patch.object(monitor, "OUTPUT", self.root / "plan"),
+            patch.object(monitor, "github", return_value=("o/r", "a" * 40, Mock())),
+            patch.object(monitor.scheduler, "GithubState", return_value=self.store),
+            patch.object(monitor, "finish_plan") as finish,
+        ):
+            with self.assertRaisesRegex(ValueError, "changed since reservation"):
+                monitor.main()
+        finish.assert_not_called()
+        self.store.save.assert_not_called()
 
 
 if __name__ == "__main__":

@@ -4,7 +4,7 @@
 
 ## Automatischer Junie-Monitor – 1.1.2
 
-62 Offline-Skripttests prüfen unter anderem einzelne Beitragspakete, erste und
+64 Offline-Skripttests prüfen unter anderem einzelne Beitragspakete, erste und
 zweite Fehlschläge, erfolgreiche Teilberichte, Wiederholung am Folgetag,
 falsche Beitrags-IDs, erfundene Quellbelege, unabhängige Verbesserungsvorschläge,
 Kostenmetadaten und nebenwirkungsfreie Probeläufe. Ruff, Python-Syntax,
@@ -13,8 +13,24 @@ Die bestehende Retry-Logik wird für die getrennten Jobs wiederverwendet.
 
 Die Qualitätscheckliste wurde auf Auswirkungen geprüft: keine Änderung an
 Integrationsverhalten, Abdeckungsanforderungen oder verbleibenden Hardware- und
-Home-Assistant-Nachweisen. Die vollständige PR-CI und der produktive Ablauf
-werden vor Übernahme geprüft; fehlende Live-Nachweise sind noch nicht bestanden.
+Home-Assistant-Nachweisen. Der [vollständige Probelauf 35123242339](https://github.com/topic2k/enigma2-connect/actions/runs/35123242339)
+auf `57e825a` bestand mit vier separaten Bewertungen. Modbus nennt 2026.9,
+2026.10 und 2027.10; Selektoren nennen korrekt keine angekündigte Version;
+OAuth2 und Rasenmäher nennen 2026.10. Alle vier deutschen Bewertungen sind
+passend zum jeweiligen Beitrag, ohne Auswirkung und ohne konkreten Zusatznutzen
+für die vorhandene OpenWebif-Integration. Diese Einordnungen wurden manuell
+gegen Blogtexte und Implementierung geprüft. Positive Auswirkungen und konkrete
+Verbesserungsvorschläge sind bislang durch simulierte Validierungstests, nicht
+durch einen passenden aktuellen Live-Blogfall belegt.
+
+Gemeldete Modellkosten des gesamten Probelaufs: **0,307334 USD** für vier
+Beiträge, keine fehlenden Verbrauchswerte. Die bestätigte Top-up-Abbuchung ist
+davon zu unterscheiden. Der Statusbranch blieb unverändert auf `fa6aa32`;
+der Probelauf erstellte keine Issues. Produktionsnahe Analyse, Sammlung,
+Validierung und Berichtserzeugung sind damit live geprüft. Die vollständige
+CI zu `57e825a` (Tests, hassfest, HACS und CodeQL) war grün. Danach wurden
+nur zwei Offline-Grenzfalltests und Dokumentationsnachweise ergänzt; vor dem
+Merge bleiben aktuelle grüne Prüfungen für den endgültigen PR-Stand erforderlich.
 
 ## Junie-Einzeltest am 16.09.2026 – 1.1.2-dev.4
 

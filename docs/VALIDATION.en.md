@@ -4,7 +4,7 @@
 
 ## Automated Junie monitor – 1.1.2
 
-62 offline script tests cover individual post packets, first and second failures,
+64 offline script tests cover individual post packets, first and second failures,
 partial success, next-day retry, wrong post IDs, fabricated source citations,
 independent enhancement proposals, usage metadata and side-effect-free dry runs.
 Ruff, Python syntax, workflow/shell syntax, lock consistency and version/documentation
@@ -12,8 +12,22 @@ links passed. Existing retry logic is reused across the separated jobs.
 
 The quality checklist was reviewed for impact: no change to integration behavior,
 coverage requirements or outstanding hardware and Home Assistant evidence.
-Full PR CI and production execution will be checked before adoption; missing
-live evidence is not treated as passed.
+The [complete dry run 35123242339](https://github.com/topic2k/enigma2-connect/actions/runs/35123242339)
+at `57e825a` passed with four separate assessments. Modbus lists 2026.9,
+2026.10 and 2027.10; selectors correctly have no announced version; OAuth2 and
+lawn mowers list 2026.10. All four German assessments match their posts, with
+no impact or concrete optional benefit for the existing OpenWebif integration.
+These classifications were checked manually against blog texts and code.
+Positive impacts and concrete enhancement proposals are covered by simulated
+validation tests, not yet by a matching current live blog case.
+
+Reported model costs for the whole dry run: **0.307334 USD** for four posts,
+with no missing usage. This is distinct from a confirmed top-up deduction.
+The state branch remained at `fa6aa32`; no issues were created. Production-style
+analysis, collection, validation and report generation are therefore live-tested.
+Full CI at `57e825a` (Tests, hassfest, HACS and CodeQL) was green. Only two offline
+edge-case tests and documentation evidence were added afterwards; current green
+checks remain required for the final PR revision before merge.
 
 ## Junie single-post trial on 2026-09-16 – 1.1.2-dev.4
 
