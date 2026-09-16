@@ -179,23 +179,7 @@ def process(
             "deferred": 0,
             "summary": "Keine fälligen Beiträge; keine Gemini-Anfrage.\n",
         }
-    # Reserve each attempt durably. A same-day rerun must not consume another attempt.
-    for post in selected:
-        key = gemini.post_id(post)
-        old = state["entries"].get(key, {})
-        attempts = old.get("attempts", 0) + 1
-        state["entries"][key] = {
-            "post": post,
-            "upstream": old.get("upstream", upstream),
-            "attempts": attempts,
-            "last_attempt": today.isoformat(),
-            "due": (today + timedelta(days=1)).isoformat() if attempts == 1 else None,
-            "error": "Versuch gestartet; Abschluss noch nicht gespeichert",
-        }
-    try:
-        store.save(state)
-    except ERRORS as error:
-        raise InfrastructureError(error_detail("GitHub-Status speichern", error)) from None
+    reserve_attempts(selected, state, today, store, upstream)
     report = {
         "model": gemini.MODEL,
         "selected": [p["path"] for p in selected],
@@ -215,6 +199,60 @@ def process(
         results = []
         stage = "Eingabegröße" if selection_error else "Gemini-Anfrage"
         failures = {gemini.post_id(p): error_detail(stage, error) for p in selected}
+    return complete_processing(
+        selected,
+        sources,
+        state,
+        today,
+        store,
+        results,
+        failures,
+        report,
+        publish,
+        repository,
+        revision,
+    )
+
+
+def reserve_attempts(selected, state, today, store, upstream):
+    """Persist reservations before any provider task starts."""
+    # Reserve each attempt durably. A same-day rerun must not consume another attempt.
+    for post in selected:
+        key = gemini.post_id(post)
+        old = state["entries"].get(key, {})
+        attempts = old.get("attempts", 0) + 1
+        state["entries"][key] = {
+            "post": post,
+            "upstream": old.get("upstream", upstream),
+            "attempts": attempts,
+            "last_attempt": today.isoformat(),
+            "due": (today + timedelta(days=1)).isoformat() if attempts == 1 else None,
+            "error": "Versuch gestartet; Abschluss noch nicht gespeichert",
+        }
+    try:
+        store.save(state)
+    except ERRORS as error:
+        raise InfrastructureError(error_detail("GitHub-Status speichern", error)) from None
+
+
+def complete_processing(
+    selected,
+    sources,
+    state,
+    today,
+    store,
+    results,
+    failures,
+    report,
+    publish,
+    repository,
+    revision,
+    *,
+    model=gemini.MODEL,
+    footer="",
+):
+    """Validate/publish outcomes and persist only failed reservations for retries."""
+    deferred = report["deferred"]
     summaries = []
     if results:
         successful = {r["id"] for r in results}
@@ -225,8 +263,9 @@ def process(
         }
         try:
             summary = gemini.render_report(
-                valid_posts, results, repository, revision, revisions, deferred
+                valid_posts, results, repository, revision, revisions, deferred, model=model
             )
+            summary += footer
             issue = publish(
                 {
                     "title": f"[HA-Blog] Prüfung {today}: {len(valid_posts)} Beiträge",
@@ -271,7 +310,11 @@ def process(
                 summaries.append(
                     f"- {gemini.inline(item['path'])}: Versuch {item['attempts']}, {item['error']}{due}"
                 )
-    report.update(retry_pending=pending, failed=failed, summary="\n".join(summaries) + "\n")
+    if not results and footer:
+        summaries.append(footer)
+    report.update(
+        results=results, retry_pending=pending, failed=failed, summary="\n".join(summaries) + "\n"
+    )
     return report
 
 

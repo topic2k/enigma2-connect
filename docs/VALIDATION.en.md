@@ -2,6 +2,141 @@
 
 # Verification summary
 
+## Automated Junie monitor – 1.1.2
+
+64 offline script tests cover individual post packets, first and second failures,
+partial success, next-day retry, wrong post IDs, fabricated source citations,
+independent enhancement proposals, usage metadata and side-effect-free dry runs.
+Ruff, Python syntax, workflow/shell syntax, lock consistency and version/documentation
+links passed. Existing retry logic is reused across the separated jobs.
+
+The quality checklist was reviewed for impact: no change to integration behavior,
+coverage requirements or outstanding hardware and Home Assistant evidence.
+The [complete dry run 35123242339](https://github.com/topic2k/enigma2-connect/actions/runs/35123242339)
+at `57e825a` passed with four separate assessments. Modbus lists 2026.9,
+2026.10 and 2027.10; selectors correctly have no announced version; OAuth2 and
+lawn mowers list 2026.10. All four German assessments match their posts, with
+no impact or concrete optional benefit for the existing OpenWebif integration.
+These classifications were checked manually against blog texts and code.
+Positive impacts and concrete enhancement proposals are covered by simulated
+validation tests, not yet by a matching current live blog case.
+
+Reported model costs for the whole dry run: **0.307334 USD** for four posts,
+with no missing usage. This is distinct from a confirmed top-up deduction.
+The state branch remained at `fa6aa32`; no issues were created. Production-style
+analysis, collection, validation and report generation are therefore live-tested.
+Full CI at `57e825a` (Tests, hassfest, HACS and CodeQL) was green. Only two offline
+edge-case tests and documentation evidence were added afterwards; current green
+checks remain required for the final PR revision before merge.
+
+## Junie single-post trial on 2026-09-16 – 1.1.2-dev.4
+
+[Run 35120165171](https://github.com/topic2k/enigma2-connect/actions/runs/35120165171)
+at `a6e4ba7` succeeded: 52 script tests followed by a live assessment of one
+Modbus post. The Junie job took 1 minute 50 seconds; CLI execution took about
+69 seconds. The prepared context was unchanged.
+
+The German response matches the post and includes all three milestones:
+availability in 2026.9, deprecation in 2026.10 and removal in 2027.10.
+The `no-impact` assessment matches the supplied OpenWebif-based code, which
+uses neither Modbus components nor `modbus-connection`. Optional improvement
+was assessed independently as `none`, with no concrete benefit identified.
+Empty evidence lists are valid for these classifications. Automatic checks
+validated schema, post identity and citation format; topic association,
+deadlines and reasoning were also reviewed manually.
+
+Junie's `llmUsage` and `taskCostUsd` report **0.0483518 USD**. Reported tokens:
+65,759 input, 145,549 cached input and 6,475 output. The main model was
+`gemini-3.7-flash`, with helper models `gpt-4.1-mini-2025-04-14`,
+`gpt-4.1-2025-04-14` and `gpt-5.4-nano`. The default model is dynamic;
+this successful JetBrains access was therefore not a Gemini-independent trial.
+The top-up display remained at 3.77 credits when rechecked. This does not mean
+the call was free; the actual account deduction is not yet demonstrated there.
+Four equally priced posts per week would cost approximately 0.77 USD over four
+weeks, without a guarantee for different posts or models.
+
+Local syntax, Ruff, workflow/shell, lock, version/documentation-link checks
+passed, alongside an offline check of preparation, report rendering and wrong
+post-ID rejection. All 52 script tests passed locally and on GitHub. These
+checks do not replace receiver or Home Assistant practice tests. Integration
+behavior and quality criteria were unchanged.
+
+One negative relevance case does not establish quality for required migrations
+or useful enhancements. The other three individual assessments remain pending.
+No issues, state writes, production switch, extra purchases, plan changes,
+merges or releases.
+
+## Cloudflare follow-up on 2026-09-16 – 1.1.2-dev.3
+
+The authorized next-day trial started at 08:30 CEST. After a fresh dashboard
+reload, Cloudflare showed **0/10,000 neurons today** before the request; the
+separate 24-hour chart showed about 10,020 neurons from the previous day.
+This does not prove that the server-side access restriction had reset.
+
+The [selector trial 35064196248](https://github.com/topic2k/enigma2-connect/actions/runs/35064196248)
+at `fb1b55b` passed its 52 script tests, but its single Cloudflare request was
+rejected with **HTTP 429 / internal code 4006**. Input: 267,346 bytes. No model
+results or usage metadata were returned. Unknown usage is not measured zero usage.
+
+Stopped as authorized for quota errors: no OAuth2 or lawn-mower requests and no
+additional Modbus deadline test. The [official error list](https://developers.cloudflare.com/workers-ai/platform/errors/)
+lists 3036 for daily allocation exhaustion and 3040 for capacity shortages,
+but does not list 4006. The exact reason for the dashboard/API discrepancy
+therefore remains unresolved.
+
+The 2026-09-15 quality assessment still applies: per-post association improved
+for Modbus, but 2027.10 was omitted. The other three individual assessments
+remain unverified. No production switch, issues, state writes, new credentials,
+plan changes or releases. This documentation update affects no integration
+behavior or quality criteria; unrelated local changes were preserved.
+
+## Cloudflare per-post trial – 1.1.2-dev.2
+
+On 2026-09-15, per-post processing passed 52 local script tests, Ruff, Python
+syntax, lockfile and workflow/documentation checks. Tests verify one post ID per
+API call, rejection of foreign IDs and retention of completed results and usage
+when a later request fails. The quality checklist and integration runtime are unchanged.
+
+The live [Modbus trial 34993573743](https://github.com/topic2k/enigma2-connect/actions/runs/34993573743)
+at `6ab68a7` used 70,336 input / 541 output tokens and 2,274.84 neurons. The German
+explanation belongs to the correct post and no-impact agrees with the absence of
+Modbus usage. No irrelevant source evidence is cited. The removal deadline
+**2027.10** is still missing; only 2026.10 is reported. Four similar requests
+would use approximately 9,100 neurons; five would use 11,375, exceeding the daily
+free allocation. This is an estimate, not a usage guarantee for other posts.
+
+The 2026-09-16 follow-up is documented above; the other three individual
+assessments remain pending because the API rejected the request. No production
+provider change, issues, state updates or releases.
+
+## Cloudflare trial – 1.1.2-dev.2
+
+On 2026-09-15, Cloudflare Workers AI and `@cf/openai/gpt-oss-120b` were tested
+on an isolated branch using the four stored September posts. 50 local script tests,
+Python syntax, Ruff, lockfile and 72 documentation links passed. Branch CI at
+`b1ff764` and `f771ab5` passed. Quality checklist impact review: integration runtime,
+criteria and coverage thresholds are unchanged; no new HA/receiver hardware evidence.
+
+- Initial run [34991469621](https://github.com/topic2k/enigma2-connect/actions/runs/34991469621):
+  successful API response, but parser error. The adapter was corrected against an
+  actual small diagnostic response and verified offline.
+- Full run [34992280735](https://github.com/topic2k/enigma2-connect/actions/runs/34992280735):
+  72,212 input / 1,975 output tokens, 2,432.30 neurons. Schema and source-line checks
+  passed, but prose was English, deadlines missing and license citations irrelevant.
+- Refined instructions, run [34992652727](https://github.com/topic2k/enigma2-connect/actions/runs/34992652727):
+  72,344 input / 1,957 output tokens, 2,435.27 neurons. German prose and empty rather
+  than irrelevant evidence, but explanations were mixed up between Modbus, selectors
+  and OAuth2. The Modbus removal deadline 2027.10 was still missing; the selector
+  post received a version that its text did not state.
+
+**Assessment:** Access and free-tier budget work for a combined weekly request.
+Structural validation does not detect semantically misassigned explanations.
+The tested model and batch approach are not sufficiently reliable to replace the
+scheduled monitor. No issues published, state updates or main-branch deployment.
+State remained at `fa6aa32eda38a2454d30fd3b11aab0d8198dc972`. Per-post analysis or another
+model needs a separate quality and budget trial. These four no-impact examples
+provide no evidence of long-term availability or reliable detection of real impact.
+
 ## Blog check retries – 1.1.1
 
 On 2026-09-14, 45 offline tests passed, including 17 new scheduler/state tests.

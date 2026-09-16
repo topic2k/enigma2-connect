@@ -4,11 +4,34 @@
 
 ## Contents
 
+- [1.1.2](#112)
 - [1.1.1](#111)
 - [1.1.0](#110)
 - [1.0.2](#102)
 - [1.0.1](#101)
 - [1.0.0](#100)
+
+## 1.1.2
+
+Unreleased.
+
+- Switched the blog monitor to individual Junie assessments: weekly discovery,
+  next-day retries, separate validation/publication and reported model costs.
+
+- Junie trial succeeded: German assessment with complete Modbus deadlines;
+  reported model cost about USD 0.048, actual top-up deduction still unconfirmed.
+
+- Manual Junie single-post trial with read-only GitHub permissions and subsequent
+  validation of the result structure and source citations.
+
+- Documented Cloudflare follow-up: the API rejected the first request with
+  HTTP 429/4006 despite a reset dashboard counter; remaining tests stopped.
+
+- Cloudflare per-post trial with one request per article, exact filename selection,
+  aggregate usage and preservation of completed reports when a later request fails.
+
+- Manual Cloudflare trial with gpt-oss-120b for stored blog posts, using the same
+  source evidence validation; report artifacts only, no issues or state changes.
 
 ## 1.1.1
 
