@@ -494,9 +494,12 @@ checks and thresholds. Runtime code and HA compatibility are unchanged.
 GitHub release `v1.1.0` and absence from the default HACS catalog were confirmed
 with read-only queries. This did not include an actual HACS installation.
 
-API checks are simulations, not a successful GitHub publication run. Current CI
-for this working state and the first write to the `badges` data branch remain
-pending. The coverage endpoint becomes available only after successful `main`
+API checks are simulations, not a successful GitHub publication run. The [test run on `516424f`](https://github.com/topic2k/enigma2-connect/actions/runs/35135496532)
+passed Ruff, formatting, mypy, Python/frontend tests, coverage gates and the new
+extraction step. [Hassfest and HACS](https://github.com/topic2k/enigma2-connect/actions/runs/35135496450)
+also passed. The subsequent evidence update changes only these two verification
+summaries. Publication was correctly skipped on `develop`; the first write to
+the `badges` data branch remains pending. The coverage endpoint becomes available only after successful `main`
 tests with the new workflow. Earlier CI and hardware evidence below remains
 limited to the versions stated there.
 

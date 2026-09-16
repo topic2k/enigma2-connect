@@ -525,8 +525,12 @@ HACS-Standardkatalog wurden lesend bestätigt. Eine tatsächliche HACS-Installat
 wurde dabei nicht durchgeführt.
 
 Die API-Prüfungen sind Simulationen, kein erfolgreicher GitHub-Publikationslauf.
-Aktuelle CI für diesen Arbeitsstand und der erste Schreibzugriff auf den
-Datenbranch `badges` bleiben offen. Erst nach einem erfolgreichen `main`-Testlauf
+Der [Testlauf auf `516424f`](https://github.com/topic2k/enigma2-connect/actions/runs/35135496532)
+bestand einschließlich Ruff, Formatierung, mypy, Python-/Frontend-Tests,
+Coverage-Sperren und neuem Ausleseschritt. [Hassfest und HACS](https://github.com/topic2k/enigma2-connect/actions/runs/35135496450)
+bestanden ebenfalls. Die anschließende Nachweispflege ändert nur diese beiden
+Prüfübersichten. Der Veröffentlichungsjob wurde auf `develop` erwartungsgemäß
+übersprungen; der erste Schreibzugriff auf den Datenbranch `badges` bleibt offen. Erst nach einem erfolgreichen `main`-Testlauf
 mit dem neuen Workflow steht dessen Coverage-Endpunkt bereit. Frühere CI- und
 Hardware-Nachweise unten gelten weiterhin nur für ihre angegebenen Stände.
 
