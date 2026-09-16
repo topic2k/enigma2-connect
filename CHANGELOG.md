@@ -4,12 +4,21 @@
 
 ## Inhaltsverzeichnis
 
+- [1.1.3](#113)
 - [1.1.2](#112)
 - [1.1.1](#111)
 - [1.1.0](#110)
 - [1.0.2](#102)
 - [1.0.1](#101)
 - [1.0.0](#100)
+
+## 1.1.3
+
+Unveröffentlicht.
+
+- Blog-Monitor veröffentlicht nur noch Beiträge mit Anpassungs-, Verbesserungs-
+  oder Prüfbedarf. Unauffällige Ergebnisse werden ohne Issue dauerhaft als geprüft
+  gespeichert; unveränderte Beiträge verbrauchen dadurch keine erneuten KI-Credits.
 
 ## 1.1.2
 

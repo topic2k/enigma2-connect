@@ -2,6 +2,27 @@
 
 # Prüfübersicht
 
+## Stille Blogprüfungen – 1.1.3
+
+70 Offline-Skripttests bestanden. Neue Fälle prüfen ausschließlich unauffällige
+Ergebnisse ohne Issue, gemischte Ergebnisse mit unabhängigem Verbesserungsvorschlag,
+weiterhin gemeldete Unsicherheit, fehlgeschlagene Veröffentlichung bei gleichzeitigem
+stillem Erfolg, fehlerhafte Statusspeicherung und ungültige Prüfvermerke. Nach
+Neuladen des Status bleiben unveränderte Beiträge erledigt; geänderte Inhalte
+werden erneut ausgewählt. Python-Syntax und Ruff bestanden.
+
+Die vier gespeicherten echten Junie-Antworten aus
+[Lauf 35125959582](https://github.com/topic2k/enigma2-connect/actions/runs/35125959582)
+wurden lokal mit der neuen Abschlusslogik abgespielt: vier stille Prüfvermerke,
+kein Issue-Aufruf, keine Wiederholung und keine erneute Auswahl am nächsten
+Montag. Dabei wurden weder GitHub-Zustände verändert noch KI-Anfragen ausgeführt.
+Die Veröffentlichung dieser Filterung auf GitHub ist dadurch noch nicht live belegt.
+
+Die Qualitätscheckliste ist unverändert: Integrationscode (außer Metadatenversion),
+Frontend, Integrationstests und Abdeckungsgrenzen bleiben unberührt. Keine neuen
+Receiver- oder Home-Assistant-Praxisprüfungen; bisherige offene Nachweise bleiben
+bestehen. Vor dem Merge sind aktuelle erfolgreiche CI-Prüfungen erforderlich.
+
 ## Automatischer Junie-Monitor – 1.1.2
 
 64 Offline-Skripttests prüfen unter anderem einzelne Beitragspakete, erste und

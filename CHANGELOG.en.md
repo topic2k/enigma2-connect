@@ -4,12 +4,21 @@
 
 ## Contents
 
+- [1.1.3](#113)
 - [1.1.2](#112)
 - [1.1.1](#111)
 - [1.1.0](#110)
 - [1.0.2](#102)
 - [1.0.1](#101)
 - [1.0.0](#100)
+
+## 1.1.3
+
+Unreleased.
+
+- The blog monitor only publishes posts needing adaptation, enhancement or
+  review. Uneventful results are durably recorded without an issue, preventing
+  repeated AI credit consumption for unchanged posts.
 
 ## 1.1.2
 

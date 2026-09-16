@@ -49,10 +49,10 @@ class SchedulerTests(unittest.TestCase):
     def result(self, post):
         return {
             "id": gemini.post_id(post),
-            "assessment": "no-impact",
-            "reason": "Kein Bedarf",
+            "assessment": "uncertain",
+            "reason": "Manuelle Prüfung nötig",
             "ha_version": "2026.10",
-            "next_steps": "Keine",
+            "next_steps": "Voraussetzungen prüfen",
             "evidence": [],
             "opportunity": {
                 "assessment": "none",

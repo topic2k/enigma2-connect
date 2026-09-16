@@ -92,7 +92,85 @@ class JunieMonitorTests(unittest.TestCase):
         self.assertEqual(second["retry_pending"], [])
         terminal = self.plan(self.saved[-1], day=2, retry_only=True)
         self.assertEqual(terminal["posts"], [])
+        self.publisher.assert_not_called()
+
+    def test_quiet_results_are_remembered_without_issue_or_weekly_reanalysis(self):
+        plan = self.plan(publish=True)
+        for post in self.posts:
+            self.artifact(post)
+        report = self.finish(plan)
+        self.publisher.assert_not_called()
+        self.assertNotIn("issue_url", report)
+        self.assertEqual(len(report["silent_reviewed"]), 2)
+        state = json.loads(json.dumps(self.saved[-1]))
+        monitor.scheduler.validate_state(state)
+        self.assertEqual(state["entries"], {})
+        self.assertEqual(len(state["reviewed"]), 2)
+        self.assertEqual(self.plan(state, day=7)["keys"], [])
+        self.posts[0]["text"] += " Updated announcement"
+        self.assertEqual(self.plan(state, day=7)["keys"], [common.post_id(self.posts[0])])
+
+    def test_mixed_results_publish_only_the_independent_improvement(self):
+        plan = self.plan()
+        self.artifact(self.posts[0])
+        result = self.result(self.posts[1])
+        result["opportunity"].update(
+            assessment="recommended",
+            evidence=[{"path": "entity.py", "line": 1, "quote": "actual source line"}],
+        )
+        self.artifact(self.posts[1], {"results": [result]})
+        self.finish(plan)
+        payload = self.publisher.call_args.args[0]
+        self.assertIn("1 Beiträge", payload["title"])
+        self.assertNotIn("Post 0", payload["body"])
+        self.assertIn("Post 1", payload["body"])
+        self.assertIn("Verbesserungen: Empfohlen", payload["body"])
+        self.assertEqual(len(self.saved[-1]["reviewed"]), 2)
+
+    def test_uncertain_impact_or_opportunity_still_requests_review(self):
+        plan = self.plan()
+        for i, field in enumerate(("assessment", "opportunity")):
+            result = self.result(self.posts[i])
+            if field == "assessment":
+                result[field] = "uncertain"
+            else:
+                result[field]["assessment"] = "uncertain"
+            self.artifact(self.posts[i], {"results": [result]})
+        self.finish(plan)
         self.publisher.assert_called_once()
+        body = self.publisher.call_args.args[0]["body"]
+        self.assertIn("Kompatibilität: uncertain", body)
+        self.assertIn("Verbesserungen: Zu prüfen", body)
+
+    def test_publication_failure_preserves_silent_success_and_retries_only_relevant(self):
+        plan = self.plan()
+        self.artifact(self.posts[0])
+        result = self.result(self.posts[1])
+        result["assessment"] = "uncertain"
+        self.artifact(self.posts[1], {"results": [result]})
+        self.publisher.side_effect = OSError("Failed publication")
+        report = self.finish(plan)
+        self.assertEqual(len(report["retry_pending"]), 1)
+        state = self.saved[-1]
+        self.assertIn(common.post_id(self.posts[0]), state["reviewed"])
+        self.assertNotIn(common.post_id(self.posts[1]), state["reviewed"])
+        self.assertEqual(self.plan(state, day=1)["keys"], [common.post_id(self.posts[1])])
+
+    def test_silent_state_save_failure_is_not_reported_as_success(self):
+        plan = self.plan()
+        for post in self.posts:
+            self.artifact(post)
+        self.store.save.side_effect = OSError("Cannot save")
+        with self.assertRaises(monitor.scheduler.InfrastructureError):
+            self.finish(plan)
+        self.publisher.assert_not_called()
+
+    def test_invalid_silent_receipt_is_rejected_instead_of_skipping_content(self):
+        for reviewed in ([], {"bad-id": "2026-09-16"}, {"a" * 64: "not-a-date"}):
+            with self.assertRaises(ValueError):
+                monitor.scheduler.validate_state(
+                    {"version": 1, "entries": {}, "reviewed": reviewed}
+                )
 
     def test_next_day_success_clears_original_failure(self):
         self.finish(self.plan())

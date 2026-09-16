@@ -158,11 +158,17 @@ paths, line numbers and quotations against the source snapshot captured before
 analysis. An AI assessment does not replace compatibility tests and can still
 be semantically wrong.
 
-Successful assessments are published together in a GitHub issue, including
-no-impact findings. Content-based markers prevent duplicate analysis; closed
-issues still count. Existing Gemini-era markers remain compatible. Code changes
-alone do not trigger another assessment. Reports and structured results are
-retained for 30 days in the `ha-developer-blog-report` artifact.
+A GitHub issue contains only posts requiring adaptation, recommending an
+improvement or needing further review. If every assessment is both `no-impact`
+and `none`, no issue is created. Such uneventful posts are also excluded from
+issues produced by mixed batches.
+
+Successfully reviewed content IDs and review dates are stored on the state branch,
+even without an issue. Content markers in existing and closed issues still count;
+Gemini-era markers remain compatible. Edited blog content is reassessed, whereas
+code changes alone do not trigger another assessment. Structured results and
+costs remain available for technical inspection in the `ha-developer-blog-report`
+artifact for 30 days.
 
 ### Retries and permissions
 
@@ -175,6 +181,8 @@ an explicit manual retry.
 
 The `ha-blog-monitor-state` branch stores `.github/ha-blog-state.json`, containing
 post text, original blog revision, attempts, due date and sanitized error detail.
+The optional `reviewed` map records successful content IDs and review dates;
+existing state files without this map remain valid.
 Attempts are reserved before AI work to avoid silently spending credits again
 after interrupted runs. Successful partial reports are retained. Unsafe state
 persistence is an infrastructure error and is reported immediately.
