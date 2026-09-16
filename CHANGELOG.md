@@ -4,14 +4,16 @@
 
 ## Inhaltsverzeichnis
 
-- [1.1.2-dev.1](#112-dev1)
+- [1.1.4-dev.1](#114-dev1)
+- [1.1.3](#113)
+- [1.1.2](#112)
 - [1.1.1](#111)
 - [1.1.0](#110)
 - [1.0.2](#102)
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 1.1.2-dev.1
+## 1.1.4-dev.1
 
 Unveröffentlichte Entwicklerversion.
 
@@ -21,6 +23,39 @@ Unveröffentlichte Entwicklerversion.
   in eigenen Worktrees. Fertige Änderungen geprüft nach `develop` übernehmen
   und pushen. PR-Vorbereitung und PR nach `main` erst nach Nutzerfreigabe;
   Merge und Release erfordern ebenfalls die jeweils ausdrückliche Freigabe.
+- Aktuellen `main` mit Junie-Blog-Monitor und stillen Prüfvermerken nach
+  `develop` übernommen; Social-Preview und Branch-Regeln bleiben erhalten.
+
+## 1.1.3
+
+Unveröffentlicht.
+
+- Blog-Monitor veröffentlicht nur noch Beiträge mit Anpassungs-, Verbesserungs-
+  oder Prüfbedarf. Unauffällige Ergebnisse werden ohne Issue dauerhaft als geprüft
+  gespeichert; unveränderte Beiträge verbrauchen dadurch keine erneuten KI-Credits.
+
+## 1.1.2
+
+Unveröffentlicht.
+
+- Blog-Monitor auf Junie-Einzelanalysen umgestellt: wöchentlich neue Beiträge,
+  Wiederholung fehlgeschlagener Beiträge am Folgetag, getrennte Prüfung und
+  Veröffentlichung sowie nachvollziehbare Modellkosten im Bericht.
+
+- Junie-Probelauf erfolgreich: deutsche Bewertung mit vollständigen Modbus-Fristen;
+  gemeldete Modellkosten rund 0,048 USD, tatsächliche Top-up-Abbuchung noch offen.
+
+- Manueller Junie-Einzeltest mit rein lesenden GitHub-Rechten, einem Blogbeitrag
+  und anschließender Prüfung der Ergebnisstruktur und Quellbelege.
+
+- Fortsetzung des Cloudflare-Tests dokumentiert: API lehnt erste Anfrage trotz
+  zurückgesetzter Dashboard-Anzeige mit HTTP 429/4006 ab; weitere Tests gestoppt.
+
+- Cloudflare-Einzelprüfung mit einer Anfrage je Beitrag, gezielter Dateiauswahl,
+  Verbrauchssummen und Erhalt bereits erfolgreicher Teilberichte bei späteren Fehlern.
+
+- Manueller Cloudflare-Probelauf mit gpt-oss-120b für gespeicherte Blogbeiträge;
+  gleiche Codebeleg-Prüfung, nur Berichtsartefakte, keine Issues oder Statusänderungen.
 
 ## 1.1.1
 

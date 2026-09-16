@@ -255,12 +255,14 @@ def validate_assessment(assessment, sources, evidence_required, *, include_versi
             raise ValueError("Evidence quote does not match source")
 
 
-def render_report(posts, results, repository, revision, upstream_revision, deferred):
+def render_report(
+    posts, results, repository, revision, upstream_revision, deferred, *, model=MODEL
+):
     by_id = {r["id"]: r for r in results}
     lines = [
         "## Wöchentliche Home-Assistant-Blogprüfung",
         "",
-        f"Modell: `{MODEL}` · Integrationsstand: `{revision}` · Zurückgestellt: {deferred}",
+        f"Modell: `{model}` · Integrationsstand: `{revision}` · Zurückgestellt: {deferred}",
         "KI-Einschätzung anhand des bereitgestellten Codes; keine ausgeführten Kompatibilitätstests.",
         "Auch die Einstufung ohne Auswirkung ist keine Kompatibilitätsgarantie.",
         "",

@@ -37,6 +37,14 @@ def validate_state(state):
     entries = state.get("entries")
     if not isinstance(entries, dict):
         raise ValueError("Invalid retry entries")
+    # Optional for compatibility with states written before silent reviews existed.
+    reviewed = state.get("reviewed", {})
+    if not isinstance(reviewed, dict):
+        raise ValueError("Invalid reviewed entries")
+    for key, reviewed_on in reviewed.items():
+        if not re.fullmatch(r"[a-f0-9]{64}", key) or not isinstance(reviewed_on, str):
+            raise ValueError("Invalid reviewed identity")
+        date.fromisoformat(reviewed_on)
     for key, entry in entries.items():
         if not isinstance(entry, dict) or not isinstance(entry.get("post"), dict):
             raise ValueError("Invalid retry entry")
@@ -107,6 +115,7 @@ class GithubState:
 
 def eligible_posts(posts, state, known, today, *, retry_only=False, retry_failed=False):
     """Retry stored content first; daily wake-ups never admit unseen posts."""
+    known = known | set(state.get("reviewed", {}))
     entries = state["entries"]
     candidates = []
     for key, entry in sorted(entries.items(), key=lambda item: (item[1]["last_attempt"], item[0])):
@@ -179,23 +188,7 @@ def process(
             "deferred": 0,
             "summary": "Keine fälligen Beiträge; keine Gemini-Anfrage.\n",
         }
-    # Reserve each attempt durably. A same-day rerun must not consume another attempt.
-    for post in selected:
-        key = gemini.post_id(post)
-        old = state["entries"].get(key, {})
-        attempts = old.get("attempts", 0) + 1
-        state["entries"][key] = {
-            "post": post,
-            "upstream": old.get("upstream", upstream),
-            "attempts": attempts,
-            "last_attempt": today.isoformat(),
-            "due": (today + timedelta(days=1)).isoformat() if attempts == 1 else None,
-            "error": "Versuch gestartet; Abschluss noch nicht gespeichert",
-        }
-    try:
-        store.save(state)
-    except ERRORS as error:
-        raise InfrastructureError(error_detail("GitHub-Status speichern", error)) from None
+    reserve_attempts(selected, state, today, store, upstream)
     report = {
         "model": gemini.MODEL,
         "selected": [p["path"] for p in selected],
@@ -215,9 +208,73 @@ def process(
         results = []
         stage = "Eingabegröße" if selection_error else "Gemini-Anfrage"
         failures = {gemini.post_id(p): error_detail(stage, error) for p in selected}
+    return complete_processing(
+        selected,
+        sources,
+        state,
+        today,
+        store,
+        results,
+        failures,
+        report,
+        publish,
+        repository,
+        revision,
+    )
+
+
+def reserve_attempts(selected, state, today, store, upstream):
+    """Persist reservations before any provider task starts."""
+    # Reserve each attempt durably. A same-day rerun must not consume another attempt.
+    for post in selected:
+        key = gemini.post_id(post)
+        old = state["entries"].get(key, {})
+        attempts = old.get("attempts", 0) + 1
+        state["entries"][key] = {
+            "post": post,
+            "upstream": old.get("upstream", upstream),
+            "attempts": attempts,
+            "last_attempt": today.isoformat(),
+            "due": (today + timedelta(days=1)).isoformat() if attempts == 1 else None,
+            "error": "Versuch gestartet; Abschluss noch nicht gespeichert",
+        }
+    try:
+        store.save(state)
+    except ERRORS as error:
+        raise InfrastructureError(error_detail("GitHub-Status speichern", error)) from None
+
+
+def complete_processing(
+    selected,
+    sources,
+    state,
+    today,
+    store,
+    results,
+    failures,
+    report,
+    publish,
+    repository,
+    revision,
+    *,
+    model=gemini.MODEL,
+    footer="",
+):
+    """Publish actionable outcomes; retain durable receipts for silent successes."""
+    deferred = report["deferred"]
     summaries = []
-    if results:
-        successful = {r["id"] for r in results}
+    quiet = {
+        r["id"]
+        for r in results
+        if r["assessment"] == "no-impact" and r["opportunity"]["assessment"] == "none"
+    }
+    actionable = [r for r in results if r["id"] not in quiet]
+    for key in quiet:
+        state.setdefault("reviewed", {})[key] = today.isoformat()
+        del state["entries"][key]
+    report["silent_reviewed"] = sorted(quiet)
+    if actionable:
+        successful = {r["id"] for r in actionable}
         valid_posts = [p for p in selected if gemini.post_id(p) in successful]
         # Retries use the original blog revision so their stored text and source link agree.
         revisions = {
@@ -225,8 +282,9 @@ def process(
         }
         try:
             summary = gemini.render_report(
-                valid_posts, results, repository, revision, revisions, deferred
+                valid_posts, actionable, repository, revision, revisions, deferred, model=model
             )
+            summary += footer
             issue = publish(
                 {
                     "title": f"[HA-Blog] Prüfung {today}: {len(valid_posts)} Beiträge",
@@ -236,6 +294,7 @@ def process(
             report["issue_url"] = issue["html_url"]
             summaries.append(summary)
             for key in successful:
+                state.setdefault("reviewed", {})[key] = today.isoformat()
                 del state["entries"][key]
         except ERRORS as error:
             failures.update(
@@ -271,7 +330,13 @@ def process(
                 summaries.append(
                     f"- {gemini.inline(item['path'])}: Versuch {item['attempts']}, {item['error']}{due}"
                 )
-    report.update(retry_pending=pending, failed=failed, summary="\n".join(summaries) + "\n")
+    if quiet:
+        summaries.append(f"{len(quiet)} Beiträge ohne Handlungsbedarf geprüft; kein Issue dafür.")
+    if not actionable and footer:
+        summaries.append(footer)
+    report.update(
+        results=results, retry_pending=pending, failed=failed, summary="\n".join(summaries) + "\n"
+    )
     return report
 
 
