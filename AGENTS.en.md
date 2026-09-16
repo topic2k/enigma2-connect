@@ -54,6 +54,7 @@ rules; the remote comparison before a PR remains mandatory.
 
 ## Branches, approval and releases
 
+- Always create new worktrees for this project under `V:\enigma2-connect-worktrees`.
 - Create a separate, descriptively named branch from current `develop` for every
   task. Use the existing working directory for small changes; also create a
   separate worktree for larger tasks.

@@ -100,7 +100,12 @@
           "off_mode": "Verhalten beim Ausschalten",
           "recordings_layout": "Aufnahmen in der Medien-Kachel (gilt für alle Receiver)",
           "media_show_channels": "Sender im Medienbrowser anzeigen",
-          "media_channel_bouquet": "Bouquet für den Medienbrowser"
+          "media_channel_bouquet": "Bouquet für den Medienbrowser",
+          "external_playback": "Wiedergabe auf anderen Geräten",
+          "stream_port": "Live-TV-Streamingport",
+          "stream_https": "HTTPS für Live-TV-Streaming",
+          "stream_mode": "Stream-Verarbeitung",
+          "stream_limit": "Maximale gleichzeitige Streams"
         },
         "data_description": {
           "recording_image_sources": "Mehrfachauswahl. Keine Auswahl deaktiviert Vorschaubilder. Reihenfolge: eigene URL, TMDB, OMDb, Snapshot. Nur ausgewählte Internetquellen erhalten den Aufnahmetitel.",
@@ -108,7 +113,12 @@
           "recording_image_url": "Direkte JPEG-, PNG- oder WebP-URL. Platzhalter in geschweiften Klammern: title, filename, channel. Werte werden URL-kodiert.",
           "message_type": "0 = Ja/Nein-Frage, 1 = Information, 2 = Warnung, 3 = Fehler.",
           "media_show_channels": "Optionaler Senderordner in beiden Medienansichten; standardmäßig ausgeschaltet. Senderbilder verwenden vorhandene Picons.",
-          "media_channel_bouquet": "Sendergruppe anhand ihres Namens wählen. Leer: folgt dem aktuell ausgewählten Bouquet unter Quelle."
+          "media_channel_bouquet": "Sendergruppe anhand ihres Namens wählen. Leer: folgt dem aktuell ausgewählten Bouquet unter Quelle.",
+          "external_playback": "Live-TV und TS-Aufnahmen über Home Assistant abspielen. Automatisch werden passende Receiver-Streams bevorzugt; Umwandlung benötigt FFmpeg und CPU-Leistung. Mehrere gleichzeitige Streams sind möglich.",
+          "stream_port": "Streamingport des Receivers, normalerweise 8001. Der OpenWebif-Port für Aufnahmen bleibt unverändert.",
+          "stream_https": "Nur aktivieren, wenn der Streamingport HTTPS unterstützt. Verwendet die gespeicherte Zertifikatsprüfung und Anmeldung.",
+          "stream_mode": "Automatisch nutzt geeignete Receiver-Ausgaben und übernimmt passende Bild- und Tonspuren. Kompatibilität wandelt immer in 720p/H.264 und AAC um.",
+          "stream_limit": "Pro Receiver; Standard 5, 0 = unbegrenzt. Zuschauer desselben Live-Senders teilen einen Stream. Jede Aufnahme-Wiedergabe zählt separat. Gestoppte Streams werden nach zwei Minuten ohne Abruf freigegeben."
         }
       },
       "init": {
@@ -150,6 +160,12 @@
       "options": {
         "standby": "Standby",
         "deep_standby": "Tiefschlaf"
+      }
+    },
+    "stream_mode": {
+      "options": {
+        "auto": "Automatisch",
+        "compatible": "Kompatibilität (immer umwandeln)"
       }
     }
   },
@@ -365,7 +381,7 @@
       "message": "Die Aufnahme oder ihr Receiver ist nicht verfügbar. Aktualisiere die Aufnahmeliste."
     },
     "recording_receiver_only": {
-      "message": "Wähle {receiver} als Wiedergabegerät. Diese Aufnahme kann nur auf diesem Receiver abgespielt werden; Browser-Streaming wird nicht unterstützt."
+      "message": "Wähle {receiver} als Wiedergabegerät oder aktiviere „Wiedergabe auf anderen Geräten“ in dessen Integrationsoptionen."
     },
     "invalid_auth": {
       "message": "Der Receiver hat die Zugangsdaten abgelehnt."
@@ -425,7 +441,19 @@
       "message": "Der Sender, das gewählte Bouquet oder sein Receiver ist nicht verfügbar, oder die Senderanzeige ist ausgeschaltet. Aktualisiere die Senderliste."
     },
     "channel_receiver_only": {
-      "message": "Wähle {receiver} als Wiedergabegerät, um diesen Sender einzuschalten. Browser-Streaming wird nicht unterstützt."
+      "message": "Wähle {receiver} als Wiedergabegerät oder aktiviere „Wiedergabe auf anderen Geräten“ in dessen Integrationsoptionen."
+    },
+    "stream_disabled": {
+      "message": "Aktiviere „Wiedergabe auf anderen Geräten“ in den Integrationsoptionen."
+    },
+    "stream_failed": {
+      "message": "Die Wiedergabe konnte nicht gestartet werden. Prüfe FFmpeg mit libx264/AAC, Receiver-Erreichbarkeit, Streamingport, Anmeldung und freie Tuner."
+    },
+    "stream_recording_format": {
+      "message": "Die externe Wiedergabe unterstützt TS-Aufnahmen mit absolutem Dateipfad aus dem Receiver-Katalog."
+    },
+    "stream_limit_reached": {
+      "message": "Die Grenze von {limit} gleichzeitigen Streams für diesen Receiver ist erreicht. Beende eine Wiedergabe und warte bis zu zwei Minuten oder erhöhe die Grenze in den Einstellungen. Laufende Streams werden fortgesetzt."
     }
   },
   "services": {
@@ -565,7 +593,7 @@
     }
   },
   "common": {
-    "recordings": "Enigma2-Aufnahmen",
+    "recordings": "Enigma2 Connect",
     "recording": "Aufnahme",
     "channels": "Sender"
   },

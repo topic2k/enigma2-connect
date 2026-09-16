@@ -22,8 +22,10 @@ Eine optionale Fernbedienungskarte bringt die wichtigsten Tasten ins Dashboard.
 Der verfügbare Funktionsumfang hängt zusätzlich vom Receiver und dessen Firmware ab.
 
 Die Bedienoberfläche ist auf Deutsch und Englisch verfügbar.
-Aufnahmen werden **auf dem Receiver** abgespielt; Wiedergabe im Browser oder auf
-Cast-Geräten wird nicht unterstützt.
+Aufnahmen laufen auf dem Receiver. Optional lassen sich Live-TV und TS-Aufnahmen
+über Home Assistant auf HLS-fähigen Browsern und Mediengeräten abspielen.
+Bei geeigneten abgeschlossenen TS-Aufnahmen ist Spulen über die gesamte Aufnahme möglich.
+Voraussetzungen und Grenzen stehen im [Benutzerhandbuch](docs/BENUTZERHANDBUCH.md#auf-anderen-geräten-abspielen).
 
 ### Erste Schritte
 
@@ -36,7 +38,7 @@ Cast-Geräten wird nicht unterstützt.
 5. Füge den Medienplayer deines Receivers deinem Dashboard hinzu.
 
 Weitere Receiver kannst du auf dieselbe Weise hinzufügen. Aufnahmen findest du
-unter **Medien → Enigma2-Aufnahmen**, Timer im Kalender von Home Assistant.
+unter **Medien → Enigma2 Connect**, Timer im Kalender von Home Assistant.
 
 ### Anleitungen und Hilfe
 
@@ -65,8 +67,10 @@ An optional remote card brings the main buttons to your dashboard.
 
 Available features also depend on the receiver and its firmware.
 
-The interface is available in German and English. Recordings play **on the receiver**;
-playback in a browser or on Cast devices is not supported.
+The interface is available in German and English. Recordings play on the receiver.
+Optionally, live TV and TS recordings can play through Home Assistant on browsers
+and media devices that support HLS. Suitable completed TS recordings support
+seeking across the full recording. See the [user guide](docs/USER_GUIDE.en.md#play-on-other-devices) for requirements and limits.
 
 ### Getting started
 
@@ -79,7 +83,7 @@ playback in a browser or on Cast devices is not supported.
 5. Add your receiver's media player to your dashboard.
 
 Add further receivers in the same way. Find recordings under
-**Media → Enigma2 recordings** and timers in the Home Assistant calendar.
+**Media → Enigma2 Connect** and timers in the Home Assistant calendar.
 
 ### Guides and help
 

@@ -2,6 +2,8 @@
 
 # Veröffentlichung
 
+Neue Worktrees für dieses Projekt liegen immer unter `V:\enigma2-connect-worktrees`.
+
 ## Inhaltsverzeichnis
 
 - [Entwicklung und Branches](#entwicklung-und-branches)

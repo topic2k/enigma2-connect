@@ -61,7 +61,7 @@ async def test_source_tile_grouped_merged_and_playback(hass, entry, receiver):
     await hass.async_block_till_done()
     sources = await media_source.async_browse_media(hass, None)
     assert any(
-        child.title == "Enigma2 recordings" and child.media_content_id == SOURCE
+        child.title == "Enigma2 Connect" and child.media_content_id == SOURCE
         for child in sources.children
     )
     root = await media_source.async_browse_media(hass, SOURCE)

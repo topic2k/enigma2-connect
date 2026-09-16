@@ -2,6 +2,8 @@
 
 # Publishing
 
+New worktrees for this project always belong under `V:\enigma2-connect-worktrees`.
+
 ## Contents
 
 - [Development and branches](#development-and-branches)

@@ -4,7 +4,7 @@
 
 ## Inhaltsverzeichnis
 
-- [1.1.4-dev.1](#114-dev1)
+- [1.2.0-dev.9](#120-dev9)
 - [1.1.3](#113)
 - [1.1.2](#112)
 - [1.1.1](#111)
@@ -13,10 +13,61 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 1.1.4-dev.1
+## 1.2.0-dev.9
 
 Unveröffentlichte Entwicklerversion.
 
+- Aufnahme-Streaming und mehrfache Vor-/Rücksprünge im realen Home Assistant
+  durch Nutzerprüfung und Debuglog bestätigt. Originalvideo bleibt erhalten,
+  nur MP2-Ton wird zu AAC umgewandelt; Feature zur Übernahme nach `develop` freigegeben.
+
+- Aufnahme-Streaming optimiert: geeignete H.264-Originalspuren samt Bildrate und
+  Qualität erhalten, passenden AAC-Ton kopieren und sonst nur Ton umwandeln.
+  Vorhandene Enigma2-Aufnahmeindizes erlauben schlüsselbildgenaues HLS-Spulen ohne
+  Vollscan. Index-/FFmpeg-Prüfung, klar protokollierter Rückfall und insgesamt
+  32 MiB Abschnitts-Cache je Sitzung. Kompatibilitätsmodus bleibt verfügbar.
+
+- Spulen in abgeschlossenen TS-Aufnahmen: vollständige HLS-VOD-Zeitleiste und
+  bedarfsgesteuerte Erzeugung angeforderter Abschnitte mit durchgehenden
+  Zeitstempeln. Begrenzter Cache, unabhängige Wiedergaben und automatische
+  Rückkehr zur bisherigen Wiedergabe bei fehlender Eignung des Receivers.
+  Der VOD-Rückfall verwendet HA-Kodierung zu H.264/AAC mit den bestehenden Qualitätsvorgaben.
+
+- Medienquelle in allen Sprachen einheitlich „Enigma2 Connect“ benannt.
+  Bedienhinweise angepasst und HLS-Laufzeit sowie Grenzen beim Spulen in der
+  Entwicklerdokumentation erläutert; Qualitätsvorgaben bleiben dokumentiert.
+
+- Streaming-Debugmeldungen mit unabhängiger Sitzungskennung, erkannten Codecs,
+  Bild-/Tonparametern, Verarbeitungsweg, Rückfallgründen und Pool-Ereignissen.
+  Zugangsdaten und Wiedergabe-URLs werden dabei nicht protokolliert.
+
+- Mehrere externe Streams pro Receiver: einstellbare Grenze mit Standard 5 und
+  0 für unbegrenzt. Zusätzliche Starts beenden keine bestehenden Streams.
+  Derselbe Live-Sender wird zwischen Zuschauern geteilt, Aufnahmen starten separat.
+  Auch gleichzeitige Startanfragen berücksichtigen die Grenze; bei voller Belegung
+  wird nur der zusätzliche Start mit einer übersetzten Meldung abgelehnt.
+
+- Automatische Stream-Verarbeitung: geeignetes Receiver-HLS weiterreichen,
+  passende Video-/Audiospuren unverändert übernehmen und Receiver-Transcoding
+  vor Software-Umwandlung prüfen. Nur ungeeignete Spuren werden neu kodiert.
+  Ein Kompatibilitätsmodus erzwingt bei Bedarf die bisherige vollständige Umwandlung.
+
+- Browser-Wiedergabe repariert: HLS wird mit dem von Home Assistants Medien-
+  Dialog erwarteten MIME-Typ `application/x-mpegURL` übergeben. Damit wird der
+  eingebaute HLS-Player statt der Meldung über einen nicht unterstützten
+  Medientyp ausgewählt. Die exakte Schreibweise ist durch einen Regressionstest abgesichert.
+
+- Idee Nr. 13: optionale externe Wiedergabe von Live-TV und TS-Aufnahmen über
+  die HA-Medienquelle. Software-Video-Umwandlung liefert H.264 bis 720p/25 fps;
+  geeignete Originalspuren behalten ihre Qualität.
+- Receiver-Anmeldung bleibt im Backend; zufällige Wiedergabe-URLs verfallen bei
+  Inaktivität, Entladen oder spätestens nach sechs Stunden. Mehrere Streams
+  pro Receiver haben unabhängige Ressourcen und Lebenszeiten. Geeignete Aufnahmen
+  erhalten eine vollständige Zeitleiste; der Aufnahme-Fallback nutzt ein begrenztes Fenster.
+- Live-TV-Port und HTTPS getrennt vom OpenWebif-Zugang einstellbar. Deutsche und
+  englische Bedienhinweise sowie simulierte und lokale FFmpeg-Tests ergänzt.
+  Browser-/Cast-Geräteabnahme bleibt gesondert auszuweisen.
+- Neue Projekt-Worktrees liegen verbindlich unter `V:\enigma2-connect-worktrees`.
 - GitHub-Social-Preview in 1280 × 640 Pixeln ergänzt: Gerätesymbol mittig über
   der Wortmarke auf weißem Hintergrund, mit PNG, SVG-Quelle und `-SocialOnly`-Export.
 - Aufgaben auf eigenen Branches bearbeiten, umfangreichere Aufgaben zusätzlich
