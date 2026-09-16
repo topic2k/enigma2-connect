@@ -7,8 +7,9 @@
 Mit Enigma2 Connect bedienst du deinen Receiver über Home Assistant: Sender
 wechseln, Lautstärke einstellen, Aufnahmen auf dem Fernseher abspielen und
 Nachrichten anzeigen. Du kannst die Bedienung auch in Automationen einbauen.
-Bild und Ton laufen dabei auf dem Receiver und dem angeschlossenen Fernseher.
-Wiedergabe im Browser oder auf Cast-Geräten ist nicht enthalten.
+Bild und Ton laufen standardmäßig auf dem Receiver und dem angeschlossenen Fernseher.
+Die optionale [externe Wiedergabe](#auf-anderen-geräten-abspielen) ergänzt Live-TV
+und TS-Aufnahmen auf HLS-fähigen Browsern und Mediengeräten.
 
 ## Inhalt
 
@@ -65,10 +66,13 @@ Weitere Receiver fügst du auf dieselbe Weise hinzu. Benenne sie eindeutig,
 zum Beispiel „Wohnzimmer“ und „Schlafzimmer“. Die Einrichtung erfolgt vollständig
 über die Oberfläche; eine YAML-Konfiguration ist nicht erforderlich.
 
-Für eine spätere Veröffentlichung ist HACS als benutzerdefiniertes Repository
-vorgesehen. Dann lässt sich das
+### HACS
+
+Du kannst das
 [Projekt-Repository](https://github.com/topic2k/enigma2-connect) über das HACS-Menü
-**Benutzerdefinierte Repositories** als Typ **Integration** hinzufügen. Die Schritte
+**Benutzerdefinierte Repositories** als Typ **Integration** hinzufügen und danach
+herunterladen. Starte Home Assistant anschließend neu und füge die Integration
+wie oben beschrieben hinzu. Die Schritte
 erklärt auch die [HACS-Anleitung](https://www.hacs.xyz/docs/faq/custom_repositories/).
 Eine Aufnahme in den HACS-Standardkatalog ist nicht zugesagt.
 
@@ -163,13 +167,13 @@ Verbindung und **Listen aktualisieren** gehören zu den Diagnosen.
 Es gibt zwei Zugänge zu deinen Aufnahmen:
 
 - Öffne am Medienplayer **Medien durchsuchen** für die Aufnahmen dieses Receivers.
-- Öffne in der Seitenleiste **Medien → Enigma2-Aufnahmen**, um zwischen allen
+- Öffne in der Seitenleiste **Medien → Enigma2 Connect**, um zwischen allen
   eingerichteten Receivern zu wählen.
 
 Öffne die gewünschten Unterordner und wähle eine Aufnahme aus. In der
-Medien-Seitenleiste muss unten der Receiver als Wiedergabegerät ausgewählt sein,
-auf dem die Aufnahme liegt. Bei „Webbrowser“ oder einem anderen Gerät weist
-Home Assistant auf den benötigten Receiver hin.
+Medien-Seitenleiste wählst du unten den Receiver als Wiedergabegerät aus,
+auf dem die Aufnahme liegt. Für „Webbrowser“ oder andere Geräte aktiviere zuerst
+die unten beschriebene externe Wiedergabe.
 
 Neben dem Titel stehen Datum, Uhrzeit, Sender und Länge, soweit diese Angaben
 vorhanden sind. Die Uhrzeit richtet sich nach der in Home Assistant eingestellten
@@ -197,8 +201,104 @@ der vom Receiver gelieferten Liste ausgewählt.
 
 Diese Optionen gelten pro Receiver und wirken in beiden Medienansichten. Bei
 zusammengefassten Aufnahmen führt der Senderordner zuerst zu den Receivern und
-dann zu ihren Sendern. Wähle auch hier den zugehörigen Receiver als Wiedergabegerät.
+dann zu ihren Sendern. Wähle den zugehörigen Receiver oder nutze die externe Wiedergabe.
 Senderlogos werden vom Receiver geladen; fehlt ein Logo, erscheint ein Fernsehsymbol.
+
+### Auf anderen Geräten abspielen
+
+1. Öffne **Einstellungen → Geräte & Dienste → Enigma2 Connect → Konfigurieren →
+   Einstellungen** für den gewünschten Receiver.
+2. Aktiviere **Wiedergabe auf anderen Geräten**. Für Live-TV aktiviere zusätzlich
+   **Sender im Medienbrowser anzeigen** und wähle bei Bedarf ein Bouquet.
+3. Prüfe **Live-TV-Streamingport** (normalerweise **8001**). Aktiviere **HTTPS für
+   Live-TV-Streaming** nur, wenn dieser Port HTTPS unterstützt. Der separate
+   OpenWebif-Zugang bleibt für Aufnahmen zuständig; beide verwenden die gespeicherte Anmeldung.
+4. Öffne **Medien → Enigma2 Connect** und wähle **Webbrowser** oder einen
+   geeigneten Medienplayer, etwa ein Cast-Gerät, als Wiedergabegerät.
+5. Wähle eine TS-Aufnahme oder einen Sender unter **Sender**. Der Start kann
+   einige Sekunden dauern. Stoppe die Wiedergabe am Zielgerät.
+
+**Stream-Verarbeitung → Automatisch** ist voreingestellt. Die Integration prüft
+bei Live-TV zuerst den HLS-Ausgang des Receivers. Geeignetes HLS wird über Home
+Assistant weitergereicht, ohne einen FFmpeg-Encoder zu starten. Andernfalls werden
+passende Bild- und Tonspuren unverändert in HLS verpackt. Für ungeeignete Live-TV-
+Codecs wird zusätzlich der in OpenWebif konfigurierte Transcoding-Ausgang geprüft.
+Der Receiver muss diesen bereitstellen; ein sichtbarer Transcoding-Abschnitt allein
+garantiert das nicht. Seine Einstellungen werden nicht verändert.
+
+Bei Live-TV und der Aufnahme-Wiedergabe ohne vollständiges Spulen werden nur
+ungeeignete Spuren auf Home Assistant umgewandelt. Passendes Video behält
+seine ursprüngliche Auflösung und Bildrate. Die Software-Umwandlung liefert maximal
+720p/25 fps und AAC-Stereoton. Zur Formaterkennung wird **ffprobe** aus dem FFmpeg-
+Paket benötigt; zum Verpacken oder Umwandeln **FFmpeg**, für die Video-Umwandlung
+zusätzlich **libx264**. Fehlt die Erkennung oder scheitert der optimierte Start,
+wird automatisch die bisherige vollständige Umwandlung versucht.
+
+Bei Problemen wähle **Stream-Verarbeitung → Kompatibilität (immer umwandeln)**.
+Dieser Modus benötigt mehr CPU-Leistung und umgeht Receiver-HLS/Transcoding.
+Das Zielgerät muss HLS unterstützen und die Home-Assistant-Adresse erreichen.
+Bei Cast müssen auch Namensauflösung und gegebenenfalls das HTTPS-Zertifikat passen.
+Firefox und Edge wurden vom Nutzer für die bisherige vollständige Umwandlung
+bestätigt. Optimierte Aufnahmewiedergabe mit mehreren Vor-/Rücksprüngen wurde am
+16.09.2026 in HA bestätigt; der konkrete Browser wurde dabei nicht angegeben.
+Konkrete Cast-Geräte benötigen weiterhin eigene Praxistests.
+
+Unter **Maximale gleichzeitige Streams** legst du die Grenze pro Receiver fest:
+**Standard 5**, eine andere positive ganze Zahl oder **0 für unbegrenzt**. Eine neue
+Wiedergabe beendet keine andere. Bei erreichter Grenze wird nur der zusätzliche
+Start abgelehnt. Stoppe eine Wiedergabe und warte bis zu zwei Minuten nach dem
+letzten Abruf, bis ihr Platz wieder nutzbar ist, oder passe die Grenze an.
+Auch kürzlich gestoppte Streams zählen bis dahin mit. Das Speichern der Receiver-
+Optionen lädt die Integration neu und beendet dabei ihre laufenden Streams.
+
+Mehrere Zuschauer desselben Live-Senders teilen **einen Stream und einen Platz**.
+Solange mindestens ein Zuschauer Daten abruft, bleibt dieser Stream aktiv.
+Jeder Start einer Aufnahme belegt dagegen einen eigenen Platz und beginnt am
+Anfang, damit Zuschauer unabhängig voneinander schauen können. Die Grenze gilt
+auch für gerade startende Streams. Freie Tuner, Entschlüsselung, Receiver-Encoder
+und Home-Assistant-Leistung können die tatsächlich mögliche Anzahl weiter begrenzen.
+
+**In Aufnahmen spulen:** Öffne eine abgeschlossene TS-Aufnahme, warte auf den
+Start und ziehe die Zeitleiste auf die gewünschte Stelle. Wenn der Receiver
+Dateiabschnitte gezielt liefern kann und die Dauer ermittelt wird, zeigt der
+Player die gesamte Aufnahme. Vor- und Rücksprünge sind auch außerhalb des
+bisherigen Puffers möglich. Nach einem Sprung kann das Bild kurz laden.
+
+Im Modus **Automatisch** bleibt geeignetes H.264-Video unverändert: Auflösung,
+Bildrate und Bildqualität der Aufnahme bleiben erhalten. Geeigneter AAC-Ton wird
+ebenfalls übernommen; andernfalls wird nur der Ton zu AAC umgewandelt. HA verpackt
+die angeforderten Abschnitte für den Browser. Dafür benötigt der Receiver einen
+passenden Aufnahmeindex (`.ts.ap`); aktuelle FFmpeg-Funktionen und ffprobe müssen
+auf HA verfügbar sein. Ein Vollscan oder vollständiger Download ist nicht nötig.
+
+Fehlen diese Voraussetzungen oder ist **Kompatibilität** gewählt, greift die
+bisherige vollständige Umwandlung mit libx264: bis 720p/25 fps, Zielbitrate 2 Mbit/s
+und AAC-Ton. Das Debuglog nennt unter `VOD remux unavailable` den Rückfallgrund.
+Der Moduswechsel erfolgt in den Optionen der Integration; Speichern beendet
+laufende Streams. Die Aufnahme bleibt auf dem Receiver, HA hält höchstens 32 MiB
+Abschnittsdaten je Sitzung. Jede Wiedergabe besitzt eine unabhängige Zeitleiste.
+Der optimierte Einstieg beginnt am ersten verzeichneten Schlüsselbild; ein kurzer
+Vorlauf davor kann entfallen. Bei Darstellungsproblemen hilft der Kompatibilitätsmodus.
+
+Fehlen passende Dateizugriffe oder eine verlässliche Dauer, beginnt automatisch
+die bisherige Wiedergabe mit einem begrenzten Fenster. Das Debuglog nennt den
+Grund unter `VOD unavailable`; vollständiges Spulen steht dann nicht bereit.
+Noch laufende oder während der Wiedergabe veränderte Aufnahmen sind nicht für
+diesen VOD-Modus geeignet. Unterstützt werden Aufnahmen bis 24 Stunden Dauer.
+Wird eine Datei nach dem Start verändert, kann die Wiedergabe abbrechen.
+
+Bei Live-TV und im Aufnahme-Fallback umfasst lokales HLS acht Segmente mit zwei
+Sekunden Zieldauer; kopierte Schlüsselbildabstände können diese verlängern.
+Bei Receiver-HLS bestimmt der Receiver das Fenster. Langes Pausieren und
+automatisches Fortsetzen an einer gespeicherten Position sind nicht enthalten.
+Nach zwei Minuten ohne Abruf wird aufgeräumt; spätestens nach sechs Stunden ist
+eine neue Auswahl nötig. Geteilte Wiedergabe-URLs gewähren bis zum Ablauf Zugriff.
+
+Der Receiver muss erreichbar sein und für Live-TV freie Tuner beziehungsweise
+Entschlüsselungsmöglichkeiten haben. Die Integration sendet beim externen Start
+keinen Umschalt- oder Einschaltbefehl; Firmware und Tunerbelegung können dennoch
+den Empfang begrenzen. Radio ohne Videospur, andere Aufnahmeformate, Untertitel,
+Tonspurauswahl und Wiedergabefortschritt auf dem Receiver werden nicht übernommen.
 
 ## Vorschaubilder auswählen
 
@@ -274,6 +374,11 @@ die Namen deiner Sendergruppen. **—** bedeutet: keine eigene Gruppe festlegen.
 | --- | --- |
 | Aufnahmen in der Medien-Kachel (gilt für alle Receiver) | Getrennt nach Receiver; alternativ zusammenfassen. Diese Auswahl wird für alle Receiver gespeichert. |
 | Abfrageintervall (Sekunden) | 15 Sekunden; 5–300 Sekunden möglich. Kleinere Werte aktualisieren den Zustand häufiger. |
+| Wiedergabe auf anderen Geräten | Aus; HLS über Home Assistant mit mehreren gleichzeitigen Streams. |
+| Maximale gleichzeitige Streams | 5 pro Receiver; positive ganze Zahl, 0 = unbegrenzt. Derselbe Live-Sender wird gemeinsam genutzt; Aufnahmen starten separat. |
+| Stream-Verarbeitung | Automatisch; geeignete Receiver-Ausgabe und unveränderte Spuren bevorzugen. Kompatibilität erzwingt die vollständige Umwandlung auf Home Assistant. |
+| Live-TV-Streamingport | 8001; unabhängig vom OpenWebif-Port. |
+| HTTPS für Live-TV-Streaming | Aus; nur für einen HTTPS-fähigen Streamingport aktivieren. |
 | Sender im Medienbrowser anzeigen | Aus; ergänzt einen Senderordner in beiden Medienansichten. |
 | Bouquet für den Medienbrowser | Leer; folgt der aktuell unter Quelle ausgewählten Sendergruppe. Eine eigene Auswahl ändert die Quelle des Medienplayers nicht. |
 | Vorschaubilder für Aufnahmen – Bildquellen | Nur Snapshot; mehrere Quellen auswählbar. Keine Auswahl schaltet Vorschaubilder aus. |
@@ -510,7 +615,8 @@ Receiver-Zeitzone und prüfe die Termine auch am Gerät.
 | Verbindung schlägt fehl | OpenWebif im Browser öffnen; dann Adresse, Port, Anmeldung und HTTPS über **Neu konfigurieren** prüfen. Alte Webinterfaces ohne OpenWebif werden nicht unterstützt. |
 | Receiver ist „Nicht verfügbar“ | Netzwerk und Stromversorgung prüfen. Tiefschlaf beendet gewöhnlich die Erreichbarkeit; normaler Standby ist ein anderer Zustand. |
 | Neue Aufnahmen oder Sender fehlen | **Listen aktualisieren** drücken. Falls Einträge weiterhin fehlen, die entsprechende Liste in OpenWebif prüfen. |
-| Aufnahme spielt nicht | In der Medien-Seitenleiste den Receiver auswählen, auf dem die Aufnahme liegt. „Webbrowser“ und Cast-Geräte können sie nicht abspielen. |
+| Browser meldet „Medientyp nicht unterstützt“ | Integration auf mindestens `1.2.0-dev.2` aktualisieren und Home Assistant neu starten. `dev.1` meldete einen MIME-Typ, den der HA-Medien-Dialog nicht als HLS erkennt; ein Browserwechsel behebt diese Ursache nicht. |
+| Aufnahme spielt nicht | Receiver auswählen oder externe Wiedergabe aktivieren. Bei externen Zielen FFmpeg mit libx264/AAC, HA-Erreichbarkeit, TS-Format und CPU-Auslastung prüfen; bei Live-TV außerdem Streamingport, Anmeldung und freie Tuner prüfen. |
 | Vorschaubild fehlt | Bildquellen und Schlüssel prüfen, Vorbereitung abwarten. Bei laufenden Aufnahmen muss die gewünschte Stelle erst vorhanden sein. Einzelbilder benötigen FFmpeg auf dem HA-System und lesbare Aufnahmedateien; technische Hinweise stehen in der Entwicklerdokumentation. |
 | Filmplakat passt nicht | Die Titelsuche kann einen anderen Treffer finden. Verwende stattdessen einen Snapshot oder eine eigene Bildadresse. |
 | Senderlogo fehlt | Passende Senderlogos müssen auf dem Receiver vorhanden sein. Ohne Logo erscheint ein Ersatzsymbol. |
@@ -546,6 +652,15 @@ neu. Alternativ entferne in den Receiver-Einstellungen die Bildquelle
 **Snapshot aus der Aufnahme** und speichere. Dann verschwindet der Hinweis.
 Receiver-Steuerung und Medienlisten bleiben währenddessen bedienbar. Beim
 Entfernen des Receiver-Eintrags wird auch sein Reparaturhinweis entfernt.
+
+### Streaming-Fehler untersuchen
+
+Aktiviere in Home Assistant bei Enigma2 Connect die Debug-Protokollierung und
+starte den betroffenen Stream erneut. Die Meldungen mit `[stream=…]` zeigen den
+Verarbeitungsweg, erkannte Formate und Rückfallgründe. Dieselbe Kennung gehört
+zu derselben Wiedergabesitzung. Beim linearen Kompatibilitätsmodus werden Eingangsformate
+nicht geprüft (`not_probed`); VOD prüft die Aufnahme auch in diesem Modus. Technische Einzelheiten und
+aktuelle Qualitätsvorgaben stehen in der [Entwicklerdokumentation](ENTWICKLUNG.md#streaming-diagnose-und-qualität).
 
 ## Aktualisieren und entfernen
 

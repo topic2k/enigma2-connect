@@ -54,13 +54,42 @@ rules; the remote comparison before a PR remains mandatory.
 
 ## Branches, approval and releases
 
-- Implement changes on `develop` first, or on a new working branch when needed;
-  do not make changes or commits directly on `main`.
-- Merge changes into `main` exclusively through a pull request and only after
-  explicit approval from the user.
+- Always create new worktrees for this project under `V:\enigma2-connect-worktrees`.
+- Create a separate, descriptively named branch from current `develop` for every
+  task. Use the existing working directory for small changes; also create a
+  separate worktree for larger tasks.
+- Commit completed changes on the working branch after appropriate checks,
+  then merge them into `develop` and push `develop` without further approval.
+  `develop` collects completed changes; do not implement directly on `develop`
+  or `main`.
+- Prepare and open a pull request from `develop` into `main` only after explicit
+  user approval. Merge changes into `main` exclusively through that PR;
+  merging also requires user approval.
 - Create a new release only when explicitly instructed by the user.
   Approval of changes or a pull request does not authorize a release.
 - The versioning rules below do not authorize automatic publication.
+
+## Integration quality before merging into main
+
+- Before merging into `main`, all required CI checks must pass for the current
+  PR state and all integration quality requirements must remain satisfied.
+  Changes must not lower the achieved quality status
+  compared with the previous state and current `main`.
+- Review the [quality checklist](custom_components/enigma2_connect/quality_scale.yaml)
+  for the impact of the change. Additionally check affected requirements that CI
+  does not cover. Do not lower fulfilled
+  criteria, coverage thresholds or check strictness, or bypass them through
+  unjustified exemptions.
+- Keep evidence and remaining practical checks current in the
+  [verification summary](docs/VALIDATION.en.md) and its German counterpart.
+  Missing evidence does not count as a passed check. A regression or missing
+  required evidence blocks merging; resolve it and check again first.
+- Run targeted local checks appropriate to the change. Checks already supported
+  by current CI results do not need a complete local rerun. A PR may be opened
+  to run CI; passing CI alone does not prove all quality criteria are met in substance.
+- If the source branch or `main` changes while a PR is open, ensure current CI
+  results cover the resulting PR state and renew the quality comparison for
+  affected requirements before merging.
 
 ## Versioning
 
@@ -86,8 +115,9 @@ rules; the remote comparison before a PR remains mandatory.
 - On the working branch, remove the entire `-dev.N` suffix and synchronize the
   manifest, `version` in `pyproject.toml`, both changelogs and their tables of contents.
   Keep the entry labelled unpublished until publication, but no longer label it
-  as a development version. Then rerun the checks. This preparation is incomplete
-  without an up-to-date comparison against the remote state.
+  as a development version. Then run affected local checks; current successful
+  CI is required before merging. This preparation is incomplete without an
+  up-to-date comparison against the remote state.
 - If `main` or the release baseline changes while a pull request is open, repeat
   the version comparison before merging and make any adjustments on the source
   branch. Merge only after user approval. A version without a development suffix
@@ -104,8 +134,10 @@ Before changes:
 
 After changes:
 
-1. Run tests.
-2. Check Python syntax.
-3. Check Home Assistant compatibility as far as locally possible.
+1. Run tests appropriate to the change; do not repeat the full CI suite locally
+   without a reason.
+2. Check syntax when changing Python code.
+3. Check affected Home Assistant compatibility as far as locally possible;
+   verify current CI results before merging.
 4. Update affected documentation and changelogs in both languages.
 5. Do not create ZIP files unless explicitly requested.

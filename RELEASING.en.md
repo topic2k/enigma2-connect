@@ -2,6 +2,8 @@
 
 # Publishing
 
+New worktrees for this project always belong under `V:\enigma2-connect-worktrees`.
+
 ## Contents
 
 - [Development and branches](#development-and-branches)
@@ -15,9 +17,18 @@ For development setup and project structure, see the
 ## Development and branches
 
 Follow the [project instructions](AGENTS.en.md), adopted from BT-RC.
-Make changes on `develop` or a working branch, never directly on `main`.
-Merge into `main` only through a pull request after explicit user approval.
-Merge approval does not authorize a release.
+Create a separate, descriptively named branch from current `develop` for every task.
+Use the existing working directory for small changes; also create a separate
+worktree for larger tasks. Commit completed changes on the working branch after
+appropriate checks, merge them into `develop` and push `develop` without further
+approval. `develop` collects completed changes. Do not implement directly on
+`develop` or `main`.
+
+Prepare the collected changes for a pull request from `develop` into `main` and
+open that PR only after explicit user approval. Merge into `main` exclusively
+through that PR; merging also requires user approval. A release, including drafts
+or tags, requires a separate explicit instruction; PR or merge approval does not
+authorize a release.
 
 Automatically increase the version based on the entire unpublished scope since
 the latest stable release: patch for fixes, internal changes and documentation,
@@ -58,7 +69,7 @@ before preparing a PR.
 3. On the source branch, remove the entire `-dev.N` suffix and synchronize all
    version locations, including the lockfile and both changelog tables of contents.
    Keep the entry labelled unreleased; remove only its development-version label.
-   Rerun the checks.
+   Run affected local checks; the full CI results must pass before merging.
 4. Preparation is incomplete without a current remote comparison. If `main` or
    the release baseline changes while the PR is open, repeat the comparison
    before merging and adjust the source branch. Merge only after user approval.
@@ -68,13 +79,33 @@ tags, release drafts or publication.
 
 ## Checks
 
-Run in the project directory on Linux/WSL with Python 3.14.2 or later:
+Before merging into `main`, all required CI checks must pass for the current PR
+state. All integration quality requirements must remain satisfied; the achieved
+quality status must not regress compared with the previous state and current `main`.
+
+Review the [quality checklist](custom_components/enigma2_connect/quality_scale.yaml)
+for the impact of the change. Additionally check affected requirements that CI
+does not cover and update evidence in both verification summaries. Do not lower
+fulfilled criteria, coverage thresholds or check strictness, or bypass them through
+unjustified exemptions. Regressions and missing required evidence block merging;
+passing CI alone does not prove all quality criteria are met in substance.
+
+Targeted local checks appropriate to the change are sufficient. Checks already
+supported by current CI results do not need a complete local rerun. A PR may be
+opened to run CI. If the source branch or `main` changes, ensure current CI results
+cover the resulting PR state and renew the quality comparison for affected
+requirements before merging.
+
+The full check commands serve as a reference and for troubleshooting; select those
+appropriate to the change. Run in the project directory on Linux/WSL with Python 3.14.2 or later:
 
 ```sh
 uv sync --locked --group dev
 uv run --locked ruff check .
 uv run --locked ruff format --check .
-uv run --locked pytest --cov=custom_components.enigma2_connect --cov-report=term-missing
+uv run --locked mypy
+uv run --locked pytest --cov=custom_components.enigma2_connect --cov-branch --cov-report=term-missing --cov-report=json:coverage.json
+uv run --locked python scripts/check_config_flow_coverage.py coverage.json --silver
 uv run --locked python -m compileall -q custom_components tests
 node --test tests/frontend.test.cjs
 git diff --check
@@ -84,8 +115,10 @@ After a version change, run `uv lock --offline` and verify that only the expecte
 project metadata changes. Do not update dependencies incidentally.
 Check version locations and both changelogs, including language links.
 The workflows `.github/workflows/tests.yml` and `.github/workflows/validate.yml`
-run tests, Ruff, Hassfest and HACS. All checks must pass for the actual commit
-being released.
+run tests, Ruff, type checks, coverage checks, Hassfest and HACS. The `test`,
+`hassfest` and `hacs` jobs must pass before every merge. To enforce this technically,
+these checks must also be required by GitHub protection rules for `main`; workflow
+files alone do not enforce it. All checks must pass for the actual commit being released.
 
 Verification scope, known limitations and hardware results are recorded in the
 [verification summary](docs/VALIDATION.en.md). Also test new features in Home

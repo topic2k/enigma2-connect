@@ -55,13 +55,43 @@ bleibt verpflichtend.
 
 ## Branches, Freigabe und Releases
 
-- Änderungen zuerst auf `develop` oder bei Bedarf auf einem neuen Arbeitsbranch
-  umsetzen; keine direkten Änderungen oder Commits auf `main`.
-- Änderungen erst nach ausdrücklicher Freigabe durch den Nutzer und ausschließlich
-  per Pull Request nach `main` übernehmen.
+- Neue Worktrees für dieses Projekt immer unter `V:\enigma2-connect-worktrees` anlegen.
+- Für jede Aufgabe einen eigenen, passend benannten Branch vom aktuellen `develop`
+  erstellen. Kleine Änderungen im bestehenden Arbeitsverzeichnis bearbeiten;
+  für umfangreichere Aufgaben zusätzlich einen eigenen Worktree anlegen.
+- Fertige, passend geprüfte Änderungen auf dem Arbeitsbranch committen, danach
+  nach `develop` übernehmen und `develop` pushen. Dafür ist keine weitere
+  Freigabe erforderlich. `develop` sammelt abgeschlossene Änderungen;
+  keine direkte Implementierung auf `develop` oder `main`.
+- Erst nach ausdrücklicher Nutzerfreigabe einen Pull Request von `develop` nach
+  `main` vorbereiten und eröffnen. Änderungen ausschließlich über diesen PR nach
+  `main` übernehmen; auch der Merge benötigt die Nutzerfreigabe.
 - Ein neues Release nur auf ausdrückliche Anweisung des Nutzers erstellen.
   Die Freigabe von Änderungen oder eines Pull Requests ist keine Release-Freigabe.
 - Die folgenden Versionierungsregeln erlauben keine automatische Veröffentlichung.
+
+## Integrationsqualität vor der Übernahme nach main
+
+- Vor der Übernahme nach `main` müssen alle erforderlichen CI-Prüfungen für den
+  aktuellen PR-Stand erfolgreich sein und weiterhin alle Vorgaben für die
+  Integrationsqualität erfüllt bleiben. Änderungen dürfen den erreichten
+  Qualitätsstatus gegenüber dem bisherigen Stand und dem aktuellen `main` nicht
+  verschlechtern.
+- Die [Qualitätscheckliste](custom_components/enigma2_connect/quality_scale.yaml)
+  auf Auswirkungen der Änderung prüfen. Nicht durch CI abgedeckte, von der Änderung
+  betroffene Anforderungen zusätzlich prüfen. Erfüllte Kriterien, Testabdeckungsgrenzen und
+  Prüfstrenge dürfen nicht abgesenkt oder durch unbegründete Ausnahmen umgangen werden.
+- Nachweise und verbleibende Praxisprüfungen in der [Prüfübersicht](docs/VALIDIERUNG.md)
+  und ihrer englischen Fassung aktuell halten. Fehlende Nachweise sind keine
+  bestandenen Prüfungen. Bei einer Verschlechterung oder fehlendem erforderlichem
+  Nachweis darf nicht gemergt werden; zuerst beheben und erneut prüfen.
+- Lokal die zur Änderung passenden, gezielten Prüfungen ausführen. Bereits durch
+  aktuelle CI-Ergebnisse belegte Prüfungen müssen nicht vollständig lokal wiederholt
+  werden. Ein PR darf zur Ausführung der CI eröffnet werden; grüne CI allein belegt
+  nicht die inhaltliche Erfüllung aller Qualitätskriterien.
+- Ändert sich der Quellbranch oder `main` während eines offenen PR, vor dem Merge
+  aktuelle CI-Ergebnisse für den daraus entstehenden PR-Stand sicherstellen und
+  den Qualitätsabgleich für betroffene Anforderungen erneuern.
 
 ## Versionierung
 
@@ -87,8 +117,9 @@ bleibt verpflichtend.
 - Noch auf dem Arbeitsbranch das vollständige Suffix `-dev.N` entfernen und
   Manifest, `version` in `pyproject.toml`, beide Changelogs und deren Inhaltsverzeichnisse
   synchronisieren. Den Eintrag bis zur Veröffentlichung als unveröffentlicht,
-  aber nicht mehr als Entwicklerversion kennzeichnen. Danach die Prüfungen erneut
-  ausführen. Ohne aktuellen Remote-Abgleich ist diese Vorbereitung unvollständig.
+  aber nicht mehr als Entwicklerversion kennzeichnen. Danach die betroffenen lokalen
+  Prüfungen ausführen; aktuelle erfolgreiche CI ist vor dem Merge erforderlich.
+  Ohne aktuellen Remote-Abgleich ist diese Vorbereitung unvollständig.
 - Wenn sich `main` oder die Release-Basis während eines offenen Pull Requests
   ändert, den Versionsabgleich vor dem Merge wiederholen und nötige Anpassungen
   im Quellbranch vornehmen. Die Übernahme erfolgt erst nach Nutzerfreigabe.
@@ -103,8 +134,10 @@ Vor Änderungen:
 3. Einen kurzen Implementierungsplan erstellen.
 
 Nach Änderungen:
-1. Tests ausführen.
-2. Python-Syntax prüfen.
-3. Home-Assistant-Kompatibilität prüfen, soweit lokal möglich.
+1. Zum Änderungsumfang passende Tests ausführen; den vollständigen CI-Prüfumfang
+   nicht ohne Anlass lokal wiederholen.
+2. Bei Python-Änderungen die Syntax prüfen.
+3. Betroffene Home-Assistant-Kompatibilität prüfen, soweit lokal möglich;
+   vor dem Merge die aktuellen CI-Ergebnisse kontrollieren.
 4. Betroffene Dokumentationen und Changelogs in beiden Sprachen aktualisieren.
 5. Keine ZIP-Datei erzeugen, sofern nicht ausdrücklich verlangt.

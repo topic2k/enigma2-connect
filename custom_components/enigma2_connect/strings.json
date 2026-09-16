@@ -100,7 +100,12 @@
           "off_mode": "Power-off mode",
           "recordings_layout": "Recordings in the media tile (applies to all receivers)",
           "media_show_channels": "Show channels in the media browser",
-          "media_channel_bouquet": "Bouquet for the media browser"
+          "media_channel_bouquet": "Bouquet for the media browser",
+          "external_playback": "Playback on other devices",
+          "stream_port": "Live TV streaming port",
+          "stream_https": "HTTPS for live TV streaming",
+          "stream_mode": "Stream processing",
+          "stream_limit": "Maximum simultaneous streams"
         },
         "data_description": {
           "recording_image_sources": "Select multiple sources, or clear all to disable thumbnails. Priority: custom URL, TMDB, OMDb, snapshot. Only selected Internet sources receive the recording title.",
@@ -108,7 +113,12 @@
           "recording_image_url": "Direct JPEG, PNG or WebP URL. Placeholders in braces: title, filename, channel. Values are URL-encoded.",
           "message_type": "0 = Yes/no question, 1 = Information, 2 = Warning, 3 = Error.",
           "media_show_channels": "Optional channel folder in both media views; disabled by default. Channel images use available picons.",
-          "media_channel_bouquet": "Select a channel group by name. Empty: follow the bouquet currently selected for Source."
+          "media_channel_bouquet": "Select a channel group by name. Empty: follow the bouquet currently selected for Source.",
+          "external_playback": "Play live TV and TS recordings through Home Assistant. Automatic mode prefers compatible receiver streams; conversion requires FFmpeg and CPU capacity. Multiple simultaneous streams are supported.",
+          "stream_port": "Receiver streaming port, usually 8001. Recordings still use the OpenWebif port.",
+          "stream_https": "Enable only if the streaming port supports HTTPS. Uses the saved certificate verification and credentials.",
+          "stream_mode": "Automatic uses suitable receiver output and copies compatible video and audio. Compatibility always converts to 720p/H.264 and AAC.",
+          "stream_limit": "Per receiver; default 5, 0 = unlimited. Viewers of the same live channel share a stream. Each recording playback counts separately. Stopped streams are released after two minutes without requests."
         }
       },
       "init": {
@@ -150,6 +160,12 @@
       "options": {
         "standby": "Standby",
         "deep_standby": "Deep standby"
+      }
+    },
+    "stream_mode": {
+      "options": {
+        "auto": "Automatic",
+        "compatible": "Compatibility (always convert)"
       }
     }
   },
@@ -365,7 +381,7 @@
       "message": "The recording or its receiver is unavailable. Refresh the recording list."
     },
     "recording_receiver_only": {
-      "message": "Select {receiver} as the playback device. This recording can only play on its owning receiver; browser streaming is not supported."
+      "message": "Select {receiver} as the playback device or enable “Playback on other devices” in its integration options."
     },
     "invalid_auth": {
       "message": "Receiver rejected the credentials."
@@ -425,7 +441,19 @@
       "message": "The channel, selected bouquet or receiver is unavailable, or channel browsing is disabled. Refresh the channel list."
     },
     "channel_receiver_only": {
-      "message": "Select {receiver} as the playback device to tune this channel. Browser streaming is not supported."
+      "message": "Select {receiver} as the playback device or enable “Playback on other devices” in its integration options."
+    },
+    "stream_disabled": {
+      "message": "Enable “Playback on other devices” in the integration options."
+    },
+    "stream_failed": {
+      "message": "Playback could not start. Check FFmpeg with libx264/AAC, receiver connectivity, streaming port, credentials and available tuners."
+    },
+    "stream_recording_format": {
+      "message": "External playback supports TS recordings with an absolute file path from the receiver catalog."
+    },
+    "stream_limit_reached": {
+      "message": "The limit of {limit} simultaneous streams for this receiver has been reached. Stop a playback and wait up to two minutes, or increase the limit in settings. Existing streams keep playing."
     }
   },
   "services": {
@@ -565,7 +593,7 @@
     }
   },
   "common": {
-    "recordings": "Enigma2 recordings",
+    "recordings": "Enigma2 Connect",
     "recording": "Recording",
     "channels": "Channels"
   },

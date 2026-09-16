@@ -4,6 +4,7 @@
 
 ## Contents
 
+- [1.2.0](#120)
 - [1.1.3](#113)
 - [1.1.2](#112)
 - [1.1.1](#111)
@@ -11,6 +12,87 @@
 - [1.0.2](#102)
 - [1.0.1](#101)
 - [1.0.0](#100)
+
+## 1.2.0
+
+Released on 2026-09-16.
+
+- Require successful CI for the current PR state, continued compliance with all
+  integration quality requirements and maintained or improved quality status
+  before merging into `main`. Targeted local checks are sufficient; current CI
+  evidence does not require a complete local rerun. Additionally check affected
+  requirements outside CI. Aligned project, release and developer instructions in
+  both languages; completed release commands with existing type and coverage checks.
+
+- Added `flat-square` README badges for releases, requirements, license, tests,
+  Hassfest/HACS, coverage, HACS installation and documentation. After successful
+  tests on `main`, coverage is updated on the separate `badges` data branch with
+  source commit and run link; existing quality checks remain in place. Updated
+  the HACS custom repository installation instructions.
+
+- Use explicit video timestamps in the HLS seek test so AAC encoder delay cannot
+  shift the target across colour/segment boundaries. Additionally verify the
+  start timestamp of every test segment; streaming processing remains unchanged.
+
+- Recording playback and repeated forward/backward seeks confirmed in real
+  Home Assistant through user testing and debug logs. Original video is preserved
+  and only MP2 audio is converted to AAC; feature approved for integration into `develop`.
+
+- Optimized recording streams: preserve suitable original H.264 video, frame rate
+  and quality; copy compatible AAC or convert audio only. Existing Enigma2 indexes
+  provide keyframe-aligned HLS seeking without a full scan. Index/FFmpeg validation,
+  explicit fallback logs and a 32 MiB total segment cache per session. Compatibility
+  mode remains available.
+
+- Seeking in completed TS recordings through a full HLS VOD timeline and
+  on-demand generation of requested sections with continuous timestamps.
+  Bounded caching, independent playback sessions and automatic fallback when
+  receiver prerequisites are missing. VOD fallback uses HA H.264/AAC encoding with the
+  existing quality settings.
+
+- Media source consistently named “Enigma2 Connect” in all languages.
+  Updated navigation instructions and documented HLS duration and seeking limits
+  in the developer guides; existing quality settings remain documented.
+
+- Streaming debug logs include an independent session identifier, detected codecs,
+  video/audio parameters, processing path, fallback reasons and pool events.
+  Credentials and playback URLs are excluded from these messages.
+
+- Multiple external streams per receiver: configurable limit defaulting to 5,
+  with 0 for unlimited. Additional starts do not end existing streams. Viewers
+  share the same live channel; recordings start independently. Concurrent startup
+  requests respect the limit; at capacity, only the extra start is rejected with
+  a translated message.
+
+- Automatic stream processing: relay suitable receiver HLS, copy compatible
+  video/audio tracks and check receiver transcoding before software conversion.
+  Only incompatible tracks are re-encoded. Compatibility mode can force the
+  previous full conversion when needed.
+
+- Fixed browser playback: HLS now uses the exact MIME type expected by Home
+  Assistant's media dialog, `application/x-mpegURL`. This selects the built-in
+  HLS player instead of the unsupported-media message. A regression test
+  verifies the exact spelling.
+
+- Idea no. 13: optional external playback of live TV and TS recordings through
+  the HA media source. Software video conversion produces H.264 up to 720p/25 fps;
+  compatible original tracks retain their quality.
+- Receiver credentials stay in the backend; random playback URLs expire on
+  inactivity, unload or after six hours at most. Multiple streams per receiver
+  have independent resources and lifetimes. Suitable recordings provide a full
+  timeline; fallback recording playback uses a limited sliding window.
+- Live TV port and HTTPS are configurable independently of OpenWebif. Added
+  German/English guidance, simulated tests and local FFmpeg tests. Browser/Cast
+  device acceptance is recorded separately.
+- New project worktrees must be located under `V:\enigma2-connect-worktrees`.
+- Added a 1280 × 640 GitHub social preview: device symbol centered above the
+  wordmark on white, with PNG, SVG source and `-SocialOnly` export.
+- Use a separate branch for every task and an additional worktree for larger
+  tasks. Merge checked, completed changes into `develop` and push it.
+  Prepare and open a PR into `main` only after user approval; merging and
+  releasing also require their respective explicit approvals.
+- Merged current `main`, including the Junie blog monitor and silent review
+  receipts, into `develop`, preserving the social preview and branch rules.
 
 ## 1.1.3
 

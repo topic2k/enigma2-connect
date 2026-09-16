@@ -30,6 +30,14 @@ from .api import AuthenticationError, OpenWebifClient, ReceiverError
 from .channel_media import CONF_CHANNEL_BOUQUET, CONF_SHOW_CHANNELS
 from .const import DEFAULT_INTERVAL, DOMAIN
 from .media_source import CONF_RECORDINGS_LAYOUT, recordings_layout
+from .media_stream import (
+    CONF_EXTERNAL_PLAYBACK,
+    CONF_STREAM_HTTPS,
+    CONF_STREAM_LIMIT,
+    CONF_STREAM_MODE,
+    CONF_STREAM_PORT,
+    DEFAULT_STREAM_LIMIT,
+)
 from .models import ReceiverState, Service, identity
 from .recording_images import (
     CONF_IMAGE_GENERATION,
@@ -305,6 +313,28 @@ class EnigmaOptions(config_entries.OptionsFlowWithReload):
                     vol.Required(
                         "scan_interval", default=options.get("scan_interval", DEFAULT_INTERVAL)
                     ): vol.All(int, vol.Range(min=5, max=300)),
+                    vol.Required(
+                        CONF_EXTERNAL_PLAYBACK, default=options.get(CONF_EXTERNAL_PLAYBACK, False)
+                    ): selector.BooleanSelector(),
+                    vol.Required(
+                        CONF_STREAM_MODE, default=options.get(CONF_STREAM_MODE, "auto")
+                    ): selector.SelectSelector(
+                        selector.SelectSelectorConfig(
+                            options=["auto", "compatible"],
+                            translation_key="stream_mode",
+                            mode=selector.SelectSelectorMode.DROPDOWN,
+                        )
+                    ),
+                    vol.Required(
+                        CONF_STREAM_LIMIT,
+                        default=options.get(CONF_STREAM_LIMIT, DEFAULT_STREAM_LIMIT),
+                    ): vol.All(int, vol.Range(min=0)),
+                    vol.Required(
+                        CONF_STREAM_PORT, default=options.get(CONF_STREAM_PORT, 8001)
+                    ): vol.All(int, vol.Range(min=1, max=65535)),
+                    vol.Required(
+                        CONF_STREAM_HTTPS, default=options.get(CONF_STREAM_HTTPS, False)
+                    ): selector.BooleanSelector(),
                     vol.Required(
                         CONF_SHOW_CHANNELS, default=options.get(CONF_SHOW_CHANNELS, False)
                     ): selector.BooleanSelector(),

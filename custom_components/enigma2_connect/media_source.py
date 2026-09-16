@@ -6,14 +6,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from typing import NoReturn
-
     from homeassistant.components.media_source import MediaSourceItem
     from homeassistant.core import HomeAssistant
 
     from .coordinator import EnigmaConfigEntry
-    from .models import JsonObject
-
+    from .media_stream import CONF_EXTERNAL_PLAYBACK, CONF_STREAM_HTTPS, CONF_STREAM_PORT
 from hashlib import sha256
 from pathlib import PurePosixPath
 from urllib.parse import quote, unquote
@@ -23,6 +20,7 @@ from homeassistant.components.media_player.errors import BrowseError
 from homeassistant.components.media_source import (
     BrowseMediaSource,
     MediaSource,
+    PlayMedia,
     Unresolvable,
 )
 from homeassistant.config_entries import ConfigEntryState
@@ -36,7 +34,8 @@ from .channel_media import (
     channel_from_identifier,
 )
 from .const import DOMAIN
-from .models import ReceiverState, Snapshot
+from .media_stream import CONF_EXTERNAL_PLAYBACK, CONF_STREAM_HTTPS, CONF_STREAM_PORT
+from .models import JsonObject, ReceiverState, Snapshot
 from .recording_images import recording_thumbnail
 from .recordings import async_recording_labels, browse_recordings, recording_path
 
@@ -99,7 +98,7 @@ class EnigmaRecordingSource(MediaSource):
     def name(self) -> str:
         return self._name_override or async_get_cached_translations(
             self.hass, self.hass.config.language, "common", DOMAIN
-        ).get(f"component.{DOMAIN}.common.recordings", "Enigma2 recordings")
+        ).get(f"component.{DOMAIN}.common.recordings", "Enigma2 Connect")
 
     @name.setter
     def name(self, value: str | None) -> None:
@@ -244,17 +243,36 @@ class EnigmaRecordingSource(MediaSource):
                 children.insert(0, channel_folder(entries[0], labels["channels"]))
         return self._folder(identifier or None, catalog.title, children)
 
-    async def async_resolve_media(self, item: MediaSourceItem) -> NoReturn:
+    async def async_resolve_media(self, item: MediaSourceItem) -> PlayMedia:
         if (item.identifier or "").startswith("channel/"):
-            entry, _ = channel_from_identifier(self.hass, item.identifier)
+            entry, channel = channel_from_identifier(self.hass, item.identifier)
+            if entry.options.get(CONF_EXTERNAL_PLAYBACK, False):
+                client = entry.runtime_data.client
+                source = (
+                    client.base_url.with_scheme(
+                        "https" if entry.options.get(CONF_STREAM_HTTPS, False) else "http"
+                    )
+                    .with_port(entry.options.get(CONF_STREAM_PORT, 8001))
+                    .with_path("/" + channel.reference)
+                )
+                return await entry.runtime_data.media_stream.async_play(source, recording=False)
             raise Unresolvable(
                 translation_domain=DOMAIN,
                 translation_key="channel_receiver_only",
                 translation_placeholders={"receiver": entry.title},
             )
-        entry, _ = recording_from_identifier(self.hass, item.identifier)
-        # Browsing works with any selected player. Only the owning Enigma player
-        # understands these recordings; resolving must never start playback itself.
+        entry, movie = recording_from_identifier(self.hass, item.identifier)
+        if entry.options.get(CONF_EXTERNAL_PLAYBACK, False):
+            path = recording_path(movie)
+            if not path.is_absolute() or ".." in path.parts or path.suffix.lower() != ".ts":
+                raise Unresolvable(
+                    translation_domain=DOMAIN, translation_key="stream_recording_format"
+                )
+            source = entry.runtime_data.client.base_url.with_path("/file").with_query(
+                action="download", file=str(path)
+            )
+            return await entry.runtime_data.media_stream.async_play(source, recording=True)
+        # External playback is opt-in; receiver playback keeps its existing routing.
         raise Unresolvable(
             translation_domain=DOMAIN,
             translation_key="recording_receiver_only",

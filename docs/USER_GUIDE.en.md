@@ -6,8 +6,9 @@
 
 Enigma2 Connect lets you control your receiver from Home Assistant: change
 channels, adjust volume, play recordings on the TV and display messages. You can
-also use these controls in automations. Video and audio play on the receiver and
-its connected TV. Browser and Cast playback are not included.
+also use these controls in automations. Video and audio normally play on the receiver
+and its connected TV. Optional [external playback](#play-on-other-devices) adds
+live TV and TS recordings on browsers and media devices that support HLS.
 
 ## Contents
 
@@ -62,9 +63,11 @@ Add further receivers in the same way. Give them recognizable names, such as
 “Living room” and “Bedroom”. Setup uses the interface throughout; no YAML
 configuration is required.
 
-A future publication is intended to support HACS as a custom repository. The
-[project repository](https://github.com/topic2k/enigma2-connect) can then be added
-through HACS **Custom repositories**, with type **Integration**. The
+### HACS
+
+Add the [project repository](https://github.com/topic2k/enigma2-connect)
+through HACS **Custom repositories**, with type **Integration**, then download it.
+Restart Home Assistant and add the integration as described above. The
 [HACS guide](https://www.hacs.xyz/docs/faq/custom_repositories/) explains the steps.
 Inclusion in the default HACS catalog is not promised.
 
@@ -155,13 +158,12 @@ are diagnostics.
 There are two ways to find recordings:
 
 - Open **Browse media** on the media player for that receiver's recordings.
-- Open **Media → Enigma2 recordings** in the sidebar to choose between all your
+- Open **Media → Enigma2 Connect** in the sidebar to choose between all your
   configured receivers.
 
 Open the required subfolders and select a recording. In the Media sidebar,
 select the receiver that holds the recording as the player at the bottom.
-If you choose “Web browser” or another device, Home Assistant names the receiver
-you need instead.
+For “Web browser” or another device, enable external playback as described below.
 
 Titles include the date, time, channel and duration when available. Times use
 Home Assistant's configured time zone. Folders appear before recordings. The
@@ -184,8 +186,98 @@ under **Source**.
 
 These options apply per receiver and affect both media views. When recordings
 are combined, the channel folder first lists receivers and then their channels.
-Select the matching receiver as the player here too. Channel logos load from the
+Select the matching receiver or use external playback. Channel logos load from the
 receiver; a TV symbol appears when a logo is missing.
+
+### Play on other devices
+
+1. Open **Settings → Devices & services → Enigma2 Connect → Configure → Settings**
+   for the receiver.
+2. Enable **Playback on other devices**. For live TV, also enable **Show channels
+   in the media browser** and optionally select a bouquet.
+3. Check **Live TV streaming port** (usually **8001**). Enable **HTTPS for live TV
+   streaming** only when that port supports HTTPS. Recordings use the separate
+   OpenWebif connection; both use the saved receiver credentials.
+4. Open **Media → Enigma2 Connect** and select **Web browser** or a suitable
+   media player, such as a Cast device, as the playback device.
+5. Select a TS recording or an item in **Channels**. Startup may take several
+   seconds. Stop playback on the destination device.
+
+**Stream processing → Automatic** is the default. For live TV, the integration
+first checks the receiver's HLS output. Suitable HLS is relayed through Home
+Assistant without starting an FFmpeg encoder. Otherwise, compatible video and
+audio tracks are copied into HLS. For incompatible live TV codecs, the transcoding
+output configured in OpenWebif is also checked. The receiver must provide it;
+a visible transcoding section alone does not establish support. Its settings
+are not changed.
+
+For live TV and recording playback without full seeking, only incompatible
+tracks are converted on Home Assistant. Compatible video keeps
+its original resolution and frame rate. Software conversion produces up to
+720p/25 fps and stereo AAC. Format detection uses **ffprobe** from the FFmpeg
+package; packaging or conversion uses **FFmpeg**, with **libx264** for video
+conversion. If detection is unavailable or optimized startup fails, the previous
+full conversion is attempted automatically.
+
+If playback has problems, select **Stream processing → Compatibility (always
+convert)**. This uses more CPU and bypasses receiver HLS/transcoding. The destination
+must support HLS and reach the Home Assistant URL. For Cast, DNS resolution and
+any HTTPS certificate must also work on that device. The user confirmed Firefox
+and Edge with the previous full conversion. Optimized recording playback with
+repeated forward/backward seeks was confirmed in HA on 2026-09-16; the browser
+was not specified. Specific Cast devices still need separate practical tests.
+
+Set **Maximum simultaneous streams** per receiver: **default 5**, another positive
+integer, or **0 for unlimited**. New playback does not stop another stream. When
+the limit is reached, only the additional start is rejected. Stop a playback and
+wait up to two minutes after its last request for the slot to become reusable,
+or adjust the limit. Recently stopped streams still count until then. Saving
+receiver options reloads the integration and ends its running streams.
+
+Multiple viewers of the same live channel share **one stream and one slot**.
+The stream stays active while at least one viewer requests data. Each recording
+start uses a separate slot and starts at the beginning, so viewers can watch
+independently. Pending starts also count toward the limit. Available tuners,
+decryption, receiver encoders and Home Assistant capacity can further limit
+the number that actually works.
+**Seek within recordings:** Open a completed TS recording, wait for playback
+to start and drag the timeline to the desired position. If the receiver supports
+requesting file sections and duration can be determined, the player shows the
+entire recording. Forward and backward jumps can leave the previously buffered
+window. Playback may briefly load after a jump.
+
+In **Automatic** mode, suitable H.264 video is preserved: resolution, frame rate
+and picture quality stay unchanged. Compatible AAC audio is also copied;
+otherwise only audio is converted to AAC. HA repackages requested sections for
+the browser. This requires a matching receiver recording index (`.ts.ap`) and
+current FFmpeg features plus ffprobe on HA. No full scan or download is needed.
+
+If these prerequisites are unavailable or **Compatibility** is selected, the
+previous full libx264 conversion applies: up to 720p/25 fps, a 2 Mbit/s video
+target and AAC audio. Debug logs report the fallback reason under
+`VOD remux unavailable`. Change the mode in integration options; saving ends
+active streams. The recording stays on the receiver and HA retains at most
+32 MiB of segment data per session. Each playback has an independent timeline.
+Optimized playback starts at the first indexed keyframe, so a short leading
+portion may be omitted. Use Compatibility mode if playback shows visual problems.
+
+If suitable file access or a reliable duration is unavailable, playback
+automatically uses the previous bounded window. Debug logs identify the reason
+under `VOD unavailable`; full seeking is then unavailable. Recordings still in
+progress or modified during playback are unsuitable for VOD. Recordings up to
+24 hours are supported. Changing a file after startup can interrupt playback.
+
+Live TV and recording fallback use eight local HLS segments targeting two
+seconds; copied keyframe spacing may extend them. Receiver HLS uses the receiver's
+window. Long pauses and automatically resuming a saved position are not included.
+Resources expire after two minutes without requests; a new selection is required
+after six hours at most. Shared playback URLs grant access until they expire.
+
+The receiver must be reachable and have tuners/decryption resources available
+for live TV. External playback sends no zap or power command, although firmware
+and tuner allocation can still limit reception. Audio-only radio, other recording
+formats, subtitles, audio track selection and receiver playback progress are not
+carried over.
 
 ## Choose preview images
 
@@ -259,6 +351,11 @@ group names. **—** means that no separate group is configured.
 | --- | --- |
 | Recordings in the media tile (applies to all receivers) | Separate receivers; optionally combine them. This choice is saved for all receivers. |
 | Polling interval (seconds) | 15 seconds; adjustable from 5 to 300 seconds. Smaller values refresh status more often. |
+| Playback on other devices | Off; HLS through Home Assistant with multiple simultaneous streams. |
+| Maximum simultaneous streams | 5 per receiver; positive integer, 0 = unlimited. The same live channel is shared; recordings start separately. |
+| Stream processing | Automatic; prefer suitable receiver output and copy compatible tracks. Compatibility forces full conversion on Home Assistant. |
+| Live TV streaming port | 8001; independent of the OpenWebif port. |
+| HTTPS for live TV streaming | Off; enable only for an HTTPS-capable streaming port. |
 | Show channels in the media browser | Off; adds a channel folder to both media views. |
 | Bouquet for the media browser | Empty; follows the group selected under Source. A separate choice does not change the media player's source. |
 | Recording thumbnails – image sources | Snapshot only; select several sources if needed. Clear all selections to disable thumbnails. |
@@ -487,7 +584,8 @@ changes, check the receiver time zone and verify the schedule on the receiver to
 | Connection fails | Open OpenWebif in a browser; check address, port, login and HTTPS through **Reconfigure**. Old interfaces without OpenWebif are not supported. |
 | Receiver is “Unavailable” | Check network and power. Deep standby usually makes it unreachable; normal standby is a different state. |
 | New recordings or channels are missing | Press **Refresh lists**. If entries remain missing, check the corresponding list in OpenWebif. |
-| Recording will not play | Select the receiver holding it in the Media sidebar. “Web browser” and Cast devices cannot play it. |
+| Browser reports an unsupported media type | Update the integration to at least `1.2.0-dev.2` and restart Home Assistant. `dev.1` reported a MIME type that the HA media dialog does not recognize as HLS; changing browsers does not fix that cause. |
+| Recording will not play | Select its receiver or enable external playback. For external devices, check FFmpeg with libx264/AAC, HA connectivity, TS format and CPU load; for live TV also check the stream port, credentials and available tuners. |
 | Preview is missing | Check sources and keys and allow time for preparation. For an ongoing recording, the chosen position must first become available. Frames require FFmpeg on the HA system and readable recording files; technical details are in the developer guide. |
 | Poster is wrong | The title search may find a different result. Use a snapshot or custom image address instead. |
 | Channel logo is missing | Matching logos must exist on the receiver; otherwise a placeholder is shown. |
@@ -520,6 +618,16 @@ correct the configured executable path, then reload Enigma2 Connect. Alternative
 deselect **Snapshot from recording** in Receiver settings and save. This clears
 the issue. Receiver controls and media catalogs remain usable. Removing a receiver
 entry also removes its repair issue.
+
+### Investigating streaming errors
+
+Enable debug logging for Enigma2 Connect in Home Assistant and start the affected
+stream again. Messages with `[stream=…]` show the processing path, detected formats
+and fallback reasons. The same identifier belongs to the same playback session.
+Linear compatibility playback does not inspect input formats (`not_probed`);
+VOD inspects recordings in this mode as well. See the
+[developer documentation](DEVELOPMENT.en.md#streaming-diagnostics-and-quality)
+for technical details and current quality settings.
 
 ## Update or remove
 
