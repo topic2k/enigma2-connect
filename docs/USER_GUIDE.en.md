@@ -63,9 +63,11 @@ Add further receivers in the same way. Give them recognizable names, such as
 “Living room” and “Bedroom”. Setup uses the interface throughout; no YAML
 configuration is required.
 
-A future publication is intended to support HACS as a custom repository. The
-[project repository](https://github.com/topic2k/enigma2-connect) can then be added
-through HACS **Custom repositories**, with type **Integration**. The
+### HACS
+
+Add the [project repository](https://github.com/topic2k/enigma2-connect)
+through HACS **Custom repositories**, with type **Integration**, then download it.
+Restart Home Assistant and add the integration as described above. The
 [HACS guide](https://www.hacs.xyz/docs/faq/custom_repositories/) explains the steps.
 Inclusion in the default HACS catalog is not promised.
 

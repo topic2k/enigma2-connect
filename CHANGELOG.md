@@ -4,7 +4,7 @@
 
 ## Inhaltsverzeichnis
 
-- [1.2.0-dev.10](#120-dev10)
+- [1.2.0-dev.11](#120-dev11)
 - [1.1.3](#113)
 - [1.1.2](#112)
 - [1.1.1](#111)
@@ -13,9 +13,15 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 1.2.0-dev.10
+## 1.2.0-dev.11
 
 Unveröffentlichte Entwicklerversion.
+
+- README-Badges für Release, Voraussetzungen, Lizenz, Tests, Hassfest/HACS,
+  Coverage, HACS-Installation und Dokumentation im Stil `flat-square` ergänzt.
+  Coverage wird nach erfolgreichen Tests auf `main` mit Quellcommit und Lauf-Link
+  auf dem separaten Datenbranch `badges` aktualisiert; bestehende Qualitätsprüfungen
+  bleiben erhalten. HACS-Anleitung für das benutzerdefinierte Repository aktualisiert.
 
 - HLS-Spultest auf explizite Videozeitstempel umgestellt: AAC-Vorlauf darf das
   Sprungziel an Farb-/Segmentgrenzen nicht verschieben. Startzeitpunkte sämtlicher

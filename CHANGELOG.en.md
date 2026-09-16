@@ -4,7 +4,7 @@
 
 ## Contents
 
-- [1.2.0-dev.10](#120-dev10)
+- [1.2.0-dev.11](#120-dev11)
 - [1.1.3](#113)
 - [1.1.2](#112)
 - [1.1.1](#111)
@@ -13,9 +13,15 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 1.2.0-dev.10
+## 1.2.0-dev.11
 
 Unreleased development version.
+
+- Added `flat-square` README badges for releases, requirements, license, tests,
+  Hassfest/HACS, coverage, HACS installation and documentation. After successful
+  tests on `main`, coverage is updated on the separate `badges` data branch with
+  source commit and run link; existing quality checks remain in place. Updated
+  the HACS custom repository installation instructions.
 
 - Use explicit video timestamps in the HLS seek test so AAC encoder delay cannot
   shift the target across colour/segment boundaries. Additionally verify the

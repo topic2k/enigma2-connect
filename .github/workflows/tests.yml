@@ -1,10 +1,16 @@
 name: Tests
-on: [push, pull_request]
+on:
+  push:
+    branches-ignore: [badges]
+    tags: ['**']
+  pull_request:
 permissions:
   contents: read
 jobs:
   test:
     runs-on: ubuntu-latest
+    outputs:
+      coverage: ${{ steps.coverage.outputs.percent }}
     steps:
       - uses: actions/checkout@v7
       - name: Install FFmpeg for recording snapshot tests
@@ -22,3 +28,87 @@ jobs:
       - run: uv run pytest --cov=custom_components.enigma2_connect --cov-branch --cov-report=term-missing --cov-report=json:coverage.json
       - run: uv run python scripts/check_config_flow_coverage.py coverage.json --silver
       - run: node --test tests/frontend.test.cjs
+      - name: Read measured statement and branch coverage
+        id: coverage
+        run: |
+          python - <<'PY'
+          import json
+          import math
+          import os
+          from pathlib import Path
+
+          report = json.loads(Path("coverage.json").read_text())
+          value = report["totals"]["percent_covered"]
+          if not report["meta"]["branch_coverage"] or not math.isfinite(value) or not 0 <= value <= 100:
+              raise SystemExit("Expected measured statement and branch coverage in [0, 100]")
+          with open(os.environ["GITHUB_OUTPUT"], "a") as output:
+              output.write(f"percent={value:.2f}\n")
+          PY
+
+  coverage-badge:
+    needs: test
+    if: >-
+      github.event_name == 'push' && github.ref == 'refs/heads/main' &&
+      github.repository == 'topic2k/enigma2-connect'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    concurrency:
+      group: coverage-badge-main
+      cancel-in-progress: false
+    steps:
+      - name: Publish coverage from successful main tests
+        uses: actions/github-script@v8
+        env:
+          COVERAGE: ${{ needs.test.outputs.coverage }}
+        with:
+          script: |
+            const { COVERAGE } = process.env;
+            if (!/^\d+(\.\d+)?$/.test(COVERAGE ?? '') || Number(COVERAGE) > 100) {
+              throw new Error('Missing or invalid measured coverage');
+            }
+            const repo = context.repo;
+            const git = github.rest.git;
+            const main = await git.getRef({ ...repo, ref: 'heads/main' });
+            if (main.data.object.sha !== context.sha) {
+              core.info('Skipping superseded main test run');
+              return;
+            }
+            let parent;
+            let baseTree;
+            try {
+              const ref = await git.getRef({ ...repo, ref: 'heads/badges' });
+              parent = ref.data.object.sha;
+            } catch (error) {
+              if (error.status !== 404) throw error;
+            }
+            if (parent) {
+              const commit = await git.getCommit({ ...repo, commit_sha: parent });
+              baseTree = commit.data.tree.sha;
+            }
+            const content = JSON.stringify({
+              schemaVersion: 1,
+              label: 'Coverage',
+              message: `${COVERAGE}%`,
+              color: Number(COVERAGE) > 95 ? 'brightgreen' : 'orange',
+              source: context.sha,
+              run: `${context.serverUrl}/${repo.owner}/${repo.repo}/actions/runs/${context.runId}`,
+              measured: 'statements + branches',
+            }, null, 2) + '\n';
+            const tree = await git.createTree({
+              ...repo,
+              ...(baseTree ? { base_tree: baseTree } : {}),
+              tree: [{ path: 'coverage.json', mode: '100644', type: 'blob', content }],
+            });
+            const commit = await git.createCommit({
+              ...repo,
+              message: `Update coverage for ${context.sha}`,
+              tree: tree.data.sha,
+              parents: parent ? [parent] : [],
+            });
+            if (parent) {
+              await git.updateRef({ ...repo, ref: 'heads/badges', sha: commit.data.sha, force: false });
+            } else {
+              await git.createRef({ ...repo, ref: 'refs/heads/badges', sha: commit.data.sha });
+            }

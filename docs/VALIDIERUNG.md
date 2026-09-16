@@ -504,6 +504,32 @@ endgültigen Commit stehen im [Release 1.1.0](https://github.com/topic2k/enigma2
 Echte Bonjour-Erkennung, automatischer DHCP-Empfang in laufendem HA und die
 subjektive Bild-/Tonprüfung bleiben offen.
 
+## README-Badges: 1.2.0-dev.11
+
+Am **16.09.2026** lokal geprüft: YAML-Struktur und Veröffentlichungsschranken,
+unveränderte bisherige CI-Prüfschritte, sechs Fälle für das Auslesen der
+Anweisungs-/Zweigabdeckung sowie zehn simulierte GitHub-API-Fälle. Erstveröffentlichung,
+Updates mit erhaltener Historie/Dateien, überholte Läufe, Berechtigungsfehler,
+fehlende Commits und ungültige Messwerte wurden geprüft. Python-Syntax,
+Versionskonsistenz und `uv lock --check --offline` bestanden.
+Die neun bereits verfügbaren Badge-URLs liefern HTTP 200 und die erwarteten
+Beschriftungen; der Coverage-Endpunkt wartet auf seine Erstveröffentlichung.
+Shields wies den Standard-Python-Client mit HTTP 403 ab; der lesende Test mit
+benanntem Prüfclient war erfolgreich. Das ist keine Prüfung der Chat-Bildanzeige.
+
+Qualitätscheckliste geprüft: `docs-installation-instructions` betrifft die
+aktualisierte HACS-Anleitung; `config-flow-test-coverage` und `test-coverage`
+behalten ihre bisherigen Prüfungen und Grenzen. Laufzeitcode und HA-Kompatibilität
+werden nicht geändert. GitHub-Release `v1.1.0` und fehlende Listung im
+HACS-Standardkatalog wurden lesend bestätigt. Eine tatsächliche HACS-Installation
+wurde dabei nicht durchgeführt.
+
+Die API-Prüfungen sind Simulationen, kein erfolgreicher GitHub-Publikationslauf.
+Aktuelle CI für diesen Arbeitsstand und der erste Schreibzugriff auf den
+Datenbranch `badges` bleiben offen. Erst nach einem erfolgreichen `main`-Testlauf
+mit dem neuen Workflow steht dessen Coverage-Endpunkt bereit. Frühere CI- und
+Hardware-Nachweise unten gelten weiterhin nur für ihre angegebenen Stände.
+
 ## Dependabot: cryptography und CVE-2026-69247
 
 [Dependabot-Hinweis 1](https://github.com/topic2k/enigma2-connect/security/dependabot/1)

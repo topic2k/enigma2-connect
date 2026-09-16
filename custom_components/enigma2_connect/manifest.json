@@ -21,7 +21,7 @@
   "iot_class": "local_polling",
   "issue_tracker": "https://github.com/topic2k/enigma2-connect/issues",
   "requirements": [],
-  "version": "1.2.0-dev.10",
+  "version": "1.2.0-dev.11",
   "zeroconf": [
     {
       "type": "_http._tcp.local.",

@@ -8,6 +8,7 @@ die [README](../README.md) bleibt der kurze Einstieg für Anwender.
 
 ## Inhaltsverzeichnis
 
+- [README-Badges](#readme-badges)
 - [Projekt und Voraussetzungen](#projekt-und-voraussetzungen)
 - [Entwicklungsumgebung und Prüfungen](#entwicklungsumgebung-und-prüfungen)
 - [Lesende Receiver-Abnahme](#lesende-receiver-abnahme)
@@ -23,6 +24,36 @@ die [README](../README.md) bleibt der kurze Einstieg für Anwender.
 - [Validierung von Aktionen](#validierung-von-aktionen)
 - [Vorgemerkte Ideen](#vorgemerkte-ideen)
 - [Dateibestand und lokale Archive](#dateibestand-und-lokale-archive)
+
+## README-Badges
+
+Die gemeinsamen Badges über beiden Sprachfassungen verwenden `flat-square`.
+Release zeigt das letzte veröffentlichte GitHub-Release; Tests und Validierung
+beziehen sich auf `main`. Validierung umfasst Hassfest und HACS. Die statischen
+Mindestversionen für Home Assistant, OpenWebif und Python bei Änderungen der
+Voraussetzungen mitpflegen. HACS „Custom“ bezeichnet den Installationsweg,
+keine Aufnahme in den Standardkatalog.
+
+Der Test-Workflow liest nach allen bisherigen Prüfungen die kombinierte
+Anweisungs-/Zweigabdeckung aus `coverage.json`. Ein separater Job veröffentlicht
+den Wert nur nach erfolgreichen `main`-Push-Tests im Originalrepository nach
+`badges/coverage.json` (Datei `coverage.json` auf Branch `badges`). Nur dieser Job
+erhält `contents: write`; er verwendet den eingebauten `GITHUB_TOKEN`, führt
+keinen Repository-Code aus und benötigt weder externe Coverage-Dienste noch
+zusätzliche Secrets. Parallelveröffentlichungen werden serialisiert, überholte
+`main`-Läufe übersprungen und Branch-Aktualisierungen ohne Force ausgeführt.
+Der erste Lauf legt den Datenbranch mit eigener Historie an; weitere Updates
+erhalten andere Dateien auf diesem Branch. Repository-Regeln müssen diesen
+Bot-Schreibzugriff erlauben. Pushes auf `badges` starten keine Tests/Validierung.
+
+Shields.io liest den Messwert über einen öffentlichen JSON-Endpunkt. Der Badge
+verlinkt auf die Daten einschließlich Quellcommit, Testlauf und Messart. Er zeigt
+die letzte veröffentlichte erfolgreiche Messung; bei fehlgeschlagenen Tests bleibt
+dieser Wert stehen. Der separate Tests-Badge zeigt den aktuellen Teststatus.
+Vor dem ersten erfolgreichen `main`-Lauf mit diesem Workflow ist der
+Coverage-Endpunkt noch nicht verfügbar; Caches können die Anzeige verzögern.
+Der Gesamtwert ersetzt weder die 100-%-Config-Flow-Prüfung noch die Grenze von
+über 95 % je Integrationsmodul oder echte Receiver-/Home-Assistant-Prüfungen.
 
 ## Projekt und Voraussetzungen
 

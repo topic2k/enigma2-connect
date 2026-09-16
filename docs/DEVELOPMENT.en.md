@@ -8,6 +8,7 @@ and everyday use, see the [user guide](USER_GUIDE.en.md). The
 
 ## Contents
 
+- [README badges](#readme-badges)
 - [Project and requirements](#project-and-requirements)
 - [Development environment and checks](#development-environment-and-checks)
 - [Read-only receiver acceptance](#read-only-receiver-acceptance)
@@ -23,6 +24,33 @@ and everyday use, see the [user guide](USER_GUIDE.en.md). The
 - [Action validation](#action-validation)
 - [Recorded ideas](#recorded-ideas)
 - [Files and local archives](#files-and-local-archives)
+
+## README badges
+
+The shared badges above both languages use `flat-square`. Release shows the
+latest published GitHub release; tests and validation refer to `main`.
+Validation covers Hassfest and HACS. Keep the static minimum versions for
+Home Assistant, OpenWebif and Python aligned with requirement changes.
+HACS “Custom” describes the installation method, not inclusion in the default catalog.
+
+After all existing checks, the test workflow reads combined statement/branch
+coverage from `coverage.json`. A separate job publishes it only after successful
+`main` push tests in the original repository to `badges/coverage.json` (file
+`coverage.json` on branch `badges`). Only this job receives `contents: write`;
+it uses the built-in `GITHUB_TOKEN`, executes no repository code and requires
+no external coverage service or additional secrets. Publication is serialized,
+superseded `main` runs are skipped and branch updates never use force.
+The first run creates the data branch with independent history; later updates
+preserve other files on that branch. Repository rules must permit this bot write.
+Pushes to `badges` do not start tests/validation.
+
+Shields.io reads the measurement from a public JSON endpoint. The badge links
+to the data including source commit, test run and measurement type. It shows
+the last published successful measurement; failed tests leave that value intact.
+The separate Tests badge shows current test status. The coverage endpoint is
+unavailable until the first successful `main` run with this workflow; caches may
+delay display updates. The aggregate never replaces the 100% config-flow check,
+the above-95% threshold per integration module or actual receiver/Home Assistant checks.
 
 ## Project and requirements
 
