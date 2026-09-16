@@ -780,3 +780,9 @@ ist auf sechs Minuten begrenzt. Das ist keine feste Credit-Obergrenze; ein
 Agentenauftrag kann mehrere Modellaufrufe benötigen. Keine automatische Wiederholung,
 kein Anbieterwechsel und keine Aktivierung im Wochenplan. Der Test nutzt
 vorhandenes Guthaben; er kauft keine Credits und ändert keinen Tarif.
+
+Teststand 16.09.2026: Der Modbus-Einzeltest war erfolgreich und nannte alle
+Fristen. Junie meldete rund 0,048 USD Modellkosten; das Standardmodell war
+Gemini 3.7 Flash. Die Top-up-Abbuchung ist noch nicht bestätigt. Weitere
+Relevanzfälle bleiben vor einer produktiven Umstellung zu prüfen.
+Siehe [Prüfübersicht](VALIDIERUNG.md).

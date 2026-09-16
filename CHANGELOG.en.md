@@ -15,6 +15,9 @@
 
 Unreleased development version.
 
+- Junie trial succeeded: German assessment with complete Modbus deadlines;
+  reported model cost about USD 0.048, actual top-up deduction still unconfirmed.
+
 - Manual Junie single-post trial with read-only GitHub permissions and subsequent
   validation of the result structure and source citations.
 

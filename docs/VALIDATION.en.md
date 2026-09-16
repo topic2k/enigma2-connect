@@ -2,11 +2,42 @@
 
 # Verification summary
 
-## Junie preparation – 1.1.2-dev.4
+## Junie single-post trial on 2026-09-16 – 1.1.2-dev.4
 
-The isolated Junie trial affects only the developer blog monitor. Integration
-behavior and the quality checklist are unchanged. Live evidence remains pending
-until the trial; this does not replace receiver or Home Assistant practice tests.
+[Run 35120165171](https://github.com/topic2k/enigma2-connect/actions/runs/35120165171)
+at `a6e4ba7` succeeded: 52 script tests followed by a live assessment of one
+Modbus post. The Junie job took 1 minute 50 seconds; CLI execution took about
+69 seconds. The prepared context was unchanged.
+
+The German response matches the post and includes all three milestones:
+availability in 2026.9, deprecation in 2026.10 and removal in 2027.10.
+The `no-impact` assessment matches the supplied OpenWebif-based code, which
+uses neither Modbus components nor `modbus-connection`. Optional improvement
+was assessed independently as `none`, with no concrete benefit identified.
+Empty evidence lists are valid for these classifications. Automatic checks
+validated schema, post identity and citation format; topic association,
+deadlines and reasoning were also reviewed manually.
+
+Junie's `llmUsage` and `taskCostUsd` report **0.0483518 USD**. Reported tokens:
+65,759 input, 145,549 cached input and 6,475 output. The main model was
+`gemini-3.7-flash`, with helper models `gpt-4.1-mini-2025-04-14`,
+`gpt-4.1-2025-04-14` and `gpt-5.4-nano`. The default model is dynamic;
+this successful JetBrains access was therefore not a Gemini-independent trial.
+The top-up display remained at 3.77 credits when rechecked. This does not mean
+the call was free; the actual account deduction is not yet demonstrated there.
+Four equally priced posts per week would cost approximately 0.77 USD over four
+weeks, without a guarantee for different posts or models.
+
+Local syntax, Ruff, workflow/shell, lock, version/documentation-link checks
+passed, alongside an offline check of preparation, report rendering and wrong
+post-ID rejection. All 52 script tests passed locally and on GitHub. These
+checks do not replace receiver or Home Assistant practice tests. Integration
+behavior and quality criteria were unchanged.
+
+One negative relevance case does not establish quality for required migrations
+or useful enhancements. The other three individual assessments remain pending.
+No issues, state writes, production switch, extra purchases, plan changes,
+merges or releases.
 
 ## Cloudflare follow-up on 2026-09-16 – 1.1.2-dev.3
 

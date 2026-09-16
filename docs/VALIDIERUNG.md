@@ -2,12 +2,43 @@
 
 # Prüfübersicht
 
-## Junie-Vorbereitung – 1.1.2-dev.4
+## Junie-Einzeltest am 16.09.2026 – 1.1.2-dev.4
 
-Der isolierte Junie-Test betrifft ausschließlich den Entwickler-Blog-Monitor.
-Integrationsfunktionen und die Qualitätscheckliste bleiben unverändert.
-Der Live-Nachweis steht bis zum Test aus; vorhandene Receiver- und
-Home-Assistant-Praxisprüfungen werden dadurch nicht ersetzt.
+Der [Testlauf 35120165171](https://github.com/topic2k/enigma2-connect/actions/runs/35120165171)
+auf `a6e4ba7` war erfolgreich: 52 Skripttests und anschließende Live-Analyse eines
+Modbus-Beitrags. Der Junie-Job dauerte 1 Minute 50 Sekunden, die eigentliche
+CLI-Ausführung rund 69 Sekunden. Der gespeicherte Kontext blieb unverändert.
+
+Die Antwort ist deutsch, korrekt zugeordnet und nennt alle drei Zeitpunkte:
+Verfügbarkeit 2026.9, Deprecation 2026.10 und Entfernung 2027.10. Die Bewertung
+`no-impact` passt zum bereitgestellten Code: Die Integration nutzt OpenWebif,
+keine Modbus-Komponenten oder `modbus-connection`. Die optionale Verbesserung
+wurde unabhängig mit `none` bewertet; hierfür wurde kein konkreter Nutzen
+gefunden. Leere Beleglisten sind für diese beiden Einstufungen zulässig.
+Die automatische Prüfung bestätigte Schema, Beitrags-ID und Belegformat;
+Zuordnung, Fristen und Begründung wurden zusätzlich manuell geprüft.
+
+Junies `llmUsage` und `taskCostUsd` melden **0,0483518 USD**. Gemeldete Tokens:
+65.759 Eingabe, 145.549 Cache-Eingabe und 6.475 Ausgabe. Hauptmodell war
+`gemini-3.7-flash`, Hilfsmodelle `gpt-4.1-mini-2025-04-14`,
+`gpt-4.1-2025-04-14` und `gpt-5.4-nano`. Das Standardmodell ist dynamisch;
+dieser erfolgreiche JetBrains-Zugang ist daher kein Gemini-unabhängiger Test.
+Die Top-up-Anzeige blieb bei der Nachkontrolle auf 3,77 Credits. Das beweist
+keinen kostenlosen Aufruf; die tatsächliche Kontobelastung ist dort noch nicht
+nachgewiesen. Vier gleich teure Beiträge pro Woche ergäben rechnerisch etwa
+0,77 USD für vier Wochen, ohne Garantie für andere Beiträge oder Modelle.
+
+Lokal bestanden Syntaxprüfung, Ruff, Workflow-/Shell-Prüfung, Lock-Prüfung,
+Versions-/Dokumentationslinks sowie eine Offline-Prüfung von Vorbereitung,
+Berichtserzeugung und Ablehnung einer falschen Beitrags-ID. Die 52 Skripttests
+liefen lokal und in GitHub erfolgreich. Diese Prüfungen ersetzen keine
+Receiver- oder Home-Assistant-Praxisprüfung. Integrationsfunktionen und
+Qualitätskriterien wurden nicht verändert.
+
+Ein einzelner negativer Relevanzfall belegt noch nicht die Qualität bei nötigen
+Migrationen oder sinnvollen Ergänzungen. Die übrigen drei Einzelbewertungen
+bleiben offen. Keine Issues, Statusschreibzugriffe, produktive Umstellung,
+Zusatzkäufe, Tarifänderungen, Merges oder Releases.
 
 ## Cloudflare-Fortsetzung am 16.09.2026 – 1.1.2-dev.3
 

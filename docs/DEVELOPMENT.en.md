@@ -744,3 +744,8 @@ The `ha-blog-junie-test` artifact is retained for seven days. The Junie step
 has a six-minute timeout. This is not a hard credit limit; one agent task can
 make multiple model calls. No automatic retry, provider fallback or weekly
 activation. The trial uses existing credits; it purchases none and changes no plan.
+
+Status on 2026-09-16: the Modbus trial succeeded and included every deadline.
+Junie reported about USD 0.048 in model costs; its default model was Gemini
+3.7 Flash. The top-up deduction is not yet confirmed. Other relevance cases
+remain to be tested before production adoption. See [verification summary](VALIDATION.en.md).

@@ -15,6 +15,9 @@
 
 Unveröffentlichte Entwicklerversion.
 
+- Junie-Probelauf erfolgreich: deutsche Bewertung mit vollständigen Modbus-Fristen;
+  gemeldete Modellkosten rund 0,048 USD, tatsächliche Top-up-Abbuchung noch offen.
+
 - Manueller Junie-Einzeltest mit rein lesenden GitHub-Rechten, einem Blogbeitrag
   und anschließender Prüfung der Ergebnisstruktur und Quellbelege.
 
