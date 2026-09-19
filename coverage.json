@@ -3,7 +3,7 @@
   "label": "Coverage",
   "message": "99.37%",
   "color": "brightgreen",
-  "source": "228d30f1d162dc1c2bc76265f05e03e27fbd56c5",
-  "run": "https://github.com/topic2k/enigma2-connect/actions/runs/35137362722",
+  "source": "1afa7052e54385498b5cca1778af36e9068f92cf",
+  "run": "https://github.com/topic2k/enigma2-connect/actions/runs/35434077276",
   "measured": "statements + branches"
 }
