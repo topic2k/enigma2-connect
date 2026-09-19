@@ -1,11 +1,12 @@
 # Enigma2 Connect
 
-[Deutsch](#deutsch) | [English](#english)
+<sup> [Lies mich](#deutsch) &nbsp; | &nbsp; [read me](#english) </sup>
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="custom_components/enigma2_connect/brand/dark_logo@2x.png">
   <img src="custom_components/enigma2_connect/brand/logo@2x.png" alt="Enigma2 Connect" width="720">
 </picture>
+<br><br>
 
 [![Release](https://img.shields.io/github/v/release/topic2k/enigma2-connect?style=flat-square&label=Release)](https://github.com/topic2k/enigma2-connect/releases/latest)
 [![Home Assistant 2026.9+](https://img.shields.io/badge/Home_Assistant-2026.9%2B-009AC7?style=flat-square&logo=homeassistant&logoColor=white)](#deutsch)
