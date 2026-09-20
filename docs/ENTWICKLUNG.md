@@ -913,6 +913,14 @@ steht in `services.py` und `services.yaml`. Die Notify-Entität verwendet die
 Nachrichtenoptionen des Receivers; `enigma2_connect.message` verwendet dagegen
 eigene Aktionswerte (Standard: Typ 1, Dauer 10 Sekunden).
 
+Die Zielprüfung vergleicht `DeviceEntry.config_entry_id` mit den Einträgen der
+Integration und verlangt den Zustand `LOADED`. Unbekannte Geräte, Geräte anderer
+Integrationen und nicht geladene Einträge ergeben den übersetzten Fehler
+`invalid_target`. Die veraltete Eigenschaft `config_entries` wird nicht verwendet.
+Der direkte Vergleich erhält die eindeutige Zuordnung; der HA-Helfer
+`async_get_device_and_config_entry_for_domain` kann bei alten zusammengesetzten
+Geräte-IDs mit mehreren passenden Aufteilungen einen beliebigen Treffer liefern.
+
 Timeraktionen akzeptieren Unix-Zeitstempel oder ISO-Datumsangaben mit
 Zeitzonenoffset. Löschen und Umschalten verwenden die ursprünglichen
 Receiver-Zeitstempel; nach erfolgreichen Timeraktionen werden Listen invalidiert.

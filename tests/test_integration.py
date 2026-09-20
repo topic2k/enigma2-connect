@@ -2,7 +2,7 @@
 """Real HA config-entry lifecycle, entity platforms and actions."""
 
 from datetime import UTC, datetime
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, PropertyMock, patch
 
 import pytest
 import voluptuous as vol
@@ -13,6 +13,7 @@ from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
 from homeassistant.setup import async_setup_component
 from probatio.codecs.fields import to_field_list
+from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.enigma2_connect.api import (
     AuthenticationError,
@@ -148,6 +149,69 @@ async def test_action_rejection_surfaces(hass, entry, receiver):
     entity = EnigmaMediaPlayer(entry.runtime_data)
     with pytest.raises(HomeAssistantError):
         await entity.async_turn_on()
+
+
+@pytest.mark.parametrize("target", ["missing", "foreign", "unloaded"])
+async def test_service_rejects_invalid_device_owner(hass, entry, receiver, target):
+    """Invalid targets retain the translated error and send no receiver command."""
+    await setup(hass, entry)
+    registry = dr.async_get(hass)
+    device_id = "missing"
+    if target == "foreign":
+        foreign = MockConfigEntry(domain="other_integration")
+        foreign.add_to_hass(hass)
+        device_id = registry.async_get_or_create(
+            config_entry_id=foreign.entry_id, identifiers={("other_integration", "test")}
+        ).id
+    elif target == "unloaded":
+        device_id = dr.async_entries_for_config_entry(registry, entry.entry_id)[0].id
+        assert await hass.config_entries.async_unload(entry.entry_id)
+    receiver[2].reset_mock()
+    with pytest.raises(ServiceValidationError) as error:
+        await hass.services.async_call(
+            DOMAIN, "message", {"device_id": device_id, "text": "Hello"}, blocking=True
+        )
+    assert error.value.translation_domain == DOMAIN
+    assert error.value.translation_key == "invalid_target"
+    receiver[2].assert_not_awaited()
+
+
+async def test_service_selects_owner_without_deprecated_config_entries(hass, entry, receiver):
+    """Two loaded receivers route only to the selected device's coordinator."""
+    await setup(hass, entry)
+    receiver[0]["about"]["info"]["ifaces"][0]["mac"] = "11:22:33:44:55:66"
+    second = MockConfigEntry(
+        domain=DOMAIN,
+        title="Second Receiver",
+        unique_id="112233445566",
+        data={**DATA, "host": "other.local"},
+    )
+    second.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(second.entry_id)
+    await hass.async_block_till_done()
+    device = dr.async_entries_for_config_entry(dr.async_get(hass), second.entry_id)[0]
+    with (
+        patch.object(
+            dr.DeviceEntry,
+            "config_entries",
+            new_callable=PropertyMock,
+            side_effect=AssertionError("Deprecated device property accessed"),
+        ),
+        patch.object(entry.runtime_data, "perform", new_callable=AsyncMock) as first,
+        patch.object(second.runtime_data, "perform", new_callable=AsyncMock) as selected,
+    ):
+        await hass.services.async_call(
+            DOMAIN, "message", {"device_id": device.id, "text": "Hello"}, blocking=True
+        )
+    first.assert_not_awaited()
+    selected.assert_awaited_once_with(
+        second.runtime_data.client.command,
+        "message",
+        refresh=False,
+        text="Hello",
+        type=1,
+        timeout=10,
+    )
 
 
 async def test_media_channel_number_sources_browse(hass, entry, receiver):

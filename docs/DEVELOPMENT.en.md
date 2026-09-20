@@ -857,6 +857,14 @@ Custom device actions have no implicit default device. Their schemas are in
 options; `enigma2_connect.message` uses its own action values instead
 (defaults: type 1, duration 10 seconds).
 
+Target validation compares `DeviceEntry.config_entry_id` with the integration's
+entries and requires the `LOADED` state. Unknown devices, devices owned by other
+integrations and unloaded entries produce the translated `invalid_target` error.
+The deprecated `config_entries` property is not used. Direct comparison preserves
+unambiguous ownership; HA's `async_get_device_and_config_entry_for_domain` helper
+may return an arbitrary match for old composite device IDs with multiple matching
+split devices.
+
 Timer actions accept Unix timestamps or ISO dates with a time zone offset.
 Deleting and toggling use the original receiver timestamps; successful timer
 actions invalidate the lists.
