@@ -2,6 +2,58 @@
 
 # Prüfübersicht
 
+## Vu+-Timerkennung und Eingabekorrektur: 1.3.0-dev.2
+
+Nutzerbericht vom **20.09.2026**, getesteter Laufzeitstand **1.3.0-dev.1**:
+**Vu+ Solo²**, **VTi-Team Image 15.0.0 (2025-06-23-vti-master (4ef8eb3a9))**,
+**OpenWebif 1.4.4**. Nachricht und Timer anlegen bestanden. Aktivieren/Deaktivieren
+und das erste Löschen meldeten „Die Receiver-Anfrage ist fehlgeschlagen oder
+wurde abgelehnt.“ Erneutes Löschen meldete denselben Fehler; mangels bestätigter
+vorheriger Löschung ist dies **kein bestandener Ablehnungstest**. Die Nachricht
+nach der Ablehnung funktionierte; keine weiteren Auffälligkeiten gemeldet.
+
+Der erste Timerdurchlauf war **nicht bestanden**. Der anschließende Vergleich
+der Nutzerangaben belegt eine abweichende Timerkennung im Aufruf:
+
+- `timer_toggle` enthält ein führendes Leerzeichen vor
+  `1:0:19:283D:3FB:1:C00000:0:0:0:`, der gespeicherte Timer keines.
+- Die angefragten Zeiten 20.09.2026, 12:00–12:02 mit Offset `+02:00` entsprechen
+  exakt den gespeicherten Werten `begin=1789898400`, `end=1789898520`.
+- Der Timer ist laut Nutzer noch vorhanden; gemeldet sind `justplay=1`,
+  `disabled=0`, `state=0`.
+
+Der bisherige Code übergibt die abweichende Kennung unverändert als `sRef`.
+**Nutzer-Gegencheck am 20.09.2026 bestanden:** Nach manuellem Entfernen des
+Leerzeichens funktionieren Deaktivieren, Aktivieren und Löschen des Timers.
+Damit ist die abweichende Eingabe als Ursache bestätigt; aus diesem Befund ergibt
+sich keine VTi-/OpenWebif-Inkompatibilität. Dieser Gegencheck betrifft weiterhin
+den gemeldeten Stand **1.3.0-dev.1** mit bereinigter Eingabe, nicht die automatische
+Bereinigung in dev.2. Erneutes Löschen nach der erfolgreichen Löschung wurde
+nicht erneut berichtet. In Abschnitt 1a wurden Timerparameter und Zeitumrechnung
+nicht geändert.
+
+**Korrektur in 1.3.0-dev.2:** Das gemeinsame Schema von `timer_add`, `timer_toggle`
+und `timer_delete` entfernt äußere Leerzeichen und weist danach leere Kennungen
+vor einem Receiver-Aufruf ab. Interne Leerzeichen, Groß-/Kleinschreibung und
+Zeitangaben bleiben unverändert. **12 gezielte Tests bestanden** mit dem echten
+HA-Testframework und simuliertem Receiver, darunter neun neue parametrisierte
+Regressionen für alle drei Aktionen. Umfang: `tests/test_integration.py` mit
+`-k 'timer or service_target or actions_registered or action_rejection'`.
+Ruff, Formatierung, strenge Typprüfung und Syntaxprüfung bestanden; außerdem
+Versions-/Dokumentationskonsistenz und Offline-Lockprüfung. Keine vollständige
+neue Coverage-Messung und keine Absenkung bestehender Prüfgrenzen.
+Prüfberichte: `.work/recording-workflows-checks/timer-tests.xml` und
+`timer-tests.log` im ursprünglichen Arbeitsverzeichnis `V:\enigma2-connect`.
+
+**Praxisstatus:** Vu+-Timeraktionen mit bereinigter Eingabe sind nutzerbestätigt;
+die automatische Bereinigung in dev.2 ist durch die lokalen Regressionen geprüft.
+Octagon-Nachweis und Commit `e1dce95` behalten ihren ursprünglichen
+Umfang. Betroffen sind `action-exceptions`, `test-coverage`, `strict-typing`,
+`docs-actions`, `docs-known-limitations` und `docs-supported-devices`.
+Die Nachbesserung wurde am 20.09.2026 von Nutzer und Codex als fertig bestätigt.
+Zugeordneter Abschlusscommit: `fix: trim whitespace in timer service references`.
+Keine neue CI oder Abnahme anderer Geräte/Funktionen behauptet.
+
 ## Aufnahme-Workflows: 1.3.0-dev.1, Abschnitt 1a
 
 Stand **19.09.2026**, Basis `origin/main` auf `1afa705`. Plan in der

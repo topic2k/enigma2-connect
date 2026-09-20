@@ -2,6 +2,55 @@
 
 # Verification summary
 
+## Vu+ timer reference and input correction: 1.3.0-dev.2
+
+User report dated **2026-09-20**, tested runtime **1.3.0-dev.1**: **Vu+ Solo²**,
+**VTi-Team Image 15.0.0 (2025-06-23-vti-master (4ef8eb3a9))**, **OpenWebif 1.4.4**.
+Screen message and timer creation passed. Enabling/disabling and the first
+deletion returned “Die Receiver-Anfrage ist fehlgeschlagen oder wurde abgelehnt.”
+Repeated deletion returned the same error; without confirmed prior deletion,
+this is **not a passed rejection test**. The subsequent message worked;
+no other issues were reported.
+
+The initial timer run **did not pass**. Comparing the subsequently supplied
+action inputs and stored timer establishes a mismatching identifier:
+
+- `timer_toggle` contains a leading space before
+  `1:0:19:283D:3FB:1:C00000:0:0:0:`; the stored timer reference has none.
+- Requested times 2026-09-20, 12:00–12:02 at offset `+02:00` match the stored
+  `begin=1789898400`, `end=1789898520` exactly.
+- The user confirms the timer still exists, reporting `justplay=1`, `disabled=0`,
+  `state=0`.
+
+The previous code sends the mismatching identifier unchanged as `sRef`.
+**User retest on 2026-09-20 passed:** After manually removing the space, disabling,
+enabling and deleting the timer work. This confirms the mismatching input as the
+cause; the finding does not establish a VTi/OpenWebif incompatibility. This retest
+still concerns reported version **1.3.0-dev.1** with corrected input, not automatic
+trimming in dev.2. Repeated deletion after successful deletion was not reported
+again. Section 1a did not change timer parameters or time conversion.
+
+**Fix in 1.3.0-dev.2:** The shared schema for `timer_add`, `timer_toggle` and
+`timer_delete` trims outer whitespace and rejects empty identifiers before
+contacting a receiver. Internal whitespace, case and times remain unchanged.
+**12 targeted tests passed** using the real HA test framework with a simulated
+receiver, including nine new parametrized regressions covering all three actions.
+Scope: `tests/test_integration.py` with
+`-k 'timer or service_target or actions_registered or action_rejection'`.
+Ruff, formatting, strict type checking and syntax passed, as did version/document
+consistency and the offline lock check. No new full coverage measurement or
+reduced thresholds. Reports: `.work/recording-workflows-checks/timer-tests.xml`
+and `timer-tests.log` under the original workspace `V:\enigma2-connect`.
+
+**Practical status:** Vu+ timer actions with corrected input are user-confirmed;
+automatic trimming in dev.2 is covered by the local regressions. Octagon evidence
+and commit `e1dce95` retain their original scope. Affected rules:
+`action-exceptions`, `test-coverage`, `strict-typing`, `docs-actions`,
+`docs-known-limitations` and `docs-supported-devices`. The user and Codex confirmed
+completion of this improvement on 2026-09-20. Corresponding completion commit:
+`fix: trim whitespace in timer service references`. No new CI or acceptance for
+other devices/features is claimed.
+
 ## Recording workflows: 1.3.0-dev.1, section 1a
 
 Status **2026-09-19**, base `origin/main` at `1afa705`. Plan in the

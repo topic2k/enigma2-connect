@@ -571,6 +571,12 @@ identifier from OpenWebif. This **service reference** is different from a channe
 number. The [action reference](#actions-and-examples) includes
 an example with all fields. Enable **Zap only** for a channel-switch timer.
 
+When creating, deleting or enabling/disabling a timer, the integration removes
+accidentally copied whitespace at the start and end of the service reference.
+An empty identifier is rejected before sending. Its contents and case otherwise
+remain unchanged. If an existing timer cannot be found, compare its channel
+reference, start and end with the entry actually stored in OpenWebif.
+
 Deleting or enabling/disabling timers also uses Enigma2 Connect actions. For a
 recurring timer, changes affect the whole series. Create new series or edit
 individual occurrences directly in OpenWebif or on the receiver. At daylight-saving

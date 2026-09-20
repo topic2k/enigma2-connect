@@ -601,6 +601,13 @@ Ende und die Senderkennung aus OpenWebif ein. Die Senderkennung heißt
 Feldern findest du in der [Aktionsreferenz](#aktionen-und-beispiele).
 Für einen Umschalt-Timer aktiviere **Nur umschalten**.
 
+Beim Anlegen, Löschen und Aktivieren/Deaktivieren entfernt die Integration
+versehentlich mitkopierte Leerzeichen am Anfang und Ende der Service-Referenz.
+Eine leere Kennung wird vor dem Senden abgewiesen. Inhalt und Schreibweise der
+Kennung bleiben sonst unverändert. Wird ein vorhandener Timer nicht gefunden,
+vergleiche Senderkennung, Beginn und Ende mit dem tatsächlich gespeicherten
+Eintrag in OpenWebif.
+
 Löschen und Aktivieren/Deaktivieren erfolgen ebenfalls über die Enigma2-Connect-
 Aktionen. Bei einem wiederkehrenden Timer betrifft die Änderung die ganze Serie.
 Neue Serien und Änderungen einzelner Wiederholungen richtest du direkt in

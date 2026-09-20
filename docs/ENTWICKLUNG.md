@@ -932,7 +932,7 @@ umsetzen. Basis ist der frisch abgerufene `origin/main`-Commit `1afa705`
 (Version 1.2.0), Arbeitsbranch `feature/recording-workflows`, Worktree
 `V:\enigma2-connect-worktrees\recording-workflows`. Für diesen Auftrag gilt
 ausdrücklich `main` als Ausgangsbasis statt der allgemeinen `develop`-Regel.
-Ziel ist **1.3.0-dev.1**, da der gesamte geplante Umfang neue,
+Ziel ist **1.3.0-dev.2**, da der gesamte geplante Umfang neue,
 rückwärtskompatible Funktionen enthält. Vor einem späteren PR ist die
 Versionsbasis erneut mit Remote, Tags und veröffentlichten Releases abzugleichen.
 
@@ -987,6 +987,16 @@ Qualitätsabgleich und ausdrückliche Nutzerfreigabe; Release nur auf Anweisung.
   der Nutzer bestätigt alle Praxisschritte auf dem Octagon SF8008 4K Supreme
   (siehe [Prüfübersicht](VALIDIERUNG.md)). Zugeordneter Abschlusscommit auf
   `feature/recording-workflows`: `feat: preserve structured receiver command responses`.
+- **Folgeprüfung zu 1a – Vu+ Solo² / VTi / OpenWebif 1.4.4:** abgeschlossen
+  am 20.09.2026. Timer anlegen und Nachrichten bestanden, Aktivieren/Deaktivieren
+  und Löschen zunächst fehlgeschlagen. Aktions-/Timerdaten belegen eine führende Leerstelle
+  nur im Aufruf bei passenden Zeiten. `1.3.0-dev.2` bereinigt äußere Leerzeichen
+  der Service-Referenz und validiert leere Kennungen; 12 gezielte lokale Tests,
+  Ruff, Syntax und Typprüfung bestanden. Nutzer-Gegencheck auf dev.1 nach manuellem
+  Entfernen der Leerstelle bestanden: Deaktivieren, Aktivieren und Löschen.
+  Nutzer und Codex haben die Nachbesserung dev.2 als fertig bestätigt.
+  Zugeordneter Abschlusscommit: `fix: trim whitespace in timer service references`.
+  Der Octagon-Abschluss oben bleibt unverändert erhalten.
 - **1b – übrige Grundlage:** offen; Datenmodelle, HA-Antworten,
   Wiederholungsschutz/Zustandsabgleich und Receiver-Formatprüfung fehlen noch.
 - **2–5:** geplant, nicht begonnen. Es gibt noch keine neuen Benutzeraktionen.

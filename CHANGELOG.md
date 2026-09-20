@@ -4,7 +4,7 @@
 
 ## Inhaltsverzeichnis
 
-- [1.3.0-dev.1](#130-dev1)
+- [1.3.0-dev.2](#130-dev2)
 - [1.2.0](#120)
 - [1.1.3](#113)
 - [1.1.2](#112)
@@ -14,11 +14,22 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 1.3.0-dev.1
+## 1.3.0-dev.2
 
 Unveröffentlichte Entwicklerversion. Zielversion für die beauftragten EPG-,
 Timer- und Aufnahmeerweiterungen; diese Benutzerfunktionen sind noch nicht verfügbar.
 
+- Abweichenden Nutzer-Praxistest auf Vu+ Solo² mit VTi 15.0.0 und OpenWebif
+  1.4.4 dokumentiert: Timer anlegen und Nachrichten bestanden; Umschalten des
+  Timerstatus und Löschen scheiterten zunächst. Nachgereichte Aktions- und Timerdaten
+  belegen eine abweichende Service-Referenz durch ein führendes Leerzeichen bei
+  passenden Zeiten. Nach manuellem Entfernen des Leerzeichens bestätigt der Nutzer
+  Deaktivieren, Aktivieren und Löschen auf dev.1. Keine allgemeine Image-Inkompatibilität.
+- Timeraktionen entfernen äußere Leerzeichen der Service-Referenz und weisen
+  leere Kennungen vor dem Receiver-Aufruf ab. Regressionstests für Anlegen,
+  Aktivieren/Deaktivieren und Löschen ergänzen; interne Leerzeichen bleiben
+  erhalten. Automatische Bereinigung lokal geprüft; Vu+-Gegencheck mit manuell
+  bereinigter Eingabe auf dev.1 bestanden.
 - Umsetzungsplan für die Feature-Ideen 1–5 einschließlich abschnittsweiser,
   beidseitiger Fertigbestätigung vor Commits zweisprachig dokumentiert.
 - API-Grundlage begonnen: strukturierte Befehlsantworten und intern zugängliche

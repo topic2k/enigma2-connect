@@ -71,7 +71,7 @@ def register_services(hass: HomeAssistant) -> None:
     base: dict[Any, Any] = {vol.Required("device_id"): str}
     timer = {
         **base,
-        vol.Required("service_reference"): str,
+        vol.Required("service_reference"): vol.All(str, vol.Strip, vol.Length(min=1)),
         vol.Required("begin"): vol.Any(str, int),
         vol.Required("end"): vol.Any(str, int),
     }

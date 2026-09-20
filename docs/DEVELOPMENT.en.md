@@ -876,7 +876,7 @@ Base: freshly fetched `origin/main` commit `1afa705` (version 1.2.0), branch
 `feature/recording-workflows`, worktree
 `V:\enigma2-connect-worktrees\recording-workflows`. This request explicitly
 selects `main` instead of the general `develop` branch rule. Target version:
-**1.3.0-dev.1**, reflecting the complete planned backward-compatible feature
+**1.3.0-dev.2**, reflecting the complete planned backward-compatible feature
 scope. Recheck remote branches, tags and published releases before a later PR.
 
 **Commit rule for this request:** Commit a section to the working branch only
@@ -930,6 +930,16 @@ on instruction.
   the user confirms all practical steps on the Octagon SF8008 4K Supreme
   (see [verification summary](VALIDATION.en.md)). Corresponding completion commit
   on `feature/recording-workflows`: `feat: preserve structured receiver command responses`.
+- **Section 1a follow-up – Vu+ Solo² / VTi / OpenWebif 1.4.4:** completed on
+  2026-09-20. Timer creation and messages passed; enabling/disabling and deletion
+  initially failed. Action/timer data establish a leading space only in the request, with
+  matching times. `1.3.0-dev.2` trims outer reference whitespace and validates empty
+  identifiers; 12 targeted local tests, Ruff, syntax and type checks passed.
+  User retesting on dev.1 after manually removing the space passed for disabling,
+  enabling and deletion. The user and Codex confirmed completion of improvement
+  dev.2. Corresponding completion commit:
+  `fix: trim whitespace in timer service references`.
+  The Octagon completion above is preserved.
 - **1b – remaining foundation:** pending; data models, HA responses, replay
   protection/state reconciliation and receiver format checks remain outstanding.
 - **2–5:** planned, not started. No new user-facing actions are available yet.

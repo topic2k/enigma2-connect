@@ -4,7 +4,7 @@
 
 ## Contents
 
-- [1.3.0-dev.1](#130-dev1)
+- [1.3.0-dev.2](#130-dev2)
 - [1.2.0](#120)
 - [1.1.3](#113)
 - [1.1.2](#112)
@@ -14,11 +14,21 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 1.3.0-dev.1
+## 1.3.0-dev.2
 
 Unreleased development version. Target for the requested EPG, timer and
 recording extensions; these user-facing features are not available yet.
 
+- Recorded a differing user test on Vu+ Solo² with VTi 15.0.0 and OpenWebif
+  1.4.4: timer creation and messages passed; toggling timer status and deletion
+  initially failed. Subsequently supplied action and timer data establish a mismatching
+  service reference due to leading whitespace, with matching times. After manually
+  removing the space, the user confirms disabling, enabling and deletion on dev.1.
+  No general image incompatibility is established.
+- Timer actions trim outer whitespace from service references and reject empty
+  identifiers before contacting the receiver. Added regression tests for creation,
+  toggling and deletion; internal whitespace is preserved. Automatic trimming
+  tested locally; Vu+ retest with manually corrected input on dev.1 passed.
 - Documented the implementation plan for feature ideas 1–5 in both languages,
   including confirmation by both parties before committing each finished section.
 - Started the API foundation: retain structured command responses and internal
