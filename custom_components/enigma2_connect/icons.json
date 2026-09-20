@@ -172,6 +172,9 @@
       },
       "key_mute": {
         "default": "mdi:volume-off"
+      },
+      "record_now": {
+        "default": "mdi:record-rec"
       }
     },
     "select": {
@@ -181,6 +184,11 @@
       "select_channel": {
         "default": "mdi:television"
       }
+    }
+  },
+  "services": {
+    "record_now": {
+      "service": "mdi:record-rec"
     }
   }
 }

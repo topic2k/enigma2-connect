@@ -4,7 +4,7 @@
 
 ## Contents
 
-- [1.3.0-dev.3](#130-dev3)
+- [1.3.0-dev.4](#130-dev4)
 - [1.2.0](#120)
 - [1.1.3](#113)
 - [1.1.2](#112)
@@ -14,11 +14,18 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 1.3.0-dev.3
+## 1.3.0-dev.4
 
 Unreleased development version. Target for the requested EPG, timer and
-recording extensions; these user-facing features are not available yet.
+recording extensions. Instant recording is implemented; EPG search, timer
+editing and library management follow in later sections.
 
+- Added the “Record current programme” action and button: check fresh EPG and
+  timers, start event-mode recording and refresh state. Existing recordings remain
+  unchanged. Guard repeated/concurrent calls and lost responses; no fallback to
+  long recording. Optional responses identify the start or existing timer.
+  The user confirms creation, `started: false` for an existing recording and
+  rejection without EPG; section 2 confirmed complete by both parties.
 - Added section 1b foundations: validated internal EPG, timer, conflict and
   recording models; existing timer actions offer optional HA response data
   identifying the addressed timer. Errors remain translated exceptions.

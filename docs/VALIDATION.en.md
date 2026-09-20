@@ -2,6 +2,76 @@
 
 # Verification summary
 
+## Instant recording: 1.3.0-dev.4, section 2
+
+As of **2026-09-20**. Implemented `record_now` and the **Record current programme**
+button. [Plan and limits](DEVELOPMENT.en.md#section-2-instant-recording),
+[new receiver test guide](USER_GUIDE.en.md#test-section-2-on-the-receiver).
+
+**Local checks passed:** Python **3.14.7**, Home Assistant **2026.9.1**,
+pytest-homeassistant-custom-component **0.13.364**. Initial run: **237 tests**
+passed. After adding protection for unknown series-timer state and later EPG
+timing corrections, reran the complete instant-recording test group. In total,
+**240 distinct tests** passed in their respective latest run, with no skipped
+or outstanding failed cases.
+
+Checked: fresh EPG and time boundaries, standby/file playback, unknown timer
+data, active series, running/disabled/zap timers, preservation of existing
+recordings, concurrent starts and the shared command lock, EPG changes and
+timing corrections, response loss, cancellation, list lag, rejection, unsupported
+endpoints, authentication/connection errors, mismatched success replies and
+rereading older response formats. Real HA action/button tests cover optional
+responses and calls without them, list/state refresh, entity registration,
+translations and isolation of two receivers. Section 1b HTTP tests remain
+included. All receivers in these local tests are simulated.
+
+Scope: `test_instant_recording`, `test_workflow_actions`, `test_workflow_models`,
+`test_api`, `test_integration`, `test_silver_controls`, `test_translations`,
+`test_channel_media`, `test_gold_lifecycle`, `test_regressions`.
+Combined statement/branch coverage for affected modules:
+
+| Module | Coverage |
+| --- | --- |
+| `api.py` | 97.02 % |
+| `button.py` | 100.00 % |
+| `coordinator.py` | 99.44 % |
+| `instant_recording.py` | 100.00 % |
+| `services.py` | 97.65 % |
+| `workflow_models.py` | 100.00 % |
+
+All exceed the unchanged 95% threshold. `instant_recording.py` was fully
+remeasured after the final changes; the other modules retain the same source
+as in the initial run. Ruff, formatting, syntax and mypy strict for **30**
+production modules passed. Version metadata, local documentation links and
+`uv lock --check --offline` checked; only the project version changes in the
+lockfile. Reports under `V:\enigma2-connect\.work\recording-workflows-checks`:
+`section2-tests.xml`, `section2-recheck.xml`, corresponding logs,
+`section2-coverage.json`, `section2-instant-coverage.json`.
+
+Quality review: `action-setup`, `action-exceptions`, `parallel-updates`,
+`entity-unique-id`, `entity-translations`, `exception-translations`,
+`icon-translations`, `test-coverage`, `strict-typing`, `docs-actions`,
+`docs-data-update`, `docs-known-limitations`. No lowered criteria or thresholds.
+Unchanged areas retain their previous evidence; no new complete CI run or
+official HA quality tier is claimed.
+
+**Practical feedback and completion on 2026-09-20:** The user confirms for
+section 2: instant recordings are created; an already running recording returns
+`started: false`; missing EPG prevents recording and displays an appropriate
+message. The report does not provide separate results per receiver or additional
+version details. Other test-guide details, particularly a playable file, actual
+post-padding, standby and device selection, were not individually reported and
+are therefore not established as practical evidence. Response loss and other
+error cases remain covered by the simulated tests listed above.
+
+The user and Codex confirm section 2 as complete. Corresponding completion commit:
+`feat: add current programme instant recording`. No merge or release.
+
+The local `origin/main` reference has meanwhile advanced to `df39aea` (1.2.1);
+this working branch continues from the agreed baseline. Before a PR, recheck
+remote/version state and reconcile intervening main fixes, including device
+ownership lookup.
+
 ## Recording workflows: 1.3.0-dev.3, section 1b
 
 As of **2026-09-20**. Implemented data models, optional responses for existing

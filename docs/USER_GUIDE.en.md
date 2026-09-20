@@ -493,6 +493,7 @@ select the receiver in the interface first; switch to YAML to see its
 | `notify.send_message` | Screen message entity; `message`, optional `title`. Uses the message type and duration from receiver settings. |
 | `enigma2_connect.message` | `device_id`, `text`, optional `type` (0–3, default 1) and `timeout` (1–120 seconds, default 10) |
 | `enigma2_connect.reboot`, `.restart_gui`, `.deep_standby` | `device_id`; receiver restart, GUI restart or deep standby |
+| `enigma2_connect.record_now` | `device_id`; record the current EPG programme starting now |
 | `enigma2_connect.timer_add` | `device_id`, `service_reference`, `begin`, `end`, `name`; optional `description`, `justplay`, `afterevent` |
 | `enigma2_connect.timer_delete`, `.timer_toggle` | `device_id`, `service_reference`, `begin`, `end` of the existing timer |
 
@@ -559,6 +560,75 @@ data:
   justplay: false
   afterevent: 3
 ```
+
+#### Record the current programme immediately
+
+1. Tune the desired receiver to a live channel. Its current programme must appear
+   in EPG; the receiver and Home Assistant clocks must be correct.
+2. Open the receiver device in Home Assistant and press **Record current
+   programme**. You can also add this button to your dashboard.
+3. Check recording status and the timer. Recording starts now; earlier parts
+   of the programme are not recovered. The end follows EPG and receiver settings,
+   including post-padding.
+
+The new action is `enigma2_connect.record_now`. It only requires the receiver.
+Automations can optionally use a response variable:
+
+```yaml
+action: enigma2_connect.record_now
+data:
+  device_id: YOUR_RECEIVER_DEVICE_ID
+response_variable: recording_result
+```
+
+`started: true` means the start was acknowledged and matched to a timer.
+`started: false` means an existing active recording timer on this channel was
+found and left unchanged. `timer` contains `service_reference`, `begin`, `end`
+in Unix seconds. Existing timers are not extended even when they end before
+the programme. The action also works without a response variable.
+
+Repeated presses do not add another timer for an already detected recording.
+A ten-second guard after a confirmed start also covers a delayed timer list.
+If the outcome is uncertain, check OpenWebif; the integration does not attempt
+another start for that programme until its EPG end. Reloading the integration
+or restarting HA clears this guard.
+
+Standby, file playback, missing EPG or an unreliable timer list produce an error.
+There is no fallback to a long recording. Insufficient storage or other receiver
+problems may prevent recording despite an acknowledged timer; check the receiver
+when needed. Stop recordings through OpenWebif's recording controls or the
+receiver remote; the new button does not stop recordings.
+
+#### Test section 2 on the receiver
+
+This check uses **real test recordings**, unlike the channel-switch timers in
+1a/1b. Install **1.3.0-dev.4**, restart Home Assistant and test Octagon and Vu+
+separately. Record HA, image and OpenWebif versions.
+
+1. Select a suitable live channel with valid current EPG and no recording on
+   that channel. Run the action above. Expect `started: true`, a timer identity,
+   exactly one new recording timer and active recording status in OpenWebif and,
+   after refresh, HA. Compare the end time with EPG and configured post-padding.
+2. During this recording, press **Record current programme** several times and
+   run the action again. Expect no second recording, an unchanged end time and
+   `started: false` in the action response.
+3. Stop the test recording in OpenWebif/on the receiver. Wait at least ten seconds
+   after the confirmed start. Start again using the button, confirm exactly one
+   new running recording, then stop it. Briefly play one test file to confirm
+   actual recording.
+4. Put the receiver into normal standby and run the action. Expect a clear error
+   and no new timer. Wake it and check an existing screen-message action.
+5. If available, repeat during file playback and on a channel without EPG. Expect
+   errors and no new recording in both cases. Report “not tested” if a suitable
+   case is unavailable.
+6. With two configured receivers, verify only the selected device records. Stop
+   the test recording. You may remove test files through normal recording controls.
+
+Report per receiver: start with response, timer end, recording status/calendar,
+repeated calls, restart using the button, playable file, standby, file playback,
+missing EPG, receiver selection and unexpected behavior. Deliberate network
+disconnection or recording conflicts are not required for this practical check;
+their error paths are tested locally using simulation.
 
 #### Timer action response data
 

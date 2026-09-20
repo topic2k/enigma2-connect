@@ -4,7 +4,7 @@
 
 ## Inhaltsverzeichnis
 
-- [1.3.0-dev.3](#130-dev3)
+- [1.3.0-dev.4](#130-dev4)
 - [1.2.0](#120)
 - [1.1.3](#113)
 - [1.1.2](#112)
@@ -14,11 +14,19 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 1.3.0-dev.3
+## 1.3.0-dev.4
 
 Unveröffentlichte Entwicklerversion. Zielversion für die beauftragten EPG-,
-Timer- und Aufnahmeerweiterungen; diese Benutzerfunktionen sind noch nicht verfügbar.
+Timer- und Aufnahmeerweiterungen. Sofortaufnahme ist umgesetzt; EPG-Suche,
+Timerbearbeitung und Bibliotheksverwaltung folgen in weiteren Abschnitten.
 
+- Aktion und Button „Aktuelle Sendung aufnehmen“ ergänzt: gültiges EPG und
+  Timer frisch prüfen, Aufnahme im Ereignismodus starten und Zustand aktualisieren.
+  Vorhandene Aufnahmen bleiben unverändert. Wiederholte/parallele Aufrufe sowie
+  verlorene Antworten werden abgesichert; kein Ersatz durch lange Aufnahme.
+  Optionale Antwortdaten nennen Start oder vorhandenen Timer. Nutzer bestätigt
+  Anlegen, `started: false` bei laufender Aufnahme und Ablehnung ohne EPG;
+  Abschnitt 2 beidseitig als fertig bestätigt.
 - Grundlage 1b ergänzt: validierte interne EPG-, Timer-, Konflikt- und
   Aufnahmemodelle; bestehende Timeraktionen bieten optionale HA-Antwortdaten
   mit der angesprochenen Kennung. Fehler bleiben übersetzte Ausnahmen.

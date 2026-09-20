@@ -373,6 +373,9 @@
       },
       "key_mute": {
         "name": "Taste Stumm"
+      },
+      "record_now": {
+        "name": "Aktuelle Sendung aufnehmen"
       }
     }
   },
@@ -457,6 +460,18 @@
     },
     "timer_unconfirmed": {
       "message": "Die Timeraktion wurde möglicherweise ausgeführt, aber nicht eindeutig bestätigt. Sie wird nicht automatisch wiederholt. Prüfe den Timer in OpenWebif, bevor du die Aktion erneut ausführst."
+    },
+    "recording_not_live": {
+      "message": "Wähle einen Live-Sender am eingeschalteten Receiver. Im Standby oder während einer Dateiwiedergabe ist diese Aktion nicht möglich."
+    },
+    "recording_no_epg": {
+      "message": "Für den aktuellen Sender ist keine gültige laufende EPG-Sendung verfügbar. Es wurde keine Aufnahme gestartet."
+    },
+    "recording_changed": {
+      "message": "Sender oder Sendung haben sich während der Prüfung geändert. Prüfe die aktuelle Sendung und führe die Aktion erneut aus."
+    },
+    "recording_timer_data": {
+      "message": "Die vorhandenen Timer konnten nicht sicher geprüft werden. Prüfe die Timerliste in OpenWebif. Es wurde keine Aufnahme gestartet."
     }
   },
   "services": {
@@ -591,6 +606,16 @@
         "end": {
           "name": "Ende (ISO mit Zeitzone oder Unix-Sekunden)",
           "description": "Ende (ISO mit Zeitzone oder Unix-Sekunden)"
+        }
+      }
+    },
+    "record_now": {
+      "name": "Aktuelle Sendung aufnehmen",
+      "description": "Startet eine Aufnahme der laufenden EPG-Sendung. Vorhandene Aufnahmen desselben Senders bleiben unverändert.",
+      "fields": {
+        "device_id": {
+          "name": "Receiver",
+          "description": "Receiver"
         }
       }
     }

@@ -45,6 +45,7 @@ async def test_actions_registered_without_entries(hass):
         "restart_gui",
         "deep_standby",
         "message",
+        "record_now",
         "timer_add",
         "timer_delete",
         "timer_toggle",

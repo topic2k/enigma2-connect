@@ -2,6 +2,79 @@
 
 # Prüfübersicht
 
+## Sofortaufnahme: 1.3.0-dev.4, Abschnitt 2
+
+Stand **20.09.2026**. Aktion `record_now` und Button **Aktuelle Sendung aufnehmen**
+implementiert. [Plan und Grenzen](ENTWICKLUNG.md#abschnitt-2-sofortaufnahme),
+[neue Receiver-Prüfanleitung](BENUTZERHANDBUCH.md#abschnitt-2-auf-dem-receiver-prüfen).
+
+**Lokale Prüfung bestanden:** Python **3.14.7**, Home Assistant **2026.9.1**,
+pytest-homeassistant-custom-component **0.13.364**. Erster Lauf: **237 Tests**
+bestanden. Nach zusätzlicher Absicherung bei unbekanntem Serientimer-Status
+und nachträglichen EPG-Zeitkorrekturen die gesamte Sofortaufnahme-Testgruppe
+erneut geprüft; insgesamt **240 unterschiedliche Tests** im jeweils letzten
+Lauf bestanden. Keine ausgelassenen oder noch fehlgeschlagenen Fälle.
+
+Geprüft: frisches EPG und Zeitgrenzen, Standby/Dateiwiedergabe, unbekannte
+Timerdaten, aktive Serien, laufende/deaktivierte/Umschalt-Timer, vorhandene
+Aufnahmen unverändert erhalten, parallele Starts und gemeinsame Befehlssperre,
+EPG-Wechsel und Zeitkorrekturen, Antwortverlust, Abbruch, Listenverzug,
+Ablehnung, fehlende Unterstützung, Authentifizierungs-/Verbindungsfehler,
+unpassende Erfolgsantworten und Nachlesen älterer Antwortformate. Echte
+HA-Aktions-/Button-Tests prüfen Antwortvariable und Aufruf ohne Antwort,
+Listen-/Statusaktualisierung, Entitätsregistrierung, Übersetzungen und
+Trennung zweier Receiver. Die HTTP-Tests aus 1b bleiben im Prüfumfang.
+Alle Receiver in diesen lokalen Tests sind simuliert.
+
+Umfang: `test_instant_recording`, `test_workflow_actions`, `test_workflow_models`,
+`test_api`, `test_integration`, `test_silver_controls`, `test_translations`,
+`test_channel_media`, `test_gold_lifecycle`, `test_regressions`.
+Kombinierte Statement-/Branch-Coverage der betroffenen Module:
+
+| Modul | Coverage |
+| --- | --- |
+| `api.py` | 97.02 % |
+| `button.py` | 100.00 % |
+| `coordinator.py` | 99.44 % |
+| `instant_recording.py` | 100.00 % |
+| `services.py` | 97.65 % |
+| `workflow_models.py` | 100.00 % |
+
+Alle liegen über der unveränderten 95-%-Grenze. `instant_recording.py` wurde
+nach den letzten Änderungen vollständig neu gemessen; die anderen Module
+behielten seit dem ersten Lauf denselben Quellstand. Ruff, Formatierung,
+Syntax und mypy strict für **30** Produktionsmodule bestanden. Versionsstellen,
+lokale Dokumentationslinks und `uv lock --check --offline` geprüft;
+Lockdatei ändert ausschließlich die Projektversion.
+Berichte unter `V:\enigma2-connect\.work\recording-workflows-checks`:
+`section2-tests.xml`, `section2-recheck.xml`, zugehörige Logs,
+`section2-coverage.json`, `section2-instant-coverage.json`.
+
+Qualitätsabgleich: `action-setup`, `action-exceptions`, `parallel-updates`,
+`entity-unique-id`, `entity-translations`, `exception-translations`,
+`icon-translations`, `test-coverage`, `strict-typing`, `docs-actions`,
+`docs-data-update`, `docs-known-limitations`. Keine Kriterien oder Grenzen
+abgesenkt. Unveränderte Bereiche behalten ihre bisherigen Nachweise; keine
+neue vollständige CI oder offizielle HA-Qualitätsstufe behauptet.
+
+**Praxisrückmeldung und Abschluss am 20.09.2026:** Der Nutzer bestätigt für
+Abschnitt 2: Sofortaufnahmen werden angelegt; bei bereits laufender Aufnahme
+lautet die Antwort `started: false`; ohne EPG wird keine Aufnahme gestartet
+und eine entsprechende Meldung angezeigt. Die Rückmeldung enthält keine
+getrennten Ergebnisse je Receiver oder zusätzliche Versionsangaben. Weitere
+Details der Prüfanleitung, insbesondere abspielbare Datei, tatsächlicher Nachlauf,
+Standby und Geräteauswahl, wurden nicht einzeln zurückgemeldet und gelten
+dadurch nicht als praktisch nachgewiesen. Antwortverlust und weitere Fehlerfälle
+sind weiterhin durch die oben genannten simulierten Tests belegt.
+
+Nutzer und Codex bestätigen Abschnitt 2 als fertig. Zugeordneter Abschlusscommit:
+`feat: add current programme instant recording`. Kein Merge oder Release.
+
+Der lokale Verweis `origin/main` steht inzwischen auf `df39aea` (1.2.1),
+während dieser Arbeitsbranch auf der vereinbarten Basis fortgeführt wird.
+Vor einem PR den aktuellen Remote-/Versionsabgleich und die Übernahme der
+zwischenzeitlichen Main-Korrekturen einschließlich Gerätezuordnung prüfen.
+
 ## Aufnahme-Workflows: 1.3.0-dev.3, Abschnitt 1b
 
 Stand **20.09.2026**. Datenmodelle, optionale Antworten bestehender Timeraktionen

@@ -95,6 +95,7 @@ class Timer:
     event_id: int | None
     directory: str | None
     tags: tuple[str, ...] | None
+    state: int | None
 
     @classmethod
     def parse(cls, row: JsonObject) -> Timer:
@@ -109,6 +110,7 @@ class Timer:
             integer(row.get("eit")),
             directory if isinstance(directory, str) and directory not in ("", "None") else None,
             tags(row.get("tags")),
+            integer(row.get("state"), maximum=3),
         )
 
 

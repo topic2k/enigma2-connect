@@ -38,6 +38,11 @@ message:
           min: 1
           max: 120
           mode: box
+record_now:
+  fields:
+    device_id:
+      required: true
+      selector: *id001
 timer_add:
   fields:
     device_id:

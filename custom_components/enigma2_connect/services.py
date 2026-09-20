@@ -44,6 +44,9 @@ def register_services(hass: HomeAssistant) -> None:
         params = dict(call.data)
         params.pop("device_id")
         service = call.service
+        if service == "record_now":
+            result = await coordinator.async_record_now()
+            return result if call.return_response else None
         if service in ("reboot", "restart_gui", "deep_standby"):
             endpoint = "powerstate"
             params = {"newstate": {"reboot": 2, "restart_gui": 3, "deep_standby": 1}[service]}
@@ -98,6 +101,7 @@ def register_services(hass: HomeAssistant) -> None:
         vol.Required("end"): vol.Any(str, int),
     }
     schemas = {
+        "record_now": base,
         "reboot": base,
         "restart_gui": base,
         "deep_standby": base,
@@ -124,6 +128,6 @@ def register_services(hass: HomeAssistant) -> None:
             handle,
             schema=vol.Schema(schema),
             supports_response=SupportsResponse.OPTIONAL
-            if name.startswith("timer_")
+            if name.startswith("timer_") or name == "record_now"
             else SupportsResponse.NONE,
         )

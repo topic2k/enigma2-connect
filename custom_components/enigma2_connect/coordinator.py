@@ -9,6 +9,7 @@ if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable
     from typing import Any
 
+import asyncio
 import logging
 from dataclasses import replace
 from datetime import timedelta
@@ -28,6 +29,7 @@ from .api import (
 )
 from .channel_media import CONF_CHANNEL_BOUQUET, CONF_SHOW_CHANNELS
 from .const import CATALOG_INTERVAL, DOMAIN, SLOW_INTERVAL
+from .instant_recording import InstantRecording, InstantRecordingError
 from .media_stream import MediaStream
 from .models import JsonObject, ReceiverState, Snapshot, services
 from .recording_images import RecordingImages
@@ -48,6 +50,7 @@ class EnigmaCoordinator(DataUpdateCoordinator[Snapshot]):
             always_update=False,
         )
         self.client = client
+        self.instant_recording = InstantRecording(client)
         self.entry = entry
         self.recording_images = RecordingImages(hass, self)
         self.media_stream = MediaStream(hass, self)
@@ -57,8 +60,6 @@ class EnigmaCoordinator(DataUpdateCoordinator[Snapshot]):
         self._bouquet = entry.options.get("bouquet")
         self.optional_errors: set[str] = set()
         # Serialize catalog selection with polls so an old poll cannot overwrite it.
-        import asyncio
-
         self.data_lock = asyncio.Lock()
 
     async def _async_setup(self) -> None:
@@ -215,6 +216,8 @@ class EnigmaCoordinator(DataUpdateCoordinator[Snapshot]):
             raise HomeAssistantError(
                 translation_domain=DOMAIN, translation_key="power_unconfirmed"
             ) from err
+        except InstantRecordingError as err:
+            raise HomeAssistantError(translation_domain=DOMAIN, translation_key=err.reason) from err
         except CommandUnconfirmed as err:
             raise HomeAssistantError(
                 translation_domain=DOMAIN, translation_key="timer_unconfirmed"
@@ -225,6 +228,20 @@ class EnigmaCoordinator(DataUpdateCoordinator[Snapshot]):
             ) from err
         if refresh:
             await self.async_request_refresh()
+        return result
+
+    async def async_record_now(self) -> JsonObject:
+        try:
+            result = await self.perform(self.instant_recording.start, refresh=False)
+        except asyncio.CancelledError:
+            self.invalidate_lists()
+            raise
+        except HomeAssistantError:
+            self.invalidate_lists()
+            await self.async_request_refresh()
+            raise
+        self.invalidate_lists()
+        await self.async_request_refresh()
         return result
 
     async def select_bouquet(self, reference: str) -> None:

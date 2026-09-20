@@ -92,6 +92,17 @@ async def power_command_middleware(
         raise PowerCommandUnconfirmed("Power command response was not received") from err
 
 
+def command_response(endpoint: str, data: JsonObject) -> JsonObject:
+    """Validate an acknowledgement, including callers already holding the lock."""
+    if any(boolean(data[key]) is False for key in ("result", "state") if key in data):
+        raise CommandRejectedError(data)
+    if endpoint in TIMER_COMMANDS:
+        flags = [boolean(data[key]) for key in ("result", "state") if key in data]
+        if not flags or any(flag is not True for flag in flags):
+            raise CommandUnconfirmed("Unsupported timer command acknowledgement")
+    return data
+
+
 class OpenWebifClient:
     def __init__(
         self,
@@ -198,13 +209,7 @@ class OpenWebifClient:
         """Run a serialized command and retain its structured success response."""
         async with self.command_lock:
             data = await self.get(endpoint, **params)
-            if "state" in data and boolean(data["state"]) is False:
-                raise CommandRejectedError(data)
-            if endpoint in TIMER_COMMANDS:
-                flags = [boolean(data[key]) for key in ("result", "state") if key in data]
-                if not flags or any(flag is not True for flag in flags):
-                    raise CommandUnconfirmed("Unsupported timer command acknowledgement")
-            return data
+            return command_response(endpoint, data)
 
     async def keys(self, codes: list[int], delay: float = 0.3, hold: bool = False) -> None:
         if not codes or len(codes) > 500 or any(not 0 <= code <= 0x2FF for code in codes):

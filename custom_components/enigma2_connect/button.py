@@ -28,7 +28,10 @@ async def async_setup_entry(
 ) -> None:
     async_add_entities(
         [EnigmaKey(entry.runtime_data, name, code) for name, code in KEYS.items()]
-        + [EnigmaRefresh(entry.runtime_data, "refresh")]
+        + [
+            EnigmaRefresh(entry.runtime_data, "refresh"),
+            EnigmaRecordNow(entry.runtime_data, "record_now"),
+        ]
     )
 
 
@@ -41,6 +44,11 @@ class EnigmaKey(EnigmaEntity, ButtonEntity):
 
     async def async_press(self) -> None:
         await self.coordinator.perform(self.coordinator.client.keys, [self.code])
+
+
+class EnigmaRecordNow(EnigmaEntity, ButtonEntity):
+    async def async_press(self) -> None:
+        await self.coordinator.async_record_now()
 
 
 class EnigmaRefresh(EnigmaEntity, ButtonEntity):

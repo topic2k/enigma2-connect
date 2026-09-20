@@ -876,7 +876,7 @@ Base: freshly fetched `origin/main` commit `1afa705` (version 1.2.0), branch
 `feature/recording-workflows`, worktree
 `V:\enigma2-connect-worktrees\recording-workflows`. This request explicitly
 selects `main` instead of the general `develop` branch rule. Target version:
-**1.3.0-dev.3**, reflecting the complete planned backward-compatible feature
+**1.3.0-dev.4**, reflecting the complete planned backward-compatible feature
 scope. Recheck remote branches, tags and published releases before a later PR.
 
 **Commit rule for this request:** Commit a section to the working branch only
@@ -945,7 +945,12 @@ on instruction.
   the user confirms all practical steps on both test receivers
   (see verification summary). Corresponding completion commit:
   `feat: add recording workflow foundations`.
-- **2–5:** planned, not started. No new user-facing actions are available yet.
+- **2 – instant recording:** confirmed complete by both parties on **2026-09-20**,
+  test build **1.3.0-dev.4**; 240 local tests passed. The user confirms creation,
+  `started: false` for an existing recording and rejection without EPG. See the
+  verification summary for scope and remaining practical evidence. Completion commit:
+  `feat: add current programme instant recording`.
+- **3–5:** planned, not started.
 
 `OpenWebifClient.command_result()` returns structured success data under the same
 lock as `command()`. Existing `command()` still returns `None`. Rejections through
@@ -1021,6 +1026,62 @@ Interfaces read on 2026-09-20: [EPG model](https://github.com/oe-alliance/OpenWe
 [recording model](https://github.com/oe-alliance/OpenWebif/blob/main/plugin/controllers/models/movies.py)
 and [HA action responses](https://developers.home-assistant.io/docs/dev_101_services/#response-data).
 No upstream implementation code was copied.
+
+### Section 2: instant recording
+
+Plan dated **2026-09-20**, test build **1.3.0-dev.4**: add device action
+`record_now` and a “Record current programme” button. Read the current channel,
+valid EPG and timers fresh; serialize preflight and start with other commands.
+Preserve existing recordings on the same channel and prevent duplicate starts
+and repeats after uncertain responses. Only use `recordnow` without long-recording
+parameters. Refresh timers, calendar and recording status. Locally test boundaries,
+missing EPG, standby/playback, concurrency, cancellation, response loss, errors,
+multiple receivers and the HA action/button. Add a new practical guide using
+real test recordings; commit after acceptance by both parties.
+
+`InstantRecording.start()` holds the shared client command lock across
+status/EPG reads, timer checks, a second status/EPG read and `recordnow`.
+Neither `infinite` nor `undefinitely` is sent: parameter presence alone selects
+the other mode in the OpenWebif controller. Current EPG must contain a service
+reference, event ID, start, positive duration and title, and include the current
+HA system time. Standby, file playback, missing/stale EPG and changes during
+preflight produce translated errors. HA and receiver clocks must be correct.
+
+The complete timer list must be readable. An active recording timer on the same
+channel is returned unchanged (`started=false`), even if it ends before the
+programme. Checks use the current time interval and `state=2` for running series.
+Ended, disabled and zap-only timers do not block. Unknown relevant flags cause
+an error instead of a new start. Successful `recordnow` replies are checked
+against the identity and event ID in `newtimer`; if `newtimer` is absent, reread
+the timer list. Unmatched acknowledgements are reported as uncertain. Raw
+responses are never forwarded to HA.
+
+Per-receiver attempts are keyed by service and EPG ID; later EPG timing updates
+do not create a new attempt key. Confirmed
+starts additionally guard against list lag for ten seconds. Response loss or
+cancellation after starting the write attempt retains the guard until the originally checked EPG end.
+Subsequent calls may return an existing timer that has become visible, but never
+repeat the write. Definite rejection, unsupported endpoint, authentication error
+or failed connection establishment permit a new explicit attempt. The guard
+exists only for the running integration and is not persisted across reloads or
+HA restarts. Remote controls and other OpenWebif clients cannot be excluded
+atomically between preflight and writing; mismatched returned events are
+reported as uncertain. No automatic rollback or fallback to long recording.
+
+`EnigmaCoordinator.async_record_now()` refreshes lists and status after success
+or failure; cancellation marks lists dirty for the next poll. The action and
+enabled-by-default button share the same instance. Optional action responses
+contain `started` and the confirmed timer identity (`service_reference`, `begin`,
+`end`); this does not promise successful file writing. The receiver determines
+the recording folder, end time including possible post-padding and instant timer
+persistence. The verification summary records support/hardware evidence,
+including the scope of user confirmation and practical steps not individually
+verified.
+
+Interfaces checked on 2026-09-20: [OpenWebif controller](https://github.com/oe-alliance/OpenWebif/blob/main/plugin/controllers/web.py),
+[timer model](https://github.com/oe-alliance/OpenWebif/blob/main/plugin/controllers/models/timers.py)
+and [OpenATV timers](https://github.com/openatv/enigma2/blob/master/lib/python/RecordTimer.py).
+The implementation is independent; no upstream code was copied.
 
 ## Recorded ideas
 

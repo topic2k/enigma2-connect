@@ -373,6 +373,9 @@
       },
       "key_mute": {
         "name": "Key mute"
+      },
+      "record_now": {
+        "name": "Record current programme"
       }
     }
   },
@@ -457,6 +460,18 @@
     },
     "timer_unconfirmed": {
       "message": "The timer action may have taken effect but was not clearly confirmed. It will not be retried automatically. Check the timer in OpenWebif before running the action again."
+    },
+    "recording_not_live": {
+      "message": "Select a live channel on the awake receiver. This action is unavailable in standby or during file playback."
+    },
+    "recording_no_epg": {
+      "message": "No valid current EPG programme is available for this channel. No recording was started."
+    },
+    "recording_changed": {
+      "message": "The channel or programme changed during the checks. Check the current programme and run the action again."
+    },
+    "recording_timer_data": {
+      "message": "Existing timers could not be checked reliably. Check the timer list in OpenWebif. No recording was started."
     }
   },
   "services": {
@@ -591,6 +606,16 @@
         "end": {
           "name": "End (ISO with timezone or Unix seconds)",
           "description": "End (ISO with timezone or Unix seconds)"
+        }
+      }
+    },
+    "record_now": {
+      "name": "Record current programme",
+      "description": "Start recording the current EPG programme. Existing recordings on the same channel are left unchanged.",
+      "fields": {
+        "device_id": {
+          "name": "Receiver",
+          "description": "Receiver"
         }
       }
     }

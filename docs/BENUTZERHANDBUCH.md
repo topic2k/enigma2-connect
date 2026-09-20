@@ -522,6 +522,7 @@ dir seine `device_id`. Passe auch Senderkennungen und Termine an.
 | `notify.send_message` | Bildschirmnachricht-Entität; `message`, optional `title`. Verwendet Nachrichtentyp und Anzeigedauer aus den Receiver-Einstellungen. |
 | `enigma2_connect.message` | `device_id`, `text`, optional `type` (0–3, Standard 1) und `timeout` (1–120 Sekunden, Standard 10) |
 | `enigma2_connect.reboot`, `.restart_gui`, `.deep_standby` | `device_id`; Receiver-Neustart, GUI-Neustart oder Tiefschlaf |
+| `enigma2_connect.record_now` | `device_id`; laufende EPG-Sendung ab jetzt aufnehmen |
 | `enigma2_connect.timer_add` | `device_id`, `service_reference`, `begin`, `end`, `name`; optional `description`, `justplay`, `afterevent` |
 | `enigma2_connect.timer_delete`, `.timer_toggle` | `device_id`, `service_reference`, `begin`, `end` des vorhandenen Timers |
 
@@ -588,6 +589,81 @@ data:
   justplay: false
   afterevent: 3
 ```
+
+#### Aktuelle Sendung sofort aufnehmen
+
+1. Schalte am gewünschten Receiver einen Live-Sender ein. Die laufende Sendung
+   muss in dessen EPG stehen; Uhrzeit und Datum von Receiver und Home Assistant
+   müssen stimmen.
+2. Öffne das Receiver-Gerät in Home Assistant und drücke **Aktuelle Sendung
+   aufnehmen**. Diesen Button kannst du auch deinem Dashboard hinzufügen.
+3. Prüfe den Aufnahmestatus und den Timer. Die Aufnahme beginnt jetzt; bereits
+   ausgestrahlte Teile werden nicht nachträglich aufgenommen. Das Ende richtet
+   sich nach dem EPG und den Receiver-Einstellungen, einschließlich Nachlauf.
+
+Die neue Aktion heißt `enigma2_connect.record_now`. Sie benötigt nur den Receiver.
+Für Automationen kannst du optional eine Antwortvariable verwenden:
+
+```yaml
+action: enigma2_connect.record_now
+data:
+  device_id: DEINE_RECEIVER_GERAETE_ID
+response_variable: aufnahme_ergebnis
+```
+
+`started: true` bedeutet: Der Start wurde bestätigt und einem Timer zugeordnet.
+`started: false` bedeutet: Ein vorhandener aktiver Aufnahme-Timer auf diesem
+Sender wurde gefunden und unverändert gelassen. `timer` enthält
+`service_reference`, `begin` und `end` in Unix-Sekunden. Ein vorhandener Timer
+wird auch dann nicht verlängert, wenn er vor dem Sendungsende endet. Ohne
+Antwortvariable funktioniert die Aktion ebenfalls.
+
+Mehrfachdrücken legt für eine bereits erkannte Aufnahme keinen weiteren Timer
+an. Nach erfolgreichem Start schützt zusätzlich eine Sperre von zehn Sekunden
+gegen eine verzögerte Timerliste. Bei unklarem Ausgang prüfe OpenWebif; die
+Integration versucht für dieselbe Sendung bis zu deren EPG-Ende keinen neuen
+Start. Diese Sperre geht beim Neuladen der Integration oder HA-Neustart verloren.
+
+Im Standby, bei Dateiwiedergabe, fehlendem EPG oder nicht sicher lesbarer Timerliste
+erscheint ein Fehler. Es wird keine lange Ersatzaufnahme gestartet. Fehlender
+Speicherplatz oder andere Receiver-Probleme können die Aufnahme trotz bestätigtem
+Timer verhindern. Prüfe bei Bedarf auch die Aufnahme am Receiver. Zum Stoppen
+verwende die Aufnahmeverwaltung von OpenWebif oder die Receiver-Fernbedienung;
+der neue Button stoppt keine Aufnahme.
+
+#### Abschnitt 2 auf dem Receiver prüfen
+
+Diese Prüfung verwendet **echte Testaufnahmen**, nicht die Umschalt-Timer aus
+1a/1b. Installiere **1.3.0-dev.4**, starte Home Assistant neu und prüfe Octagon
+und Vu+ getrennt. Notiere HA-Version, Image und OpenWebif-Version.
+
+1. Wähle einen unkritischen Live-Sender mit gültiger laufender EPG-Sendung und
+   noch ohne Aufnahme auf diesem Sender. Starte die Aktion oben. Erwartet:
+   `started: true`, eine Timerkennung, genau ein neuer Aufnahme-Timer sowie
+   aktiver Aufnahmestatus in OpenWebif und nach Aktualisierung in HA. Prüfe die
+   Endzeit gegen EPG und eingestellten Nachlauf.
+2. Drücke während dieser Aufnahme mehrmals **Aktuelle Sendung aufnehmen** und
+   führe die Aktion noch einmal aus. Erwartet: keine zweite Aufnahme, keine
+   Änderung der vorhandenen Endzeit; Aktionsantwort `started: false`.
+3. Stoppe die Testaufnahme in OpenWebif/am Receiver. Warte mindestens zehn
+   Sekunden seit dem bestätigten Start. Starte erneut über den Button, prüfe
+   genau eine neue laufende Aufnahme und stoppe sie anschließend. Öffne kurz
+   eine der Testdateien, um die tatsächliche Aufnahme zu bestätigen.
+4. Schalte in normalen Standby und führe die Aktion aus. Erwartet: verständlicher
+   Fehler und kein neuer Timer. Schalte wieder ein und prüfe eine vorhandene
+   Bildschirmnachricht-Aktion als Gegencheck.
+5. Falls verfügbar: Wiederhole die Aktion während einer Dateiwiedergabe und auf
+   einem Sender ohne EPG. Erwartet: jeweils Fehler und keine neue Aufnahme.
+   Wenn kein passender Testfall vorhanden ist, melde „nicht geprüft“.
+6. Prüfe bei zwei eingerichteten Receivern, dass ausschließlich das ausgewählte
+   Gerät aufnimmt. Beende die Testaufnahme. Testdateien kannst du anschließend
+   über die normale Aufnahmeverwaltung entfernen.
+
+Melde pro Receiver: Start mit Antwort, Timer-Endzeit, Aufnahmestatus/Kalender,
+Mehrfachaufruf, Button-Neustart, abspielbare Datei, Standby, Dateiwiedergabe,
+fehlendes EPG, Geräteauswahl und Auffälligkeiten. Ein absichtlicher Netzwerkabbruch
+oder Aufnahmekonflikt ist für diese Praxisprüfung nicht erforderlich; die
+zugehörigen Fehlerpfade werden lokal simuliert geprüft.
 
 #### Antwortdaten der Timeraktionen
 
