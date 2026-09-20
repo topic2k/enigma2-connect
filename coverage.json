@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
   "label": "Coverage",
-  "message": "99.37%",
+  "message": "99.50%",
   "color": "brightgreen",
-  "source": "df39aead765fd6f4b56d88067f2295d3ca5925da",
-  "run": "https://github.com/topic2k/enigma2-connect/actions/runs/35499769738",
+  "source": "19e38b38b7991019ed34cd7355dfb36772e36fac",
+  "run": "https://github.com/topic2k/enigma2-connect/actions/runs/35536141715",
   "measured": "statements + branches"
 }
