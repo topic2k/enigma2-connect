@@ -530,6 +530,15 @@
     },
     "invalid_action_choice": {
       "message": "Choose exactly one channel input: channel selection or manual reference. Choices must belong to the selected receiver. Use only one of the two recording directory fields."
+    },
+    "epg_data": {
+      "message": "The receiver did not return a usable EPG list. Check OpenWebif."
+    },
+    "epg_changed": {
+      "message": "The EPG result is missing, expired or changed. Search again; no timer was created."
+    },
+    "epg_timer_ambiguous": {
+      "message": "This channel has an overlapping or repeated timer whose coverage is uncertain. Check receiver timers; no additional timer was created."
     }
   },
   "services": {
@@ -788,6 +797,72 @@
         "directory_selection": {
           "name": "Select recording directory",
           "description": "Known recording directories on the receiver. Alternatively enter the path manually. This is not a filesystem browser."
+        }
+      }
+    },
+    "epg_search": {
+      "name": "Search EPG",
+      "description": "Searches stored EPG titles on this receiver. Returns ongoing and future events; the receiver may cap the search pool.",
+      "fields": {
+        "device_id": {
+          "name": "Receiver",
+          "description": "Receiver"
+        },
+        "query": {
+          "name": "Title search",
+          "description": "Title search"
+        }
+      }
+    },
+    "epg_similar": {
+      "name": "Find similar programmes",
+      "description": "Copy service reference, event ID and Unix times unchanged from a search result. Returns programmes considered similar by the receiver.",
+      "fields": {
+        "device_id": {
+          "name": "Receiver",
+          "description": "Receiver"
+        },
+        "service_reference": {
+          "name": "Service reference from result",
+          "description": "Service reference from result"
+        },
+        "event_id": {
+          "name": "EPG event ID",
+          "description": "EPG event ID"
+        },
+        "begin": {
+          "name": "EPG start (Unix seconds)",
+          "description": "EPG start (Unix seconds)"
+        },
+        "end": {
+          "name": "EPG end (Unix seconds)",
+          "description": "EPG end (Unix seconds)"
+        }
+      }
+    },
+    "record_event": {
+      "name": "Record EPG programme",
+      "description": "Copy all four identifying fields unchanged from a search result. Checks fresh EPG and existing timers. Uses receiver recording margins and default directory.",
+      "fields": {
+        "device_id": {
+          "name": "Receiver",
+          "description": "Receiver"
+        },
+        "service_reference": {
+          "name": "Service reference from result",
+          "description": "Service reference from result"
+        },
+        "event_id": {
+          "name": "EPG event ID",
+          "description": "EPG event ID"
+        },
+        "begin": {
+          "name": "EPG start (Unix seconds)",
+          "description": "EPG start (Unix seconds)"
+        },
+        "end": {
+          "name": "EPG end (Unix seconds)",
+          "description": "EPG end (Unix seconds)"
         }
       }
     }

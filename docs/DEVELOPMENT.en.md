@@ -876,7 +876,7 @@ Base: freshly fetched `origin/main` commit `1afa705` (version 1.2.0), branch
 `feature/recording-workflows`, worktree
 `V:\enigma2-connect-worktrees\recording-workflows`. This request explicitly
 selects `main` instead of the general `develop` branch rule. Target version:
-**1.3.0-dev.6**, reflecting the complete planned backward-compatible feature
+**1.3.0-dev.7**, reflecting the complete planned backward-compatible feature
 scope. Recheck remote branches, tags and published releases before a later PR.
 
 **Commit rule for this request:** Commit a section to the working branch only
@@ -956,7 +956,12 @@ on instruction.
   HA frontend, calendar and event checks also passed. Codex and the user confirmed
   completion on **2026-09-20**. Completion commit:
   `feat: add timer editing and action selectors`.
-- **4–5:** planned, not started.
+- **4 – EPG search and cards:** jointly completed on **2026-09-20**,
+  test build **1.3.0-dev.12**. Local tests and real HA/Octagon checks passed;
+  Vu+ without EPG correctly returned empty results. See the
+  [verification summary](VALIDATION.en.md) for limits and timer reconciliation.
+  Working-branch completion commit: `feat: add EPG search and recording cards`.
+- **5:** planned, not started.
 
 `OpenWebifClient.command_result()` returns structured success data under the same
 lock as `command()`. Existing `command()` still returns `None`. Rejections through
@@ -1285,3 +1290,78 @@ activation. The trial uses existing credits; it purchases none and changes no pl
 Status on 2026-09-16: the Modbus trial succeeded and included every deadline.
 Junie reported about USD 0.048 in model costs; its default model was Gemini
 3.7 Flash. The top-up deduction is not yet confirmed. Production execution and further relevance cases are validated separately. See [verification summary](VALIDATION.en.md).
+
+### Section 4 implementation plan (1.3.0-dev.7)
+
+Add `epg_search`, `epg_similar` and `record_event`, preserving the original event
+ID, service reference and exact Unix interval in each result. Before recording,
+revalidate EPG and timers under the command lock, send one write and confirm via
+the timer list. Retain uncertain-write guards until programme end. Add a
+collapsible search, similar-programme and recording view to the optional card.
+Keep backend/HA/frontend simulations separate from real receiver evidence.
+Historical plan status: section 4 was not yet accepted. Its dev.12 completion
+is recorded above; section 5 has not started.
+
+### EPG interfaces and guard boundaries (section 4)
+
+`epg.py` reads on demand: `epgsearch` without `full` (parameter presence enables
+full-text search), `epgsimilar`, and `event?sRef=…&idev=…`. Only the similar endpoint
+accepts a top-level JSON array, normalized to `events`. Detail fields use numeric
+`begin`/`duration` rather than `begin_timestamp`/`duration_sec`. Strict parsing
+rejects partial/malformed lists. Expired events/duplicates are removed; results
+are returned without a local limit. The receiver's upstream cap cannot reliably be detected.
+
+`record_event` holds the shared command lock across two fresh event reads, timer
+preflight, one `timeraddbyeventid` write and timer readback. Service reference,
+event ID and both original EPG times must match. Receiver margins/default path
+are retained; `justplay=0`, `afterevent=3`. Success requires a unique new timer
+with matching EIT/reference and coverage. Uncertain outcomes cause no retry,
+rollback or deletion. An existing active fully covering timer counts even with
+a different EIT. Same-channel series are conservatively blocked rather than
+guessing the occurrence represented by stored receiver times.
+
+The card uses HA WebSocket `call_service` with `return_response: true`, bound to
+the selected integration remote's device ID. Late replies after receiver/language
+changes or card removal are discarded. Result text uses DOM `textContent`, never
+HTML. No EPG polling or extra runtime dependency is introduced.
+
+Primary interface references read 2026-09-20:
+[OpenWebif controller](https://github.com/oe-alliance/OpenWebif/blob/main/plugin/controllers/web.py),
+[timer model](https://github.com/oe-alliance/OpenWebif/blob/main/plugin/controllers/models/timers.py).
+No GPL source was copied. See validation overview for simulated/physical evidence.
+
+### Card refinement dev.8: plan
+
+Following dev.7 feedback, make EPG search, playback controls and number buttons
+independently optional while preserving defaults. Add an EPG-only card sharing
+the same search logic and resource file. An explicit clear button empties only
+the search input, preserving results and pending recording requests. Add frontend
+regressions and a local browser check; section 4 remains uncommitted pending
+joint acceptance.
+
+The dev.8 card refinement is implemented and locally checked. The native editor
+uses `getConfigForm` and boolean selectors defaulting to `true`. Both card types
+share rendering and `EpgController`. See validation for evidence and pending HA
+acceptance.
+
+### Reset search view (dev.9)
+
+Plan and implementation: reset input/results together; a separate search revision
+discards late read responses. Retain the busy guard and recording acknowledgement.
+Verify reset during pending search and recording requests.
+
+### Result display dev.10: plan and implementation
+
+Shared `results_view` editor option (list/single), local bounded navigation with
+index reset for new results. Count received results and expose truncation without
+claiming an unknown receiver-wide total. Target frontend and browser checks.
+
+### Unlimited results and arrow navigation dev.12
+
+Plan and implementation: remove local slicing in `epg.py`, action/translation
+`limit` fields and card `max_results`. Preserve the response field `truncated`
+as `false` for compatibility. Obsolete card configuration is accepted and ignored.
+Place the count between accessible arrow buttons, keeping boundary guards.
+Both cards default to single view, remote search is off; explicit settings take precedence.
+Test search/similar with 123 results and navigation beyond the former limit.
+Update both integration and card; no new quality exemptions.

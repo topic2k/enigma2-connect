@@ -932,7 +932,7 @@ umsetzen. Basis ist der frisch abgerufene `origin/main`-Commit `1afa705`
 (Version 1.2.0), Arbeitsbranch `feature/recording-workflows`, Worktree
 `V:\enigma2-connect-worktrees\recording-workflows`. Für diesen Auftrag gilt
 ausdrücklich `main` als Ausgangsbasis statt der allgemeinen `develop`-Regel.
-Ziel ist **1.3.0-dev.6**, da der gesamte geplante Umfang neue,
+Ziel ist **1.3.0-dev.7**, da der gesamte geplante Umfang neue,
 rückwärtskompatible Funktionen enthält. Vor einem späteren PR ist die
 Versionsbasis erneut mit Remote, Tags und veröffentlichten Releases abzugleichen.
 
@@ -1013,7 +1013,21 @@ Qualitätsabgleich und ausdrückliche Nutzerfreigabe; Release nur auf Anweisung.
   auf Octagon und Vu+ sowie HA-Oberflächen-, Kalender- und Ereignisprüfungen bestanden.
   Am **20.09.2026** von Codex und Nutzer als fertig bestätigt. Abschlusscommit:
   `feat: add timer editing and action selectors`.
-- **4–5:** geplant, nicht begonnen.
+- **4 – EPG-Suche und Karten:** beidseitig abgeschlossen am **20.09.2026**,
+  Teststand **1.3.0-dev.12**. Lokale Tests und reale HA-/Octagon-Prüfung bestanden;
+  Vu+ ohne EPG mit korrekter Leermeldung geprüft. Grenzen und Timer-Abgleich
+  siehe [Prüfübersicht](VALIDIERUNG.md). Abschlusscommit auf dem Arbeitsbranch:
+  `feat: add EPG search and recording cards`.
+  Umgesetzter Plan: drei Aktionen
+  `epg_search`, `epg_similar` und `record_event`; Suchtreffer enthalten die
+  ursprüngliche Ereigniskennung, Senderreferenz und exakten Unix-Zeiten.
+  Vor jeder Aufnahme frische EPG- und Timerprüfung unter der Befehlssperre,
+  anschließend genau ein Schreibversuch und Bestätigung über die Timerliste.
+  Unklare Antworten sperren erneutes Anlegen bis Sendungsende; bestehende
+  passende Timer bleiben erhalten. Die optionale Karte erhält eine aufklappbare
+  Suchansicht mit Aufnahme und ähnlichen Sendungen. Gezielte Backend-, HA- und
+  Frontendtests sowie Receiver-Prüfungen werden getrennt dokumentiert.
+- **5:** geplant, nicht begonnen.
 
 `OpenWebifClient.command_result()` liefert die strukturierte erfolgreiche
 Antwort unter derselben Sperre wie `command()`. Bestehendes `command()` liefert
@@ -1365,3 +1379,72 @@ Teststand 16.09.2026: Der Modbus-Einzeltest war erfolgreich und nannte alle
 Fristen. Junie meldete rund 0,048 USD Modellkosten; das Standardmodell war
 Gemini 3.7 Flash. Die Top-up-Abbuchung ist noch nicht bestätigt. Der produktive Ablauf und weitere Relevanzfälle werden getrennt validiert.
 Siehe [Prüfübersicht](VALIDIERUNG.md).
+
+### EPG-Suche: Schnittstellen und Schutzgrenzen (Abschnitt 4)
+
+`epg.py` führt ausschließlich bedarfsabhängige Lesezugriffe aus: `epgsearch`
+ohne `full` (dessen Anwesenheit Volltextsuche aktiviert), `epgsimilar` und
+`event?sRef=…&idev=…`. Nur `/api/epgsimilar` darf eine JSON-Liste liefern; der
+Transport normalisiert diese auf `events`. Der Detail-Endpunkt verwendet
+`begin`/`duration` in Sekunden statt `begin_timestamp`/`duration_sec`.
+Strenge Listenparser verhindern Teilantworten als scheinbar vollständige Erfolge.
+Vergangene Treffer und Duplikate entfallen, alle übrigen Ergebnisse werden zurückgegeben.
+Die zusätzliche vorgelagerte Receiver-Begrenzung ist nicht zuverlässig erkennbar.
+
+`record_event` hält die gemeinsame Befehlssperre über zwei frische Ereignisabfragen,
+Timerprüfung, einen `timeraddbyeventid`-Aufruf und Timer-Nachlesen. Referenz,
+Ereignis-ID und beide ursprünglichen EPG-Zeiten müssen passen. Vor-/Nachlauf
+und Ordner bleiben beim Receiver; `justplay=0`, `afterevent=3`. Ein eindeutiger
+neuer Timer mit passendem EIT, Referenz und Abdeckung bestätigt Erfolg. Es gibt
+keine Wiederholung, Rücksetzung oder Löschung bei unklarem Ergebnis. Ein aktiver
+vollständig abdeckender Timer genügt als vorhandene Aufnahme auch bei anderem EIT.
+Serien auf demselben Sender werden konservativ nicht hochgerechnet; ihre
+gespeicherten Zeiten können bereits vergangene Vorkommen beschreiben.
+
+Die Karte verwendet HA-WebSocket `call_service` mit `return_response: true`.
+Sie bindet jeden Auftrag an die `device_id` der ausgewählten Integrations-Remote.
+Späte Antworten nach Receiver-/Sprachwechsel oder Entfernung der Karte werden
+verworfen. Suchdaten gelangen nur per `textContent` in den DOM, nicht als HTML.
+Keine EPG-Abfrage im regulären Polling und keine zusätzliche Laufzeitabhängigkeit.
+
+Schnittstellenbelege, am 20.09.2026 gelesen:
+[OpenWebif-Controller](https://github.com/oe-alliance/OpenWebif/blob/main/plugin/controllers/web.py),
+[Timermodell](https://github.com/oe-alliance/OpenWebif/blob/main/plugin/controllers/models/timers.py).
+Es wurde kein GPL-Code übernommen. Reale und simulierte Nachweise siehe Prüfübersicht.
+
+### Karten-Nachbesserung dev.8: Plan
+
+Nutzerfeedback zu dev.7: EPG-Suche, Videosteuerung und Zahlentasten einzeln
+abschaltbar machen; bisherige Vorgaben erhalten. Eine zweite, reine EPG-Karte
+nutzt dieselbe Suchlogik und dieselbe Ressourcendatei. Ein expliziter Button leert
+nur das Suchfeld, ohne Treffer oder laufende Aufnahmeaufträge zu verwerfen.
+Frontend-Regressionen und lokale Browserprobe ergänzen; Abschnitt 4 bleibt bis
+zur gemeinsamen Abnahme uncommittet.
+
+Die dev.8-Karten-Nachbesserung ist implementiert und lokal geprüft. Die native
+Editor-Schnittstelle nutzt `getConfigForm` und Boolean-Selektoren mit Vorgabe
+`true`; gemeinsames Rendering und `EpgController` bleiben für beide Kartentypen
+identisch. Details zu Nachweisen und offener HA-Abnahme siehe Prüfübersicht.
+
+### Suchansicht zurücksetzen (dev.9)
+
+Plan und Umsetzung: Eingabe und Treffer gemeinsam zurücksetzen; eine separate
+Suchrevision verwirft verspätete Leseantworten. Befehlssperre und Aufnahmerückmeldung
+bleiben erhalten. Gezielt Rücksetzen während Suche und Aufnahme prüfen.
+
+### Trefferanzeige dev.10: Plan und Umsetzung
+
+Gemeinsame Editoroption `results_view` (list/single), reine lokale Navigation mit
+Grenzprüfung und Zurücksetzen des Index bei neuen Ergebnissen. Zähler nennt die
+empfangenen Treffer und macht Kürzung sichtbar; kein behaupteter Gesamtzähler
+für unbekannte Receiver-Treffer. Gezielte Frontend- und Browserprüfung.
+
+### Unbegrenzte Treffer und Pfeilnavigation dev.12
+
+Plan und Umsetzung: lokale Kürzung in `epg.py` entfernen, `limit` aus den Aktionen
+und Übersetzungen entfernen und Kartenoption `max_results` aufgeben. Das bisherige
+Antwortfeld `truncated` bleibt kompatibel als `false`. Alte Kartenkonfigurationen
+werden akzeptiert, ihre Grenze ignoriert. Der Zähler steht zwischen zugänglichen
+Pfeiltasten; Randtasten bleiben gesperrt. Beide Karten standardmäßig einzeln, Suche in der Fernbedienung aus; explizite Auswahl hat Vorrang. Suche/Ähnliche mit 123
+Treffern sowie Navigation jenseits der bisherigen Grenze gezielt testen. Integration
+und Karte gemeinsam aktualisieren; keine neuen Qualitätsausnahmen.

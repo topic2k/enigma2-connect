@@ -31,6 +31,7 @@ from .api import (
 )
 from .channel_media import CONF_CHANNEL_BOUQUET, CONF_SHOW_CHANNELS
 from .const import CATALOG_INTERVAL, DOMAIN, SLOW_INTERVAL
+from .epg import EpgError, EpgWorkflow
 from .instant_recording import InstantRecording, InstantRecordingError
 from .media_stream import MediaStream
 from .models import JsonObject, ReceiverState, Snapshot, services
@@ -57,6 +58,7 @@ class EnigmaCoordinator(DataUpdateCoordinator[Snapshot]):
         self.client = client
         self.instant_recording = InstantRecording(client)
         self.timer_editor = TimerEditor(client)
+        self.epg = EpgWorkflow(client)
         self.entry = entry
         self.recording_images = RecordingImages(hass, self)
         self.media_stream = MediaStream(hass, self)
@@ -234,7 +236,7 @@ class EnigmaCoordinator(DataUpdateCoordinator[Snapshot]):
             raise HomeAssistantError(
                 translation_domain=DOMAIN, translation_key="power_unconfirmed"
             ) from err
-        except (InstantRecordingError, TimerEditError) as err:
+        except (InstantRecordingError, TimerEditError, EpgError) as err:
             raise HomeAssistantError(translation_domain=DOMAIN, translation_key=err.reason) from err
         except CommandUnconfirmed as err:
             raise HomeAssistantError(
@@ -272,6 +274,9 @@ class EnigmaCoordinator(DataUpdateCoordinator[Snapshot]):
         if refresh:
             await self.async_request_refresh()
         return result
+
+    async def async_record_event(self, expected: JsonObject) -> JsonObject:
+        return await self._timer_workflow(self.epg.record, expected, timer_action="record_event")
 
     async def async_record_now(self) -> JsonObject:
         return await self._timer_workflow(self.instant_recording.start, timer_action="record_now")

@@ -192,6 +192,15 @@
     },
     "timer_edit": {
       "service": "mdi:timer-edit-outline"
+    },
+    "epg_search": {
+      "service": "mdi:television-guide"
+    },
+    "epg_similar": {
+      "service": "mdi:content-copy"
+    },
+    "record_event": {
+      "service": "mdi:record-rec"
     }
   }
 }

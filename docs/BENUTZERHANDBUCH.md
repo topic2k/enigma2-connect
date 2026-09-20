@@ -477,6 +477,56 @@ entity: remote.test_receiver_remote
 name: Wohnzimmer
 ```
 
+### Kartenbereiche auswählen und reine EPG-Karte
+
+Im grafischen Editor der Fernbedienung schaltest du **EPG-Suche anzeigen**,
+**Videosteuerung anzeigen** und **Zahlentasten anzeigen** einzeln ein oder aus.
+Standardmäßig ist die Suche aus; Videosteuerung und Zahlentasten sind an.
+Videosteuerung umfasst Wiedergabe,
+Pause, Stopp, Vor-/Zurückspulen und die Aufnahme-Taste. TV, Radio und die EPG-Taste
+des Receivers bleiben unabhängig davon sichtbar.
+
+```yaml
+type: custom:enigma2-connect-remote-card
+entity: remote.test_receiver_remote
+show_epg: false
+show_playback: false
+show_numbers: false
+```
+
+Für eine eigene Suchkarte wähle unter **Karte hinzufügen → Nach Karte**
+**Enigma2 Connect EPG-Suche** und danach die Receiver-Steuerung. Sie zeigt die
+Suche direkt, ohne Fernbedienungstasten. Beide Karten werden durch dieselbe
+Ressource `enigma2-connect-remote-card.js` bereitgestellt.
+
+```yaml
+type: custom:enigma2-connect-epg-card
+entity: remote.test_receiver_remote
+name: Sendungen suchen
+```
+
+Im Karteneditor beider Karten wählst du unter **Trefferanzeige** zwischen
+**Liste** und **Einzeln mit Blättern**. Beide Karten verwenden standardmäßig
+die Einzelansicht. Die Suche der Fernbedienungskarte ist standardmäßig ausgeblendet.
+Die Einzelansicht zeigt eine
+Sendung und die Tasten **Vorheriger Treffer** / **Nächster Treffer**. An den
+Listenenden sind die passenden Tasten gesperrt. Neue Suchergebnisse beginnen
+wieder beim ersten Treffer. YAML: `results_view: single` oder `results_view: list`.
+
+Alle vom Receiver gelieferten laufenden und zukünftigen Treffer sind zugänglich;
+Duplikate werden entfernt. Die Anzeige lautet beispielsweise **[‹] Treffer 10 von 30 [›]**.
+Bei leerem Ergebnis erscheint **0 Treffer**. Die Integration kürzt die Trefferliste
+nicht mehr; die Zahl beschreibt die empfangenen passenden Ergebnisse.
+
+**Suche zurücksetzen** leert in beiden Karten Suchtext, Trefferliste und
+Suchhinweise und setzt den Fokus in das Eingabefeld. Verspätete Suchantworten
+füllen die Liste nicht erneut. Bereits angeforderte Aufnahmen laufen weiter;
+ihre Bestätigung oder Fehlermeldung wird weiterhin angezeigt.
+Nach dem Update der Kartendatei den bestehenden Ressourcenlink beispielsweise
+auf `?v=dev12` ändern und den Browser neu laden. Für die unbegrenzte Suche Integration und Kartendatei
+auf dev.12 oder neuer
+aktualisieren und Home Assistant neu starten.
+
 ## Nachrichten und Automationen
 
 Eine Bildschirmnachricht kannst du zunächst unter **Entwicklerwerkzeuge →
@@ -523,6 +573,9 @@ dir seine `device_id`. Passe auch Senderkennungen und Termine an.
 | `notify.send_message` | Bildschirmnachricht-Entität; `message`, optional `title`. Verwendet Nachrichtentyp und Anzeigedauer aus den Receiver-Einstellungen. |
 | `enigma2_connect.message` | `device_id`, `text`, optional `type` (0–3, Standard 1) und `timeout` (1–120 Sekunden, Standard 10) |
 | `enigma2_connect.reboot`, `.restart_gui`, `.deep_standby` | `device_id`; Receiver-Neustart, GUI-Neustart oder Tiefschlaf |
+| `enigma2_connect.epg_search` | `device_id`, `query`; Antwortvariable erforderlich |
+| `enigma2_connect.epg_similar` | `device_id`, `service_reference`, `event_id`, `begin`, `end` aus einem Treffer; Antwortvariable erforderlich |
+| `enigma2_connect.record_event` | Dieselben vier Kennwerte und `device_id`; optionale Antwort mit `created` und `timer` |
 | `enigma2_connect.record_now` | `device_id`; laufende EPG-Sendung ab jetzt aufnehmen |
 | `enigma2_connect.timer_add` | `device_id`, `channel` oder `service_reference`, `begin`, `end`, `name`; optional `description`, `justplay`, `afterevent`, `weekdays`, `directory` oder `directory_selection`, `tags`, `disabled`, `recording_type` |
 | `enigma2_connect.timer_edit` | `device_id`, `channel` oder `old_service_reference`, `old_begin`, `old_end`, `scope`; nur gewünschte neue Werte angeben |
@@ -535,7 +588,7 @@ Für Tastenfolgen kannst du beispielsweise `menu`, `up`, `down` und `ok` verwend
 wiederholt die Folge. `hold_secs` größer als 0 sendet einen langen Tastendruck;
 wie lange er wirkt, hängt vom Receiver ab.
 
-Gib Beginn und Ende in YAML mit Datum, Uhrzeit und Zeitzone wie im Beispiel
+Gib bei den zeitbasierten Timeraktionen Beginn und Ende in YAML mit Datum, Uhrzeit und Zeitzone wie im Beispiel
 an. `+02:00` steht dort für die deutsche Sommerzeit; passe den Wert an deinen
 Termin und Standort an. Mit `justplay: true` schaltet der Receiver zum Sender,
 ohne aufzunehmen. `afterevent` bestimmt das Verhalten danach: 0 = nichts,
@@ -787,6 +840,110 @@ Rückmeldung je Receiver: Einzeltermin/Optionserhalt, Wochenserie, Mitternacht,
 veraltete Kennung, Konflikt beim Anlegen/Bearbeiten, Werte nach Ablehnung,
 Konfliktereignis und weitere Auffälligkeiten. Erst danach folgt die beidseitige
 Abnahme und der Abschnittscommit.
+
+#### EPG durchsuchen und eine Sendung aufnehmen
+
+Unter **Werkzeuge → Aktionen → Enigma2 Connect: EPG durchsuchen** wählst du
+den Receiver und gibst einen Teil des Sendungstitels ein. Die Suche erfolgt nur
+auf diesem Receiver, auch im Standby soweit OpenWebif erreichbar ist. Sie schaltet
+keinen Sender um und lädt kein EPG aus dem Internet. Ohne gespeichertes EPG kann
+die Ergebnisliste leer sein. Ein Verbindungs- oder Datenfehler wird als Fehler
+gemeldet, nicht als leere erfolgreiche Suche.
+
+Die optionale Fernbedienungskarte bietet unten **Sendungen suchen**. Aufklappen,
+Titel eingeben und **Suchen** drücken. Ein Treffer zeigt Sender, Beginn, Ende
+und Beschreibung; die Anzeige verwendet die Home-Assistant-Zeitzone. **Ähnliche**
+zeigt die vom Receiver erkannten ähnlichen Sendungen/Wiederholungen.
+**Aufnehmen** legt einen Aufnahmetimer an. Bei **Eingeplant** ist der Auftrag
+bestätigt; das ist noch kein Nachweis für eine später erfolgreich gespeicherte Datei.
+Die normale Fernbedienungstaste **Aufnahme** behält ihre bisherige Funktion.
+
+Suche und ähnliche Sendungen liefern alle empfangenen laufenden und zukünftigen
+Treffer, nach Beginn sortiert und ohne Duplikate. Es gibt keine lokale Treffergrenze.
+Alte Aktionsangaben für `limit` bitte entfernen; `max_results` in Karten wird ignoriert.
+Ähnliche Sendungen sind Vorschläge des Receivers, keine sichere Erkennung identischer Folgen.
+
+Eine Suche in einem Skript benötigt eine Antwortvariable:
+
+```yaml
+action: enigma2_connect.epg_search
+data:
+  device_id: DEINE_RECEIVER_GERAETE_ID
+  query: Tagesschau
+response_variable: epg_treffer
+```
+
+`epg_treffer.events` enthält je Treffer `service_reference`, `event_id`, `begin`,
+`end`, `title`, `service_name` und `description`. Fehlende Texte können `null`
+sein. Die Zeiten sind **Unix-Sekunden des EPG**, ohne Aufnahmevor-/nachlauf.
+Übernimm die vier Kennwerte eines ausgewählten Treffers unverändert und verwende
+denselben Receiver:
+
+```yaml
+action: enigma2_connect.record_event
+data:
+  device_id: DEINE_RECEIVER_GERAETE_ID
+  service_reference: "{{ ausgewaehlter_treffer.service_reference }}"
+  event_id: "{{ ausgewaehlter_treffer.event_id }}"
+  begin: "{{ ausgewaehlter_treffer.begin }}"
+  end: "{{ ausgewaehlter_treffer.end }}"
+response_variable: aufnahme_ergebnis
+```
+
+`ausgewaehlter_treffer` steht für einen bewusst aus `epg_treffer.events`
+ausgewählten Eintrag; das Beispiel wählt nicht automatisch den ersten Treffer.
+Für ähnliche Sendungen ersetze die Aktion durch `enigma2_connect.epg_similar`
+und verwende eine Antwortvariable wie bei der Suche. In **Werkzeuge → Aktionen**
+kannst du die vier Kennwerte auch direkt aus der Suchantwort in die passenden
+Felder kopieren. Die Unix-Zeiten dort nicht in lokale Datum/Uhrzeit umwandeln.
+
+Vor dem Anlegen werden Ereigniskennung, Sender und Zeiten erneut geprüft.
+Fehlt der Treffer, ist er abgelaufen oder hat er sich verschoben, suche erneut.
+Ein bereits vollständig abdeckender aktiver Aufnahmetimer bleibt unverändert;
+die Antwort lautet `created: false`. Bei `created: true` wurde genau ein neuer
+Timer in der Receiver-Liste bestätigt. `timer` enthält die tatsächlichen
+Timerzeiten einschließlich der Receiver-Vor-/Nachlaufzeiten, die für spätere
+Timerbearbeitung/-löschung maßgeblich sind. Standardordner und EPG-Titel kommen
+vom Receiver; **Nach Aufnahme** steht auf Automatisch.
+
+Bei deaktivierten oder reinen Umschalt-Timern mit Überschneidung, Teilabdeckung,
+unvollständigen Timerdaten oder einer Serie auf demselben Sender wird kein
+zusätzlicher Timer angelegt. Prüfe diese Timer zunächst in OpenWebif. Vom Receiver
+gemeldete Aufnahmekonflikte erscheinen wie bei den anderen Timeraktionen und
+erzeugen `enigma2_connect_timer_conflict` mit `action: record_event`.
+
+Bei einer verlorenen Bestätigung wird nicht automatisch erneut geschrieben.
+Prüfe zuerst OpenWebif. Der Wiederholungsschutz gilt bis Sendungsende und geht
+beim Neuladen/HA-Neustart verloren; nach bestätigtem Erfolg schützt er zehn
+Sekunden gegen verzögerte Timerlisten. Eine gestartete Sendung kann nur noch
+ab dem Aufnahmezeitpunkt aufgezeichnet werden. Receiver-Speicherplatz und
+tatsächliche spätere Aufnahme bleiben am Receiver zu prüfen.
+
+#### Abschnitt 4 auf dem Receiver prüfen
+
+Installiere **1.3.0-dev.7** und starte Home Assistant neu. Aktualisiere auch die
+optionale Kartendatei unter `www` wie im Kapitel **Fernbedienung im Dashboard**
+beschrieben und lade den Browser-Cache neu. Prüfe beide Receiver getrennt:
+
+1. Suche einen vorhandenen EPG-Titel über **EPG durchsuchen**. Prüfe Sender,
+   Zeiten und Beschreibung gegen OpenWebif. Ein Fantasietitel ergibt eine leere
+   Trefferliste; bei fehlendem EPG wird ebenfalls nichts angelegt.
+2. Öffne **Sendungen suchen** in der Karte, suche und betätige **Ähnliche**.
+   Prüfe Zeiten und begrenzte Trefferliste auch auf dem Smartphone.
+3. Wähle eine unkritische zukünftige Sendung ohne passenden Timer. **Aufnehmen**
+   muss genau einen Timer mit den Receiver-Vor-/Nachlaufzeiten erzeugen; nach
+   Aktualisierung erscheint er im HA-Kalender. Wiederhole denselben Auftrag über
+   die Aktion: `created: false`, unveränderte Timeranzahl.
+4. Kopiere die vier Kennwerte eines Treffers in **EPG-Sendung aufnehmen** und
+   erhöhe nur `begin` um eine Sekunde. Erwartet: Hinweis auf geänderten Treffer,
+   kein zusätzlicher Timer. Ein Receiver ohne EPG darf keinen Ersatz-Timer anlegen.
+5. Entferne ausschließlich den eigenen Testtimer mit seinen tatsächlichen
+   Timerzeiten über die vorhandene Löschaktion/OpenWebif. Prüfe ursprüngliche
+   Timer und Kalender. Berichte Ergebnisse getrennt nach Receiver, HA-Aktion,
+   Karte und Kalender; nicht ausführbare Schritte als „nicht geprüft“ melden.
+
+Absichtliche Netzunterbrechungen oder zusätzliche Konflikttimer sind für diese
+Abnahme nicht nötig; diese Pfade werden lokal simuliert geprüft.
 
 #### Aktuelle Sendung sofort aufnehmen
 

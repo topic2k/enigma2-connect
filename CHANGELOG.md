@@ -4,7 +4,7 @@
 
 ## Inhaltsverzeichnis
 
-- [1.3.0-dev.6](#130-dev6)
+- [1.3.0-dev.12](#130-dev12)
 - [1.2.0](#120)
 - [1.1.3](#113)
 - [1.1.2](#112)
@@ -14,11 +14,25 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 1.3.0-dev.6
+## 1.3.0-dev.12
 
 Unveröffentlichte Entwicklerversion. Zielversion für die beauftragten EPG-,
 Timer- und Aufnahmeerweiterungen. Sofortaufnahme und Timerbearbeitung sind
-umgesetzt; EPG-Suche und Bibliotheksverwaltung folgen in weiteren Abschnitten.
+umgesetzt; EPG-Suche und Karten sind gemeinsam abgenommen. Bibliotheksverwaltung folgt.
+
+- EPG-Suche und ähnliche Sendungen liefern alle passenden empfangenen Treffer
+  ohne lokale Begrenzung. Listen- oder Einzelansicht mit Pfeilen um den Zähler:
+  „[‹] Treffer 10 von 30 [›]“. Beide Karten standardmäßig in Einzelansicht; Suche in der Fernbedienung aus.
+  Integration und Karte benötigen dev.12.
+- „Suche zurücksetzen“ leert Eingabe und Treffer gemeinsam. Verspätete
+  Suchantworten bleiben verworfen; laufende Aufnahmeaufträge behalten ihre Rückmeldung.
+- Fernbedienungskarte: EPG-Suche, Videosteuerung und Zahlentasten getrennt
+  ausblendbar; separate EPG-Suchkarte und Button zum Leeren des Suchfelds ergänzt.
+- EPG-Titelsuche, ähnliche Sendungen und ereignisbasierte Aufnahme als HA-Aktionen
+  ergänzt. Die optionale Fernbedienungskarte erhält eine Such-/Aufnahmeansicht.
+  Frische Ereignisprüfung, Timerabgleich und Wiederholungsschutz verhindern
+  veraltete Aufträge und unbeabsichtigte Mehrfachanlage. Direkte Octagon-Prüfung
+  bestanden; HA-Praxisabnahme von Abschnitt 4 steht noch aus.
 
 - HA-Praxisprüfung der Auswahlfelder, Kalenderaktualisierung, Konfliktereignisse
   und sichtbaren Informationsnachrichten mit beiden Receivern erfolgreich abgeschlossen.

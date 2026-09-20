@@ -530,6 +530,15 @@
     },
     "invalid_action_choice": {
       "message": "Wähle genau einen Sender: Senderauswahl oder manuelle Referenz. Die Auswahl muss zum gewählten Receiver passen. Gib auch den Aufnahmeordner nur über eines der beiden Felder an."
+    },
+    "epg_data": {
+      "message": "Der Receiver liefert keine auswertbare EPG-Liste. Bitte OpenWebif prüfen."
+    },
+    "epg_changed": {
+      "message": "Der EPG-Treffer fehlt, ist abgelaufen oder hat sich geändert. Bitte erneut suchen; es wurde kein Timer angelegt."
+    },
+    "epg_timer_ambiguous": {
+      "message": "Für diesen Sender besteht ein überlappender oder wiederholter Timer, dessen Abdeckung nicht sicher feststeht. Bitte die Receiver-Timer prüfen; es wurde kein zusätzlicher Timer angelegt."
     }
   },
   "services": {
@@ -788,6 +797,72 @@
         "directory_selection": {
           "name": "Aufnahmeordner auswählen",
           "description": "Bekannte Aufnahmeordner des Receivers. Alternativ den Pfad manuell angeben. Kein Dateisystem-Browser."
+        }
+      }
+    },
+    "epg_search": {
+      "name": "EPG durchsuchen",
+      "description": "Durchsucht gespeicherte EPG-Titel dieses Receivers. Antwort enthält laufende und zukünftige Treffer; der Receiver kann die Suchmenge begrenzen.",
+      "fields": {
+        "device_id": {
+          "name": "Receiver",
+          "description": "Receiver"
+        },
+        "query": {
+          "name": "Suchtext im Titel",
+          "description": "Suchtext im Titel"
+        }
+      }
+    },
+    "epg_similar": {
+      "name": "Ähnliche Sendungen finden",
+      "description": "Übernimm Senderreferenz, Ereigniskennung und Unix-Zeiten unverändert aus einem Suchtreffer. Liefert ähnliche Sendungen laut Receiver.",
+      "fields": {
+        "device_id": {
+          "name": "Receiver",
+          "description": "Receiver"
+        },
+        "service_reference": {
+          "name": "Senderreferenz aus dem Treffer",
+          "description": "Senderreferenz aus dem Treffer"
+        },
+        "event_id": {
+          "name": "EPG-Ereigniskennung",
+          "description": "EPG-Ereigniskennung"
+        },
+        "begin": {
+          "name": "EPG-Beginn (Unix-Sekunden)",
+          "description": "EPG-Beginn (Unix-Sekunden)"
+        },
+        "end": {
+          "name": "EPG-Ende (Unix-Sekunden)",
+          "description": "EPG-Ende (Unix-Sekunden)"
+        }
+      }
+    },
+    "record_event": {
+      "name": "EPG-Sendung aufnehmen",
+      "description": "Übernimm die vier Kennwerte unverändert aus einem Suchtreffer. Prüft frisches EPG und vorhandene Timer. Verwendet Aufnahmevor-/nachlauf und Standardordner des Receivers.",
+      "fields": {
+        "device_id": {
+          "name": "Receiver",
+          "description": "Receiver"
+        },
+        "service_reference": {
+          "name": "Senderreferenz aus dem Treffer",
+          "description": "Senderreferenz aus dem Treffer"
+        },
+        "event_id": {
+          "name": "EPG-Ereigniskennung",
+          "description": "EPG-Ereigniskennung"
+        },
+        "begin": {
+          "name": "EPG-Beginn (Unix-Sekunden)",
+          "description": "EPG-Beginn (Unix-Sekunden)"
+        },
+        "end": {
+          "name": "EPG-Ende (Unix-Sekunden)",
+          "description": "EPG-Ende (Unix-Sekunden)"
         }
       }
     }

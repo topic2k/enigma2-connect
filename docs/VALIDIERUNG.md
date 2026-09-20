@@ -2,6 +2,192 @@
 
 # Prüfübersicht
 
+## Gemeinsamer Abschluss von Abschnitt 4
+
+Am **20.09.2026** bestätigt der Nutzer nach Codex-Prüfung und realer HA-Praxisprüfung
+**1.3.0-dev.12** ausdrücklich als fertig. Abschnitt 4 ist damit gemeinsam
+abgeschlossen. Zugeordneter Commit auf `feature/recording-workflows`:
+`feat: add EPG search and recording cards`. Die nachfolgend dokumentierten
+Nachweisgrenzen bleiben bestehen; insbesondere keine erfolgreiche EPG-Aufnahme
+auf dem Vu+ ohne EPG behauptet. Keine Freigabe für Merge oder Release.
+
+## Reale HA-Praxisprüfung dev.12 am 20.09.2026
+
+Im freigegebenen Dashboard `codex-lab` mit installierter Integration
+**1.3.0-dev.12** geprüft. Die ausgelieferte JavaScript-Datei stimmt mit dem
+Arbeitsstand überein; Ressourcenlink auf `?v=dev12` aktualisiert.
+
+- Octagon: echte HA-Suche mit **104 Treffern**, Einzelansicht und Navigation
+  bis Treffer 52, Listenansicht mit allen 104 Einträgen, ähnliche Sendungen
+  mit 36 Treffern, leere Suche sowie vollständiger Reset bestanden.
+- Beide Karten standardmäßig einzeln; Fernbedienungssuche zunächst aus.
+  Grafische Auswahl und Umschaltung funktionieren; Video-/Zahlentasten
+  unabhängig ausblendbar. Receiverwechsel setzt Suchzustand zurück.
+- Über die HA-Karte einen zukünftigen EPG-Timer angelegt, am Receiver eindeutig
+  nachgelesen und im HA-Kalender bestätigt. Erneute Anforderung nach Zurücksetzen
+  des Kartenstatus meldet vorhandenen Timer; kein Duplikat. Receiver-Vor-/Nachlauf
+  von 300/600 Sekunden erhalten. Exakt dieser Testtimer wurde wieder gelöscht.
+- Vu+ ohne Signal/EPG: Suchaufruf in HA liefert korrekt 0 Treffer und Hinweis.
+  Ein erfolgreicher EPG-Aufnahmepfad bleibt auf diesem Gerät mangels EPG unbelegt.
+
+Abschluss: Octagon wieder sieben ursprüngliche Timer, eindeutig über Name/Sender
+zugeordnet, Vu+ weiterhin null Timer. Kein zusätzlicher Testtimer verbleibt.
+Ein strenger Vergleich aller Timerwerte war **nicht unverändert**: vier ursprüngliche
+Timer hatten zwischenzeitlich verschobene Zeiten, fünf geänderte EPG-IDs. Dies
+entspricht receiverseitigen EPG-Aktualisierungen; deren genauer Auslöser wurde nicht
+untersucht. Es wurden keine Bearbeitungs-/Löschbefehle für diese Timer gesendet
+und die aktuellen Receiverdaten nicht zurückgesetzt. Lokale Vorher-/Nachher-Daten
+und Bericht liegen unter `.work/recording-workflows-checks/ha12-*` im Hauptarbeitsverzeichnis.
+
+Die Karte „EPG-Suche Octagon“ wurde im Testdashboard gespeichert. Keine
+Enigma-Kartenfehler in den erfassten Browser-Fehlerlogs. Praxisprüfung im verfügbaren
+Geräteumfang bestanden; gemeinsame Abschlussbestätigung und Commit stehen aus.
+Frühere Angaben zu offener HA-Prüfung unten beschreiben den damaligen Stand.
+
+## Abschnitt-4-Codeprüfung und Browserprobe dev.12
+
+Codeprüfung der EPG-Abfragen, Aktionsschemata, Timer-Schutzprüfungen und
+Kartenlogik ohne neue Fehlerbefunde. Die aktuellen 46 EPG-/Aktionsprüfungen,
+22 Frontendtests und der erfolgreiche Typcheck über 34 Module bleiben gültig;
+Produktionscode seit diesen Prüfungen unverändert.
+Zusätzlicher Browserdurchlauf mit simulierten HA-/Receiver-Antworten: Einzelansicht,
+Pfeile um den Zähler visuell bestätigt, Vor/Zurück mit gesperrten Randtasten,
+Ähnliche mit Rückkehr zum ersten Treffer, Aufnahmebestätigung samt gesperrter
+Eingeplant-Taste, vollständiger Reset mit Eingabefokus und leeres Suchergebnis
+mit 0 Treffern bestanden. HTML im Beschreibungstext bleibt sichtbarer Text.
+Keine echte Aufnahme angelegt und keine neue Receiver-/HA-Praxisabnahme.
+Die gemeinsame Abschnittsabnahme und der vereinbarte Commit bleiben offen.
+
+## Unbegrenzte Suche und Kartenvorgaben: 1.3.0-dev.12
+
+**46 EPG-/Aktionsprüfungen und 22 Frontendtests bestanden.** Simulierte Suche
+und ähnliche Sendungen liefern alle 123 passenden Treffer; Blättern erreicht
+den letzten Treffer. Pfeile um den Zähler, beide Karten standardmäßig einzeln,
+Fernbedienungssuche standardmäßig aus und Vorrang expliziter Optionen geprüft.
+Die Grenze entfällt in Backend, Aktionsschema, Übersetzungen und Karteneditor.
+Qualitätsauswirkungen: bedarfsabhängige Abfragen, Aktionsvalidierung, Bedienbarkeit
+und Dokumentation geprüft; keine Kriterien oder Testschwellen abgesenkt.
+JavaScript-/Python-Syntax, Ruff, Versionsstellen, HA-Aktionsmetadaten,
+Dokumentationslinks und Offline-Lockprüfung bestanden.
+Keine neue Prüfung auf realem Receiver oder in der HA-Oberfläche; gemeinsame
+Abschnitt-4-Abnahme bleibt offen. Integration und Karte benötigen dev.12.
+
+## Treffergrenze und Zähler: 1.3.0-dev.11
+
+Beide Karten bieten eine maximale Trefferzahl von 1 bis 50 (Standard 20).
+Die Einzelansicht verzichtet auf die doppelte Trefferzahl. **20 Frontendtests
+bestanden**, einschließlich Grenzwerten, Weitergabe an Suche/Ähnlichkeit und
+unveränderten Aufnahmeparametern. JavaScript-Syntax, Versions-/Metadaten,
+Dokumentationslinks und Offline-Lockprüfung bestanden. Python-Backend unverändert;
+keine neue Receiver-, HA- oder Browserprüfung. Gemeinsame Abschnitt-4-Abnahme offen.
+Die Grenze ist eine lokale Festlegung ohne gemessenen Leistungsnachweis; die
+OpenWebif-Antwort wird erst nach dem Empfang gekürzt.
+
+## Trefferanzeige: 1.3.0-dev.10
+
+Beide Karten: native Editoroption Liste/Einzelansicht, Blättertasten und Zähler.
+**19 Frontendtests bestanden**, einschließlich Indexgrenzen, Zurücksetzen bei
+neuer Suche und Reset, gesperrtem Blättern während Aufträgen und Zähler für null,
+einen, mehrere und begrenzte Treffer in beiden Sprachen/Kartentypen.
+Im Browser mit simulierten HA-Antworten Einzelansicht, Vor/Zurück, gesperrte
+Randtasten, passender Titel/Zähler und vollständiger Reset visuell geprüft.
+JavaScript-Syntax, Versions-/Metadaten und Offline-Lockprüfung bestanden.
+Keine Python-Produktionsänderung oder neuen Receiver-Aufträge. HA-Editor und
+gemeinsame Abschnitt-4-Abnahme auf dem Nutzersystem bleiben offen.
+
+## Suche zurücksetzen: 1.3.0-dev.9
+
+Gemeinsamer Reset für Eingabe, Treffer und Suchhinweise in beiden Karten.
+**17 Frontendtests bestanden**; zusätzlich geprüft: verspätete Ergebnisse und
+Fehler von Suche/Ähnlichkeit werden nach Reset ignoriert, laufende Aufnahmeaufträge
+bleiben gesperrt und liefern weiterhin ihre Bestätigung. JavaScript-Syntax,
+Versionsstellen und Offline-Lockprüfung bestanden. Python-Backend unverändert;
+vorhandene Nachweise gelten weiter. Keine neue Receiver-/HA-Praxisprüfung für
+diese reine Kartenänderung; gemeinsame Abschnitt-4-Abnahme bleibt offen.
+
+## Karten-Nachbesserung: 1.3.0-dev.8
+
+Nutzer bestätigt dev.7 und Kartendatei installiert; erstes Kartenfeedback vom
+20.09.2026 umgesetzt. EPG-Suche, Videosteuerung und Ziffern unabhängig ausblendbar,
+zweite Karte nur für EPG und expliziter Eingabe-Löschbutton.
+**15 Frontendtests bestanden**, darunter alle acht Optionskombinationen,
+Standardwerte, Registrierung beider Karten, Editorfelder, gültige Geräteauswahl
+und Erhalt laufender Aufträge/Treffer beim Leeren des Suchfeldes. JavaScript-Syntax,
+Versionsstellen und Offline-Lockprüfung bestanden.
+
+Browserprobe mit simulierten HA-Antworten: reine EPG-Karte ohne Fernbedienung,
+Suche und Treffer, Eingabe löschen mit Fokus im leeren Feld und erhaltenen
+Ergebnissen sowie kompakte Fernbedienung ohne die drei optionalen Bereiche.
+Das ist keine Prüfung des neuen Karteneditors in der Nutzerinstallation.
+Python-Produktionscode gegenüber dev.7 unverändert; die dortigen Backend- und
+Receiver-Nachweise bleiben gültig. Keine erneute vollständige Testausführung.
+Qualitätsanforderungen an Dokumentation, Übersetzung und Gerätebindung erhalten.
+HA-Praxisabnahme und gemeinsame Abschnitt-4-Bestätigung stehen weiter aus.
+
+## Abschnitt 4: EPG-Suche, Teststand 1.3.0-dev.7
+
+Stand **20.09.2026**: Implementierung zur HA-Praxisabnahme vorbereitet.
+**Noch nicht beidseitig abgenommen und noch nicht committet.**
+
+### Lokale Simulationen und statische Prüfungen
+
+Gezielte Tests mit Python **3.14.7**, Home Assistant **2026.9.1** und
+pytest-homeassistant-custom-component **0.13.364**: erster Lauf 298 bestanden,
+zwei Fehler im neuen Testaufbau (unrealistische identische Timerkennung und
+veralteter Registry-Zugriff). Nach Korrektur bestanden sämtliche 72 Tests des
+Folgelaufs einschließlich aller EPG-Tests und zusätzlicher gemeinsamer Regressionen.
+Der Folgelauf ergänzt den simulierten Weg **HA-Suche → record_event → tatsächliche
+calendar.get_events-Aktion** und prüft die Timerzeiten einschließlich Vor-/Nachlauf.
+Insgesamt **328 unterschiedliche Python-Tests** erfolgreich; keine verbleibenden
+Testfehler. Unveränderte Module behalten ihre vorherigen
+Nachweise; dies war keine vollständige Wiederholung des gesamten CI-Prüfumfangs.
+
+Anweisungs-/Zweigabdeckung der geänderten/neuen Python-Module, aus beiden Läufen:
+
+| Modul | Kombinierte Abdeckung |
+| --- | --- |
+| `epg.py` | 100.00% |
+| `api.py` | 100.00% |
+| `coordinator.py` | 97.57% |
+| `services.py` | 98.68% |
+
+Ruff, Formatierung, strikte Typprüfung (34 Module), Syntax, HA-Selektoren,
+DE/EN-Feld-/Übersetzungskonsistenz, Versionsstellen und Offline-Lockprüfung bestanden.
+Zwölf Node-Frontendtests bestanden, einschließlich Gerätewechsel während einer
+Anfrage, Doppelklickschutz, Fehlerübersetzung und Sprachwechsel.
+Im echten Browser mit **simulierten HA-Antworten** geprüft: aufklappbare Suche,
+Treffer/Zeiten/Beschreibung, Ähnliche, Aufnehmen/Eingeplant, leere Suche,
+Sprachumschaltung und gesperrte Suche bei Offline-Zustand. HTML-artige Receivertexte
+erscheinen als Text. Diese Browserprobe ist kein Test der Nutzer-HA-Installation.
+
+### Echte Receiver, direkter Aufruf der Produktionsmodule
+
+| Prüfung | Octagon / OpenWebif 2.4.1 | Vu+ / OpenWebif 1.4.4 |
+| --- | --- | --- |
+| Titelsuche / Fantasietitel | 50 laufende/künftige Treffer begrenzt; leere Suche korrekt | leer, fehlendes EPG |
+| Ähnliche Sendungen | 20 Treffer begrenzt | mangels EPG nicht prüfbar |
+| Absichtlich veränderte EPG-Zeit | vor Schreibzugriff abgelehnt | nicht geprüft |
+| Zukünftigen Aufnahmetimer anlegen und nachlesen | bestanden, Receiver-Vor-/Nachlauf erhalten | mangels EPG nicht prüfbar |
+| Derselbe Auftrag erneut | `created: false`, keine Doppelanlage | nicht geprüft |
+| Testtimer entfernen / ursprüngliche Timer | ein Testtimer entfernt; ursprüngliche Konfiguration unverändert | kein Testtimer angelegt |
+
+Der Vu+ war bei den ersten Leseproben kurz nicht erreichbar; im abschließenden
+Produktionsmodul-Test antwortete er wieder und lieferte korrekt leere EPG-Listen.
+Es wurde keine Sendung tatsächlich aufgezeichnet; der Testtermin lag in der Zukunft.
+Die aktuelle Integration wurde dafür nicht in der Nutzer-HA-Installation aktualisiert.
+
+Offen: **dev.7 in HA plus aktualisierte Kartendatei**, neue Aktionsformulare,
+Karte und Kalender im Zusammenspiel auf dem echten System; Vu+-Aufnahmeweg mit
+gefülltem EPG. [Prüfschritte](BENUTZERHANDBUCH.md#abschnitt-4-auf-dem-receiver-prüfen).
+Qualitätsauswirkungen geprüft: `action-setup`, `appropriate-polling`, `docs-actions`,
+`action-exceptions`, `exception-translations`, `icon-translations`, `parallel-updates`,
+`strict-typing` und `test-coverage`. Keine Schwellen oder Ausnahmen abgesenkt;
+aktueller Remote-/CI-Abgleich bleibt vor PR/Merge erforderlich.
+
+Lokale Nachweise: `epg4-tests.log`, `epg4-followup.log`, `epg4-coverage.json`,
+`epg4-live.json` unter `V:\enigma2-connect\.work\recording-workflows-checks`;
+Prüfskripte im übergeordneten ignorierten `.work/`. Keine Zugangsdaten im Repository.
+
 ## Home-Assistant-Praxisprüfung: 1.3.0-dev.6
 
 Am **20.09.2026** in der tatsächlichen HA-Installation des Nutzers geprüft.

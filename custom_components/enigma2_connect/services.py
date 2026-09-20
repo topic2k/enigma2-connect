@@ -84,6 +84,13 @@ def register_services(hass: HomeAssistant) -> None:
             scope = params.pop("scope")
             result = await coordinator.async_timer_edit(old, params, scope)
             return result if call.return_response else None
+        if service in ("epg_search", "epg_similar", "record_event"):
+            if service == "epg_search":
+                return await coordinator.perform(coordinator.epg.search, refresh=False, **params)
+            if service == "epg_similar":
+                return await coordinator.perform(coordinator.epg.similar, params, refresh=False)
+            result = await coordinator.async_record_event(params)
+            return result if call.return_response else None
         if service == "record_now":
             result = await coordinator.async_record_now()
             return result if call.return_response else None
@@ -161,7 +168,26 @@ def register_services(hass: HomeAssistant) -> None:
         vol.Any(vol.All(int, vol.Range(min=0, max=3)), vol.In(("0", "1", "2", "3"))),
         vol.Coerce(int),
     )
+
+    def exact_integer(value: Any) -> int:
+        if type(value) is not int:
+            raise vol.Invalid("Expected integer")
+        return value
+
+    event = {
+        **base,
+        vol.Required("service_reference"): vol.All(str, vol.Strip, vol.Length(min=1)),
+        vol.Required("event_id"): vol.All(exact_integer, vol.Range(min=0)),
+        vol.Required("begin"): vol.All(exact_integer, vol.Range(min=1)),
+        vol.Required("end"): vol.All(exact_integer, vol.Range(min=1)),
+    }
     schemas = {
+        "epg_search": {
+            **base,
+            vol.Required("query"): vol.All(str, vol.Strip, vol.Length(min=1, max=200)),
+        },
+        "epg_similar": event,
+        "record_event": event,
         "record_now": base,
         "reboot": base,
         "restart_gui": base,
@@ -204,7 +230,9 @@ def register_services(hass: HomeAssistant) -> None:
             name,
             handle,
             schema=vol.Schema(schema),
-            supports_response=SupportsResponse.OPTIONAL
-            if name.startswith("timer_") or name == "record_now"
+            supports_response=SupportsResponse.ONLY
+            if name.startswith("epg_")
+            else SupportsResponse.OPTIONAL
+            if name.startswith("timer_") or name in ("record_now", "record_event")
             else SupportsResponse.NONE,
         )

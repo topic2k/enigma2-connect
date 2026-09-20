@@ -2,6 +2,185 @@
 
 # Verification summary
 
+## Joint completion of section 4
+
+On **2026-09-20**, following Codex review and actual HA checks, the user explicitly
+confirmed **1.3.0-dev.12** as complete. Section 4 is jointly accepted.
+Corresponding commit on `feature/recording-workflows`:
+`feat: add EPG search and recording cards`. Evidence limits documented below
+remain unchanged, including no claim of successful EPG recording on the Vu+
+without EPG. This does not authorize a merge or release.
+
+## Actual HA acceptance checks, dev.12, 2026-09-20
+
+Checked in the authorized `codex-lab` dashboard with installed integration
+**1.3.0-dev.12**. Served JavaScript matches the working copy; resource URL
+updated to `?v=dev12`.
+
+- Octagon: actual HA search returned **104 matches**; single view and navigation
+  through result 52, list view with all 104 rows, 36 similar matches, empty search
+  and full reset passed.
+- Both cards default to single view; remote search initially off. Visual selectors
+  and switches work; playback/number buttons independently optional. Receiver
+  changes reset search state.
+- Created one future EPG timer through the HA card, uniquely confirmed it on the
+  receiver and in HA calendar. Repeated request after clearing card state reported
+  existing coverage without duplication. Receiver margins of 300/600 seconds
+  preserved. Deleted only this exact test timer afterward.
+- Vu+ without signal/EPG: actual HA search correctly returned 0 matches and a
+  message. Successful EPG recording remains unverified on this receiver without EPG.
+
+Final state: seven original Octagon timers, matched by name/service, and zero Vu+
+timers. No additional test timer remains. Strict comparison of all timer values
+was **not unchanged**: four originals had shifted times and five changed EPG IDs.
+This is consistent with receiver-side EPG updates; the precise trigger was not
+investigated. No edit/delete commands targeted these timers and current receiver
+data was not rolled back. Local before/after snapshots and report are under
+`.work/recording-workflows-checks/ha12-*` in the main workspace.
+
+Saved “EPG-Suche Octagon” in the test dashboard. No Enigma card errors in captured
+browser error logs. Actual checks passed within available receiver capabilities;
+joint completion confirmation and commit remain pending. Earlier pending-HA
+statements below document their historical state.
+
+## Section-4 code review and browser check, dev.12
+
+Reviewed EPG queries, action schemas, recording guards and card logic without
+new defects. The current 46 EPG/action checks, 22 frontend tests and successful
+type check of 34 modules remain valid; production code is unchanged since then.
+Additional browser run with simulated HA/receiver responses passed: single view,
+arrows around the count visually verified, previous/next boundary guards, similar
+results resetting the index, recording acknowledgement with disabled Scheduled
+button, full reset with input focus and empty search showing 0 results. HTML in
+descriptions stays visible text. No actual recording was created and no new
+receiver/HA acceptance was performed. Joint section acceptance and the agreed
+commit remain pending.
+
+## Unlimited search and card defaults: 1.3.0-dev.12
+
+**46 EPG/action checks and 22 frontend tests passed.** Simulated search and
+similar queries return all 123 matching results; navigation reaches the last.
+Checked arrows around the count, single view for both cards, remote search off
+by default and precedence of explicit options. Removed limits from backend,
+action schemas, translations and card editor. Quality impact: on-demand queries,
+action validation, usability and documentation reviewed; no criteria or test
+thresholds lowered.
+JavaScript/Python syntax, Ruff, version metadata, HA action metadata,
+documentation links and offline lock checks passed.
+No new physical receiver or HA UI checks; joint section-4
+acceptance remains pending. Integration and card require dev.12.
+
+## Result limit and count: 1.3.0-dev.11
+
+Both cards support a maximum of 1 to 50 results (default 20). Single-result view
+omits the duplicate count. **20 frontend tests passed**, including boundaries,
+forwarding limits to search/similar and unchanged recording parameters. JavaScript
+syntax, version/metadata, documentation links and offline lock checks passed.
+Python backend unchanged; no new receiver, HA or browser checks. Joint section-4
+acceptance remains pending. The limit is a local choice without measured performance
+evidence; the OpenWebif response is truncated only after it has been received.
+
+## Result display: 1.3.0-dev.10
+
+Both cards provide a native list/single-result editor option, navigation and count.
+**19 frontend tests passed**, covering boundaries, index reset on search/reset,
+busy navigation guards and zero/single/multiple/truncated counts in both languages
+and card types. A browser with simulated HA responses verified single display,
+previous/next, disabled boundary buttons, matching title/count and full reset.
+JavaScript syntax, version/metadata and offline lock checks passed. No Python
+production changes or new receiver requests. Actual HA editor checks and joint
+section-4 acceptance on the user's installation remain pending.
+
+## Reset search: 1.3.0-dev.9
+
+Both cards now reset input, results and search messages together.
+**17 frontend tests passed**, including late search/similar results and errors
+being ignored after reset, and pending recordings retaining the busy guard and
+acknowledgement. JavaScript syntax, version metadata and offline lock checks
+passed. Python backend unchanged; earlier evidence remains valid. No new physical
+receiver/HA checks for this card-only change; joint section-4 acceptance is pending.
+
+## Card refinement: 1.3.0-dev.8
+
+The user confirmed installation of dev.7 and its card; initial card feedback dated
+2026-09-20 has been implemented. EPG search, playback and number sections are
+independently optional; a dedicated EPG card and clear-input button were added.
+**15 frontend tests passed**, including all eight option combinations, defaults,
+both registrations, editor fields, valid receiver selection and preserving results
+and pending requests when clearing input. JavaScript syntax, version metadata
+and offline lock checks passed.
+
+Browser check with simulated HA responses: EPG-only card without remote buttons,
+search/results, clearing and refocusing the input while preserving results, and
+compact remote without the three optional sections. This does not test the new
+card editor on the user's HA installation. Python production source is unchanged
+from dev.7; its backend/receiver evidence remains valid. No full suite rerun.
+Documentation, localization and receiver-binding quality requirements preserved.
+Actual HA acceptance and joint section-4 confirmation remain pending.
+
+## Section 4: EPG search, test build 1.3.0-dev.7
+
+As of **2026-09-20**, implementation is ready for actual HA acceptance.
+**Not yet accepted by both parties; no section 4 commit.**
+
+### Local simulations and static checks
+
+Targeted tests used Python **3.14.7**, Home Assistant **2026.9.1** and
+pytest-homeassistant-custom-component **0.13.364**. Initial run: 298 passed,
+two new test-fixture failures (unrealistic identical timer identity and deprecated
+registry access). After correction, all 72 follow-up tests passed, including every
+EPG test and additional shared regressions. The follow-up adds the simulated
+**HA search → record_event → actual calendar.get_events service** path and verifies
+timer margins. **328 distinct Python tests** passed in total, with no outstanding
+failures. Unchanged modules retain earlier evidence;
+this was not a complete rerun of the entire CI suite.
+
+Combined statement/branch coverage of changed/new Python modules across both runs:
+
+| Module | Combined coverage |
+| --- | --- |
+| `epg.py` | 100.00% |
+| `api.py` | 100.00% |
+| `coordinator.py` | 97.57% |
+| `services.py` | 98.68% |
+
+Ruff, formatting, strict typing (34 modules), syntax, HA selectors, DE/EN field and
+translation consistency, version metadata and offline lock checks passed.
+Twelve Node frontend tests passed, including in-flight receiver changes, duplicate
+click protection, translated errors and language changes. A real browser with
+**simulated HA responses** verified expanding/searching, result text/times,
+Similar, Record/Scheduled, empty search, language changes and disabled offline
+search. HTML-like receiver text remained plain text. This is not evidence from
+the user's actual HA installation.
+
+### Physical receivers, direct production-module calls
+
+| Check | Octagon / OpenWebif 2.4.1 | Vu+ / OpenWebif 1.4.4 |
+| --- | --- | --- |
+| Title search / nonexistent title | bounded 50 ongoing/future matches; correct empty search | empty, no EPG |
+| Similar programmes | bounded 20 results | unavailable without EPG |
+| Deliberately changed EPG time | rejected before writing | not tested |
+| Create/read back future recording timer | passed, receiver margins preserved | unavailable without EPG |
+| Repeat identical request | `created: false`, no duplicate | not tested |
+| Cleanup / original timers | one test timer removed; original configuration unchanged | no test timer created |
+
+The Vu+ briefly failed initial read probes, then responded with correctly empty
+EPG lists during the final production-module test. No programme was actually
+recorded; the test event was in the future. The user's HA integration was not
+updated for this direct receiver check.
+
+Pending: **dev.7 in HA plus updated card file**, new action forms, card and calendar
+working together on the actual installation; the Vu+ recording path with populated
+EPG. [Acceptance steps](USER_GUIDE.en.md#test-section-4-on-the-receiver).
+Quality impacts reviewed: `action-setup`, `appropriate-polling`, `docs-actions`,
+`action-exceptions`, `exception-translations`, `icon-translations`, `parallel-updates`,
+`strict-typing`, `test-coverage`. No thresholds/exemptions relaxed; current remote
+reconciliation and CI remain mandatory before PR/merge.
+
+Local evidence: `epg4-tests.log`, `epg4-followup.log`, `epg4-coverage.json`,
+`epg4-live.json` under `V:\enigma2-connect\.work\recording-workflows-checks`;
+harness scripts in the parent ignored `.work/`. No credentials in the repository.
+
 ## Home Assistant practical checks: 1.3.0-dev.6
 
 Tested on **2026-09-20** in the user's actual HA installation. The integration page

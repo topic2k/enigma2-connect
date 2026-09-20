@@ -231,3 +231,49 @@ timer_edit:
         select:
           options: [normal, descrambled, scrambled]
           translation_key: recording_type
+epg_search:
+  fields:
+    device_id: &id002
+      required: true
+      selector:
+        device:
+          integration: enigma2_connect
+    query:
+      required: true
+      selector:
+        text: {}
+epg_similar:
+  fields:
+    device_id: *id002
+    service_reference: &id004
+      required: true
+      selector:
+        text: {}
+    event_id: &id005
+      required: true
+      selector:
+        number:
+          min: 0
+          max: 65535
+          mode: box
+    begin: &id006
+      required: true
+      selector:
+        number:
+          min: 1
+          max: 9999999999
+          mode: box
+    end: &id007
+      required: true
+      selector:
+        number:
+          min: 1
+          max: 9999999999
+          mode: box
+record_event:
+  fields:
+    device_id: *id002
+    service_reference: *id004
+    event_id: *id005
+    begin: *id006
+    end: *id007

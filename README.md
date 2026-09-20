@@ -28,7 +28,8 @@ Lautstärke regeln, Aufnahmen auf dem Fernseher abspielen und Nachrichten anzeig
 Mit **Aktuelle Sendung aufnehmen** startest du die Aufnahme der laufenden EPG-Sendung.
 Timer lassen sich bearbeiten und als Wochenserien planen; Aufnahmekonflikte
 werden mit den vom Receiver gelieferten Details angezeigt.
-Eine optionale Fernbedienungskarte bringt die wichtigsten Tasten ins Dashboard.
+Durchsuche das EPG, finde ähnliche Sendungen und plane Treffer zur Aufnahme ein.
+Die optionale Fernbedienungskarte bietet Tasten sowie eine Such-/Aufnahmeansicht.
 
 ### Was du brauchst
 
@@ -78,7 +79,8 @@ ergänzende Hinweise in [NOTICE](NOTICE).
 
 Control your Enigma2 receiver directly from Home Assistant: change channels,
 adjust the volume, play recordings on your TV and display messages.
-An optional remote card brings the main buttons to your dashboard.
+Search the EPG, find similar programmes and schedule a result for recording.
+The optional remote card provides buttons and a search/record view.
 
 Use **Record current programme** to start recording the current EPG programme.
 Edit timers, schedule weekly series and see recording conflicts with the

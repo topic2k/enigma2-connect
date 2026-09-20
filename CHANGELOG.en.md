@@ -4,7 +4,7 @@
 
 ## Contents
 
-- [1.3.0-dev.6](#130-dev6)
+- [1.3.0-dev.12](#130-dev12)
 - [1.2.0](#120)
 - [1.1.3](#113)
 - [1.1.2](#112)
@@ -14,11 +14,24 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 1.3.0-dev.6
+## 1.3.0-dev.12
 
 Unreleased development version. Target for the requested EPG, timer and
 recording extensions. Instant recording and timer editing are implemented;
-EPG search and library management follow in later sections.
+EPG search and cards have passed joint acceptance; library management follows.
+
+- EPG search and similar programmes return all matching received results without
+  a local limit. List/single display with arrows around the count:
+  “[‹] Result 10 of 30 [›]”. Both cards default to single view; remote search is off.
+  Both integration and card require dev.12.
+- Reset search now clears input and results together. Late search replies are
+  discarded while pending recording requests retain their acknowledgement.
+- Remote card sections for EPG search, playback and numbers are independently
+  optional; added an EPG-only card and an explicit clear-input button.
+- Added EPG title search, similar programmes and guarded event recording as HA
+  actions plus a search/record view in the optional remote card. Fresh event and
+  timer checks and uncertain-write protection prevent stale/duplicate requests.
+  Direct Octagon checks passed; section 4 awaits actual HA acceptance.
 
 - Completed practical HA checks of selection controls, calendar updates, conflict
   events and visible information messages with both receivers.

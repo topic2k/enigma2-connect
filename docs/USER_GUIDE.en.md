@@ -449,6 +449,50 @@ entity: remote.test_receiver_remote
 name: Living room
 ```
 
+### Choose card sections and use a dedicated EPG card
+
+The remote's visual editor offers **Show EPG search**, **Show playback controls**
+and **Show number buttons**, independently configurable. Search is disabled by default; playback and numbers
+are enabled. Playback includes
+play, pause, stop, rewind, fast-forward and record. TV, radio and the receiver's
+EPG key remain visible independently.
+
+```yaml
+type: custom:enigma2-connect-remote-card
+entity: remote.test_receiver_remote
+show_epg: false
+show_playback: false
+show_numbers: false
+```
+
+For a search-only card, select **Add card → By card → Enigma2 Connect EPG search**
+and choose the receiver remote. Search opens directly without remote buttons.
+Both cards use the same `enigma2-connect-remote-card.js` resource.
+
+```yaml
+type: custom:enigma2-connect-epg-card
+entity: remote.test_receiver_remote
+name: Search programmes
+```
+
+Both card editors offer **Result display**: **List** or **One result
+with navigation**. Both cards default to single mode. Remote card search is hidden by default.
+Single mode shows one programme with **Previous result** and
+**Next result**, disabled at list boundaries. New search results start at the
+first item. YAML: `results_view: single` or `results_view: list`.
+
+All ongoing and future matches returned by the receiver are accessible;
+duplicates are removed. Navigation reads **[‹] Result 10 of 30 [›]**.
+Empty searches show **0 results**. The integration no longer truncates the
+result list; the count describes the matching results received.
+
+**Reset search** clears the input, results and search messages, returning focus
+to the input. Late search responses cannot repopulate the list. Pending recording
+requests continue and their confirmation or error is still displayed. After updating the card file,
+change the existing resource URL suffix to e.g. `?v=dev12` and reload the browser.
+For unlimited search, update both the integration and card to dev.12 or newer
+and restart Home Assistant.
+
 ## Messages and automations
 
 First try a screen message under **Developer tools → Actions**: choose
@@ -493,6 +537,9 @@ select the receiver in the interface first; switch to YAML to see its
 | `notify.send_message` | Screen message entity; `message`, optional `title`. Uses the message type and duration from receiver settings. |
 | `enigma2_connect.message` | `device_id`, `text`, optional `type` (0–3, default 1) and `timeout` (1–120 seconds, default 10) |
 | `enigma2_connect.reboot`, `.restart_gui`, `.deep_standby` | `device_id`; receiver restart, GUI restart or deep standby |
+| `enigma2_connect.epg_search` | `device_id`, `query`; requires response variable |
+| `enigma2_connect.epg_similar` | `device_id`, `service_reference`, `event_id`, `begin`, `end` from a result; requires response variable |
+| `enigma2_connect.record_event` | Same four identity fields and `device_id`; optional `created`/`timer` response |
 | `enigma2_connect.record_now` | `device_id`; record the current EPG programme starting now |
 | `enigma2_connect.timer_add` | `device_id`, `channel` or `service_reference`, `begin`, `end`, `name`; optional `description`, `justplay`, `afterevent`, `weekdays`, `directory` or `directory_selection`, `tags`, `disabled`, `recording_type` |
 | `enigma2_connect.timer_edit` | `device_id`, `channel` or `old_service_reference`, `old_begin`, `old_end`, `scope`; supply only intended new values |
@@ -737,6 +784,103 @@ versions. Use dedicated test timers only.
 Report per receiver: single timer/option preservation, weekly series, midnight,
 stale identity, add/edit conflicts, values after rejection, conflict event and
 other findings. Joint acceptance and the section commit follow afterwards.
+
+#### Search EPG and record a programme
+
+In **Developer tools → Actions → Enigma2 Connect: Search EPG**, select the receiver
+and enter part of a programme title. Only its stored EPG is searched, including
+standby if OpenWebif remains reachable. No channel is changed and no internet EPG
+is downloaded. Missing EPG may produce an empty list; communication/data failures
+remain errors rather than successful empty results.
+
+Expand **Search programmes** at the bottom of the optional remote card. Enter a
+title and press **Search**. Results show channel, start/end in the HA timezone and
+description. **Similar** displays programmes/repeats suggested by the receiver;
+it does not guarantee identical episodes. **Record** creates a recording timer.
+**Scheduled** confirms the timer, not a successfully recorded file. The normal
+remote **Record** key retains its existing behaviour.
+
+Search and similar programmes return all received ongoing/future matches,
+sorted by start and deduplicated, without a local result limit.
+Remove obsolete action `limit` parameters; card `max_results` is ignored.
+Similar programmes are receiver suggestions, not guaranteed identical episodes.
+
+Searches require a response variable in scripts:
+
+```yaml
+action: enigma2_connect.epg_search
+data:
+  device_id: YOUR_RECEIVER_DEVICE_ID
+  query: News
+response_variable: epg_results
+```
+
+Each item in `epg_results.events` contains `service_reference`, `event_id`, `begin`,
+`end`, `title`, `service_name` and `description`. Missing text can be `null`.
+Times are **EPG Unix seconds**, without recording margins. Copy all four identity
+fields unchanged from a chosen result and use the same receiver:
+
+```yaml
+action: enigma2_connect.record_event
+data:
+  device_id: YOUR_RECEIVER_DEVICE_ID
+  service_reference: "{{ selected_event.service_reference }}"
+  event_id: "{{ selected_event.event_id }}"
+  begin: "{{ selected_event.begin }}"
+  end: "{{ selected_event.end }}"
+response_variable: recording_result
+```
+
+`selected_event` means an item deliberately selected from `epg_results.events`;
+this example does not automatically choose the first match. Use
+`enigma2_connect.epg_similar` with the same four fields and a response variable to
+find similar programmes. In **Developer tools → Actions**, you can instead copy
+the four values directly into the action fields. Do not convert Unix times to
+local date/time for these identity fields.
+
+Fresh event ID, channel and times are checked before recording. Search again if
+the result is missing, expired or rescheduled. An active recording timer already
+covering the programme remains unchanged and returns `created: false`.
+`created: true` confirms exactly one new timer read back from the receiver.
+`timer` contains its actual times including receiver recording margins; use
+these for later editing/deletion. The receiver supplies the default directory
+and EPG title; **After recording** is Automatic.
+
+Disabled or zap-only overlapping timers, partial coverage, incomplete timer data,
+or a series on the same channel block creation. Inspect these in OpenWebif first.
+Receiver conflicts use the existing translated error and
+`enigma2_connect_timer_conflict` event with `action: record_event`.
+
+Lost confirmations never trigger an automatic retry. Inspect OpenWebif first.
+The uncertain-write guard lasts until programme end and is lost on reload/HA
+restart; confirmed writes retain a ten-second guard against delayed timer lists.
+An ongoing programme can only be captured from the recording start onwards.
+Storage availability and successful recording execution still require receiver
+checks.
+
+#### Test section 4 on the receiver
+
+Install **1.3.0-dev.7** and restart HA. Also update the optional card file under
+`www` as described in **Dashboard remote**, then refresh the browser cache.
+Test each receiver separately:
+
+1. Run **Search EPG**, comparing channel/times/description with OpenWebif. A
+   nonexistent title returns no results; missing EPG must not create a timer.
+2. Use the card's **Search programmes** and **Similar**. Check the bounded result
+   list and time display on your phone too.
+3. Choose an unimportant future programme without an existing timer. **Record**
+   must create one timer with receiver margins and appear in the HA calendar after
+   refresh. Repeat the same action: `created: false`, unchanged timer count.
+4. Copy a result's four identity fields into **Record EPG programme**, increasing
+   only `begin` by one second. Expect a changed-result error and no extra timer.
+   A receiver without EPG must not create a substitute timer.
+5. Remove only your test timer using its actual timer times through the existing
+   delete action/OpenWebif. Verify original timers and calendar. Report results
+   separately for each receiver, HA action, card and calendar; mark unavailable
+   checks as not tested.
+
+Deliberate network interruptions or extra conflict timers are unnecessary for
+this acceptance check; these paths are covered with local simulations.
 
 #### Record the current programme immediately
 

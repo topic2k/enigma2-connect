@@ -169,6 +169,9 @@ class OpenWebifClient:
                     return content
                 # Accept JSON even when the receiver reports a different MIME type.
                 data = await response.json(content_type=None)
+                # OpenWebif returns a bare array only for this read endpoint.
+                if path == "/api/epgsimilar" and isinstance(data, list):
+                    data = {"events": data}
                 if not isinstance(data, dict):
                     if timer_command:
                         raise CommandUnconfirmed("Unsupported timer command response")
