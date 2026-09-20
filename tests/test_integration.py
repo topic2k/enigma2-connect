@@ -217,6 +217,7 @@ async def test_service_selects_owner_without_deprecated_config_entries(hass, ent
         second.runtime_data.client.command,
         "message",
         refresh=False,
+        timer_action=None,
         text="Hello",
         type=1,
         timeout=10,

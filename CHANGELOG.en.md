@@ -21,6 +21,9 @@ Unreleased development version. Target for the requested EPG, timer and
 recording extensions. Instant recording and timer editing are implemented;
 EPG search and cards have passed joint acceptance; library management has also passed joint acceptance.
 
+- Added the HA dependencies required by real selector checks to the test
+  environment; aligned the device-ownership regression test with timer context.
+
 - Incorporated newer fixes from `main`: current HA device ownership lookup
   for actions and exact-commit HACS validation are retained alongside the new
   recording workflows.

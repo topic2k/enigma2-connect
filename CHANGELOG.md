@@ -21,6 +21,9 @@ Unveröffentlichte Entwicklerversion. Zielversion für die beauftragten EPG-,
 Timer- und Aufnahmeerweiterungen. Sofortaufnahme und Timerbearbeitung sind
 umgesetzt; EPG-Suche und Karten sind gemeinsam abgenommen. Bibliotheksverwaltung ist ebenfalls gemeinsam abgenommen.
 
+- Testumgebung um die HA-Abhängigkeiten für reale Auswahlfeldprüfungen
+  ergänzt; Regressionstest der Gerätezuordnung an den Timer-Kontext angepasst.
+
 - Neuere Korrekturen aus `main` übernommen: aktuelle HA-Gerätezuordnung für
   Aktionen und HACS-Prüfung des exakten Commits bleiben auch mit den neuen
   Aufnahmefunktionen erhalten.
