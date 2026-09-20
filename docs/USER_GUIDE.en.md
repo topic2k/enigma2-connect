@@ -560,6 +560,64 @@ data:
   afterevent: 3
 ```
 
+#### Timer action response data
+
+`timer_add`, `timer_toggle` and `timer_delete` can populate a response variable
+for scripts and automations. Add, for example, `response_variable: timer_result`
+at the same level as `action` and `data`. The response contains `action` and
+`timer.service_reference`, `timer.begin`, `timer.end`. Times are Unix seconds.
+This identifies the timer addressed by the acknowledged call; it contains no
+enabled or recording state. Existing calls without a response variable continue
+working. Rejections remain errors and do not return success data.
+
+If an acknowledgement is lost or unreadable, Home Assistant reports that the
+action may have taken effect. It is not automatically repeated. Check the timer
+in OpenWebif first. The integration requests a list refresh, which may also fail
+if the receiver remains unreachable. A manual repetition can write again or
+toggle the state again.
+
+#### Test section 1b on the receiver
+
+Test **1.3.0-dev.3** separately on Octagon and Vu+. Install the build, restart
+Home Assistant and record its version as well. Use a dedicated test timer at a
+future time. Adjust the example time and channel reference.
+
+1. Open **Developer tools → Actions**, switch to YAML and execute the call below.
+   The leading space in the reference is intentional. `justplay: true` creates
+   a channel-switch timer without recording.
+2. Check the response: `action: timer_add`, reference without outer whitespace,
+   start/end in Unix seconds. Confirm exactly one test timer and the correct
+   date/time in OpenWebif.
+3. Call `enigma2_connect.timer_toggle` with the same `device_id` and the three
+   values from `timer`. Omit `name`, `justplay`, `afterevent`; keep
+   `response_variable`. Confirm disabled in OpenWebif. Repeat once and confirm
+   enabled. Each response identifies the action performed.
+4. Change the action to `enigma2_connect.timer_delete`. Check the response and
+   absence of the timer in OpenWebif and, after refresh, the HA calendar.
+5. Repeat the same delete call: expect an error without success data. Then send
+   a screen message using the existing message action; it must still work.
+6. Check another test timer without `response_variable` to confirm an existing
+   automation, then remove it. Report creation, disabling, enabling, deletion,
+   repeated deletion, message and calls without a response variable for each
+   receiver, together with any unexpected behavior.
+
+```yaml
+action: enigma2_connect.timer_add
+data:
+  device_id: YOUR_RECEIVER_DEVICE_ID
+  service_reference: " 1:0:19:283D:3FB:1:C00000:0:0:0:"
+  begin: "2026-10-10T12:00:00+02:00"
+  end: "2026-10-10T12:02:00+02:00"
+  name: E2C Test 1b
+  justplay: true
+  afterevent: 0
+response_variable: timer_result
+```
+
+Lost responses are tested locally using a simulated receiver. Deliberately
+disconnecting the receiver is not required for this practical check. EPG search,
+instant recording and library changes follow in later sections.
+
 ## Timers and calendar
 
 The calendar shows recording and channel-switch timers from the receiver,

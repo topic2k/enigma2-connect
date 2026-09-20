@@ -19,7 +19,13 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed, HomeAssistantError
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from .api import AuthenticationError, OpenWebifClient, PowerCommandUnconfirmed, ReceiverError
+from .api import (
+    AuthenticationError,
+    CommandUnconfirmed,
+    OpenWebifClient,
+    PowerCommandUnconfirmed,
+    ReceiverError,
+)
 from .channel_media import CONF_CHANNEL_BOUQUET, CONF_SHOW_CHANNELS
 from .const import CATALOG_INTERVAL, DOMAIN, SLOW_INTERVAL
 from .media_stream import MediaStream
@@ -195,11 +201,11 @@ class EnigmaCoordinator(DataUpdateCoordinator[Snapshot]):
                     translation_domain=DOMAIN, translation_key="cannot_update"
                 ) from err
 
-    async def perform(
-        self, method: Callable[..., Awaitable[Any]], *args: Any, refresh: bool = True, **kwargs: Any
-    ) -> None:
+    async def perform[T](
+        self, method: Callable[..., Awaitable[T]], *args: Any, refresh: bool = True, **kwargs: Any
+    ) -> T:
         try:
-            await method(*args, **kwargs)
+            result = await method(*args, **kwargs)
         except AuthenticationError as err:
             self.entry.async_start_reauth(self.hass)
             raise HomeAssistantError(
@@ -209,12 +215,17 @@ class EnigmaCoordinator(DataUpdateCoordinator[Snapshot]):
             raise HomeAssistantError(
                 translation_domain=DOMAIN, translation_key="power_unconfirmed"
             ) from err
+        except CommandUnconfirmed as err:
+            raise HomeAssistantError(
+                translation_domain=DOMAIN, translation_key="timer_unconfirmed"
+            ) from err
         except ReceiverError as err:
             raise HomeAssistantError(
                 translation_domain=DOMAIN, translation_key="request_failed"
             ) from err
         if refresh:
             await self.async_request_refresh()
+        return result
 
     async def select_bouquet(self, reference: str) -> None:
         async def change() -> None:

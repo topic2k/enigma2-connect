@@ -45,6 +45,23 @@ class CommandRejectedError(ProtocolError):
         self.response = response
 
 
+# These GET endpoints mutate timers and must never be transparently replayed.
+TIMER_COMMANDS = frozenset(
+    {
+        "timeradd",
+        "timeraddbyeventid",
+        "timerchange",
+        "timerdelete",
+        "timertogglestatus",
+        "recordnow",
+    }
+)
+
+
+class CommandUnconfirmed(ConnectionError):
+    """A timer command may have taken effect without a usable acknowledgement."""
+
+
 class PowerCommandUnconfirmed(ReceiverError):
     """Power transition may have started before its response was received."""
 
@@ -52,22 +69,26 @@ class PowerCommandUnconfirmed(ReceiverError):
 async def power_command_middleware(
     request: aiohttp.ClientRequest, handler: aiohttp.ClientHandlerType
 ) -> aiohttp.ClientResponse:
-    """Do not replay a disruptive GET after losing its response.
+    """Do not replay a power or timer GET after losing its response.
 
     Install on the session so Home Assistant's own middleware remains active.
     Raising our own exception inside the handler prevents aiohttp's GET retry.
     """
-    if request.url.path != "/api/powerstate" or request.url.query.get("newstate") not in (
+    timer_command = request.url.path.removeprefix("/api/") in TIMER_COMMANDS
+    power_command = request.url.path == "/api/powerstate" and request.url.query.get("newstate") in (
         "1",
         "2",
         "3",
-    ):
+    )
+    if not timer_command and not power_command:
         return await handler(request)
     try:
         return await handler(request)
     except (aiohttp.ClientConnectorError, aiohttp.ConnectionTimeoutError) as err:
         raise ConnectionError("Cannot connect to receiver") from err
     except (aiohttp.ClientConnectionError, TimeoutError) as err:
+        if timer_command:
+            raise CommandUnconfirmed("Timer command response was not received") from err
         raise PowerCommandUnconfirmed("Power command response was not received") from err
 
 
@@ -108,6 +129,7 @@ class OpenWebifClient:
     async def request(
         self, path: str, params: dict[str, Any] | None = None, *, image: bool = False
     ) -> JsonObject | bytes:
+        timer_command = path.removeprefix("/api/") in TIMER_COMMANDS
         disruptive_power = path == "/api/powerstate" and str((params or {}).get("newstate")) in (
             "1",
             "2",
@@ -137,12 +159,18 @@ class OpenWebifClient:
                 # Accept JSON even when the receiver reports a different MIME type.
                 data = await response.json(content_type=None)
                 if not isinstance(data, dict):
+                    if timer_command:
+                        raise CommandUnconfirmed("Unsupported timer command response")
                     raise ProtocolError("Expected a JSON object")
                 if "result" in data and boolean(data["result"]) is False:
                     raise CommandRejectedError(data)
                 return data
         except (TimeoutError, aiohttp.ClientError) as err:
             # URLs and receiver response text may contain secrets: do not expose them.
+            if timer_command and not isinstance(
+                err, (aiohttp.ClientConnectorError, aiohttp.ConnectionTimeoutError)
+            ):
+                raise CommandUnconfirmed("Timer command response was not received") from err
             if (
                 disruptive_power
                 and isinstance(
@@ -155,6 +183,8 @@ class OpenWebifClient:
                 raise PowerCommandUnconfirmed("Power command response was not received") from err
             raise ConnectionError("Cannot communicate with receiver") from err
         except (ValueError, UnicodeError) as err:
+            if timer_command:
+                raise CommandUnconfirmed("Invalid timer command response") from err
             raise ProtocolError("Invalid JSON response") from err
 
     async def get(self, endpoint: str, **params: Any) -> JsonObject:
@@ -170,6 +200,10 @@ class OpenWebifClient:
             data = await self.get(endpoint, **params)
             if "state" in data and boolean(data["state"]) is False:
                 raise CommandRejectedError(data)
+            if endpoint in TIMER_COMMANDS:
+                flags = [boolean(data[key]) for key in ("result", "state") if key in data]
+                if not flags or any(flag is not True for flag in flags):
+                    raise CommandUnconfirmed("Unsupported timer command acknowledgement")
             return data
 
     async def keys(self, codes: list[int], delay: float = 0.3, hold: bool = False) -> None:

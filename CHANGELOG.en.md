@@ -4,7 +4,7 @@
 
 ## Contents
 
-- [1.3.0-dev.2](#130-dev2)
+- [1.3.0-dev.3](#130-dev3)
 - [1.2.0](#120)
 - [1.1.3](#113)
 - [1.1.2](#112)
@@ -14,11 +14,20 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 1.3.0-dev.2
+## 1.3.0-dev.3
 
 Unreleased development version. Target for the requested EPG, timer and
 recording extensions; these user-facing features are not available yet.
 
+- Added section 1b foundations: validated internal EPG, timer, conflict and
+  recording models; existing timer actions offer optional HA response data
+  identifying the addressed timer. Errors remain translated exceptions.
+- Prevented automatic replay of timer writes after response loss. Uncertain
+  acknowledgements receive a dedicated error; timer actions refresh lists after
+  failures too and invalidate them on cancellation. Added regression tests and
+  bilingual practical test instructions. The user confirms all practical steps
+  on Octagon/OpenWebif 2.4.0 and Vu+/OpenWebif 1.4.4; both parties confirmed
+  section 1b complete. Response loss was tested using local simulation.
 - Recorded a differing user test on Vu+ Solo² with VTi 15.0.0 and OpenWebif
   1.4.4: timer creation and messages passed; toggling timer status and deletion
   initially failed. Subsequently supplied action and timer data establish a mismatching

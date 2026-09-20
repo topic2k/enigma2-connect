@@ -589,6 +589,68 @@ data:
   afterevent: 3
 ```
 
+#### Antwortdaten der Timeraktionen
+
+`timer_add`, `timer_toggle` und `timer_delete` können eine Antwortvariable für
+Skripte und Automationen füllen. Füge auf derselben Ebene wie `action` und `data`
+zum Beispiel `response_variable: timer_ergebnis` hinzu. Die Antwort enthält
+`action` sowie `timer.service_reference`, `timer.begin` und `timer.end`.
+Die Zeiten sind Unix-Sekunden. Diese Kennung bezeichnet den Timer des bestätigten
+Aufrufs; sie enthält keinen Aktivierungs- oder Aufnahmestatus. Ohne Antwortvariable
+funktionieren die bisherigen Aufrufe weiter. Ablehnungen bleiben Fehler und
+liefern keine Erfolgsantwort.
+
+Bei einer verlorenen oder nicht auswertbaren Bestätigung meldet Home Assistant,
+dass die Aktion möglicherweise ausgeführt wurde. Sie wird nicht automatisch
+wiederholt. Prüfe den Timer zuerst in OpenWebif. Die Integration fordert eine
+Aktualisierung der Listen an; bei weiterhin fehlender Verbindung kann auch diese
+fehlschlagen. Ein eigener erneuter Aufruf kann erneut schreiben oder den Status
+noch einmal umschalten.
+
+#### Abschnitt 1b auf dem Receiver prüfen
+
+Teste **1.3.0-dev.3** auf Octagon und Vu+ jeweils getrennt. Installiere den Stand,
+starte Home Assistant neu und notiere auch dessen Version. Verwende einen eigenen
+Testtimer zu einem Zeitpunkt in der Zukunft. Die Beispielzeit und Senderkennung
+musst du anpassen.
+
+1. Öffne **Entwicklerwerkzeuge → Aktionen**, wechsle zur YAML-Ansicht und führe
+   den folgenden Aufruf aus. Das Leerzeichen vor der Senderkennung ist absichtlich
+   enthalten. `justplay: true` legt einen Umschalt-Timer ohne Aufnahme an.
+2. Prüfe die Antwort: `action: timer_add`, Senderkennung ohne äußere Leerzeichen,
+   Beginn und Ende als Unix-Sekunden. Prüfe in OpenWebif, dass genau ein Testtimer
+   vorhanden ist und Datum/Uhrzeit passen.
+3. Rufe mit derselben `device_id` und den drei Werten aus `timer` die Aktion
+   `enigma2_connect.timer_toggle` auf. Lasse `name`, `justplay` und `afterevent`
+   weg; behalte `response_variable`. Prüfe „deaktiviert“ in OpenWebif. Wiederhole
+   einmal und prüfe „aktiviert“. Jede Antwort nennt die ausgeführte Aktion.
+4. Ersetze die Aktion durch `enigma2_connect.timer_delete`. Prüfe die Antwort und
+   dass der Timer in OpenWebif und nach Aktualisierung im HA-Kalender fehlt.
+5. Führe denselben Löschaufruf erneut aus: erwartet wird ein Fehler, keine
+   Erfolgsantwort. Sende anschließend eine Bildschirmnachricht über die vorhandene
+   Nachrichtenaktion; sie muss weiter funktionieren.
+6. Prüfe einen weiteren Testtimer ohne `response_variable`, um eine bisherige
+   Automation zu bestätigen, und entferne ihn danach. Melde pro Receiver die
+   Ergebnisse von Anlegen, Deaktivieren, Aktivieren, Löschen, erneuter Löschung,
+   Nachricht und Aufruf ohne Antwortvariable sowie Auffälligkeiten.
+
+```yaml
+action: enigma2_connect.timer_add
+data:
+  device_id: DEINE_RECEIVER_GERAETE_ID
+  service_reference: " 1:0:19:283D:3FB:1:C00000:0:0:0:"
+  begin: "2026-10-10T12:00:00+02:00"
+  end: "2026-10-10T12:02:00+02:00"
+  name: E2C Test 1b
+  justplay: true
+  afterevent: 0
+response_variable: timer_ergebnis
+```
+
+Verlorene Antworten werden lokal mit simuliertem Receiver getestet. Für diese
+Praxisprüfung ist kein absichtlicher Verbindungsabbruch erforderlich. EPG-Suche,
+Sofortaufnahme und Bibliotheksänderungen folgen in späteren Abschnitten.
+
 ## Timer und Kalender
 
 Der Kalender zeigt Aufnahme- und Umschalt-Timer vom Receiver, auch wöchentliche

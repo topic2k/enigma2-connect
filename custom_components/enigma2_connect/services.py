@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from typing import TYPE_CHECKING, Any, cast
 
 if TYPE_CHECKING:
@@ -12,12 +13,13 @@ if TYPE_CHECKING:
 
 import voluptuous as vol
 from homeassistant.config_entries import ConfigEntryState
-from homeassistant.core import callback
-from homeassistant.exceptions import ServiceValidationError
+from homeassistant.core import ServiceResponse, SupportsResponse, callback
+from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers import device_registry as dr
 
 from .const import DOMAIN
 from .models import timer_range
+from .workflow_models import TimerIdentity
 
 
 @callback
@@ -37,7 +39,7 @@ def register_services(hass: HomeAssistant) -> None:
             )
         return cast("EnigmaConfigEntry", entries[0]).runtime_data
 
-    async def handle(call: ServiceCall) -> None:
+    async def handle(call: ServiceCall) -> ServiceResponse:
         coordinator = resolve(call.data["device_id"])
         params = dict(call.data)
         params.pop("device_id")
@@ -62,11 +64,31 @@ def register_services(hass: HomeAssistant) -> None:
             params["sRef"] = params.pop("service_reference")
             if service == "timer_add":
                 params.update(justplay=int(params["justplay"]), disabled=0, eit=0)
-        await coordinator.perform(coordinator.client.command, endpoint, refresh=False, **params)
-        if service.startswith("timer_"):
-            # Bypass the slow list deadline so calendar and counts reflect the action.
+        is_timer = service.startswith("timer_")
+        try:
+            method = (
+                coordinator.client.command_result
+                if call.return_response
+                else coordinator.client.command
+            )
+            await coordinator.perform(method, endpoint, refresh=False, **params)
+        except asyncio.CancelledError:
+            if is_timer:
+                coordinator.invalidate_lists()
+            raise
+        except HomeAssistantError:
+            if is_timer:
+                # Even a rejected edit may have changed receiver state on some images.
+                coordinator.invalidate_lists()
+                await coordinator.async_request_refresh()
+            raise
+        if is_timer:
             coordinator.invalidate_lists()
             await coordinator.async_request_refresh()
+            if call.return_response:
+                identity = TimerIdentity(params["sRef"], params["begin"], params["end"])
+                return {"action": service, "timer": identity.response()}
+        return None
 
     base: dict[Any, Any] = {vol.Required("device_id"): str}
     timer = {
@@ -96,4 +118,12 @@ def register_services(hass: HomeAssistant) -> None:
         "timer_toggle": timer,
     }
     for name, schema in schemas.items():
-        hass.services.async_register(DOMAIN, name, handle, schema=vol.Schema(schema))
+        hass.services.async_register(
+            DOMAIN,
+            name,
+            handle,
+            schema=vol.Schema(schema),
+            supports_response=SupportsResponse.OPTIONAL
+            if name.startswith("timer_")
+            else SupportsResponse.NONE,
+        )

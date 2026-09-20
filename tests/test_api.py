@@ -188,10 +188,10 @@ async def test_missing_mute_state_does_not_toggle():
 )
 async def test_command_result_retains_success_and_legacy_return_contract(data):
     client, _ = client_for(data=data)
-    assert await client.command_result("timeraddbyeventid", eventid=42) == data
-    assert await client.command("timeraddbyeventid", eventid=42) is None
+    assert await client.command_result("message", text="Test") == data
+    assert await client.command("message", text="Test") is None
     assert client.session.get.call_count == 2
-    assert client.session.get.call_args.kwargs["params"] == {"eventid": 42}
+    assert client.session.get.call_args.kwargs["params"] == {"text": "Test"}
 
 
 @pytest.mark.parametrize("flag", ["result", "state"])

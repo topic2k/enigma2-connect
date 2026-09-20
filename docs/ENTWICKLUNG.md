@@ -932,7 +932,7 @@ umsetzen. Basis ist der frisch abgerufene `origin/main`-Commit `1afa705`
 (Version 1.2.0), Arbeitsbranch `feature/recording-workflows`, Worktree
 `V:\enigma2-connect-worktrees\recording-workflows`. Für diesen Auftrag gilt
 ausdrücklich `main` als Ausgangsbasis statt der allgemeinen `develop`-Regel.
-Ziel ist **1.3.0-dev.2**, da der gesamte geplante Umfang neue,
+Ziel ist **1.3.0-dev.3**, da der gesamte geplante Umfang neue,
 rückwärtskompatible Funktionen enthält. Vor einem späteren PR ist die
 Versionsbasis erneut mit Remote, Tags und veröffentlichten Releases abzugleichen.
 
@@ -997,8 +997,11 @@ Qualitätsabgleich und ausdrückliche Nutzerfreigabe; Release nur auf Anweisung.
   Nutzer und Codex haben die Nachbesserung dev.2 als fertig bestätigt.
   Zugeordneter Abschlusscommit: `fix: trim whitespace in timer service references`.
   Der Octagon-Abschluss oben bleibt unverändert erhalten.
-- **1b – übrige Grundlage:** offen; Datenmodelle, HA-Antworten,
-  Wiederholungsschutz/Zustandsabgleich und Receiver-Formatprüfung fehlen noch.
+- **1b – übrige Grundlage:** beidseitig abgeschlossen am **20.09.2026**,
+  Version **1.3.0-dev.3**. 201 unterschiedliche lokale Tests bestanden;
+  Nutzer bestätigt alle Praxisschritte auf beiden Testreceivern
+  (siehe Prüfübersicht). Zugeordneter Abschlusscommit:
+  `feat: add recording workflow foundations`.
 - **2–5:** geplant, nicht begonnen. Es gibt noch keine neuen Benutzeraktionen.
 
 `OpenWebifClient.command_result()` liefert die strukturierte erfolgreiche
@@ -1015,6 +1018,73 @@ Schnittstellenbeleg: [OpenWebif-Timermodell](https://github.com/oe-alliance/Open
 am 19.09.2026 gelesen. Konfliktantworten enthalten `result=false` und eine
 `conflicts`-Liste. Diese Recherche ersetzt keine Receiver-Prüfung; es wurde kein
 Upstream-Implementierungscode übernommen.
+
+### Abschnitt 1b: Datenmodelle, Aktionsantworten und unklare Ergebnisse
+
+Implementierungsplan vom **20.09.2026**, Teststand **1.3.0-dev.3**:
+
+1. Unveränderliche Modelle für EPG-Ereignisse, Timerkennungen, Timer,
+   Konflikte und Aufnahmen mit ausdrücklich validierten Pflichtfeldern ergänzen.
+2. Bestehenden Timeraktionen optionale HA-Antwortdaten geben und Fehler weiter
+   als übersetzte Ausnahmen behandeln.
+3. Automatisches Wiederholen schreibender Timer-GETs bei verlorener Antwort
+   unterbinden; Listen nach Erfolg und Fehler neu lesen, bei Abbruch invalidieren.
+4. Datenformate, echte lokale HTTP-Verbindungen, HA-Antworten und bisherige
+   Aufrufe prüfen; danach Praxisabnahme auf beiden Testreceivern.
+
+`workflow_models.py` projiziert ausschließlich benannte Felder. Die Modelle
+für EPG, vollständige Timer, Konflikte und Aufnahmen sind interne Grundlagen
+für die Folgeabschnitte; das bestehende Polling und der Kalender bleiben bei
+ihren bisherigen Formaten. Die Timerkennung wird bereits in Aktionsantworten
+verwendet. Unbekannte optionale Metadaten bleiben `None`; leere Listen sind
+gültig, fehlende Listen oder ungültige Einträge ergeben `DataFormatError`.
+Es werden keine fehlerhaften Einträge still aus einer Entscheidungsliste entfernt.
+Kennungen bleiben einschließlich innerer Leerzeichen und URL-Escapes erhalten.
+Ganzzahlen dürfen dezimale Zeichenketten sein; boolesche Werte und gerundete
+Fließkommazahlen sind keine IDs oder Zeitstempel. EPG-Dauer wird in Sekunden,
+Aufnahmelänge als Minuten:Sekunden gelesen. Wiedergabefortschritt wird noch
+nicht interpretiert. Das übermittelte Vu+-Timerformat ist als reduzierte
+Testdatenbasis abgebildet; andere Varianten sind synthetisch und anhand der
+Upstream-Schnittstellen geprüft, keine neue Hardware-Abnahme.
+
+`EnigmaCoordinator.perform()` erhält den typisierten Rückgabewert. Die Aktionen
+`timer_add`, `timer_toggle`, `timer_delete` unterstützen `SupportsResponse.OPTIONAL`:
+bei `return_response` erhalten Aufrufer `action` und `timer` mit
+`service_reference`, `begin`, `end`. Dies ist die angesprochene Kennung bei
+positiver Receiver-Bestätigung, kein vollständiger zurückgelesener Timerzustand.
+Rohe Nachrichten, Timerprotokolle und weitere Receiver-Felder werden nicht
+weitergereicht. Ablehnungen bleiben Ausnahmen; Konfliktdaten werden erst in
+Abschnitt 3 für Benutzer zugänglich gemacht. Bestehende Aufrufe ohne Antwort
+liefern weiterhin `None`.
+
+Die bestehende Session-Middleware `power_command_middleware` schützt zusätzlich
+`timeradd`, `timeraddbyeventid`, `timerchange`, `timerdelete`, `timertogglestatus`
+und `recordnow` vor dem transparenten aiohttp-GET-Retry. Sie wird weiterhin in
+der HA-verwalteten Session installiert. Ein nicht zustande gekommener
+Verbindungsaufbau bleibt ein Verbindungsfehler. Antwortverlust, ungültiges JSON
+oder eine fehlende/unbekannte Bestätigung ergeben `CommandUnconfirmed` und in
+HA `timer_unconfirmed`. Unterstützt sind `result`-/`state`-Flags als
+Boolean, 0/1 oder entsprechende Zeichenketten; ein negatives Flag ist eine
+Ablehnung. HTTP 404/405/501 bleibt ausdrücklich nicht unterstützt.
+
+Nach Erfolg oder Fehler einer Timeraktion werden die Listen invalidiert und
+ein Refresh angefordert. Scheitert auch das Lesen, bleiben die üblichen
+Nicht-verfügbar-/Unbekannt-Zustände erhalten; ein Refresh wandelt einen Fehler
+nicht nachträglich in Erfolg um. Bei Task-Abbruch werden die Listen für die
+nächste Abfrage invalidiert und der Abbruch weitergereicht. Es gibt keinen
+automatischen zweiten Schreibversuch und kein automatisches Rollback.
+Diese Regel garantiert keine Einmaligkeit über manuelle Wiederholungen,
+HA-Neustarts oder andere OpenWebif-Clients hinweg. Vor den neuen Aktionen in
+Abschnitt 2/3 werden deren konkrete Vorabprüfungen unter der Befehlssperre
+ergänzt. Das ist besonders bei `timerchange` nötig: die Upstream-Implementierung
+verändert Timerfelder bereits vor der Konfliktantwort. Eine Ablehnung belegt
+daher nicht, dass alle alten Werte unverändert blieben.
+
+Schnittstellen am 20.09.2026 gelesen: [EPG-Modell](https://github.com/oe-alliance/OpenWebif/blob/main/plugin/controllers/models/epg.py),
+[Timermodell](https://github.com/oe-alliance/OpenWebif/blob/main/plugin/controllers/models/timers.py),
+[Aufnahmemodell](https://github.com/oe-alliance/OpenWebif/blob/main/plugin/controllers/models/movies.py)
+und [HA-Aktionsantworten](https://developers.home-assistant.io/docs/dev_101_services/#response-data).
+Kein Upstream-Implementierungscode übernommen.
 
 ## Vorgemerkte Ideen
 

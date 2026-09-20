@@ -4,7 +4,7 @@
 
 ## Inhaltsverzeichnis
 
-- [1.3.0-dev.2](#130-dev2)
+- [1.3.0-dev.3](#130-dev3)
 - [1.2.0](#120)
 - [1.1.3](#113)
 - [1.1.2](#112)
@@ -14,11 +14,20 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 1.3.0-dev.2
+## 1.3.0-dev.3
 
 Unveröffentlichte Entwicklerversion. Zielversion für die beauftragten EPG-,
 Timer- und Aufnahmeerweiterungen; diese Benutzerfunktionen sind noch nicht verfügbar.
 
+- Grundlage 1b ergänzt: validierte interne EPG-, Timer-, Konflikt- und
+  Aufnahmemodelle; bestehende Timeraktionen bieten optionale HA-Antwortdaten
+  mit der angesprochenen Kennung. Fehler bleiben übersetzte Ausnahmen.
+- Automatisches Wiederholen schreibender Timeranfragen bei Antwortverlust
+  unterbunden. Unklare Bestätigungen werden gesondert gemeldet; Timeraktionen
+  aktualisieren die Listen auch nach Fehlern und invalidieren sie bei Abbruch.
+  Regressionstests und zweisprachige Praxisanleitung ergänzt. Nutzer bestätigt
+  alle Praxisschritte auf Octagon/OpenWebif 2.4.0 und Vu+/OpenWebif 1.4.4;
+  Abschnitt 1b beidseitig abgeschlossen. Antwortverlust lokal simuliert geprüft.
 - Abweichenden Nutzer-Praxistest auf Vu+ Solo² mit VTi 15.0.0 und OpenWebif
   1.4.4 dokumentiert: Timer anlegen und Nachrichten bestanden; Umschalten des
   Timerstatus und Löschen scheiterten zunächst. Nachgereichte Aktions- und Timerdaten

@@ -876,7 +876,7 @@ Base: freshly fetched `origin/main` commit `1afa705` (version 1.2.0), branch
 `feature/recording-workflows`, worktree
 `V:\enigma2-connect-worktrees\recording-workflows`. This request explicitly
 selects `main` instead of the general `develop` branch rule. Target version:
-**1.3.0-dev.2**, reflecting the complete planned backward-compatible feature
+**1.3.0-dev.3**, reflecting the complete planned backward-compatible feature
 scope. Recheck remote branches, tags and published releases before a later PR.
 
 **Commit rule for this request:** Commit a section to the working branch only
@@ -940,8 +940,11 @@ on instruction.
   dev.2. Corresponding completion commit:
   `fix: trim whitespace in timer service references`.
   The Octagon completion above is preserved.
-- **1b – remaining foundation:** pending; data models, HA responses, replay
-  protection/state reconciliation and receiver format checks remain outstanding.
+- **1b – remaining foundation:** confirmed complete by both parties on
+  **2026-09-20**, version **1.3.0-dev.3**. 201 distinct local tests passed;
+  the user confirms all practical steps on both test receivers
+  (see verification summary). Corresponding completion commit:
+  `feat: add recording workflow foundations`.
 - **2–5:** planned, not started. No new user-facing actions are available yet.
 
 `OpenWebifClient.command_result()` returns structured success data under the same
@@ -957,6 +960,67 @@ Interface evidence: [OpenWebif timer model](https://github.com/oe-alliance/OpenW
 read on 2026-09-19. Conflict replies contain `result=false` and a `conflicts`
 list. This research does not replace receiver testing; no upstream implementation
 code was copied.
+
+### Section 1b: data models, action responses and uncertain outcomes
+
+Implementation plan dated **2026-09-20**, test build **1.3.0-dev.3**:
+
+1. Add immutable EPG, timer identity, timer, conflict and recording models with
+   explicitly validated required fields.
+2. Add optional HA response data to existing timer actions, keeping errors as
+   translated exceptions.
+3. Prevent automatic replay of timer GET writes after response loss; reread
+   lists after success/failure and invalidate them on cancellation.
+4. Check formats, real local HTTP connections, HA responses and existing calls;
+   then obtain practical acceptance on both test receivers.
+
+`workflow_models.py` projects only named fields. EPG, full timer, conflict and
+recording models are internal foundations for later sections; existing polling
+and the calendar retain their current formats. Timer identity is already used
+in action responses. Unknown optional metadata remains `None`; empty lists are
+valid, while missing lists or invalid entries raise `DataFormatError`. Malformed
+entries are never silently removed from a list used for decisions. Identifiers
+retain internal whitespace and URL escapes. Integers may be decimal strings;
+booleans and rounded floats are not IDs or timestamps. EPG duration uses seconds,
+recording length uses minutes:seconds. Playback progress is not interpreted yet.
+The supplied Vu+ timer shape is represented by reduced test data; other variants
+are synthetic and checked against upstream interfaces, without new hardware
+acceptance.
+
+`EnigmaCoordinator.perform()` preserves the typed return value. `timer_add`,
+`timer_toggle` and `timer_delete` support `SupportsResponse.OPTIONAL`: with
+`return_response`, callers receive `action` and `timer` containing
+`service_reference`, `begin`, `end`. This identifies the addressed timer after
+a positive receiver acknowledgement; it is not the full reread timer state.
+Raw messages, timer logs and other receiver fields are not forwarded. Rejections
+remain exceptions; conflict details become user-facing in section 3. Existing
+calls without a response still return `None`.
+
+The existing session middleware `power_command_middleware` additionally protects
+`timeradd`, `timeraddbyeventid`, `timerchange`, `timerdelete`, `timertogglestatus`
+and `recordnow` from transparent aiohttp GET retries. It remains installed in the
+HA-managed session. Failure to establish a connection remains a connection error.
+Lost responses, invalid JSON or missing/unknown acknowledgements raise
+`CommandUnconfirmed`, translated as `timer_unconfirmed` in HA. Supported
+`result`/`state` flags are booleans, 0/1 or corresponding strings; a negative flag
+is a rejection. HTTP 404/405/501 remains explicitly unsupported.
+
+After a successful or failed timer action, lists are invalidated and a refresh
+is requested. If reading also fails, normal unavailable/unknown states apply;
+a refresh never turns an action failure into success. Task cancellation marks
+lists dirty for the next poll and propagates cancellation. There is no automatic
+second write attempt or rollback. This does not guarantee exactly-once execution
+across manual repetitions, HA restarts or other OpenWebif clients. Before adding
+actions in sections 2/3, implement their specific preflight checks under the
+command lock. This matters especially for `timerchange`: upstream changes timer
+fields before returning conflicts. A rejection therefore does not prove that
+all previous values were preserved.
+
+Interfaces read on 2026-09-20: [EPG model](https://github.com/oe-alliance/OpenWebif/blob/main/plugin/controllers/models/epg.py),
+[timer model](https://github.com/oe-alliance/OpenWebif/blob/main/plugin/controllers/models/timers.py),
+[recording model](https://github.com/oe-alliance/OpenWebif/blob/main/plugin/controllers/models/movies.py)
+and [HA action responses](https://developers.home-assistant.io/docs/dev_101_services/#response-data).
+No upstream implementation code was copied.
 
 ## Recorded ideas
 

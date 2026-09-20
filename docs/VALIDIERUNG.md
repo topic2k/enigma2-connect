@@ -2,6 +2,66 @@
 
 # Prüfübersicht
 
+## Aufnahme-Workflows: 1.3.0-dev.3, Abschnitt 1b
+
+Stand **20.09.2026**. Datenmodelle, optionale Antworten bestehender Timeraktionen
+und Schutz vor automatischer Wiederholung unklarer Timerbefehle implementiert.
+Plan und Grenzen in [ENTWICKLUNG.md](ENTWICKLUNG.md#abschnitt-1b-datenmodelle-aktionsantworten-und-unklare-ergebnisse),
+Praxisschritte im [Benutzerhandbuch](BENUTZERHANDBUCH.md#abschnitt-1b-auf-dem-receiver-prüfen).
+
+**Lokale Prüfung bestanden:** Python **3.14.7**, Home Assistant **2026.9.1**,
+pytest-homeassistant-custom-component **0.13.364**. **201 unterschiedliche
+Tests** sind im jeweils letzten Lauf bestanden. Der erste Lauf hatte 186
+bestandene Fälle; sechs lokale HTTP-Fälle scheiterten an der fehlenden
+`socket_enabled`-Fixture, einschließlich ihrer Folgefehler beim Aufräumen.
+Nach Korrektur der Testeinrichtung bestanden alle 40 Fälle des gezielten
+Nachlaufs (Workflow-Aktionen und betroffene Kanalkataloge), einschließlich
+eines zusätzlichen Tests für fehlschlagendes Nachlesen. Produktionscode musste
+für diese Testkorrektur nicht geändert werden.
+
+Umfang: `test_workflow_models`, `test_workflow_actions`, `test_api`,
+`test_integration`, `test_silver_controls`, `test_translations`, `test_models`,
+`test_gold_lifecycle`, `test_regressions`, `test_channel_media`. Echte lokale
+aiohttp-Verbindungen mit simuliertem Receiver belegen genau einen Schreibaufruf
+bei verlorener Antwort für alle sechs geschützten Timerendpunkte, einschließlich
+anschließender Erreichbarkeit. HA-Tests prüfen optionale Antworten, bisherige
+Aufrufe, übersetzte Fehler, Reauth, Abbruch und Listenabgleich bei Fehlern.
+Modelltests unterscheiden leere/unbekannte/ungültige Daten und erhalten Kennungen.
+
+Kombinierte Statement-/Branch-Coverage der betroffenen Module: `api.py`
+**96,99 %**, `coordinator.py` **99,38 %**, `services.py` **97,50 %** und
+`workflow_models.py` **100 %**. Alle liegen über der unveränderten 95-%-Grenze.
+Ruff, Formatierung, Syntax und mypy strict für alle **29** Produktionsmodule
+bestanden; Versionskonsistenz, lokale Dokumentationslinkziele und
+`uv lock --check --offline` ebenfalls. Die Lockdatei ändert nur die Projektversion.
+Berichte im ursprünglichen Arbeitsverzeichnis `V:\enigma2-connect` unter
+`.work/recording-workflows-checks/`: `section1b-tests.xml`,
+`section1b-recheck.xml`, zugehörige `.log`-Dateien und `section1b-coverage.json`.
+Die Coverage vereinigt beide Läufe bei unverändertem Produktionscode.
+
+Betroffene Qualitätsregeln geprüft: `action-setup`, `action-exceptions`,
+`common-modules`, `parallel-updates`, `test-coverage`, `strict-typing`,
+`exception-translations`, `docs-actions`, `docs-data-update`,
+`docs-known-limitations`. Keine Statusabsenkung oder neue Ausnahme.
+Unveränderte Module behalten ihre bisherigen Nachweise; kein vollständiger
+neuer CI-Lauf und keine neue offizielle HA-Qualitätsstufe behauptet.
+
+**Praxisabnahme bestanden:** Am **20.09.2026** bestätigt der Nutzer alle
+Prüfschritte der Anleitung für **1.3.0-dev.3** auf den beiden angefragten
+Testreceivern: Octagon SF8008 4K Supreme / OpenATV / OpenWebif 2.4.0 und
+Vu+ Solo² / VTi / OpenWebif 1.4.4. Dazu gehören Anlegen, Deaktivieren,
+Aktivieren und Löschen mit Antwortdaten, automatische Leerzeichenbereinigung,
+die erwartete Ablehnung einer erneuten Löschung, die anschließende Nachricht
+sowie bisherige Aufrufe ohne Antwortvariable. Die Bedienfolge überschneidet
+sich mit 1a; die genannten Antwort- und Eingabeeigenschaften sind die neuen
+Prüfpunkte. Eine neue HA-Version oder einzelne Antwortprotokolle wurden
+nicht mitgeteilt. Antwortverlust und Wiederholungsschutz sind ausschließlich
+durch die lokalen HTTP-Tests belegt; vollständige EPG-/Aufnahmeformate und
+Konfliktverhalten je Image bleiben Gegenstand der Folgeabschnitte.
+Nutzer und Codex bestätigen Abschnitt **1b** als fertig. Zugeordneter
+Abschlusscommit: `feat: add recording workflow foundations`.
+Kein Merge und kein Release.
+
 ## Vu+-Timerkennung und Eingabekorrektur: 1.3.0-dev.2
 
 Nutzerbericht vom **20.09.2026**, getesteter Laufzeitstand **1.3.0-dev.1**:

@@ -14,7 +14,7 @@ rules:
     comment: Eight shipped brand PNGs follow HA 2026.3 custom-integration support; tested through HA's local brands API without CDN access. Core branding remains part of a separate admission.
   common-modules:
     status: done
-    comment: entity.py, coordinator.py, models.py and const.py share identity, updates and parsing.
+    comment: entity.py, coordinator.py, models.py, workflow_models.py and const.py share identity, updates and validated parsing.
   config-flow:
     status: done
     comment: UI setup validates the connection, separates data/options and explains fields in both languages.
@@ -66,7 +66,7 @@ rules:
   # Silver
   action-exceptions:
     status: done
-    comment: Services validate targets; coordinator.perform translates failures. The refresh button waits for its own fetch and reports failure.
+    comment: Services validate targets; coordinator.perform translates failures, including uncertain timer outcomes without automatic replay. Optional timer responses preserve exceptions. The refresh button waits for its own fetch and reports failure.
   config-entry-unloading:
     status: done
     comment: Platforms unload; async_close cancels recording-image jobs and external HLS processes/relays/files. Lifecycle tests cover unload and HA stop.

@@ -454,6 +454,9 @@
     },
     "stream_limit_reached": {
       "message": "The limit of {limit} simultaneous streams for this receiver has been reached. Stop a playback and wait up to two minutes, or increase the limit in settings. Existing streams keep playing."
+    },
+    "timer_unconfirmed": {
+      "message": "The timer action may have taken effect but was not clearly confirmed. It will not be retried automatically. Check the timer in OpenWebif before running the action again."
     }
   },
   "services": {

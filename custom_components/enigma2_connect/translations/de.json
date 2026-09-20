@@ -454,6 +454,9 @@
     },
     "stream_limit_reached": {
       "message": "Die Grenze von {limit} gleichzeitigen Streams für diesen Receiver ist erreicht. Beende eine Wiedergabe und warte bis zu zwei Minuten oder erhöhe die Grenze in den Einstellungen. Laufende Streams werden fortgesetzt."
+    },
+    "timer_unconfirmed": {
+      "message": "Die Timeraktion wurde möglicherweise ausgeführt, aber nicht eindeutig bestätigt. Sie wird nicht automatisch wiederholt. Prüfe den Timer in OpenWebif, bevor du die Aktion erneut ausführst."
     }
   },
   "services": {

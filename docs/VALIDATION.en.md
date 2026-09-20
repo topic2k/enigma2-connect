@@ -2,6 +2,63 @@
 
 # Verification summary
 
+## Recording workflows: 1.3.0-dev.3, section 1b
+
+As of **2026-09-20**. Implemented data models, optional responses for existing
+timer actions and protection from automatic replay of uncertain timer commands.
+Plan and limitations: [DEVELOPMENT.en.md](DEVELOPMENT.en.md#section-1b-data-models-action-responses-and-uncertain-outcomes).
+Practical steps: [user guide](USER_GUIDE.en.md#test-section-1b-on-the-receiver).
+
+**Local checks passed:** Python **3.14.7**, Home Assistant **2026.9.1**,
+pytest-homeassistant-custom-component **0.13.364**. **201 distinct tests** passed
+in their respective latest run. The initial run passed 186 cases; six local
+HTTP cases failed because the `socket_enabled` fixture was missing, including
+follow-on cleanup errors. After fixing the test setup, all 40 cases in the
+targeted rerun passed (workflow actions and affected channel catalogs), including
+an additional test for a failed reread. This test correction required no
+production code changes.
+
+Scope: `test_workflow_models`, `test_workflow_actions`, `test_api`,
+`test_integration`, `test_silver_controls`, `test_translations`, `test_models`,
+`test_gold_lifecycle`, `test_regressions`, `test_channel_media`. Real local
+aiohttp connections to a simulated receiver confirm exactly one write after
+response loss for all six protected timer endpoints and subsequent connectivity.
+HA tests cover optional responses, existing calls, translated errors, reauth,
+cancellation and list reconciliation after errors. Model tests distinguish
+empty/unknown/invalid data and preserve identifiers.
+
+Combined statement/branch coverage for affected modules: `api.py` **96.99%**,
+`coordinator.py` **99.38%**, `services.py` **97.50%**, `workflow_models.py`
+**100%**. All exceed the unchanged 95% threshold. Ruff, formatting, syntax and
+mypy strict for all **29** production modules passed, as did version consistency,
+local documentation link targets and `uv lock --check --offline`. Only the
+project version changed in the lockfile. Reports in the original working
+directory `V:\enigma2-connect`, under `.work/recording-workflows-checks/`:
+`section1b-tests.xml`, `section1b-recheck.xml`, corresponding `.log` files and
+`section1b-coverage.json`. Coverage combines both runs with unchanged production
+code.
+
+Affected quality rules reviewed: `action-setup`, `action-exceptions`,
+`common-modules`, `parallel-updates`, `test-coverage`, `strict-typing`,
+`exception-translations`, `docs-actions`, `docs-data-update`,
+`docs-known-limitations`. No lowered status or new exemptions. Unchanged modules
+retain their earlier evidence; no complete new CI run or new official HA quality
+tier is claimed.
+
+**Practical acceptance passed:** On **2026-09-20**, the user confirmed all
+steps of the **1.3.0-dev.3** guide for the two requested test receivers:
+Octagon SF8008 4K Supreme / OpenATV / OpenWebif 2.4.0 and Vu+ Solo² / VTi /
+OpenWebif 1.4.4. This covers creation, disabling, enabling and deletion with
+response data, automatic whitespace trimming, expected rejection of repeated
+deletion, a subsequent message and existing calls without a response variable.
+The operation sequence overlaps with 1a; the response and input properties
+listed above are the new checks. No updated HA version or individual response
+logs were supplied. Response loss and replay protection are evidenced only by
+local HTTP tests; complete EPG/recording formats and image-specific conflict
+behavior remain part of subsequent sections. The user and Codex confirm
+section **1b** complete. Corresponding completion commit:
+`feat: add recording workflow foundations`. No merge or release.
+
 ## Vu+ timer reference and input correction: 1.3.0-dev.2
 
 User report dated **2026-09-20**, tested runtime **1.3.0-dev.1**: **Vu+ Solo²**,
