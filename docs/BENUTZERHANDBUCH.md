@@ -162,6 +162,28 @@ Vorhandene Aktivierungsentscheidungen bleiben bei Updates erhalten. Der Receiver
 bietet außerdem Zustandsanzeigen für Standby, Aufnahme, Streaming und Verbindung;
 Verbindung und **Listen aktualisieren** gehören zu den Diagnosen.
 
+### Speicherplatz und Systemdiagnose
+
+Unter dem Receiver-Gerät zeigt **Freier Speicher /media/hdd** den freien Platz
+des jeweiligen eingebundenen Laufwerks an. Bei mehreren Laufwerken gibt es je
+Mountpunkt einen Sensor; der Name enthält den vom Receiver gemeldeten Pfad.
+Neue Laufwerke erscheinen beim nächsten Diagnoseabruf. Entfernte Laufwerke
+werden **Nicht verfügbar**; bei Wiederverbindung bleibt ihre Entität erhalten.
+Ein voller Datenträger zeigt dagegen tatsächlich **0 GiB** an.
+
+**Freier RAM (inkl. Cache)**, **Gesamter RAM** und **Laufzeit** sind zunächst
+deaktiviert. Öffne **Einstellungen → Geräte & Dienste → Entitäten**, blende
+deaktivierte Entitäten ein und aktiviere die gewünschten Sensoren.
+RAM wird in MiB, Festplattenspeicher in GiB und Laufzeit in Stunden angezeigt.
+Der freie RAM umfasst auch Buffer und Cache; die Laufzeit ist minutengenau.
+
+Die Werte werden etwa alle fünf Minuten aktualisiert, auch im normalen Standby.
+Nicht unterstützte RAM-/Laufzeitangaben bleiben **Unbekannt**.
+OpenWebif meldet nur die von ihm erkannten eingebundenen Festplatten; insbesondere
+Netzwerk-Aufnahmeordner sind damit nicht automatisch abgedeckt. Prüfe den Pfad
+des Sensors gegen deinen Aufnahmeordner, bevor du ihn für Speicherwarnungen nutzt.
+Der Abruf kann je nach Receiver-Image eine schlafende Festplatte aufwecken.
+
 ## Aufnahmen und Sender durchsuchen
 
 Es gibt zwei Zugänge zu deinen Aufnahmen:
@@ -175,10 +197,121 @@ Medien-Seitenleiste wählst du unten den Receiver als Wiedergabegerät aus,
 auf dem die Aufnahme liegt. Für „Webbrowser“ oder andere Geräte aktiviere zuerst
 die unten beschriebene externe Wiedergabe.
 
-Neben dem Titel stehen Datum, Uhrzeit, Sender und Länge, soweit diese Angaben
+Neben dem Titel stehen Datum, Uhrzeit, Sender, Länge, Dateigröße und Tags, soweit diese Angaben
 vorhanden sind. Die Uhrzeit richtet sich nach der in Home Assistant eingestellten
 Zeitzone. Ordner stehen vor Aufnahmen; aufgeführt wird, was OpenWebif aus dem
 Aufnahmeverzeichnis einschließlich Unterordnern meldet.
+
+### Aufnahmebibliothek als Karte
+
+Die zusätzliche Karte zeigt Aufnahmen eines ausgewählten Receivers mit
+Dateigröße, Tags, Ordner und gemeldetem Wiedergabestand. Sie benötigt Integration
+**1.3.0-dev.13** oder neuer.
+
+1. Kopiere `www/enigma2-connect-recordings-card.js` nach
+   `/config/www/enigma2-connect-recordings-card.js`.
+2. Ergänze unter **Einstellungen → Dashboards → Ressourcen** die Adresse
+   `/local/enigma2-connect-recordings-card.js?v=dev20` als **JavaScript-Modul**.
+   Falls Ressourcen fehlen, aktiviere den erweiterten Modus im Benutzerprofil.
+3. Lade den Browser vollständig neu. Füge deinem Dashboard die Karte
+   **Enigma2 Connect Aufnahmebibliothek** hinzu und wähle den Medienplayer des
+   Receivers. Einen eigenen Titel kannst du im Karteneditor vergeben.
+4. Drücke **Laden / Aktualisieren**. Wähle bei Bedarf einen Tag, einen Ordner oder
+   einen Wiedergabestand; **Titel oder Sender** filtert zusätzlich während der
+   Eingabe. Die Auswahllisten stammen nur vom gewählten Receiver.
+5. **Filter zurücksetzen** zeigt wieder alle geladenen Aufnahmen. Der Zähler
+   nennt passende und insgesamt geladene Aufnahmen. Die Liste ist scrollbar;
+   es gibt kein Trefferlimit. **Laden / Aktualisieren** holt den aktuellen Stand.
+
+Im Karteneditor wählst du unter **Ansicht** zwischen **Detailansicht** (Standard)
+und **Zeilenansicht**. Die Zeilenansicht passt die sichtbaren Spalten automatisch
+an ihre aktuelle Breite an, auch beim Vergrößern oder Verkleinern während der
+Nutzung. Von links nach rechts: **Titel, Dauer, Aufnahmedatum mit Uhrzeit, Sender,
+Wiedergabestand, Dateigröße**. Bei wenig Platz bleibt der Titel; mit mehr Platz
+kommen zuerst Aufnahmedatum, dann Sender, Dauer, Wiedergabestand und Dateigröße
+hinzu. Verdeckte Spalten sind weiterhin in den aufklappbaren Details verfügbar. Tippe eine Zeile an, um alle Angaben aufzuklappen;
+mit der Tastatur geht das über Tab und Eingabe oder Leertaste. Lange Titel
+umbrechen bei Bedarf. Filter und Trefferzähler funktionieren in beiden Ansichten.
+Manuell entspricht dies `display_mode: rows` beziehungsweise `display_mode: details`.
+Für diese Auswahl die Bibliotheks-Kartendatei auf dev.17 aktualisieren und den
+Ressourcenlink ändern. Reine Anzeige ist ab Integration dev.13 kompatibel;
+für die Verwaltung wird Integration dev.17 benötigt.
+
+Fehlende Angaben erscheinen als **Unbekannt**. Eine gemeldete Dateigröße 0 gilt
+ebenfalls als unbekannt. **0 % gemeldet** kann bedeuten, dass keine Abspielposition
+gespeichert ist; es ist keine sichere Aussage „ungesehen“. Die Prozentwerte
+stammen vom Receiver und verfolgen keine Wiedergabe im HA-Browser. Zur Wiedergabe nutze weiterhin **Medien durchsuchen**;
+Änderungen erfordern eine ausdrückliche Verwaltungsaktion.
+Bei Receiverwechsel oder Verbindungsverlust wird die geladene Liste verworfen.
+Datumswerte in dieser Karte folgen der Zeitzone des Browsers.
+
+Bei manueller Kartenkonfiguration lautet der Typ
+`custom:enigma2-connect-recordings-card`; `entity` ist der zugehörige
+`media_player.…`, `name` ein optionaler Titel. Die neue Karte hat eine eigene
+JavaScript-Ressource; Fernbedienungs- und EPG-Karte bleiben separat verfügbar.
+
+### Aufnahmen in der Karte verwalten
+
+Die Verwaltung benötigt die Integration ab **1.3.0-dev.17**. Für den Dialog
+die Bibliothekskarte aus **1.3.0-dev.20** installieren, den Ressourcenlink
+auf `?v=dev20` ändern und die Seite neu laden.
+
+1. Lade die Aufnahmen des gewünschten Receivers. In der Zeilenansicht klappe
+   die Aufnahme auf und wähle **Verwalten**; in der Detailansicht steht der
+   Button direkt bei der Aufnahme.
+2. Im Dialog **Aufnahme verwalten** wähle die **Aktion**: **Titel ändern**, **Verschieben** oder **Löschen**.
+   Eine Titeländerung ändert den angezeigten Namen, nicht den Dateinamen.
+3. Gib den neuen Titel ein oder wähle den **Zielordner**. Die Auswahl enthält
+   vorhandene Aufnahmeordner und Receiver-Lesezeichen; neue Ordner werden
+   nicht angelegt. Bereits belegte Zieldateinamen werden abgewiesen.
+4. Für **Löschen** beantworte die Frage mit dem Aufnahmetitel durch das
+   Bestätigungsfeld und den Button **Aufnahme löschen**. Ein Aktionswechsel
+   setzt die Bestätigung zurück. Je nach
+   Receiver-Einstellung wird endgültig gelöscht oder ein Papierkorb verwendet.
+   Ein Papierkorb wird nicht zugesichert und keine erzwungene Löschung gesendet.
+5. Wähle **Ausführen**. Erfolg wird erst nach Prüfung der Receiverliste
+   angezeigt; anschließend lädt die Karte den Katalog erneut.
+
+Bei **Abschluss noch unbestätigt** nur **Auftragsstatus prüfen** verwenden,
+nicht den Auftrag erneut ausführen. Während eines offenen Auftrags sind weitere
+Verwaltungsaktionen gesperrt. Bei einem Fehler vor der Änderung zeigt die Karte
+den Grund als hervorgehobene Fehlermeldung im Dialog an. Nach dem Schließen
+bleibt die Meldung auf der Karte sichtbar. **Abbrechen**, **Schließen**, das Kreuz
+oder Escape schließen den Dialog und widerrufen keinen
+bereits gesendeten Auftrag.
+
+Vorhandene HA-Streams werden nicht beendet. Während eines
+offenen Verschiebe-/Löschauftrags starten keine neuen HA-Aufnahmestreams für
+dessen Quell-/Zieldatei; andere Aufnahmen bleiben nutzbar.
+Nach einem HA-Neustart/einem Neuladen der Integration zuerst den tatsächlichen
+Receiverzustand prüfen: Der Schutz für unbestätigte Aufträge lebt im Arbeitsspeicher.
+
+**Praxisprüfung für Abschnitt 5b:** Ausschließlich eine entbehrliche, eigens
+angelegte Testaufnahme verwenden. Titel ändern und kontrollieren, in einen
+vorhandenen freien Zielordner verschieben und anschließend zurückverschieben.
+Löschen zuletzt ausdrücklich bestätigen; danach Karte, OpenWebif und HA-Medienliste
+abgleichen. Die lokale Simulation ersetzt diese Geräteprüfung nicht.
+
+Der Hintergrund ist während des Dialogs gesperrt. Nach dem Schließen kehrt der
+Tastaturfokus zum Ausgangsbutton zurück. Während eine Anfrage läuft, bleibt der
+Dialog geöffnet; ein anschließend unbestätigter Auftrag kann geschlossen werden.
+**Auftragsstatus prüfen** öffnet den Dialog erneut. Auch ein Ladefehler der
+Bibliothek wird deutlich hervorgehoben.
+
+Ab Integration **1.3.0-dev.20** beziehen sich die Sperren auf die ausgewählte
+Aufnahme. Andere Live-TV- oder Aufnahmestreams und andere Receiver-Wiedergaben
+verhindern **Verschieben** und **Löschen** nicht mehr. Die ausgewählte Aufnahme
+bleibt gesperrt, wenn sie gerade am Receiver wiedergegeben, über diese Integration
+gestreamt oder in der Receiver-Streamliste als benutzt gemeldet wird.
+**Titel ändern** bleibt auch bei Wiedergabe dieser Aufnahme möglich.
+
+Laufende/vorbereitete Aufnahmen werden über ihren Dateipfad zugeordnet.
+Sind aktive Schreibvorgänge oder eine gemeldete Aufnahmewiedergabe keiner Datei
+sicher zuzuordnen, erscheint eine gesonderte Meldung. Fehlendes allgemeines
+Streaming-Signal allein sperrt nicht mehr. Externe direkte Dateiabrufe und andere
+Zugriffspfade auf dieselbe Datei kann die Integration nicht vollständig erkennen;
+beende solche Zugriffe auf die ausgewählte Aufnahme vor Verschieben/Löschen.
+
 
 ### Mehrere Receiver zusammen anzeigen
 
@@ -477,6 +610,56 @@ entity: remote.test_receiver_remote
 name: Wohnzimmer
 ```
 
+### Kartenbereiche auswählen und reine EPG-Karte
+
+Im grafischen Editor der Fernbedienung schaltest du **EPG-Suche anzeigen**,
+**Videosteuerung anzeigen** und **Zahlentasten anzeigen** einzeln ein oder aus.
+Standardmäßig ist die Suche aus; Videosteuerung und Zahlentasten sind an.
+Videosteuerung umfasst Wiedergabe,
+Pause, Stopp, Vor-/Zurückspulen und die Aufnahme-Taste. TV, Radio und die EPG-Taste
+des Receivers bleiben unabhängig davon sichtbar.
+
+```yaml
+type: custom:enigma2-connect-remote-card
+entity: remote.test_receiver_remote
+show_epg: false
+show_playback: false
+show_numbers: false
+```
+
+Für eine eigene Suchkarte wähle unter **Karte hinzufügen → Nach Karte**
+**Enigma2 Connect EPG-Suche** und danach die Receiver-Steuerung. Sie zeigt die
+Suche direkt, ohne Fernbedienungstasten. Beide Karten werden durch dieselbe
+Ressource `enigma2-connect-remote-card.js` bereitgestellt.
+
+```yaml
+type: custom:enigma2-connect-epg-card
+entity: remote.test_receiver_remote
+name: Sendungen suchen
+```
+
+Im Karteneditor beider Karten wählst du unter **Trefferanzeige** zwischen
+**Liste** und **Einzeln mit Blättern**. Beide Karten verwenden standardmäßig
+die Einzelansicht. Die Suche der Fernbedienungskarte ist standardmäßig ausgeblendet.
+Die Einzelansicht zeigt eine
+Sendung und die Tasten **Vorheriger Treffer** / **Nächster Treffer**. An den
+Listenenden sind die passenden Tasten gesperrt. Neue Suchergebnisse beginnen
+wieder beim ersten Treffer. YAML: `results_view: single` oder `results_view: list`.
+
+Alle vom Receiver gelieferten laufenden und zukünftigen Treffer sind zugänglich;
+Duplikate werden entfernt. Die Anzeige lautet beispielsweise **[‹] Treffer 10 von 30 [›]**.
+Bei leerem Ergebnis erscheint **0 Treffer**. Die Integration kürzt die Trefferliste
+nicht mehr; die Zahl beschreibt die empfangenen passenden Ergebnisse.
+
+**Suche zurücksetzen** leert in beiden Karten Suchtext, Trefferliste und
+Suchhinweise und setzt den Fokus in das Eingabefeld. Verspätete Suchantworten
+füllen die Liste nicht erneut. Bereits angeforderte Aufnahmen laufen weiter;
+ihre Bestätigung oder Fehlermeldung wird weiterhin angezeigt.
+Nach dem Update der Kartendatei den bestehenden Ressourcenlink beispielsweise
+auf `?v=dev12` ändern und den Browser neu laden. Für die unbegrenzte Suche Integration und Kartendatei
+auf dev.12 oder neuer
+aktualisieren und Home Assistant neu starten.
+
 ## Nachrichten und Automationen
 
 Eine Bildschirmnachricht kannst du zunächst unter **Entwicklerwerkzeuge →
@@ -499,16 +682,72 @@ Antworten auf Ja/Nein-Fragen werden derzeit nicht an Home Assistant zurückgegeb
 Auch Senderwechsel, Standby und Tastenfolgen lassen sich automatisieren.
 Die folgenden Beispiele zeigen dir die passenden Aktionen.
 
-Die Integration stellt keine eigenen Auslöser oder Bedingungen bereit. Verwende in
+Die Integration stellt keine eigenen Geräteauslöser oder Bedingungen bereit.
+Für Timerkonflikte gibt es das unten beschriebene Ereignis. Verwende in
 Automationen die Standard-Auslöser und Zustandsbedingungen von Home Assistant,
 zum Beispiel eine Änderung der Aufnahme- oder Verbindungsanzeige.
+
+### Aufnahmebibliothek laden und filtern
+
+Wähle unter **Entwicklerwerkzeuge → Aktionen** die Aktion **Enigma2 Connect:
+Aufnahmebibliothek laden** und zuerst den Receiver. Die übrigen Filter sind
+optional. Tags und Ordner müssen exakt einem vom Receiver gemeldeten Wert
+entsprechen; ein Ordnerfilter umfasst genau diesen Ordner, keine Unterordner.
+Die Antwort enthält `recordings`, `count` (passende Aufnahmen), `total`
+(gesamter Katalog) sowie verfügbare `tags` und `directories`. Diese Aktion
+benötigt Antwortdaten; in Skripten/Automationen verwende `response_variable`:
+
+```yaml
+action: enigma2_connect.recordings_list
+data:
+  device_id: DEINE_RECEIVER_GERAETE_ID
+  query: Tatort
+  progress: in_progress
+response_variable: bibliothek
+```
+
+`query` sucht ohne Beachtung der Groß-/Kleinschreibung in Titel und Sender.
+`progress` akzeptiert `all`, `in_progress` (1–99 %), `complete` (100 %), `zero`
+(0 % gemeldet) und `unknown`. Mit `tag` und `directory` kannst du zusätzlich
+filtern. Alle gesetzten Filter müssen passen. Weglassen liefert den vollständigen
+Katalog ohne lokale Begrenzung. Jeder Eintrag enthält `service_reference`,
+`title`, `service_name`, `recorded_at` (Unix-Sekunden), `duration` (Sekunden),
+`size_bytes`, `tags`, `directory` und `progress_percent`. Unbekannte Werte sind
+`null`, eine bekannte leere Tagliste ist `[]`. Die Aktion liest nur Metadaten;
+sie startet weder Wiedergabe noch Aufnahme.
+
+### Aufnahmeverwaltung in Aktionen und Automationen
+
+`recording_manage` erhält den Receiver, `service_reference` und den aktuellen
+`revision`-Wert aus `recordings_list` als `expected_revision`. So wird eine
+inzwischen geänderte Aufnahme nicht versehentlich bearbeitet. Beispiel zur
+Titeländerung; Platzhalter aus einer frisch geladenen Aufnahme ersetzen:
+
+```yaml
+action: enigma2_connect.recording_manage
+data:
+  device_id: DEINE_RECEIVER_GERAETE_ID
+  service_reference: REFERENZ_AUS_RECORDINGS_LIST
+  expected_revision: PRUEFWERT_AUS_RECORDINGS_LIST
+  action: rename
+  title: Neuer Titel
+response_variable: aufnahmeauftrag
+```
+
+Für `action: move` stattdessen `directory` übergeben; `recording_destinations`
+liefert die Receiver-Lesezeichen. Für `action: delete` ist `confirm_delete: true`
+erforderlich. Das ist die ausdrückliche Zustimmung zu möglicherweise endgültigem
+Löschen und sollte nicht unbedacht in wiederholte Automationen aufgenommen werden.
+Die Antwort meldet `status: completed` oder `pending`. Bei `pending` die lesende
+Aktion `recording_operation_status` mit derselben `device_id` aufrufen. Diese
+liefert `idle`, `pending` oder `completed` und sendet den Auftrag nicht erneut.
 
 ### Aktionen und Beispiele
 
 Die folgenden Beispiele helfen dir bei eigenen Skripten und Automationen.
 Du kannst sie unter **Entwicklerwerkzeuge → Aktionen** im YAML-Modus ausprobieren
 oder als einzelne Aktion in eine Automation übernehmen. YAML ist dabei die
-Textansicht der Einstellungen. Die Beispiele enthalten keinen Auslöser.
+Textansicht der Einstellungen. Einzelne Aktionsbeispiele enthalten keinen Auslöser.
 
 Ersetze die Beispiel-Entitäten durch deine eigenen Ziele. Wähle bei einer
 Geräteaktion den Receiver zuerst in der Oberfläche aus; die YAML-Ansicht zeigt
@@ -522,8 +761,13 @@ dir seine `device_id`. Passe auch Senderkennungen und Termine an.
 | `notify.send_message` | Bildschirmnachricht-Entität; `message`, optional `title`. Verwendet Nachrichtentyp und Anzeigedauer aus den Receiver-Einstellungen. |
 | `enigma2_connect.message` | `device_id`, `text`, optional `type` (0–3, Standard 1) und `timeout` (1–120 Sekunden, Standard 10) |
 | `enigma2_connect.reboot`, `.restart_gui`, `.deep_standby` | `device_id`; Receiver-Neustart, GUI-Neustart oder Tiefschlaf |
-| `enigma2_connect.timer_add` | `device_id`, `service_reference`, `begin`, `end`, `name`; optional `description`, `justplay`, `afterevent` |
-| `enigma2_connect.timer_delete`, `.timer_toggle` | `device_id`, `service_reference`, `begin`, `end` des vorhandenen Timers |
+| `enigma2_connect.epg_search` | `device_id`, `query`; Antwortvariable erforderlich |
+| `enigma2_connect.epg_similar` | `device_id`, `service_reference`, `event_id`, `begin`, `end` aus einem Treffer; Antwortvariable erforderlich |
+| `enigma2_connect.record_event` | Dieselben vier Kennwerte und `device_id`; optionale Antwort mit `created` und `timer` |
+| `enigma2_connect.record_now` | `device_id`; laufende EPG-Sendung ab jetzt aufnehmen |
+| `enigma2_connect.timer_add` | `device_id`, `channel` oder `service_reference`, `begin`, `end`, `name`; optional `description`, `justplay`, `afterevent`, `weekdays`, `directory` oder `directory_selection`, `tags`, `disabled`, `recording_type` |
+| `enigma2_connect.timer_edit` | `device_id`, `channel` oder `old_service_reference`, `old_begin`, `old_end`, `scope`; nur gewünschte neue Werte angeben |
+| `enigma2_connect.timer_delete`, `.timer_toggle` | `device_id`, `channel` oder `service_reference`, `begin`, `end` des vorhandenen Timers |
 
 Wähle immer den gewünschten Receiver als Ziel. Namen mit einem führenden Punkt
 in der Tabelle beginnen genauso wie die erste Aktion derselben Zeile.
@@ -532,7 +776,7 @@ Für Tastenfolgen kannst du beispielsweise `menu`, `up`, `down` und `ok` verwend
 wiederholt die Folge. `hold_secs` größer als 0 sendet einen langen Tastendruck;
 wie lange er wirkt, hängt vom Receiver ab.
 
-Gib Beginn und Ende eines Timers mit Datum, Uhrzeit und Zeitzone wie im Beispiel
+Gib bei den zeitbasierten Timeraktionen Beginn und Ende in YAML mit Datum, Uhrzeit und Zeitzone wie im Beispiel
 an. `+02:00` steht dort für die deutsche Sommerzeit; passe den Wert an deinen
 Termin und Standort an. Mit `justplay: true` schaltet der Receiver zum Sender,
 ohne aufzunehmen. `afterevent` bestimmt das Verhalten danach: 0 = nichts,
@@ -589,6 +833,443 @@ data:
   afterevent: 3
 ```
 
+#### Timer bequem in der Aktionsoberfläche eingeben
+
+1. Öffne **Entwicklerwerkzeuge → Aktionen**, wähle die Timeraktion und den Receiver.
+2. Unter **Sender auswählen** wähle den Eintrag mit Receiver- und Sendernamen.
+   Die Liste enthält Sender aus dem aktuell gewählten Bouquet. Das Bouquet
+   kannst du über die Bouquet-Auswahl des Receivers ändern. Lade danach die
+   Aktionsseite neu, damit deren Auswahlliste neu eingelesen wird.
+3. Wähle **Beginn** und **Ende** mit den Datum/Uhrzeit-Feldern. Es gilt die
+   **Home-Assistant-Zeitzone** aus **Einstellungen → System → Allgemein**.
+   Dies gilt auch für **Bisheriger Beginn/Bisheriges Ende** beim Bearbeiten.
+   Bei Sommer-/Winterzeit sind doppelte oder nicht existierende Uhrzeiten nicht
+   eindeutig auswählbar: Verwende dann YAML mit einem ausdrücklichen UTC-Offset.
+4. Optional: Wähle **Aufnahmeordner auswählen**. Angeboten werden die vom
+   Receiver gemeldeten Lesezeichen, sein Standardordner und bekannte Ordner aus
+   Timer-/Aufnahmedaten. Es handelt sich um eine Liste, nicht um einen frei
+   navigierbaren Dateibrowser. Fehlende oder neue Pfade kannst du weiterhin unter
+   **Aufnahmepfad manuell (Alternative)** angeben.
+
+**Nachrichtentyp** bietet „Ja/Nein-Frage“, „Information“, „Warnung“ und „Fehler“.
+**Nach Aufnahme** bietet „Nichts tun“, „Standby“, „Tiefschlaf“ und „Automatisch“.
+Die bisherigen YAML-Zahlenwerte 0–3 bleiben gültig. Ohne Angabe gilt beim
+Nachrichtentyp weiterhin Information, beim Anlegen eines Timers automatisch;
+beim Bearbeiten bleibt der vorhandene Wert erhalten. Eine Ja/Nein-Antwort wird
+weiterhin nicht an HA zurückgemeldet.
+
+Die Auswahllisten sind für alle eingerichteten Receiver gemeinsam; Einträge
+tragen deshalb den Receiver-Namen. Die Auswahl muss zu **Receiver** passen,
+sonst wird die Aktion vor dem Schreiben abgelehnt. Wähle jeweils nur eine
+Methode: **Sender auswählen** oder **Senderreferenz manuell (Alternative)**,
+beziehungsweise Ordnerauswahl oder manueller Pfad. Unbenutzte optionale Felder
+weglassen. Die Senderauswahl für den Timer löst keinen Senderwechsel aus.
+
+Mit **Listen aktualisieren** werden die Daten neu abgefragt; lade anschließend
+die Aktionsseite neu. Bei Verbindungsfehlern können die Listen leer sein. Die
+Ordnerliste bestätigt nicht, dass das Laufwerk aktuell eingehängt oder beschreibbar
+ist. Gespeicherte Auswahlen behalten ihre Sender-/Pfadkennung, auch wenn später
+ein anderes Bouquet gewählt wird; der Receiver muss das Ziel weiterhin unterstützen.
+
+Bestehende YAML-Aufrufe mit `service_reference` bzw. `old_service_reference`,
+`directory`, ISO-Zeiten mit UTC-Offset oder Unixsekunden bleiben gültig. Im
+YAML-Modus einer Auswahl erscheinen `channel` und `directory_selection` mit
+einer gespeicherten Gerätebindung. Übernimm diese Werte aus der Oberfläche;
+für einen anderen Receiver wähle die Einträge erneut aus.
+
+#### Timer bearbeiten, Wochenserien und Konflikte
+
+Unter **Entwicklerwerkzeuge → Aktionen** bietet **Timer hinzufügen** jetzt auch
+Wochentage, Aufnahmeordner, Tags, deaktivierten Zustand und Aufnahmeart an.
+Ohne Wochentage entsteht ein Einzeltermin; mehrere Tage ergeben eine Wochenserie
+zur angegebenen Uhrzeit in der Zeitzone des Receivers. Beginn und Ende müssen den
+ersten gewünschten Termin einschließlich Datum bezeichnen. Liegt das Ende nach
+Mitternacht, verwende den Folgetag. ISO-Zeiten brauchen den korrekten UTC-Offset,
+zum Beispiel `+02:00` im Sommer und `+01:00` im Winter. Wiederholungen und
+Zeitumstellungen führt der Receiver aus.
+
+```yaml
+action: enigma2_connect.timer_add
+data:
+  device_id: DEINE_GERAETE_ID
+  service_reference: "1:0:19:283D:3FB:1:C00000:0:0:0:"
+  name: "E2C Test 3 Serie"
+  begin: "2026-09-21T18:00:00+02:00"
+  end: "2026-09-21T18:02:00+02:00"
+  weekdays: [mon, fri]
+  tags: [E2C, Test]
+  disabled: true
+  afterevent: 0
+```
+
+Passe Datum, Sender und Gerät an. `directory` ist ein absoluter Receiverpfad;
+leer bedeutet Standardordner. Verwende nur vorhandene, beschreibbare Ordner.
+`recording_type` kann `normal`, `descrambled` (entschlüsselt mit ECM) oder
+`scrambled` sein; Unterstützung und Entschlüsselung hängen vom Receiver ab.
+`justplay: true` legt einen Umschalttimer an. `afterevent` bedeutet 0: nichts,
+1: Standby, 2: herunterfahren, 3: automatisch. Tags bestehen jeweils aus einem
+Wort. Eine leere Liste löscht Tags bzw. Wiederholungen ausdrücklich.
+
+**Timer bearbeiten** ändert nur angegebene Felder auf demselben Sender. Lies die
+bisherige Kennung in OpenWebif unter `/api/timerlist` ab: `serviceref`, `begin`,
+`end`. Diese Werte gehören nach `old_service_reference`, `old_begin`, `old_end`.
+Nach einer Zeitänderung brauchst du für weitere Aktionen die neue Kennung.
+
+```yaml
+action: enigma2_connect.timer_edit
+data:
+  device_id: DEINE_GERAETE_ID
+  old_service_reference: "1:0:19:283D:3FB:1:C00000:0:0:0:"
+  old_begin: 1790006400
+  old_end: 1790006520
+  scope: series
+  end: "2026-09-21T18:05:00+02:00"
+  name: "E2C Test 3 geändert"
+```
+
+Die alten Zahlen sind Platzhalter: Übernimm die tatsächlich gespeicherten Werte.
+Für Einzeltermine wähle `scope: single`, für bestehende oder neu entstehende
+Serien `scope: series` (**Gesamte Serie**). Eine einzelne Folge einer Serie kann
+hier nicht geändert werden. Lass unveränderte Felder ganz weg; eine leere
+Zeichenkette oder Liste ist eine Änderung. Nicht angegebene Optionen werden
+frisch gelesen und erhalten, einschließlich vorhandener VPS-/Nachlaufoptionen.
+Unvollständige oder mehrdeutige Timerdaten werden vor dem Schreiben abgelehnt.
+Die optionale Antwort enthält `action: timer_edit` und die nachgelesene Kennung
+unter `timer`. Ohne Antwortvariable funktioniert die Aktion ebenfalls.
+
+**Bei Konflikten:** Die Aktion schlägt mit Sender, Titel und Zeitraum der vom
+Receiver gemeldeten Konflikte fehl. Beim Bearbeiten kann der Receiver Werte
+trotzdem schon geändert haben. Prüfe deshalb die aktuelle OpenWebif-Liste;
+es gibt kein automatisches Zurücksetzen und keine eigene Tunerprognose.
+Bei unklarer Antwort wird nicht erneut geschrieben. Für dieselbe alte Kennung
+bleibt die Bearbeitung bis zum Neuladen der Integration gesperrt. Prüfe vor einem
+Neuladen und weiteren Versuch den tatsächlichen Zustand. Wenn der Receiver eine
+Serie zeitlich weiterschiebt oder Optionen abweichend speichert, wird dies als
+nicht eindeutig bestätigte Änderung gemeldet.
+
+Für Automationen wird bei einer gültigen Konfliktliste das Ereignis
+`enigma2_connect_timer_conflict` ausgelöst. Es enthält `config_entry_id`, `action`,
+`timer_state` und `conflicts`. Jeder Konflikt enthält `service_reference`, `name`,
+`service_name`, `begin`, `end` (Unixsekunden). Nicht gelieferte Namen sind `null`.
+`timer_state` beschreibt beim Bearbeiten den nachgelesenen Vergleich der
+unterstützten Optionen des betroffenen Timers: `unchanged`, `changed` oder
+`unknown`. Es ist keine Garantie für andere Timer oder spätere Änderungen.
+Andere Ablehnungen ohne verwertbare Konfliktliste bleiben normale Aktionsfehler.
+
+Unter **Entwicklerwerkzeuge → Ereignisse** kannst du auf dieses Ereignis hören.
+Die dort angezeigte `config_entry_id` gehört in eine Automation, um den Receiver
+zu unterscheiden:
+
+```yaml
+alias: Receiver-Timerkonflikt melden
+triggers:
+  - trigger: event
+    event_type: enigma2_connect_timer_conflict
+    event_data:
+      config_entry_id: DEINE_KONFIGURATIONSEINTRAGS_ID
+actions:
+  - action: persistent_notification.create
+    data:
+      title: Timerkonflikt
+      message: >-
+        {{ trigger.event.data.conflicts | count }} Konflikte gemeldet.
+        Bitte die Timerliste in OpenWebif prüfen.
+```
+
+#### Abschnitt 3 auf dem Receiver prüfen
+
+Teststand **1.3.0-dev.6**. Prüfe auf Octagon und Vu+ getrennt. Aktualisiere die
+Integration und starte Home Assistant neu. Notiere Receiver, Image, OpenWebif-
+und Integrationsversion. Verwende ausschließlich eigens angelegte Testtimer.
+
+1. **Neue Auswahlfelder:** Lade die Aktionsseite nach dem Integrationsupdate neu.
+   Lege den folgenden Testtimer über Sendername, Datum/Uhrzeit-Auswahl und
+   angebotenen Aufnahmeordner an. Prüfe Sender, lokale Uhrzeiten und Pfad in
+   OpenWebif. Prüfe bei beiden Receivern die Zuordnung; ein Eintrag des anderen
+   Receivers muss abgelehnt werden. Kontrolliere zusätzlich einen bisherigen
+   YAML-Aufruf mit manueller Referenz und explizitem Zeitoffset. Sende eine
+   Nachricht mit **Nachrichtentyp: Information** und prüfe die Darstellung.
+   Wähle am deaktivierten Testtimer **Nach Aufnahme: Nichts tun** und prüfe
+   in OpenWebif, dass der Wert übernommen wurde.
+2. **Einzeltermin:** Lege einen deaktivierten Aufnahme-Testtimer für einen
+   zukünftigen Termin mit zwei Minuten Dauer und `afterevent: 0` an. Setze Name,
+   Beschreibung, zwei Tags und einen bekannten Aufnahmeordner. Lies seine
+   gespeicherte Kennung ab. Ändere mit **Timer bearbeiten**, `scope: single`, nur
+   Ende (+3 Minuten) und Name. Erwartet: neue Werte stimmen, Beschreibung,
+   Tags, Ordner, Deaktivierung und übrige Aufnahmeoptionen bleiben erhalten;
+   Antwort und HA-Kalender passen zur aktualisierten Liste. Deaktivierte Timer
+   erscheinen im HA-Kalender gegebenenfalls nicht.
+3. **Wochenserie:** Lege die obige deaktivierte Serie mit künftigem Datum an.
+   Erwartet: Montag/Freitag (`repeated: 17`). Ändere sie mit `scope: series` auf
+   Dienstag/Donnerstag (`weekdays: [tue, thu]`, `repeated: 10`) und passe den
+   ersten Termin auf einen gewählten Wochentag an. Ein unpassender Tag kann vom
+   Receiver verschoben und deshalb als unbestätigt gemeldet werden. Prüfe Zeiten
+   und unveränderte Optionen. Ein Versuch mit
+   `scope: single` muss ohne Schreibzugriff abgelehnt werden.
+4. **Mitternacht:** Ändere einen separaten Testtimer auf 23:55 bis 00:05 des
+   Folgetags. Erwartet: zehn Minuten Dauer. Falls du Zeitumstellungen zusätzlich
+   prüfst, verwende passende Offsets und kontrolliere die Receiver-Zeitzone;
+   stelle dafür nicht die Systemuhr um.
+5. **Veraltete Kennung:** Verwende nach einer Zeitänderung nochmals die alte
+   Kennung. Erwartet: verständlicher Fehler und kein weiterer geänderter Timer.
+6. **Konflikt:** Höre auf `enigma2_connect_timer_conflict`. Falls du mit deinen
+   Tunern einen Konflikt gezielt erzeugen kannst, lege sich überschneidende,
+   aktivierte Testtimer auf ausreichend vielen unterschiedlichen Transpondern
+   an, außerhalb produktiver Aufnahmen. Prüfe Konflikt beim Anlegen und beim
+   Verschieben eines Testtimers. Erwartet: Fehler mit Details und Ereignis für
+   den richtigen Receiver. Vergleiche danach die tatsächlichen Timerwerte;
+   berichte ausdrücklich, ob sie unverändert oder geändert sind. Lässt sich
+   kein Konflikt herstellen, notiere „nicht geprüft“.
+7. **Aufräumen:** Lösche die Testtimer anhand ihrer aktuellen Kennung. Prüfe,
+   dass der jeweils andere Receiver unverändert blieb. Keine produktiven Timer
+   für Konfliktversuche oder Löschtests verwenden.
+
+Rückmeldung je Receiver: Einzeltermin/Optionserhalt, Wochenserie, Mitternacht,
+veraltete Kennung, Konflikt beim Anlegen/Bearbeiten, Werte nach Ablehnung,
+Konfliktereignis und weitere Auffälligkeiten. Erst danach folgt die beidseitige
+Abnahme und der Abschnittscommit.
+
+#### EPG durchsuchen und eine Sendung aufnehmen
+
+Unter **Werkzeuge → Aktionen → Enigma2 Connect: EPG durchsuchen** wählst du
+den Receiver und gibst einen Teil des Sendungstitels ein. Die Suche erfolgt nur
+auf diesem Receiver, auch im Standby soweit OpenWebif erreichbar ist. Sie schaltet
+keinen Sender um und lädt kein EPG aus dem Internet. Ohne gespeichertes EPG kann
+die Ergebnisliste leer sein. Ein Verbindungs- oder Datenfehler wird als Fehler
+gemeldet, nicht als leere erfolgreiche Suche.
+
+Die optionale Fernbedienungskarte bietet unten **Sendungen suchen**. Aufklappen,
+Titel eingeben und **Suchen** drücken. Ein Treffer zeigt Sender, Beginn, Ende
+und Beschreibung; die Anzeige verwendet die Home-Assistant-Zeitzone. **Ähnliche**
+zeigt die vom Receiver erkannten ähnlichen Sendungen/Wiederholungen.
+**Aufnehmen** legt einen Aufnahmetimer an. Bei **Eingeplant** ist der Auftrag
+bestätigt; das ist noch kein Nachweis für eine später erfolgreich gespeicherte Datei.
+Die normale Fernbedienungstaste **Aufnahme** behält ihre bisherige Funktion.
+
+Suche und ähnliche Sendungen liefern alle empfangenen laufenden und zukünftigen
+Treffer, nach Beginn sortiert und ohne Duplikate. Es gibt keine lokale Treffergrenze.
+Alte Aktionsangaben für `limit` bitte entfernen; `max_results` in Karten wird ignoriert.
+Ähnliche Sendungen sind Vorschläge des Receivers, keine sichere Erkennung identischer Folgen.
+
+Eine Suche in einem Skript benötigt eine Antwortvariable:
+
+```yaml
+action: enigma2_connect.epg_search
+data:
+  device_id: DEINE_RECEIVER_GERAETE_ID
+  query: Tagesschau
+response_variable: epg_treffer
+```
+
+`epg_treffer.events` enthält je Treffer `service_reference`, `event_id`, `begin`,
+`end`, `title`, `service_name` und `description`. Fehlende Texte können `null`
+sein. Die Zeiten sind **Unix-Sekunden des EPG**, ohne Aufnahmevor-/nachlauf.
+Übernimm die vier Kennwerte eines ausgewählten Treffers unverändert und verwende
+denselben Receiver:
+
+```yaml
+action: enigma2_connect.record_event
+data:
+  device_id: DEINE_RECEIVER_GERAETE_ID
+  service_reference: "{{ ausgewaehlter_treffer.service_reference }}"
+  event_id: "{{ ausgewaehlter_treffer.event_id }}"
+  begin: "{{ ausgewaehlter_treffer.begin }}"
+  end: "{{ ausgewaehlter_treffer.end }}"
+response_variable: aufnahme_ergebnis
+```
+
+`ausgewaehlter_treffer` steht für einen bewusst aus `epg_treffer.events`
+ausgewählten Eintrag; das Beispiel wählt nicht automatisch den ersten Treffer.
+Für ähnliche Sendungen ersetze die Aktion durch `enigma2_connect.epg_similar`
+und verwende eine Antwortvariable wie bei der Suche. In **Werkzeuge → Aktionen**
+kannst du die vier Kennwerte auch direkt aus der Suchantwort in die passenden
+Felder kopieren. Die Unix-Zeiten dort nicht in lokale Datum/Uhrzeit umwandeln.
+
+Vor dem Anlegen werden Ereigniskennung, Sender und Zeiten erneut geprüft.
+Fehlt der Treffer, ist er abgelaufen oder hat er sich verschoben, suche erneut.
+Ein bereits vollständig abdeckender aktiver Aufnahmetimer bleibt unverändert;
+die Antwort lautet `created: false`. Bei `created: true` wurde genau ein neuer
+Timer in der Receiver-Liste bestätigt. `timer` enthält die tatsächlichen
+Timerzeiten einschließlich der Receiver-Vor-/Nachlaufzeiten, die für spätere
+Timerbearbeitung/-löschung maßgeblich sind. Standardordner und EPG-Titel kommen
+vom Receiver; **Nach Aufnahme** steht auf Automatisch.
+
+Bei deaktivierten oder reinen Umschalt-Timern mit Überschneidung, Teilabdeckung,
+unvollständigen Timerdaten oder einer Serie auf demselben Sender wird kein
+zusätzlicher Timer angelegt. Prüfe diese Timer zunächst in OpenWebif. Vom Receiver
+gemeldete Aufnahmekonflikte erscheinen wie bei den anderen Timeraktionen und
+erzeugen `enigma2_connect_timer_conflict` mit `action: record_event`.
+
+Bei einer verlorenen Bestätigung wird nicht automatisch erneut geschrieben.
+Prüfe zuerst OpenWebif. Der Wiederholungsschutz gilt bis Sendungsende und geht
+beim Neuladen/HA-Neustart verloren; nach bestätigtem Erfolg schützt er zehn
+Sekunden gegen verzögerte Timerlisten. Eine gestartete Sendung kann nur noch
+ab dem Aufnahmezeitpunkt aufgezeichnet werden. Receiver-Speicherplatz und
+tatsächliche spätere Aufnahme bleiben am Receiver zu prüfen.
+
+#### Abschnitt 4 auf dem Receiver prüfen
+
+Installiere **1.3.0-dev.7** und starte Home Assistant neu. Aktualisiere auch die
+optionale Kartendatei unter `www` wie im Kapitel **Fernbedienung im Dashboard**
+beschrieben und lade den Browser-Cache neu. Prüfe beide Receiver getrennt:
+
+1. Suche einen vorhandenen EPG-Titel über **EPG durchsuchen**. Prüfe Sender,
+   Zeiten und Beschreibung gegen OpenWebif. Ein Fantasietitel ergibt eine leere
+   Trefferliste; bei fehlendem EPG wird ebenfalls nichts angelegt.
+2. Öffne **Sendungen suchen** in der Karte, suche und betätige **Ähnliche**.
+   Prüfe Zeiten und begrenzte Trefferliste auch auf dem Smartphone.
+3. Wähle eine unkritische zukünftige Sendung ohne passenden Timer. **Aufnehmen**
+   muss genau einen Timer mit den Receiver-Vor-/Nachlaufzeiten erzeugen; nach
+   Aktualisierung erscheint er im HA-Kalender. Wiederhole denselben Auftrag über
+   die Aktion: `created: false`, unveränderte Timeranzahl.
+4. Kopiere die vier Kennwerte eines Treffers in **EPG-Sendung aufnehmen** und
+   erhöhe nur `begin` um eine Sekunde. Erwartet: Hinweis auf geänderten Treffer,
+   kein zusätzlicher Timer. Ein Receiver ohne EPG darf keinen Ersatz-Timer anlegen.
+5. Entferne ausschließlich den eigenen Testtimer mit seinen tatsächlichen
+   Timerzeiten über die vorhandene Löschaktion/OpenWebif. Prüfe ursprüngliche
+   Timer und Kalender. Berichte Ergebnisse getrennt nach Receiver, HA-Aktion,
+   Karte und Kalender; nicht ausführbare Schritte als „nicht geprüft“ melden.
+
+Absichtliche Netzunterbrechungen oder zusätzliche Konflikttimer sind für diese
+Abnahme nicht nötig; diese Pfade werden lokal simuliert geprüft.
+
+#### Aktuelle Sendung sofort aufnehmen
+
+1. Schalte am gewünschten Receiver einen Live-Sender ein. Die laufende Sendung
+   muss in dessen EPG stehen; Uhrzeit und Datum von Receiver und Home Assistant
+   müssen stimmen.
+2. Öffne das Receiver-Gerät in Home Assistant und drücke **Aktuelle Sendung
+   aufnehmen**. Diesen Button kannst du auch deinem Dashboard hinzufügen.
+3. Prüfe den Aufnahmestatus und den Timer. Die Aufnahme beginnt jetzt; bereits
+   ausgestrahlte Teile werden nicht nachträglich aufgenommen. Das Ende richtet
+   sich nach dem EPG und den Receiver-Einstellungen, einschließlich Nachlauf.
+
+Die neue Aktion heißt `enigma2_connect.record_now`. Sie benötigt nur den Receiver.
+Für Automationen kannst du optional eine Antwortvariable verwenden:
+
+```yaml
+action: enigma2_connect.record_now
+data:
+  device_id: DEINE_RECEIVER_GERAETE_ID
+response_variable: aufnahme_ergebnis
+```
+
+`started: true` bedeutet: Der Start wurde bestätigt und einem Timer zugeordnet.
+`started: false` bedeutet: Ein vorhandener aktiver Aufnahme-Timer auf diesem
+Sender wurde gefunden und unverändert gelassen. `timer` enthält
+`service_reference`, `begin` und `end` in Unix-Sekunden. Ein vorhandener Timer
+wird auch dann nicht verlängert, wenn er vor dem Sendungsende endet. Ohne
+Antwortvariable funktioniert die Aktion ebenfalls.
+
+Mehrfachdrücken legt für eine bereits erkannte Aufnahme keinen weiteren Timer
+an. Nach erfolgreichem Start schützt zusätzlich eine Sperre von zehn Sekunden
+gegen eine verzögerte Timerliste. Bei unklarem Ausgang prüfe OpenWebif; die
+Integration versucht für dieselbe Sendung bis zu deren EPG-Ende keinen neuen
+Start. Diese Sperre geht beim Neuladen der Integration oder HA-Neustart verloren.
+
+Im Standby, bei Dateiwiedergabe, fehlendem EPG oder nicht sicher lesbarer Timerliste
+erscheint ein Fehler. Es wird keine lange Ersatzaufnahme gestartet. Fehlender
+Speicherplatz oder andere Receiver-Probleme können die Aufnahme trotz bestätigtem
+Timer verhindern. Prüfe bei Bedarf auch die Aufnahme am Receiver. Zum Stoppen
+verwende die Aufnahmeverwaltung von OpenWebif oder die Receiver-Fernbedienung;
+der neue Button stoppt keine Aufnahme.
+
+#### Abschnitt 2 auf dem Receiver prüfen
+
+Diese Prüfung verwendet **echte Testaufnahmen**, nicht die Umschalt-Timer aus
+1a/1b. Installiere **1.3.0-dev.4**, starte Home Assistant neu und prüfe Octagon
+und Vu+ getrennt. Notiere HA-Version, Image und OpenWebif-Version.
+
+1. Wähle einen unkritischen Live-Sender mit gültiger laufender EPG-Sendung und
+   noch ohne Aufnahme auf diesem Sender. Starte die Aktion oben. Erwartet:
+   `started: true`, eine Timerkennung, genau ein neuer Aufnahme-Timer sowie
+   aktiver Aufnahmestatus in OpenWebif und nach Aktualisierung in HA. Prüfe die
+   Endzeit gegen EPG und eingestellten Nachlauf.
+2. Drücke während dieser Aufnahme mehrmals **Aktuelle Sendung aufnehmen** und
+   führe die Aktion noch einmal aus. Erwartet: keine zweite Aufnahme, keine
+   Änderung der vorhandenen Endzeit; Aktionsantwort `started: false`.
+3. Stoppe die Testaufnahme in OpenWebif/am Receiver. Warte mindestens zehn
+   Sekunden seit dem bestätigten Start. Starte erneut über den Button, prüfe
+   genau eine neue laufende Aufnahme und stoppe sie anschließend. Öffne kurz
+   eine der Testdateien, um die tatsächliche Aufnahme zu bestätigen.
+4. Schalte in normalen Standby und führe die Aktion aus. Erwartet: verständlicher
+   Fehler und kein neuer Timer. Schalte wieder ein und prüfe eine vorhandene
+   Bildschirmnachricht-Aktion als Gegencheck.
+5. Falls verfügbar: Wiederhole die Aktion während einer Dateiwiedergabe und auf
+   einem Sender ohne EPG. Erwartet: jeweils Fehler und keine neue Aufnahme.
+   Wenn kein passender Testfall vorhanden ist, melde „nicht geprüft“.
+6. Prüfe bei zwei eingerichteten Receivern, dass ausschließlich das ausgewählte
+   Gerät aufnimmt. Beende die Testaufnahme. Testdateien kannst du anschließend
+   über die normale Aufnahmeverwaltung entfernen.
+
+Melde pro Receiver: Start mit Antwort, Timer-Endzeit, Aufnahmestatus/Kalender,
+Mehrfachaufruf, Button-Neustart, abspielbare Datei, Standby, Dateiwiedergabe,
+fehlendes EPG, Geräteauswahl und Auffälligkeiten. Ein absichtlicher Netzwerkabbruch
+oder Aufnahmekonflikt ist für diese Praxisprüfung nicht erforderlich; die
+zugehörigen Fehlerpfade werden lokal simuliert geprüft.
+
+#### Antwortdaten der Timeraktionen
+
+`timer_add`, `timer_toggle` und `timer_delete` können eine Antwortvariable für
+Skripte und Automationen füllen. Füge auf derselben Ebene wie `action` und `data`
+zum Beispiel `response_variable: timer_ergebnis` hinzu. Die Antwort enthält
+`action` sowie `timer.service_reference`, `timer.begin` und `timer.end`.
+Die Zeiten sind Unix-Sekunden. Diese Kennung bezeichnet den Timer des bestätigten
+Aufrufs; sie enthält keinen Aktivierungs- oder Aufnahmestatus. Ohne Antwortvariable
+funktionieren die bisherigen Aufrufe weiter. Ablehnungen bleiben Fehler und
+liefern keine Erfolgsantwort.
+
+Bei einer verlorenen oder nicht auswertbaren Bestätigung meldet Home Assistant,
+dass die Aktion möglicherweise ausgeführt wurde. Sie wird nicht automatisch
+wiederholt. Prüfe den Timer zuerst in OpenWebif. Die Integration fordert eine
+Aktualisierung der Listen an; bei weiterhin fehlender Verbindung kann auch diese
+fehlschlagen. Ein eigener erneuter Aufruf kann erneut schreiben oder den Status
+noch einmal umschalten.
+
+#### Abschnitt 1b auf dem Receiver prüfen
+
+Teste **1.3.0-dev.3** auf Octagon und Vu+ jeweils getrennt. Installiere den Stand,
+starte Home Assistant neu und notiere auch dessen Version. Verwende einen eigenen
+Testtimer zu einem Zeitpunkt in der Zukunft. Die Beispielzeit und Senderkennung
+musst du anpassen.
+
+1. Öffne **Entwicklerwerkzeuge → Aktionen**, wechsle zur YAML-Ansicht und führe
+   den folgenden Aufruf aus. Das Leerzeichen vor der Senderkennung ist absichtlich
+   enthalten. `justplay: true` legt einen Umschalt-Timer ohne Aufnahme an.
+2. Prüfe die Antwort: `action: timer_add`, Senderkennung ohne äußere Leerzeichen,
+   Beginn und Ende als Unix-Sekunden. Prüfe in OpenWebif, dass genau ein Testtimer
+   vorhanden ist und Datum/Uhrzeit passen.
+3. Rufe mit derselben `device_id` und den drei Werten aus `timer` die Aktion
+   `enigma2_connect.timer_toggle` auf. Lasse `name`, `justplay` und `afterevent`
+   weg; behalte `response_variable`. Prüfe „deaktiviert“ in OpenWebif. Wiederhole
+   einmal und prüfe „aktiviert“. Jede Antwort nennt die ausgeführte Aktion.
+4. Ersetze die Aktion durch `enigma2_connect.timer_delete`. Prüfe die Antwort und
+   dass der Timer in OpenWebif und nach Aktualisierung im HA-Kalender fehlt.
+5. Führe denselben Löschaufruf erneut aus: erwartet wird ein Fehler, keine
+   Erfolgsantwort. Sende anschließend eine Bildschirmnachricht über die vorhandene
+   Nachrichtenaktion; sie muss weiter funktionieren.
+6. Prüfe einen weiteren Testtimer ohne `response_variable`, um eine bisherige
+   Automation zu bestätigen, und entferne ihn danach. Melde pro Receiver die
+   Ergebnisse von Anlegen, Deaktivieren, Aktivieren, Löschen, erneuter Löschung,
+   Nachricht und Aufruf ohne Antwortvariable sowie Auffälligkeiten.
+
+```yaml
+action: enigma2_connect.timer_add
+data:
+  device_id: DEINE_RECEIVER_GERAETE_ID
+  service_reference: " 1:0:19:283D:3FB:1:C00000:0:0:0:"
+  begin: "2026-10-10T12:00:00+02:00"
+  end: "2026-10-10T12:02:00+02:00"
+  name: E2C Test 1b
+  justplay: true
+  afterevent: 0
+response_variable: timer_ergebnis
+```
+
+Verlorene Antworten werden lokal mit simuliertem Receiver getestet. Für diese
+Praxisprüfung ist kein absichtlicher Verbindungsabbruch erforderlich. EPG-Suche,
+Sofortaufnahme und Bibliotheksänderungen folgen in späteren Abschnitten.
+
 ## Timer und Kalender
 
 Der Kalender zeigt Aufnahme- und Umschalt-Timer vom Receiver, auch wöchentliche
@@ -600,6 +1281,13 @@ Ende und die Senderkennung aus OpenWebif ein. Die Senderkennung heißt
 **Service-Referenz** und ist nicht die Sendernummer. Ein Beispiel mit allen
 Feldern findest du in der [Aktionsreferenz](#aktionen-und-beispiele).
 Für einen Umschalt-Timer aktiviere **Nur umschalten**.
+
+Beim Anlegen, Löschen und Aktivieren/Deaktivieren entfernt die Integration
+versehentlich mitkopierte Leerzeichen am Anfang und Ende der Service-Referenz.
+Eine leere Kennung wird vor dem Senden abgewiesen. Inhalt und Schreibweise der
+Kennung bleiben sonst unverändert. Wird ein vorhandener Timer nicht gefunden,
+vergleiche Senderkennung, Beginn und Ende mit dem tatsächlich gespeicherten
+Eintrag in OpenWebif.
 
 Löschen und Aktivieren/Deaktivieren erfolgen ebenfalls über die Enigma2-Connect-
 Aktionen. Bei einem wiederkehrenden Timer betrifft die Änderung die ganze Serie.

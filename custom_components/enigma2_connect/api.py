@@ -33,6 +33,39 @@ class ProtocolError(ReceiverError):
     """Malformed reply or rejected command."""
 
 
+class CommandRejectedError(ProtocolError):
+    """A rejected request with structured details for explicit caller handling.
+
+    Keep receiver text out of the exception message and repr. The response may
+    contain private metadata and must not be logged or forwarded wholesale.
+    """
+
+    def __init__(self, response: JsonObject) -> None:
+        super().__init__("Receiver rejected the request")
+        self.response = response
+
+
+# These GET endpoints mutate timers and must never be transparently replayed.
+TIMER_COMMANDS = frozenset(
+    {
+        "timeradd",
+        "timeraddbyeventid",
+        "timerchange",
+        "timerdelete",
+        "timertogglestatus",
+        "recordnow",
+    }
+)
+
+
+RECORDING_COMMANDS = frozenset({"movieinfo", "moviemove", "moviedelete"})
+WRITE_COMMANDS = TIMER_COMMANDS | RECORDING_COMMANDS
+
+
+class CommandUnconfirmed(ConnectionError):
+    """A write command may have taken effect without a usable acknowledgement."""
+
+
 class PowerCommandUnconfirmed(ReceiverError):
     """Power transition may have started before its response was received."""
 
@@ -40,23 +73,38 @@ class PowerCommandUnconfirmed(ReceiverError):
 async def power_command_middleware(
     request: aiohttp.ClientRequest, handler: aiohttp.ClientHandlerType
 ) -> aiohttp.ClientResponse:
-    """Do not replay a disruptive GET after losing its response.
+    """Do not replay a power or timer GET after losing its response.
 
     Install on the session so Home Assistant's own middleware remains active.
     Raising our own exception inside the handler prevents aiohttp's GET retry.
     """
-    if request.url.path != "/api/powerstate" or request.url.query.get("newstate") not in (
+    timer_command = request.url.path.removeprefix("/api/") in WRITE_COMMANDS
+    power_command = request.url.path == "/api/powerstate" and request.url.query.get("newstate") in (
         "1",
         "2",
         "3",
-    ):
+    )
+    if not timer_command and not power_command:
         return await handler(request)
     try:
         return await handler(request)
     except (aiohttp.ClientConnectorError, aiohttp.ConnectionTimeoutError) as err:
         raise ConnectionError("Cannot connect to receiver") from err
     except (aiohttp.ClientConnectionError, TimeoutError) as err:
+        if timer_command:
+            raise CommandUnconfirmed("Write command response was not received") from err
         raise PowerCommandUnconfirmed("Power command response was not received") from err
+
+
+def command_response(endpoint: str, data: JsonObject) -> JsonObject:
+    """Validate an acknowledgement, including callers already holding the lock."""
+    if any(boolean(data[key]) is False for key in ("result", "state") if key in data):
+        raise CommandRejectedError(data)
+    if endpoint in WRITE_COMMANDS:
+        flags = [boolean(data[key]) for key in ("result", "state") if key in data]
+        if not flags or any(flag is not True for flag in flags):
+            raise CommandUnconfirmed("Unsupported write command acknowledgement")
+    return data
 
 
 class OpenWebifClient:
@@ -96,6 +144,7 @@ class OpenWebifClient:
     async def request(
         self, path: str, params: dict[str, Any] | None = None, *, image: bool = False
     ) -> JsonObject | bytes:
+        timer_command = path.removeprefix("/api/") in WRITE_COMMANDS
         disruptive_power = path == "/api/powerstate" and str((params or {}).get("newstate")) in (
             "1",
             "2",
@@ -124,13 +173,22 @@ class OpenWebifClient:
                     return content
                 # Accept JSON even when the receiver reports a different MIME type.
                 data = await response.json(content_type=None)
+                # OpenWebif returns a bare array only for this read endpoint.
+                if path == "/api/epgsimilar" and isinstance(data, list):
+                    data = {"events": data}
                 if not isinstance(data, dict):
+                    if timer_command:
+                        raise CommandUnconfirmed("Unsupported write command response")
                     raise ProtocolError("Expected a JSON object")
                 if "result" in data and boolean(data["result"]) is False:
-                    raise ProtocolError("Receiver rejected the request")
+                    raise CommandRejectedError(data)
                 return data
         except (TimeoutError, aiohttp.ClientError) as err:
             # URLs and receiver response text may contain secrets: do not expose them.
+            if timer_command and not isinstance(
+                err, (aiohttp.ClientConnectorError, aiohttp.ConnectionTimeoutError)
+            ):
+                raise CommandUnconfirmed("Write command response was not received") from err
             if (
                 disruptive_power
                 and isinstance(
@@ -143,16 +201,22 @@ class OpenWebifClient:
                 raise PowerCommandUnconfirmed("Power command response was not received") from err
             raise ConnectionError("Cannot communicate with receiver") from err
         except (ValueError, UnicodeError) as err:
+            if timer_command:
+                raise CommandUnconfirmed("Invalid write command response") from err
             raise ProtocolError("Invalid JSON response") from err
 
     async def get(self, endpoint: str, **params: Any) -> JsonObject:
         return await self.request(f"/api/{endpoint}", params or None)
 
     async def command(self, endpoint: str, **params: Any) -> None:
+        """Run a command without returning response data, preserving existing callers."""
+        await self.command_result(endpoint, **params)
+
+    async def command_result(self, endpoint: str, **params: Any) -> JsonObject:
+        """Run a serialized command and retain its structured success response."""
         async with self.command_lock:
             data = await self.get(endpoint, **params)
-            if "state" in data and boolean(data["state"]) is False:
-                raise ProtocolError("Receiver rejected the command")
+            return command_response(endpoint, data)
 
     async def keys(self, codes: list[int], delay: float = 0.3, hold: bool = False) -> None:
         if not codes or len(codes) > 500 or any(not 0 <= code <= 0x2FF for code in codes):

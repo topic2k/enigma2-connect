@@ -27,10 +27,10 @@ message:
     type:
       required: false
       selector:
-        number:
-          min: 0
-          max: 3
-          mode: box
+        select:
+          options: ["0", "1", "2", "3"]
+          mode: dropdown
+          translation_key: message_type
     timeout:
       required: false
       selector:
@@ -38,23 +38,33 @@ message:
           min: 1
           max: 120
           mode: box
+record_now:
+  fields:
+    device_id:
+      required: true
+      selector: *id001
 timer_add:
   fields:
     device_id:
       required: true
       selector: *id001
+    channel:
+      selector:
+        select:
+          options: []
+          mode: dropdown
+          sort: true
     service_reference:
-      required: true
       selector:
         text: {}
     begin:
       required: true
       selector:
-        text: {}
+        datetime: {}
     end:
       required: true
       selector:
-        text: {}
+        datetime: {}
     name:
       required: true
       selector:
@@ -70,41 +80,253 @@ timer_add:
     afterevent:
       required: false
       selector:
-        number:
-          min: 0
-          max: 3
-          mode: box
+        select:
+          options: ["0", "1", "2", "3"]
+          mode: dropdown
+          translation_key: after_recording
+    weekdays:
+      selector:
+        select:
+          options: [mon, tue, wed, thu, fri, sat, sun]
+          multiple: true
+          translation_key: timer_weekdays
+    directory_selection:
+      selector:
+        select:
+          options: []
+          mode: dropdown
+          sort: true
+    directory:
+      selector:
+        text: {}
+    tags:
+      selector:
+        text:
+          multiple: true
+    disabled:
+      selector:
+        boolean: {}
+    recording_type:
+      selector:
+        select:
+          options: [normal, descrambled, scrambled]
+          translation_key: recording_type
 timer_delete:
   fields:
     device_id:
       required: true
       selector: *id001
+    channel:
+      selector:
+        select:
+          options: []
+          mode: dropdown
+          sort: true
     service_reference:
-      required: true
       selector:
         text: {}
     begin:
       required: true
       selector:
-        text: {}
+        datetime: {}
     end:
       required: true
       selector:
-        text: {}
+        datetime: {}
 timer_toggle:
   fields:
     device_id:
       required: true
       selector: *id001
+    channel:
+      selector:
+        select:
+          options: []
+          mode: dropdown
+          sort: true
     service_reference:
-      required: true
       selector:
         text: {}
     begin:
       required: true
       selector:
-        text: {}
+        datetime: {}
     end:
       required: true
       selector:
+        datetime: {}
+timer_edit:
+  fields:
+    device_id:
+      required: true
+      selector: *id001
+    channel:
+      selector:
+        select:
+          options: []
+          mode: dropdown
+          sort: true
+    old_service_reference:
+      selector:
         text: {}
+    old_begin:
+      required: true
+      selector:
+        datetime: {}
+    old_end:
+      required: true
+      selector:
+        datetime: {}
+    scope:
+      required: true
+      selector:
+        select:
+          options: [single, series]
+          translation_key: timer_scope
+    begin:
+      selector:
+        datetime: {}
+    end:
+      selector:
+        datetime: {}
+    name:
+      selector:
+        text: {}
+    description:
+      selector:
+        text: {}
+    justplay:
+      selector:
+        boolean: {}
+    afterevent:
+      selector:
+        select:
+          options: ["0", "1", "2", "3"]
+          mode: dropdown
+          translation_key: after_recording
+    weekdays:
+      selector:
+        select:
+          options: [mon, tue, wed, thu, fri, sat, sun]
+          multiple: true
+          translation_key: timer_weekdays
+    directory_selection:
+      selector:
+        select:
+          options: []
+          mode: dropdown
+          sort: true
+    directory:
+      selector:
+        text: {}
+    tags:
+      selector:
+        text:
+          multiple: true
+    disabled:
+      selector:
+        boolean: {}
+    recording_type:
+      selector:
+        select:
+          options: [normal, descrambled, scrambled]
+          translation_key: recording_type
+epg_search:
+  fields:
+    device_id: &id002
+      required: true
+      selector:
+        device:
+          integration: enigma2_connect
+    query:
+      required: true
+      selector:
+        text: {}
+epg_similar:
+  fields:
+    device_id: *id002
+    service_reference: &id004
+      required: true
+      selector:
+        text: {}
+    event_id: &id005
+      required: true
+      selector:
+        number:
+          min: 0
+          max: 65535
+          mode: box
+    begin: &id006
+      required: true
+      selector:
+        number:
+          min: 1
+          max: 9999999999
+          mode: box
+    end: &id007
+      required: true
+      selector:
+        number:
+          min: 1
+          max: 9999999999
+          mode: box
+record_event:
+  fields:
+    device_id: *id002
+    service_reference: *id004
+    event_id: *id005
+    begin: *id006
+    end: *id007
+
+recordings_list:
+  fields:
+    device_id: *id002
+    query:
+      selector:
+        text: {}
+    tag:
+      selector:
+        text: {}
+    directory:
+      selector:
+        text: {}
+    progress:
+      default: all
+      selector:
+        select:
+          options: [all, in_progress, complete, zero, unknown]
+          translation_key: recording_progress
+
+recording_manage:
+  fields:
+    device_id: *id002
+    service_reference:
+      required: true
+      selector:
+        text: {}
+    expected_revision:
+      required: true
+      selector:
+        text: {}
+    action:
+      required: true
+      selector:
+        select:
+          options: [rename, move, delete]
+          translation_key: recording_action
+    title:
+      selector:
+        text: {}
+    directory:
+      selector:
+        text: {}
+    confirm_delete:
+      default: false
+      selector:
+        boolean: {}
+recording_operation_status:
+  fields:
+    device_id: *id002
+recording_destinations:
+  fields:
+    device_id: *id002

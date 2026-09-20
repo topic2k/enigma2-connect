@@ -2,6 +2,1070 @@
 
 # Prüfübersicht
 
+## Vorbereitung der Übernahme nach main – 1.3.0
+
+Am **20.09.2026** den aktuellen Remote-Stand einschließlich Tags und Releases
+abgeglichen: letztes stabiles Release **1.2.0**, Version auf `main` **1.2.1**
+(`df39aead765fd6f4b56d88067f2295d3ca5925da`). Die rückwärtskompatiblen neuen
+Funktionen ergeben **1.3.0**, weiterhin unveröffentlicht.
+
+Für den vollständigen Funktionsstand `a936b4373ca513ba0bcb060f9ca76f17b769d9ec`
+sind [Tests](https://github.com/topic2k/enigma2-connect/actions/runs/35535122919)
+und [Hassfest/HACS](https://github.com/topic2k/enigma2-connect/actions/runs/35535122875)
+erfolgreich: **896 Backend-Tests**, beide Frontend-Testsuiten, Ruff,
+Formatierung und striktes Mypy (**37 Module**). Config Flows haben **100 %**
+Anweisungs-/Zweigabdeckung; alle **37 Produktionsmodule über 95 %** kombinierte
+Abdeckung. CI-Prüfgrenzen, Qualitätsstatus und vorhandene Ausnahmen wurden
+gegenüber `main` nicht abgesenkt oder erweitert.
+
+Qualitätsabgleich: die bisherigen Aufnahme-/Aktionsnachweise und die unten
+beschriebenen Diagnoseprüfungen decken den geänderten Code ab. Zusätzlich
+Diagnose-Parser, Sensoridentität, Einheiten, Listener-Abbau, Polling und beide
+Benutzerhandbücher geprüft. Dynamische Laufwerke behalten ihre Mount-Identität;
+unbekannte Werte erhalten keine erfundenen Nullwerte. Optionale Sensoren,
+Aktivierung, Abfrageintervall und mögliche Festplatten-Weckeffekte sind in
+beiden Sprachen dokumentiert. Kein neuer Anspruch auf Hardwareabnahme:
+Diagnosewerte/Netzwerk-Mounts und weitere Image-/Sprachvarianten sowie die reale
+schreibende Vu+-Abnahme bleiben wie unten beschrieben offen.
+
+Die Vorbereitung ändert nur Versionsmetadaten und Dokumentation. Die Lockdatei
+ändert ausschließlich die lokale Paketversion; Abhängigkeiten bleiben gleich.
+Der endgültige PR-Stand benötigt vor dem Merge erneut erfolgreiche Jobs
+`test`, `hassfest` und `hacs`. Die Nutzeranweisung autorisiert PR und Merge,
+kein Tag oder Release.
+
+## Festplattenspeicher und Systemdiagnose – 1.3.0-dev.22
+
+Am **20.09.2026** wurden die neuen Diagnosewerte und dynamischen
+Festplattensensoren mit Python **3.14.7** und Home Assistant **2026.9.1** geprüft.
+Der gezielte Lauf aus `test_system_diagnostics.py`, `test_integration.py`,
+`test_gold_lifecycle.py` und `test_translations.py` bestand mit **76 Tests**.
+Nach der zusätzlichen Absicherung gegen überlange Laufzeitangaben bestanden
+alle **34 Diagnose-Tests** erneut (zusammen 77 unterschiedliche Testfälle).
+`sensor.py` und `system_diagnostics.py` erreichen jeweils **100 % kombinierte
+Anweisungs-/Zweigabdeckung**. Ruff, Formatierung, Syntax, striktes Mypy
+(37 Module), Versionskonsistenz, `uv lock --check --offline` und Diff-Prüfung
+bestanden.
+
+Nachweise decken Einheiten/Nullwerte/ungültige Angaben, mehrere Laufwerke,
+Umordnung, spätes Hinzufügen, Entfernen/Wiederverbinden, Fünf-Minuten-Frist,
+Neustart mit verringerter Laufzeit, optionale Abfragefehler/Wiederherstellung,
+Reauth, standardmäßig deaktivierte RAM-/Laufzeitsensoren und Listener-Abbau ab.
+Geprüfte Qualitätskriterien: entity-category, entity-device-class,
+entity-disabled-by-default, entity-translations, icon-translations,
+entity-unavailable, runtime-data, reauthentication-flow, config-entry-unloading,
+docs-data-update, docs-supported-functions, docs-known-limitations,
+strict-typing und test-coverage. Keine Kriterien oder Prüfgrenzen abgesenkt.
+
+Die Tests verwenden echte Home-Assistant-Registries mit simulierten
+Receiver-Antworten. Keine neue Hardwareabnahme: Speicherwerte, weitere
+Image-/Sprachvarianten, Netzwerk-Mounts und mögliches Aufwecken schlafender
+Festplatten bleiben praktisch zu prüfen. Die neue Gesamt-CI und der vollständige
+Qualitätsabgleich bleiben vor einer Übernahme nach `main` erforderlich;
+die folgende Gesamtprüfung belegt den unveränderten vorherigen Stand.
+
+## Gesamtprüfung für develop – 1.3.0-dev.21
+
+Am **20.09.2026** die beauftragten Abschnitte 1–5 einschließlich der neueren
+`main`-Korrekturen zur Gerätezuordnung und HACS-Commitprüfung geprüft.
+Geprüfter Quellstand: `6d0adcba09cf5088de0b5070ef49f4a8486563a5`.
+
+- [Vollständige CI](https://github.com/topic2k/enigma2-connect/actions/runs/35533818331):
+  **862 Backend-Tests** und **49 Frontend-Tests** bestanden, Ruff und Formatprüfung
+  erfolgreich, Mypy ohne Fehler in **36 Modulen**. Python **3.14.7**, HA **2026.9.1**.
+- Config Flows erreichen **100 % Statement-/Branch-Abdeckung**;
+  **alle 36 Produktionsmodule über 95 %** kombinierter Abdeckung.
+  Neue Workflow-Module einschließlich Aufnahmeverwaltung erreichen 100 %.
+- [Hassfest und HACS](https://github.com/topic2k/enigma2-connect/actions/runs/35533818364)
+  für denselben Commit erfolgreich; HACS prüft den exakten Commit.
+- Lokal: **56 gezielte Auswahlfeld-/Integrationsprüfungen**, **49 Frontend-Tests**,
+  Syntax-, Versions-, Lock- und Diff-Prüfungen erfolgreich. Zusätzlich die vier
+  ursprünglich fehlgeschlagenen Fälle in einer frisch aus `uv.lock` aufgebauten
+  Umgebung erfolgreich geprüft. Lokale vollständige Läufe wurden zugunsten der
+  vollständigen CI abgebrochen und werden nicht als bestanden gewertet.
+
+Die ersten CI-Läufe deckten fehlende Testabhängigkeiten der globalen HA-
+Aktionsmetadatenvalidierung auf. Deren echte Assist-/Conversation-/TTS-/FFmpeg-
+Importanforderungen sind nun in der Dev-Gruppe festgelegt. Der mit `main`
+übernommene Gerätezuordnungstest berücksichtigt das neue Timer-Kontextargument;
+seine Zielprüfung bleibt erhalten. Keine Tests übersprungen, Prüfgrenzen oder
+Qualitätskriterien abgesenkt und keine neuen Integrations-Laufzeitabhängigkeiten.
+
+Betroffene Qualitätsanforderungen abgeglichen: Aktionsfehler und Übersetzungen,
+Gerätezuordnung, Parallelzugriffe, Entladen der Listener, Abfragen nur bei Bedarf,
+Async-I/O, Typisierung, Aktionsdokumentation und bekannte Grenzen. Die neuen
+Funktionen und Fehler-/Wiederholungsfälle sind dokumentiert; Prüfstrenge und
+bestehende Qualitätsanforderungen gegenüber aktuellem `main` bleiben erhalten.
+
+Diese automatisierten Prüfungen verwenden simulierte Receiver. Keine neue
+Receiver-/HA-Praxisabnahme von dev.21; die gemeinsam bestätigte dev.20-Abnahme
+und ihre Grenzen bleiben unten dokumentiert, insbesondere die fehlende reale
+schreibende Vu+-Abnahme. Der nachfolgende Nachweiscommit ändert nur diese beiden
+Prüfübersichten; die CI seines finalen Stands wird vor develop erneut kontrolliert.
+Die Nutzerfreigabe gilt für die Übernahme nach `develop`, nicht für main oder ein Release.
+
+## Abschluss Abschnitt 5b – 1.3.0-dev.20
+
+Am **20.09.2026** hat der Nutzer die Aktualisierung auf dev.20 und den Abschluss
+von Abschnitt 5b ausdrücklich bestätigt. Codex bestätigt den Abschluss anhand
+der unten dokumentierten automatisierten Prüfungen, der realen Octagon-Tests
+für Titeländerung, Verschieben, Zurückverschieben und Löschen sowie der
+anschließenden lesenden Prüfung in der laufenden Home-Assistant-Oberfläche.
+
+Die HA-Bibliothek lud **21 von 21 Aufnahmen**. An einer vorhandenen Aufnahme
+wurden der Verwaltungsdialog und die titelbezogene Löschfrage geprüft:
+**Aufnahme löschen** blieb ohne Bestätigung deaktiviert; **Abbrechen** schloss
+den Dialog. **Auftragsstatus prüfen** meldete „Änderung am Receiver bestätigt.“
+Bei dieser Abschlussprüfung wurde keine Aufnahme verändert oder gelöscht.
+Die Installation von dev.20 wurde vom Nutzer gemeldet; Codex prüfte das neue
+Dialogverhalten, nicht separat die installierte Versionsnummer oder Dateihashes.
+
+Damit sind Abschnitt 5b und die beauftragten Punkte 1–5 gemeinsam abgeschlossen.
+Abschlusscommit auf dem Arbeitsbranch:
+`feat: add guarded recording management and dialogs`.
+Frühere offene Abnahmevermerke unten beschreiben den damaligen Stand.
+Eine reale schreibende Vu+-Abnahme bleibt unbelegt. Externe direkte Dateiabrufe
+und Pfadaliase sind nicht vollständig erkennbar. Vollständige Qualitätsnachweise
+und aktuelle CI bleiben vor einer Übernahme nach main erforderlich; die
+Abschnittsabnahme ersetzt diese Nachweise nicht.
+
+## Ergänzung dev.20 – Aufnahmebezogene Sperren und realer Verwaltungstest
+
+Am **20.09.2026** geprüft. Bekannte andere Wiedergaben/Streams sowie eindeutig
+anderen Dateien zugeordnete aktive Timer blockieren die gewählte Aufnahme nicht.
+Ein allgemeines oder fehlendes Streaming-Signal wird nicht als Dateibelegung
+gewertet. Nicht zuordenbare aktive Schreibvorgänge bleiben geschützt.
+
+- **Backend:** 150 gezielte Verwaltungs-/Streamingtests bestanden. Gleiche/andere
+  Dateipfade, Receiver-Wiedergabe, gemeldete Streamreferenzen, HA-Streams,
+  laufende/vorbereitete Timer, fehlende optionale Streamlisten, fehlerhafte Daten
+  und offene Aufträge abgedeckt. Nach Ergänzung der Fehlerübersetzung für ungültige
+  Pfade die vier HA-Aktionsfälle erneut geprüft. Neues Verwaltungsmodul mit 100 %
+  Statement-/Branch-Abdeckung; Streamingmodul im gezielten Teilumfang 85 %.
+  Dies ersetzt keine Gesamtmessung: vollständige Modulgrenzen und aktuelle CI
+  bleiben vor Merge erforderlich, keine Anforderung abgesenkt.
+- **Frontend:** 49 Tests bestanden. Löschfrage nennt den gewählten Titel,
+  **Aufnahme löschen** bleibt bis zur Bestätigung gesperrt. Aktionswechsel setzt
+  die Bestätigung zurück. Im simulierten Browser ebenfalls geprüft: erneute
+  Bestätigung nach Wechsel nötig, Abbrechen ohne Schreibaufruf, keine Browserfehler.
+- **Realer Octagon, ausdrücklich freigegebene Testaufnahme:**
+  „Inga Lindström: Rezept für die Liebe“ aus `/media/hdd/movie` nach
+  `/media/hdd/movie/Inside Star Trek` verschoben und zurückverschoben. Beide
+  Vorgänge durch frische Quell-/Zielkataloge bestätigt; Titel, Datum und Größe
+  erhalten, Hash der ersten 4096 Dateibytes jeweils identisch. Keine vollständige
+  Dateiprüfsumme und keine Sichtprüfung der laufenden Wiedergabe.
+- Löschversuch ohne `confirm_delete` lieferte `recording_confirm`, ohne einen
+  Receiver-Schreibaufruf. Danach bestätigtes Löschen mit `completed`; die originale
+  Testdatei ist im Quellkatalog nicht mehr vorhanden. Genau zwei `moviemove`- und
+  ein `moviedelete`-Aufruf, kein `force`, kein Stream-Stopp. Der Receiver meldete
+  vor, zwischen und nach diesen Schritten Streaming. Die vom Nutzer erwähnte
+  Sicherungskopie wurde nicht angesprochen. Es bleibt kein offener Auftrag.
+- Ruff, Format, Python-/JavaScript-Syntax, Mypy (36 Module), Übersetzungen,
+  Versions-/Changelog-/Lockabgleich und Diff-Prüfung bestanden.
+
+**Grenzen:** Die obigen Schreibtests liefen direkt mit lokalem dev.20-Code.
+Die anschließende HA-Dialogprüfung und gemeinsame Abnahme sind oben dokumentiert.
+Vu+ weiterhin ohne reale Verwaltungsabnahme.
+Externe direkte Dateiabrufe und Dateipfadaliase sind nicht vollständig erkennbar;
+die Prüfung erfasst HA-Streams sowie vom Receiver mit Pfad gemeldete Nutzungen.
+Abschnitt 5b ist gemeinsam bestätigt; siehe Abschlussvermerk oben.
+
+
+
+## Ergänzung dev.19 – Titeländerung bei aktivem Stream
+
+Am **20.09.2026** geprüft. Die Sperre bei Streams/Wiedergabe betrifft jetzt nur
+Verschieben/Löschen. Reine Titeländerungen bleiben bei bestehendem Stream und
+fehlender Streaming-Statusangabe möglich. Aufnahme-/Vorbereitungsprüfung,
+Revisionsbindung und Schutz bei unbestätigten Aufträgen bleiben unverändert.
+
+- **Automatisiert:** 119 unterschiedliche Tests aus Verwaltung, Integration und
+  Stream-Pool erfolgreich: 117 im ersten Lauf, zwei HA-Aktionsprüfungen nach einer
+  Korrektur am Stream-Testmock gezielt erneut bestanden. Matrix für Titeländerung,
+  Verschieben/Löschen, aktiven/inaktiven/unbekannten Stream und Aufnahmewiedergabe;
+  HA-Aktionspfad mit bestehendem Live-/Aufnahmestream. Bestehende Sitzungen bleiben
+  erhalten. Aufnahme- und Vorbereitungssperren sowie Metadatenprüfung abgedeckt.
+- `recording_management.py`: 100 % Statement-/Branch-Abdeckung. Der gezielte Lauf
+  erfasst `coordinator.py` nur teilweise (77 %); dies ist keine Gesamtmessung der
+  Testsuite. Neue Aktionszweige gezielt geprüft, vollständiger Qualitätsnachweis
+  und aktuelle CI bleiben vor einem Merge erforderlich. Keine Grenzwerte geändert.
+- **Realer Octagon:** Die ausdrücklich freigegebene Aufnahme
+  „Inga Lindström: Rezept für die Liebe“ eindeutig gefunden. Die bisherige Sperre
+  bei `isStreaming=true` lesend nachvollzogen. Mit dem lokalen dev.19-Manager den
+  Titel um ` [E2C-Test]` ergänzt und den Originaltitel unmittelbar wiederhergestellt;
+  beide Schreibvorgänge mit `completed` durch frische Kataloge bestätigt.
+  Vorher, dazwischen und danach meldete der Receiver Streaming. Medienreferenz,
+  Dateigröße (517.973.652 Byte) und übrige geprüfte Metadaten unverändert;
+  Wiedergabestand aus dem Vergleich ausgenommen. Nur zwei `movieinfo`-Schreibaufrufe,
+  kein Verschieben, Löschen oder Stream-Stopp. Videodaten nicht vollständig gehasht.
+- **Grenzen:** Direkter Receiver-Test mit lokalem Integrationscode, keine dev.19-
+  Installation in HA. Keine Sichtprüfung des laufenden Videos. Die Aufnahme war
+  auf dem Vu+ nicht vorhanden; dessen fehlender Streamingstatus ist automatisiert,
+  nicht mit einer echten Titeländerung dort geprüft. Verschieben/Löschen bleiben
+  zur gesonderten Geräteabnahme offen.
+- Ruff, Formatierung, Python-Syntax, Mypy, Versions-/Changelog-/Lockabgleich und
+  Diff-Prüfung bestanden. Frontend unverändert; dev.18-Kartenprüfungen gelten weiter.
+
+**Offen:** Integration dev.19 in HA installieren und dort den Aktionsweg prüfen;
+Kartendatei dev.18 ist kompatibel. Abschnitt 5b bleibt bis zur gemeinsamen
+Bestätigung offen, kein Abschlusscommit.
+
+
+
+## Ergänzung dev.18 – Verwaltungsdialog
+
+Am **20.09.2026** lokal geprüft; Abschnitt 5b bleibt zur gemeinsamen Abnahme offen.
+
+- 48 Frontendtests bestanden, einschließlich Fehlermeldung/Fokus, Escape,
+  fortbestehender Sperre bei offenen Aufträgen, Receiverwechsel und Ladefehlern.
+- Simulierter Browser: nativer modaler Dialog, hervorgehobener lokalisierter
+  Vorprüfungsfehler, Fokus auf die Meldung, Escape mit Fokusrückkehr und bleibender
+  Kartenmeldung. Verschieben mit verzögertem Abschluss: Statusprüfung bestätigt
+  ohne weiteren Schreibaufruf. Helles Desktop- und dunkles mobiles Layout
+  (390 × 844) geprüft, kein horizontaler Dialogüberlauf.
+- Lesende Receiverdiagnose: Octagon meldete `isStreaming=true`, keine Aufnahme
+  und keine Timer in Vorbereitung/laufend. Vu+ lieferte keine `isStreaming`-Angabe.
+  Beides löst die bestehende konservative Verwaltungssperre aus; kein Nachweis
+  der Ursache des früheren Nutzerversuchs. Keine Receiver-Schreibaktion ausgeführt.
+- JavaScript-Syntax, Versions-/Changelog-Abgleich, Offline-Lockprüfung und
+  Diff-Prüfung bestanden. Backend unverändert gegenüber dev.17; dessen gezielte
+  Nachweise gelten weiter. Qualitätsanforderungen unverändert.
+
+**Offen:** Neue Kartendatei dev.18 in Home Assistant installieren und Dialog dort
+abnehmen; echte Schreibprüfung aus Abschnitt 5b bleibt offen.
+
+
+
+## Abschnitt 5b – Aufnahmeverwaltung, dev.17
+
+Implementierung am **20.09.2026** lokal geprüft, noch nicht gemeinsam abgenommen.
+Keine Verwaltungsaktion auf einem realen Receiver ausgeführt.
+
+- **Python/HA:** Gezielt `test_recording_management`, `test_recording_library`,
+  `test_api` und `test_integration` bestanden. Abschließender Lauf nach dem
+  letzten Backendedit: 51 Verwaltungstests bestanden, neues Modul
+  `recording_management.py` mit 100 % Statement-/Branch-Abdeckung. Separat fünf
+  Übersetzungs-/Streamtests bestanden, darunter blockierter Streamstart bei
+  offenem Aufnahmeauftrag und bestehende unabhängige Aufnahmestreams.
+- **Frontend:** 45 Tests bestanden. Geräte-/Revisionsbindung, Löschbestätigung,
+  Doppelklickschutz, veraltete Antworten, unklare Ergebnisse, Statusprüfungen
+  und lokalisierte Vorprüfungsfehler abgedeckt; bestehende Kartenfunktionen
+  bleiben geprüft.
+- **Simulierter Browser:** Titeländerung aktualisiert den Katalog; verschieben
+  in einen angebotenen Zielordner mit verzögertem Abschluss sperrt Ausführen.
+  Statusprüfung bestätigt den Abschluss ohne weiteren Schreibaufruf. Löschen
+  bleibt ohne Checkbox gesperrt; nach Bestätigung und Zustandsabgleich ist die
+  simulierte Liste leer. Receiverwechsel leert die Auswahl. Mobile Ansicht bei
+  390 × 844 Pixeln lesbar, keine erfassten Browserfehler. Kein Receiverkontakt
+  in dieser Simulation.
+- **Weitere Prüfungen:** Ruff, Formatierung (102 Dateien), Python-/JS-Syntax,
+  Mypy über 36 Module, Versions-/Changelog-Abgleich, DE/EN-Aktionsfelder und
+  `uv lock --check --offline` bestanden. Keine Qualitätsanforderung abgesenkt.
+  Die neue Befehlssperre, übersetzte Fehler und bedarfsabhängige Aufrufe wurden
+  gegen die Qualitätscheckliste geprüft; aktuelle vollständige CI vor Merge
+  bleibt erforderlich.
+
+**Offen:** Installation von Integration und Karte dev.17 sowie echte HA-/Receiver-
+Prüfung beider Images mit einer eigens angelegten entbehrlichen Testaufnahme.
+Dabei Titeländerung, hin-/zurückverschieben, Begleitdateien/Abspielbarkeit,
+Katalog/Vorschaubilder und das tatsächliche Papierkorb-/Löschverhalten prüfen.
+Keine Zusicherung zu nicht geprüften Begleitdateien oder Imagevarianten.
+Abschnitt 5b bleibt ohne Abschlusscommit bis zur gemeinsamen Bestätigung.
+
+## Abschluss Abschnitt 5a – 1.3.0-dev.16
+
+Am **20.09.2026** hat der Nutzer Abschnitt 5a ausdrücklich als fertig bestätigt.
+Codex bestätigt den Abschluss anhand der dokumentierten lokalen Prüfungen,
+Receiver-Leseprüfungen und realen HA-Prüfung von dev.13. Die späteren
+Kartenänderungen bis dev.16 sind lokal im Browser geprüft und vom Nutzer
+abgenommen; eine eigene erneute HA-Prüfung von dev.16 durch Codex wird nicht
+behauptet. Frühere offene Abnahmevermerke unten beschreiben den damaligen Stand.
+Der vereinbarte Abschlusscommit erfolgt auf dem Arbeitsbranch. Abschnitt 5b
+(Umbenennen, Verschieben, Löschen) folgt und ist noch nicht abgenommen.
+
+## Dynamische Zeilenspalten – dev.16
+
+Am **20.09.2026** lokal geprüft: 41 Frontendtests, JavaScript-Syntax,
+Versions-/Changelog-Abgleich und `uv lock --check --offline` bestanden.
+Der Rendertest prüft Reihenfolge und sichere Ausgabe aller sechs Spalten sowie
+unbekannte Werte. Keine Python-Funktionsänderung oder neue Abhängigkeit.
+
+**Simulierte Browserprüfung:** 20 Aufnahmen mit aktivem Scrollbalken. Bei
+unverändertem Fenster (1280 × 900) wurde nur die Testkarte dynamisch verbreitert:
+
+| Kartenbreite im Test | Sichtbare Spalten von links nach rechts |
+| --- | --- |
+| 340 px | Titel |
+| 390 px | Titel, Aufnahmedatum |
+| 500 px | Titel, Aufnahmedatum, Sender |
+| 570 px | Titel, Dauer, Aufnahmedatum, Sender |
+| 650 px | Titel, Dauer, Aufnahmedatum, Sender, Wiedergabestand |
+| 760 / 1000 px | Titel, Dauer, Aufnahmedatum, Sender, Wiedergabestand, Dateigröße |
+
+Die tatsächlichen Umschaltpunkte beziehen sich auf die nutzbare Listenbreite
+nach Innenabständen/Scrollbereich, nicht auf feste Geräteklassen. Zurück auf
+340 px blendet alle Zusatzspalten wieder aus. Geöffnete Details bleiben offen,
+der Abfragezähler bleibt bei einer Abfrage; kein horizontaler Überlauf in allen
+Stufen. Filtertext und Trefferzähler (5 von 20) bleiben beim Breitenwechsel
+erhalten. Bei 390 × 844 Fenstergröße sind alle versteckten Angaben per Tastatur
+aufklappbar. Breite und schmale Darstellung visuell geprüft; keine erfassten
+Browserfehler. Scrollabstand bleibt erhalten.
+
+Qualitätscheckliste: Keine zusätzliche Receiverlast oder geänderte Aktionslogik,
+keine abgeschwächten Anforderungen; DE/EN-Dokumentation aktualisiert. Echte
+HA-Prüfung dieses Kartenstands und gemeinsame Abschnittsabnahme bleiben offen.
+
+## Angepasste Zeilenangaben – dev.15
+
+Am **20.09.2026** lokal geprüft: Zeilen zeigen Titel, Aufnahmedatum mit Uhrzeit
+und Sender; Dateigröße und Wiedergabestand bleiben in den aufklappbaren Details.
+41 Frontendtests, JS-Syntax, Versions-/Changelog-Abgleich und
+`uv lock --check --offline` bestanden. Der angepasste Rendertest prüft die
+Spaltenreihenfolge, sichere Sendertexte, fehlende/ungültige Datumswerte und
+erhaltene Detailangaben. Keine Python-Funktionsänderung.
+
+Simulierte Browserprüfung mit 20 Einträgen und aktivem Scrollbalken bestanden:
+12 Pixel Innenabstand rechts plus stabiler Scrollbereich, kein horizontaler
+Überlauf, lesbare umgebrochene Spalten bei 390 × 844 Pixeln. Geöffnete Details
+bleiben bei unverändertem HA-Update erhalten; keine erfassten Browserfehler.
+Qualitätsanforderungen bleiben unverändert. DE/EN-Anleitungen aktualisiert.
+Die echte HA-Prüfung dieses Kartenstands und gemeinsame 5a-Abnahme bleiben offen.
+
+## Zeilenansicht der Aufnahmebibliothek – dev.14
+
+Am **20.09.2026** lokal geprüft. 41 Frontendtests bestanden (22 bestehende
+Fernbedienungs-/EPG-Tests und 19 Bibliothekstests). Neue Nachweise: kompatibler
+Standard `details`, Auswahl `rows`, sichere Textdarstellung, vollständige
+aufklappbare Metadaten, unbekannter gegenüber explizitem 0-%-Wert, Filter und
+Zähler sowie Erhalt geöffneter Zeilen bei unveränderten HA-Aktualisierungen.
+JavaScript-Syntax, synchronisierte Versionsstellen und Changelog-Anker sowie
+`uv lock --check --offline` bestanden; Python-Syntax und DE/EN-Aktionsfelder
+ebenfalls geprüft. Keine Python-Funktionsänderung gegenüber dev.13.
+
+**Simulierte Browserprüfung:** Vier Testaufnahmen in beiden Ansichten,
+Auf-/Zuklappen per Klick, Enter und Leertaste, Erhalt geöffneter Details bei
+HA-Aktualisierung, Fortschrittsfilter, Zurücksetzen und englische Anzeige
+bestanden. Bei 390 × 844 Pixeln bleiben Titel, Größe, Fortschritt und
+aufgeklappte Angaben lesbar; kein horizontaler Überlauf. HTML-artige Titel
+erscheinen als Text. Keine erfassten Browserfehler.
+
+Qualitätscheckliste auf Auswirkungen geprüft: keine neuen Receiverabfragen,
+Schreibaktionen oder Abhängigkeiten; Dokumentation und sichere Anzeige
+fortgeschrieben, keine Prüf- oder Coverage-Anforderung abgesenkt.
+
+**Offen:** Prüfung des neuen Auswahlfelds und der Zeilenansicht im echten HA
+nach Aktualisierung der Kartendatei. Die folgende dev.13-Praxisprüfung belegt
+den bisherigen Bibliotheksumfang, nicht die neue Ansicht. Gemeinsame Abnahme
+von 5a und Abschlusscommit bleiben offen; 5b bleibt geplant.
+
+## Reale HA-Praxisprüfung von Abschnitt 5a – dev.13
+
+Am **20.09.2026** nach Installation durch den Nutzer im freigegebenen Dashboard
+`codex-lab` geprüft. HA zeigt **Version 1.3.0-dev.13**. Die ausgelieferte
+Bibliotheks-JavaScript-Datei stimmt per SHA-256 mit dem lokal geprüften Stand
+überein. Der separate Ressourceneintrag fehlte zunächst und wurde als
+`/local/enigma2-connect-recordings-card.js?v=dev13` (JavaScript-Modul) ergänzt.
+Danach funktioniert die bereits vorhandene Bibliothekskarte. Keine weitere
+Karte hinzugefügt; temporäre Receiverwechsel im Editor nicht gespeichert.
+
+- **Octagon:** 21 Aufnahmen aus drei Ordnern, ein verfügbarer Tag. Dateigröße,
+  Sender, Datum, Dauer, Tags, Ordner und gemeldeter Wiedergabestand angezeigt.
+  Fortschrittsfilter: sieben Treffer bei 1–99 %, sechs bei 100 %, acht bei 0 %,
+  keine bei unbekannt. Die frühere direkte Leseprüfung mit 20 Aufnahmen bleibt
+  als damaliger Stand dokumentiert.
+- **Kombinierte Filter:** Tag und Unterordner ergeben acht Aufnahmen; zusätzlicher
+  Titeltext in Großbuchstaben eine Aufnahme. Erneutes Laden erhält alle drei
+  Filter und den Treffer. Nicht passender Text ergibt 0 von 21; Zurücksetzen
+  leert die Filter und zeigt wieder alle 21 Aufnahmen.
+- **Receiverwahl:** Der visuelle Editor bietet die beiden Enigma2-Medienplayer.
+  Die Live-Vorschau für Vu+ zeigt korrekt 0 von 0 Aufnahmen mit leeren Tag- und
+  Ordnerlisten. Zurückwechseln zum Octagon verwirft die bisherigen Ergebnisse
+  und fordert erneutes Laden. Originale Kartenkonfiguration beibehalten.
+- **Bestehende Medienansichten:** Sowohl „Medien durchsuchen“ am Octagon-Player
+  als auch „Medien → Enigma2 Connect“ funktionieren einschließlich
+  Unterordnernavigation, Dateigrößen und Tags. Keine Wiedergabe gestartet.
+- **Mobile Darstellung:** Echte HA-Ansicht bei 390 × 844 Pixeln geprüft.
+  Filter, Buttons, Zähler und Metadaten sind lesbar; lange Titel und Ordnerpfade
+  umbrechen. Kein erfasster Enigma2-JavaScript-Fehler im Browserprotokoll.
+
+Keine Aufnahme angelegt, umbenannt, verschoben oder gelöscht und keine
+Receiversteuerung ausgelöst. Positive Metadaten mit einer vorhandenen Aufnahme
+auf dem Vu+ bleiben mangels Aufnahmen ungeprüft; unbekannte Metadaten und
+Verbindungsverlust wurden zuvor simuliert geprüft. Keine solche Live-Prüfung
+behauptet. Lokaler Kurzbericht im Hauptarbeitsverzeichnis:
+`.work/recording-workflows-checks/ha13-acceptance.json`.
+
+**Codex bestätigt 5a im verfügbaren Geräteumfang als bestanden.** Die
+Nutzerbestätigung und der vereinbarte Abschlusscommit stehen aus; 5b bleibt offen.
+
+
+## Aufnahmebibliothek 5a – 1.3.0-dev.13
+
+Implementiert auf `feature/recording-workflows`; noch keine gemeinsame
+Abschlussbestätigung und kein Abschlusscommit. Abschnitt 5b (Umbenennen,
+Verschieben, Löschen) bleibt geplant.
+
+**Lokale Prüfungen:** 182 Python-/HA-Tests für Bibliotheksaktion, Modelle,
+Medienbrowser, Medienquelle, Integrationsaktionen und EPG bestanden. Ein
+abschließender Lauf nach Formatierung mit 107 teilweise überlappenden Tests
+einschließlich Übersetzungen bestand ebenfalls. Statement-/Branch-Abdeckung:
+`recording_library.py` 100 %, `workflow_models.py` 100 %, `recordings.py` 97,7 %.
+38 Frontendtests bestanden (16 neue, 22 bestehende), ebenso Ruff, Formatierung,
+Python-/JS-Syntax, Mypy über 35 Module und `uv lock --check --offline`.
+Versionsstellen, Changelog-Anker sowie DE/EN-Aktionsfelder und Auswahlwerte
+sind synchron. Die CI führt beide Frontend-Testdateien aus.
+
+Geprüft sind vollständige und fehlerhafte Kataloge, unbekannte Werte, alle
+Filtergruppen, kombinierte Filter, mehr als 150 Ergebnisse ohne Limit,
+eindeutige Gerätezuordnung, Fehlerweitergabe, veraltete Antworten,
+Verbindungsverlust, sicher dargestellte Receivertexte und Filtererhalt beim
+Aktualisieren. Bestehende Medienkennungen und Wiedergabepfade bleiben erhalten.
+Die Qualitätsanforderungen für bedarfsabhängige Abfragen, Aktionsregistrierung,
+Fehler, Übersetzungen und Dokumentation wurden auf Auswirkungen geprüft;
+keine Anforderung oder Coverage-Grenze abgesenkt. Aktuelle vollständige CI und
+Qualitätsabgleich vor einem späteren Merge bleiben erforderlich.
+
+**Echte Receiver-Leseprüfung am 20.09.2026:** Der neue Bibliothekscode liest
+`movielist?recursive=1` mit den freigegebenen Zugangsdaten.
+
+| Receiver | Befund |
+| --- | --- |
+| Octagon SF8008 4K Supreme / OpenATV 7.6 / OpenWebif 2.4.0 | 20 Aufnahmen, drei Ordner, ein unterschiedlicher Tag. Alle 20 mit positiver Dateigröße. Fortschritt: achtmal 0 %, sechsmal 100 %, sechs Werte zwischen 1 und 99 %. Filter ohne Treffer liefert 0 bei Gesamtkatalog 20. |
+| Vu+ Solo² / VTi 15 / OpenWebif 1.4.4 | Leerer Katalog korrekt erkannt; Filter ohne Treffer ebenfalls leer. Keine positive Metadatenprüfung mit vorhandener Aufnahme möglich. |
+
+Keine Aufnahme angelegt, abgespielt, umbenannt, verschoben oder gelöscht.
+Der anonymisierte Bericht liegt lokal im Hauptarbeitsverzeichnis unter
+`.work/recording-workflows-checks/library13-live.json`, Coverage und Testlog
+unter `library13-coverage.json` und `library13-final-tests.log` im selben Ordner.
+
+**Browserprobe mit simulierten Daten:** Laden, kombinierte Tag-/Fortschrittsfilter,
+Textfilter ohne Treffer, Rücksetzen, leerer Receiver, Deutsch/Englisch und
+Verbindungsverlust bestanden. Bei 360 × 800 Pixeln sind Felder und Metadaten
+lesbar, längere Texte umbrechend. HTML im Aufnahmetitel bleibt sichtbarer Text;
+keine erfassten JavaScript-Fehler. Dies ersetzt keine reale HA-Praxisprüfung.
+
+**Aktualisierung:** Die zuvor offene HA-Praxisprüfung ist inzwischen bestanden
+(siehe oben). Nutzerbestätigung von 5a und der vereinbarte Commit stehen aus.
+
+
+## Gemeinsamer Abschluss von Abschnitt 4
+
+Am **20.09.2026** bestätigt der Nutzer nach Codex-Prüfung und realer HA-Praxisprüfung
+**1.3.0-dev.12** ausdrücklich als fertig. Abschnitt 4 ist damit gemeinsam
+abgeschlossen. Zugeordneter Commit auf `feature/recording-workflows`:
+`feat: add EPG search and recording cards`. Die nachfolgend dokumentierten
+Nachweisgrenzen bleiben bestehen; insbesondere keine erfolgreiche EPG-Aufnahme
+auf dem Vu+ ohne EPG behauptet. Keine Freigabe für Merge oder Release.
+
+## Reale HA-Praxisprüfung dev.12 am 20.09.2026
+
+Im freigegebenen Dashboard `codex-lab` mit installierter Integration
+**1.3.0-dev.12** geprüft. Die ausgelieferte JavaScript-Datei stimmt mit dem
+Arbeitsstand überein; Ressourcenlink auf `?v=dev12` aktualisiert.
+
+- Octagon: echte HA-Suche mit **104 Treffern**, Einzelansicht und Navigation
+  bis Treffer 52, Listenansicht mit allen 104 Einträgen, ähnliche Sendungen
+  mit 36 Treffern, leere Suche sowie vollständiger Reset bestanden.
+- Beide Karten standardmäßig einzeln; Fernbedienungssuche zunächst aus.
+  Grafische Auswahl und Umschaltung funktionieren; Video-/Zahlentasten
+  unabhängig ausblendbar. Receiverwechsel setzt Suchzustand zurück.
+- Über die HA-Karte einen zukünftigen EPG-Timer angelegt, am Receiver eindeutig
+  nachgelesen und im HA-Kalender bestätigt. Erneute Anforderung nach Zurücksetzen
+  des Kartenstatus meldet vorhandenen Timer; kein Duplikat. Receiver-Vor-/Nachlauf
+  von 300/600 Sekunden erhalten. Exakt dieser Testtimer wurde wieder gelöscht.
+- Vu+ ohne Signal/EPG: Suchaufruf in HA liefert korrekt 0 Treffer und Hinweis.
+  Ein erfolgreicher EPG-Aufnahmepfad bleibt auf diesem Gerät mangels EPG unbelegt.
+
+Abschluss: Octagon wieder sieben ursprüngliche Timer, eindeutig über Name/Sender
+zugeordnet, Vu+ weiterhin null Timer. Kein zusätzlicher Testtimer verbleibt.
+Ein strenger Vergleich aller Timerwerte war **nicht unverändert**: vier ursprüngliche
+Timer hatten zwischenzeitlich verschobene Zeiten, fünf geänderte EPG-IDs. Dies
+entspricht receiverseitigen EPG-Aktualisierungen; deren genauer Auslöser wurde nicht
+untersucht. Es wurden keine Bearbeitungs-/Löschbefehle für diese Timer gesendet
+und die aktuellen Receiverdaten nicht zurückgesetzt. Lokale Vorher-/Nachher-Daten
+und Bericht liegen unter `.work/recording-workflows-checks/ha12-*` im Hauptarbeitsverzeichnis.
+
+Die Karte „EPG-Suche Octagon“ wurde im Testdashboard gespeichert. Keine
+Enigma-Kartenfehler in den erfassten Browser-Fehlerlogs. Praxisprüfung im verfügbaren
+Geräteumfang bestanden; gemeinsame Abschlussbestätigung und Commit stehen aus.
+Frühere Angaben zu offener HA-Prüfung unten beschreiben den damaligen Stand.
+
+## Abschnitt-4-Codeprüfung und Browserprobe dev.12
+
+Codeprüfung der EPG-Abfragen, Aktionsschemata, Timer-Schutzprüfungen und
+Kartenlogik ohne neue Fehlerbefunde. Die aktuellen 46 EPG-/Aktionsprüfungen,
+22 Frontendtests und der erfolgreiche Typcheck über 34 Module bleiben gültig;
+Produktionscode seit diesen Prüfungen unverändert.
+Zusätzlicher Browserdurchlauf mit simulierten HA-/Receiver-Antworten: Einzelansicht,
+Pfeile um den Zähler visuell bestätigt, Vor/Zurück mit gesperrten Randtasten,
+Ähnliche mit Rückkehr zum ersten Treffer, Aufnahmebestätigung samt gesperrter
+Eingeplant-Taste, vollständiger Reset mit Eingabefokus und leeres Suchergebnis
+mit 0 Treffern bestanden. HTML im Beschreibungstext bleibt sichtbarer Text.
+Keine echte Aufnahme angelegt und keine neue Receiver-/HA-Praxisabnahme.
+Die gemeinsame Abschnittsabnahme und der vereinbarte Commit bleiben offen.
+
+## Unbegrenzte Suche und Kartenvorgaben: 1.3.0-dev.12
+
+**46 EPG-/Aktionsprüfungen und 22 Frontendtests bestanden.** Simulierte Suche
+und ähnliche Sendungen liefern alle 123 passenden Treffer; Blättern erreicht
+den letzten Treffer. Pfeile um den Zähler, beide Karten standardmäßig einzeln,
+Fernbedienungssuche standardmäßig aus und Vorrang expliziter Optionen geprüft.
+Die Grenze entfällt in Backend, Aktionsschema, Übersetzungen und Karteneditor.
+Qualitätsauswirkungen: bedarfsabhängige Abfragen, Aktionsvalidierung, Bedienbarkeit
+und Dokumentation geprüft; keine Kriterien oder Testschwellen abgesenkt.
+JavaScript-/Python-Syntax, Ruff, Versionsstellen, HA-Aktionsmetadaten,
+Dokumentationslinks und Offline-Lockprüfung bestanden.
+Keine neue Prüfung auf realem Receiver oder in der HA-Oberfläche; gemeinsame
+Abschnitt-4-Abnahme bleibt offen. Integration und Karte benötigen dev.12.
+
+## Treffergrenze und Zähler: 1.3.0-dev.11
+
+Beide Karten bieten eine maximale Trefferzahl von 1 bis 50 (Standard 20).
+Die Einzelansicht verzichtet auf die doppelte Trefferzahl. **20 Frontendtests
+bestanden**, einschließlich Grenzwerten, Weitergabe an Suche/Ähnlichkeit und
+unveränderten Aufnahmeparametern. JavaScript-Syntax, Versions-/Metadaten,
+Dokumentationslinks und Offline-Lockprüfung bestanden. Python-Backend unverändert;
+keine neue Receiver-, HA- oder Browserprüfung. Gemeinsame Abschnitt-4-Abnahme offen.
+Die Grenze ist eine lokale Festlegung ohne gemessenen Leistungsnachweis; die
+OpenWebif-Antwort wird erst nach dem Empfang gekürzt.
+
+## Trefferanzeige: 1.3.0-dev.10
+
+Beide Karten: native Editoroption Liste/Einzelansicht, Blättertasten und Zähler.
+**19 Frontendtests bestanden**, einschließlich Indexgrenzen, Zurücksetzen bei
+neuer Suche und Reset, gesperrtem Blättern während Aufträgen und Zähler für null,
+einen, mehrere und begrenzte Treffer in beiden Sprachen/Kartentypen.
+Im Browser mit simulierten HA-Antworten Einzelansicht, Vor/Zurück, gesperrte
+Randtasten, passender Titel/Zähler und vollständiger Reset visuell geprüft.
+JavaScript-Syntax, Versions-/Metadaten und Offline-Lockprüfung bestanden.
+Keine Python-Produktionsänderung oder neuen Receiver-Aufträge. HA-Editor und
+gemeinsame Abschnitt-4-Abnahme auf dem Nutzersystem bleiben offen.
+
+## Suche zurücksetzen: 1.3.0-dev.9
+
+Gemeinsamer Reset für Eingabe, Treffer und Suchhinweise in beiden Karten.
+**17 Frontendtests bestanden**; zusätzlich geprüft: verspätete Ergebnisse und
+Fehler von Suche/Ähnlichkeit werden nach Reset ignoriert, laufende Aufnahmeaufträge
+bleiben gesperrt und liefern weiterhin ihre Bestätigung. JavaScript-Syntax,
+Versionsstellen und Offline-Lockprüfung bestanden. Python-Backend unverändert;
+vorhandene Nachweise gelten weiter. Keine neue Receiver-/HA-Praxisprüfung für
+diese reine Kartenänderung; gemeinsame Abschnitt-4-Abnahme bleibt offen.
+
+## Karten-Nachbesserung: 1.3.0-dev.8
+
+Nutzer bestätigt dev.7 und Kartendatei installiert; erstes Kartenfeedback vom
+20.09.2026 umgesetzt. EPG-Suche, Videosteuerung und Ziffern unabhängig ausblendbar,
+zweite Karte nur für EPG und expliziter Eingabe-Löschbutton.
+**15 Frontendtests bestanden**, darunter alle acht Optionskombinationen,
+Standardwerte, Registrierung beider Karten, Editorfelder, gültige Geräteauswahl
+und Erhalt laufender Aufträge/Treffer beim Leeren des Suchfeldes. JavaScript-Syntax,
+Versionsstellen und Offline-Lockprüfung bestanden.
+
+Browserprobe mit simulierten HA-Antworten: reine EPG-Karte ohne Fernbedienung,
+Suche und Treffer, Eingabe löschen mit Fokus im leeren Feld und erhaltenen
+Ergebnissen sowie kompakte Fernbedienung ohne die drei optionalen Bereiche.
+Das ist keine Prüfung des neuen Karteneditors in der Nutzerinstallation.
+Python-Produktionscode gegenüber dev.7 unverändert; die dortigen Backend- und
+Receiver-Nachweise bleiben gültig. Keine erneute vollständige Testausführung.
+Qualitätsanforderungen an Dokumentation, Übersetzung und Gerätebindung erhalten.
+HA-Praxisabnahme und gemeinsame Abschnitt-4-Bestätigung stehen weiter aus.
+
+## Abschnitt 4: EPG-Suche, Teststand 1.3.0-dev.7
+
+Stand **20.09.2026**: Implementierung zur HA-Praxisabnahme vorbereitet.
+**Noch nicht beidseitig abgenommen und noch nicht committet.**
+
+### Lokale Simulationen und statische Prüfungen
+
+Gezielte Tests mit Python **3.14.7**, Home Assistant **2026.9.1** und
+pytest-homeassistant-custom-component **0.13.364**: erster Lauf 298 bestanden,
+zwei Fehler im neuen Testaufbau (unrealistische identische Timerkennung und
+veralteter Registry-Zugriff). Nach Korrektur bestanden sämtliche 72 Tests des
+Folgelaufs einschließlich aller EPG-Tests und zusätzlicher gemeinsamer Regressionen.
+Der Folgelauf ergänzt den simulierten Weg **HA-Suche → record_event → tatsächliche
+calendar.get_events-Aktion** und prüft die Timerzeiten einschließlich Vor-/Nachlauf.
+Insgesamt **328 unterschiedliche Python-Tests** erfolgreich; keine verbleibenden
+Testfehler. Unveränderte Module behalten ihre vorherigen
+Nachweise; dies war keine vollständige Wiederholung des gesamten CI-Prüfumfangs.
+
+Anweisungs-/Zweigabdeckung der geänderten/neuen Python-Module, aus beiden Läufen:
+
+| Modul | Kombinierte Abdeckung |
+| --- | --- |
+| `epg.py` | 100.00% |
+| `api.py` | 100.00% |
+| `coordinator.py` | 97.57% |
+| `services.py` | 98.68% |
+
+Ruff, Formatierung, strikte Typprüfung (34 Module), Syntax, HA-Selektoren,
+DE/EN-Feld-/Übersetzungskonsistenz, Versionsstellen und Offline-Lockprüfung bestanden.
+Zwölf Node-Frontendtests bestanden, einschließlich Gerätewechsel während einer
+Anfrage, Doppelklickschutz, Fehlerübersetzung und Sprachwechsel.
+Im echten Browser mit **simulierten HA-Antworten** geprüft: aufklappbare Suche,
+Treffer/Zeiten/Beschreibung, Ähnliche, Aufnehmen/Eingeplant, leere Suche,
+Sprachumschaltung und gesperrte Suche bei Offline-Zustand. HTML-artige Receivertexte
+erscheinen als Text. Diese Browserprobe ist kein Test der Nutzer-HA-Installation.
+
+### Echte Receiver, direkter Aufruf der Produktionsmodule
+
+| Prüfung | Octagon / OpenWebif 2.4.1 | Vu+ / OpenWebif 1.4.4 |
+| --- | --- | --- |
+| Titelsuche / Fantasietitel | 50 laufende/künftige Treffer begrenzt; leere Suche korrekt | leer, fehlendes EPG |
+| Ähnliche Sendungen | 20 Treffer begrenzt | mangels EPG nicht prüfbar |
+| Absichtlich veränderte EPG-Zeit | vor Schreibzugriff abgelehnt | nicht geprüft |
+| Zukünftigen Aufnahmetimer anlegen und nachlesen | bestanden, Receiver-Vor-/Nachlauf erhalten | mangels EPG nicht prüfbar |
+| Derselbe Auftrag erneut | `created: false`, keine Doppelanlage | nicht geprüft |
+| Testtimer entfernen / ursprüngliche Timer | ein Testtimer entfernt; ursprüngliche Konfiguration unverändert | kein Testtimer angelegt |
+
+Der Vu+ war bei den ersten Leseproben kurz nicht erreichbar; im abschließenden
+Produktionsmodul-Test antwortete er wieder und lieferte korrekt leere EPG-Listen.
+Es wurde keine Sendung tatsächlich aufgezeichnet; der Testtermin lag in der Zukunft.
+Die aktuelle Integration wurde dafür nicht in der Nutzer-HA-Installation aktualisiert.
+
+Offen: **dev.7 in HA plus aktualisierte Kartendatei**, neue Aktionsformulare,
+Karte und Kalender im Zusammenspiel auf dem echten System; Vu+-Aufnahmeweg mit
+gefülltem EPG. [Prüfschritte](BENUTZERHANDBUCH.md#abschnitt-4-auf-dem-receiver-prüfen).
+Qualitätsauswirkungen geprüft: `action-setup`, `appropriate-polling`, `docs-actions`,
+`action-exceptions`, `exception-translations`, `icon-translations`, `parallel-updates`,
+`strict-typing` und `test-coverage`. Keine Schwellen oder Ausnahmen abgesenkt;
+aktueller Remote-/CI-Abgleich bleibt vor PR/Merge erforderlich.
+
+Lokale Nachweise: `epg4-tests.log`, `epg4-followup.log`, `epg4-coverage.json`,
+`epg4-live.json` unter `V:\enigma2-connect\.work\recording-workflows-checks`;
+Prüfskripte im übergeordneten ignorierten `.work/`. Keine Zugangsdaten im Repository.
+
+## Home-Assistant-Praxisprüfung: 1.3.0-dev.6
+
+Am **20.09.2026** in der tatsächlichen HA-Installation des Nutzers geprüft.
+Die Integrationsseite zeigte **1.3.0-dev.6**, zwei Receiver und 130 Entitäten.
+Bedienung erfolgte im Browser unter **Werkzeuge → Aktionen**, **Ereignisse** und
+**Kalender**; zusätzlich wurden die gespeicherten Testtimer direkt auf den Receivern
+nachgelesen. Es wurden keine Dashboards oder Integrationsoptionen verändert.
+
+- Sender- und Aufnahmeordnerlisten zeigten beide Receiver mit korrekter Zuordnung.
+  Der native Kalenderdialog und die Uhrzeitfelder wurden bedient. Über die Formulare
+  angelegte deaktivierte Testtimer kamen auf beiden Receivern mit 29.09.2026,
+  16:25–16:27 Uhr, dem gewählten Sender, `/media/hdd/movie/` und `afterevent: 0` an.
+- **Nach Aufnahme** zeigte Nichts tun, Standby, Tiefschlaf und Automatisch;
+  **Nachrichtentyp** zeigte Ja/Nein-Frage, Information, Warnung und Fehler.
+  Die Informationsnachricht wurde über HA an beide Receiver gesendet und jeweils
+  auf deren Bildausgabe visuell bestätigt. Andere Nachrichtentypen wurden nicht
+  erneut einzeln auf dem Bildschirm geprüft.
+- Die Kombination Vu+ als Ziel und Octagon-Sender/-Pfadauswahl wurde mit der
+  übersetzten Zuordnungsfehlermeldung abgelehnt; kein zusätzlicher Timer entstand.
+- Reale Konflikte beim **Anlegen und Bearbeiten auf beiden Receivern** wurden
+  durch HA-Aktionen ausgelöst. Vier Ereignisse wurden in der HA-Ereignisansicht
+  empfangen und einzeln geprüft: korrekte `config_entry_id`, `action: timer_add`
+  mit `timer_state: unknown` beziehungsweise `action: timer_edit` mit
+  `timer_state: changed`. Die Oberfläche zeigte konkrete Konfliktdetails und den
+  Hinweis auf möglicherweise bereits geänderte Timer. Das Abonnement wurde beendet.
+- Nach Aktivierung erschienen beide Formular-Testtimer im HA-Kalender um 16:25 Uhr.
+  Eine weitere HA-Bearbeitung des Octagon-Timers änderte Name und Ende; der Kalender
+  zeigte den neuen Namen und im Detail **16:25–16:30 Uhr**.
+- Sämtliche eigenen Testtimer wurden entfernt. Abschließendes Nachlesen: Octagon
+  wieder sieben ursprüngliche Timer, Vu+ null; die geprüften Felder der ursprünglichen
+  Timer sind unverändert. Wiederholtes Löschen meldete erwartungsgemäß einen Fehler.
+
+Nachweis: `ha-ui-validation.json`, `.work/ha_ui_receiver_check.py` und lokale
+Bildprüfungen `ha-ui-message-0.jpg`/`ha-ui-message-1.jpg` unter
+`V:\enigma2-connect\.work\recording-workflows-checks` (Skript im übergeordneten
+`.work/`). Keine Zugangsdaten in Berichten. Diese Ergebnisse ergänzen die getrennt
+dokumentierten direkten Receiver- und simulierten HA-Prüfungen.
+
+**Abschnitt 3 beidseitig abgenommen:** Codex bestätigt die abgeschlossenen Prüfungen;
+der Nutzer bestätigte am **20.09.2026** ausdrücklich die Fertigstellung.
+Abschlusscommit auf `feature/recording-workflows`: `feat: add timer editing and action selectors`. Kein tatsächlicher wöchentlicher
+Aufnahmestart wurde abgewartet; das fehlende DVB-S-Signal/EPG am Vu+ bleibt eine bekannte
+Testgrenze. Keine Änderung am Produktionscode, keine erneute vollständige CI notwendig;
+Remote-Abgleich und erforderliche aktuelle CI bleiben vor einem PR/Merge verpflichtend.
+
+## Echte Receiver-Prüfung: 1.3.0-dev.6, Abschnitt 3
+
+Am **20.09.2026** mit Nutzerfreigabe über die aktuellen Produktionsmodule
+`OpenWebifClient`, `TimerEditor`, `action_choices` und `timer_conflicts` gegen beide
+echten Receiver geprüft. Das lokale Prüfskript rief die Module direkt auf;
+es wurde keine Home-Assistant-Oberfläche bedient und kein HA-Service auf der
+Nutzerinstallation aufgerufen. Zugangsdaten stammen aus einer ignorierten lokalen
+Datei und sind nicht Bestandteil der Berichte.
+
+| Prüfung | Octagon SF8008 4K Supreme | Vu+ Solo² |
+| --- | --- | --- |
+| Gemeldetes OpenWebif | 2.4.1 | 1.4.4 |
+| Sender im ersten TV-Bouquet / bekannte Pfade | 41 / 4 | 34 / 1 |
+| Deaktivierten Testtimer anlegen, bearbeiten, Optionen erhalten | bestanden | bestanden |
+| Veraltete Kennung ohne weitere Änderung ablehnen | bestanden | bestanden |
+| Wochenmasken Mo/Fr → Di/Do, falschen Einzelumfang ablehnen | bestanden | bestanden |
+| Termin über Mitternacht, zehn Minuten | bestanden | bestanden |
+| Sender-/Pfadauswahlwerte, lokale Uhrzeit, Nach Aufnahme = Nichts tun | gespeichert und nachgelesen | gespeichert und nachgelesen |
+| Aktivieren/deaktivieren, löschen, erneutes Löschen ablehnen | bestanden | bestanden |
+| Informationsnachricht nach Ablehnung | API bestätigt; Anzeige ungeprüft | API bestätigt; Anzeige ungeprüft |
+| Konflikt beim dritten parallelen Testtimer / Konflikt beim Bearbeiten | beide erkannt | beide erkannt |
+| Timerzustand nach abgelehnter Bearbeitung | `changed` | `changed` |
+| Aufräumen / ursprüngliche Timer | keine Testtimer; 7 unverändert | keine Testtimer; weiterhin 0 |
+
+Die Konflikte entstanden mit eigenen, kurz danach wieder gelöschten Testtimern auf
+unterschiedlichen Transpondern zwei Wochen in der Zukunft, außerhalb der ermittelten
+Zeiträume bestehender Timer. Beide Antworten lieferten jeweils drei durch den
+Produktionsparser verwertbare Konflikte. **Beide Images verändern beim abgelehnten
+Bearbeiten bereits den Testtimer.** `TimerEditor` erkennt dies durch Nachlesen;
+es gibt keine automatische Rücknahme. Ursprüngliche Timer wurden anhand Kennung,
+Name, Beschreibung, deaktiviert/aktiv, Aufnahme-/Umschaltmodus, Nach-Aufnahme-Verhalten,
+Wochenmaske, Tags und Pfad vor/nach jedem Testlauf verglichen und blieben gleich.
+
+Der erste Serienversuch beließ beim Wechsel auf Di/Do den Montag als Startdatum.
+Beide Receiver verschoben den Termin und die Integration meldete korrekt
+`CommandUnconfirmed`. Danach wurde gemäß Anleitung auch der erste Termin auf Dienstag
+gesetzt; alle Serienprüfungen bestanden. Jeder Versuch wurde separat aufgeräumt.
+Die Wochenmasken und gespeicherten Termine wurden nachgelesen; ein tatsächlicher
+wöchentlicher Aufnahmestart wurde nicht abgewartet. Der Vu+ hat laut Nutzerdatei
+kein DVB-S-Signal und kein EPG. Sein Pfad stammt aus `movielist.directory`, nicht
+aus `timerlist.locations`.
+
+Berichte: `receiver-section3-*.json` und Prüfskript `.work/receiver_section3.py`
+im ursprünglichen lokalen Checkout; Berichte unter
+`V:\enigma2-connect\.work\recording-workflows-checks`. Die Berichte der ersten
+Serienversuche bleiben ebenfalls erhalten. Keine Änderung am Produktionscode.
+
+Die damals offenen HA-Punkte wurden anschließend geprüft; Ergebnisse und
+Abnahmestatus stehen im vorangestellten Abschnitt zur Home-Assistant-Praxisprüfung.
+
+## Aktionsauswahlfelder: 1.3.0-dev.6, Ergänzung zu Abschnitt 3
+
+Stand **20.09.2026**. Senderauswahl, native Datum/Uhrzeit-Felder, Auswahl bekannter
+Receiver-Aufnahmeordner sowie benannte Optionen für Nachrichtentyp und Nach Aufnahme
+implementiert. [Praxisanleitung](BENUTZERHANDBUCH.md#abschnitt-3-auf-dem-receiver-prüfen).
+
+**Lokale Prüfung bestanden:** 273 unterschiedliche Tests in drei sich überlappenden
+Läufen mit Python **3.14.7**, Home Assistant **2026.9.1** und
+pytest-homeassistant-custom-component **0.13.364**. Der erste Lauf hatte 269 erfolgreiche
+Tests und zwei Fehler durch eine veraltete Zeitzonen-Test-API. Nach Umstellung auf
+`async_set_time_zone` wurden beide Fälle und die betroffenen Aktionsprüfungen erneut
+erfolgreich geprüft. Drei bestehende Sofortaufnahme-/Gerätezuordnungstests ergänzen
+den Abdeckungsnachweis des letzten Quellstands. Receiver sind simuliert;
+keine echte Frontend- oder Receiver-Abnahme.
+
+Geprüft: HA-Selektorschemas und Übersetzungen, lokale Zeitumrechnung einschließlich
+mehrdeutiger/nicht existierender Uhrzeiten, zwei Receiver und falsche Gerätezuordnung,
+Aktualisierung und Entladen der Listen, Pfadquellen, manuelle YAML-Alternativen,
+benannte Auswahlwerte und bisherige Integer-Werte 0–3 mit identischen Receiver-Parametern,
+Standardwerte sowie bestehende Timer-, Aufnahme- und Fehlerbehandlung.
+
+Kombinierte Statement-/Branch-Coverage: letzter Aktionslauf für `services.py`,
+erster Lauf für die anschließend unveränderten übrigen Module:
+
+| Modul | Coverage |
+| --- | --- |
+| `__init__.py` | 97.96 % |
+| `action_choices.py` | 100.00 % |
+| `coordinator.py` | 98.51 % |
+| `models.py` | 95.52 % |
+| `services.py` | 98.45 % |
+| `timer_edit.py` | 100.00 % |
+| `timer_conflicts.py` | 100.00 % |
+
+Unveränderte Grenze über 95 % eingehalten. Ruff, Formatierung, Syntax,
+mypy strict für **33** Produktionsmodule, Versions-/Dokumentationsabgleich und
+`uv lock --check --offline` (159 Pakete) bestanden. Berichte `action-choices-*`
+und `action-enums-*` sowie `action-tail-*` unter
+`V:\enigma2-connect\.work\recording-workflows-checks`.
+Qualitätsabgleich umfasst zusätzlich die neuen Bedienelemente unter `action-setup`,
+`action-exceptions`, `exception-translations`, `strict-typing`, `test-coverage`,
+`docs-actions`, `docs-data-update` und `docs-known-limitations`; keine Kriterien abgesenkt.
+
+Die ergänzende HA-Praxisprüfung und die beidseitige Abnahme sind oben dokumentiert. CI und Remote-Abgleich vor PR/Merge bleiben erforderlich.
+
+## Timerbearbeitung und Konflikte: 1.3.0-dev.5, Abschnitt 3
+
+Stand **20.09.2026**. `timer_edit`, erweiterte Anlageoptionen und strukturierte
+Konfliktereignisse implementiert. [Plan und Grenzen](ENTWICKLUNG.md#abschnitt-3-timerbearbeitung-und-konflikte),
+[Receiver-Prüfanleitung](BENUTZERHANDBUCH.md#abschnitt-3-auf-dem-receiver-prüfen).
+
+**Lokale Prüfung bestanden:** Python **3.14.7**, Home Assistant **2026.9.1**,
+pytest-homeassistant-custom-component **0.13.364**. Zunächst 221 Tests bestanden;
+nach Review der Anmelde-/Abbruchbehandlung beim Nachlesen einer Ablehnung und
+Vereinheitlichung der Ereignis-Aktionsnamen derselbe Umfang samt Zusatzfällen
+erneut geprüft: **228 Tests bestanden**, keine Fehler oder ausgelassenen Fälle.
+Alle Receiver sind in diesen Tests simuliert, auch in den echten HA-Aktionsprüfungen.
+
+Geprüft: alte/neue Kennung, Erhalt ausgelassener Optionen, VPS und Nachlauf,
+unvollständige und mehrdeutige Timerdaten, Wochenmasken und expliziter Serienumfang,
+Mitternacht sowie explizite UTC-Offsets beim Sommer-/Winterzeitwechsel,
+Konflikte mit und ohne bereits erfolgte Mutation, Nachlesen und unklare Erfolge,
+Antwortverlust, Abbruch, Sperre weiterer Versuche, gemeinsame Befehlssperre,
+Konfliktprojektion ohne Rohdaten, übersetzte Fehler, Ereignisse, gültige HA-Selektoren,
+Aufrufe mit/ohne Antwort und Trennung zweier Receiver. Keine unabhängige
+Konfliktvorhersage oder Garantie unveränderter Timer bei Receiver-Ablehnung.
+
+Umfang: `test_timer_edit`, `test_workflow_actions`, `test_instant_recording`,
+`test_integration`, `test_translations`, `test_silver_controls`, `test_channel_media`,
+`test_gold_lifecycle`, `test_regressions`. Vorhandene lokale HTTP-Tests prüfen
+weiterhin den Schutz vor automatischem Wiederholen schreibender Timeranfragen.
+Kombinierte Statement-/Branch-Coverage der geänderten/neuen Produktionsmodule:
+
+| Modul | Coverage |
+| --- | --- |
+| `coordinator.py` | 99.48 % |
+| `services.py` | 98.18 % |
+| `timer_edit.py` | 100.00 % |
+| `timer_conflicts.py` | 100.00 % |
+
+Alle liegen über der unveränderten 95-%-Grenze. Ruff, Formatierung, Syntax und
+mypy strict für **32** Produktionsmodule bestanden. Versionsstellen und lokale
+Dokumentationsziele konsistent; `uv lock --check --offline` bestanden, die
+Lockdatei ändert nur die Projektversion. Berichte: `section3-tests.xml`,
+`section3-tests.log`, `section3-coverage.json` unter
+`V:\enigma2-connect\.work\recording-workflows-checks`.
+
+Qualitätsabgleich: `action-setup`, `action-exceptions`, `parallel-updates`,
+`exception-translations`, `icon-translations`, `strict-typing`, `test-coverage`,
+`docs-actions`, `docs-triggers`, `docs-data-update`, `docs-known-limitations`.
+Keine Kriterien oder Grenzen abgesenkt. Unveränderte Module behalten ihre
+bisherigen Nachweise; keine vollständige CI oder offizielle HA-Qualitätsstufe behauptet.
+
+**Historischer Stand vor der späteren Praxisabnahme (siehe oben):** Die neue Anleitung auf Octagon und Vu+ mit separaten
+Testtimern prüfen. Optionserhalt, tatsächliche Wochenwiederholung und
+Receiver-Konflikte einschließlich Änderungen trotz Ablehnung sind noch nicht
+praktisch bestätigt. Ein nicht herstellbarer Konflikt ist „nicht geprüft“.
+Codex bestätigt die lokale Umsetzung als prüfbereit; Nutzerbestätigung und
+Abschnittscommit stehen aus. Aktuellen Remote-/Main-Abgleich vor einem PR
+erneuern; keine Übernahme oder Veröffentlichung in diesem Abschnitt.
+
+## Sofortaufnahme: 1.3.0-dev.4, Abschnitt 2
+
+Stand **20.09.2026**. Aktion `record_now` und Button **Aktuelle Sendung aufnehmen**
+implementiert. [Plan und Grenzen](ENTWICKLUNG.md#abschnitt-2-sofortaufnahme),
+[neue Receiver-Prüfanleitung](BENUTZERHANDBUCH.md#abschnitt-2-auf-dem-receiver-prüfen).
+
+**Lokale Prüfung bestanden:** Python **3.14.7**, Home Assistant **2026.9.1**,
+pytest-homeassistant-custom-component **0.13.364**. Erster Lauf: **237 Tests**
+bestanden. Nach zusätzlicher Absicherung bei unbekanntem Serientimer-Status
+und nachträglichen EPG-Zeitkorrekturen die gesamte Sofortaufnahme-Testgruppe
+erneut geprüft; insgesamt **240 unterschiedliche Tests** im jeweils letzten
+Lauf bestanden. Keine ausgelassenen oder noch fehlgeschlagenen Fälle.
+
+Geprüft: frisches EPG und Zeitgrenzen, Standby/Dateiwiedergabe, unbekannte
+Timerdaten, aktive Serien, laufende/deaktivierte/Umschalt-Timer, vorhandene
+Aufnahmen unverändert erhalten, parallele Starts und gemeinsame Befehlssperre,
+EPG-Wechsel und Zeitkorrekturen, Antwortverlust, Abbruch, Listenverzug,
+Ablehnung, fehlende Unterstützung, Authentifizierungs-/Verbindungsfehler,
+unpassende Erfolgsantworten und Nachlesen älterer Antwortformate. Echte
+HA-Aktions-/Button-Tests prüfen Antwortvariable und Aufruf ohne Antwort,
+Listen-/Statusaktualisierung, Entitätsregistrierung, Übersetzungen und
+Trennung zweier Receiver. Die HTTP-Tests aus 1b bleiben im Prüfumfang.
+Alle Receiver in diesen lokalen Tests sind simuliert.
+
+Umfang: `test_instant_recording`, `test_workflow_actions`, `test_workflow_models`,
+`test_api`, `test_integration`, `test_silver_controls`, `test_translations`,
+`test_channel_media`, `test_gold_lifecycle`, `test_regressions`.
+Kombinierte Statement-/Branch-Coverage der betroffenen Module:
+
+| Modul | Coverage |
+| --- | --- |
+| `api.py` | 97.02 % |
+| `button.py` | 100.00 % |
+| `coordinator.py` | 99.44 % |
+| `instant_recording.py` | 100.00 % |
+| `services.py` | 97.65 % |
+| `workflow_models.py` | 100.00 % |
+
+Alle liegen über der unveränderten 95-%-Grenze. `instant_recording.py` wurde
+nach den letzten Änderungen vollständig neu gemessen; die anderen Module
+behielten seit dem ersten Lauf denselben Quellstand. Ruff, Formatierung,
+Syntax und mypy strict für **30** Produktionsmodule bestanden. Versionsstellen,
+lokale Dokumentationslinks und `uv lock --check --offline` geprüft;
+Lockdatei ändert ausschließlich die Projektversion.
+Berichte unter `V:\enigma2-connect\.work\recording-workflows-checks`:
+`section2-tests.xml`, `section2-recheck.xml`, zugehörige Logs,
+`section2-coverage.json`, `section2-instant-coverage.json`.
+
+Qualitätsabgleich: `action-setup`, `action-exceptions`, `parallel-updates`,
+`entity-unique-id`, `entity-translations`, `exception-translations`,
+`icon-translations`, `test-coverage`, `strict-typing`, `docs-actions`,
+`docs-data-update`, `docs-known-limitations`. Keine Kriterien oder Grenzen
+abgesenkt. Unveränderte Bereiche behalten ihre bisherigen Nachweise; keine
+neue vollständige CI oder offizielle HA-Qualitätsstufe behauptet.
+
+**Praxisrückmeldung und Abschluss am 20.09.2026:** Der Nutzer bestätigt für
+Abschnitt 2: Sofortaufnahmen werden angelegt; bei bereits laufender Aufnahme
+lautet die Antwort `started: false`; ohne EPG wird keine Aufnahme gestartet
+und eine entsprechende Meldung angezeigt. Die Rückmeldung enthält keine
+getrennten Ergebnisse je Receiver oder zusätzliche Versionsangaben. Weitere
+Details der Prüfanleitung, insbesondere abspielbare Datei, tatsächlicher Nachlauf,
+Standby und Geräteauswahl, wurden nicht einzeln zurückgemeldet und gelten
+dadurch nicht als praktisch nachgewiesen. Antwortverlust und weitere Fehlerfälle
+sind weiterhin durch die oben genannten simulierten Tests belegt.
+
+Nutzer und Codex bestätigen Abschnitt 2 als fertig. Zugeordneter Abschlusscommit:
+`feat: add current programme instant recording`. Kein Merge oder Release.
+
+Der lokale Verweis `origin/main` steht inzwischen auf `df39aea` (1.2.1),
+während dieser Arbeitsbranch auf der vereinbarten Basis fortgeführt wird.
+Vor einem PR den aktuellen Remote-/Versionsabgleich und die Übernahme der
+zwischenzeitlichen Main-Korrekturen einschließlich Gerätezuordnung prüfen.
+
+## Aufnahme-Workflows: 1.3.0-dev.3, Abschnitt 1b
+
+Stand **20.09.2026**. Datenmodelle, optionale Antworten bestehender Timeraktionen
+und Schutz vor automatischer Wiederholung unklarer Timerbefehle implementiert.
+Plan und Grenzen in [ENTWICKLUNG.md](ENTWICKLUNG.md#abschnitt-1b-datenmodelle-aktionsantworten-und-unklare-ergebnisse),
+Praxisschritte im [Benutzerhandbuch](BENUTZERHANDBUCH.md#abschnitt-1b-auf-dem-receiver-prüfen).
+
+**Lokale Prüfung bestanden:** Python **3.14.7**, Home Assistant **2026.9.1**,
+pytest-homeassistant-custom-component **0.13.364**. **201 unterschiedliche
+Tests** sind im jeweils letzten Lauf bestanden. Der erste Lauf hatte 186
+bestandene Fälle; sechs lokale HTTP-Fälle scheiterten an der fehlenden
+`socket_enabled`-Fixture, einschließlich ihrer Folgefehler beim Aufräumen.
+Nach Korrektur der Testeinrichtung bestanden alle 40 Fälle des gezielten
+Nachlaufs (Workflow-Aktionen und betroffene Kanalkataloge), einschließlich
+eines zusätzlichen Tests für fehlschlagendes Nachlesen. Produktionscode musste
+für diese Testkorrektur nicht geändert werden.
+
+Umfang: `test_workflow_models`, `test_workflow_actions`, `test_api`,
+`test_integration`, `test_silver_controls`, `test_translations`, `test_models`,
+`test_gold_lifecycle`, `test_regressions`, `test_channel_media`. Echte lokale
+aiohttp-Verbindungen mit simuliertem Receiver belegen genau einen Schreibaufruf
+bei verlorener Antwort für alle sechs geschützten Timerendpunkte, einschließlich
+anschließender Erreichbarkeit. HA-Tests prüfen optionale Antworten, bisherige
+Aufrufe, übersetzte Fehler, Reauth, Abbruch und Listenabgleich bei Fehlern.
+Modelltests unterscheiden leere/unbekannte/ungültige Daten und erhalten Kennungen.
+
+Kombinierte Statement-/Branch-Coverage der betroffenen Module: `api.py`
+**96,99 %**, `coordinator.py` **99,38 %**, `services.py` **97,50 %** und
+`workflow_models.py` **100 %**. Alle liegen über der unveränderten 95-%-Grenze.
+Ruff, Formatierung, Syntax und mypy strict für alle **29** Produktionsmodule
+bestanden; Versionskonsistenz, lokale Dokumentationslinkziele und
+`uv lock --check --offline` ebenfalls. Die Lockdatei ändert nur die Projektversion.
+Berichte im ursprünglichen Arbeitsverzeichnis `V:\enigma2-connect` unter
+`.work/recording-workflows-checks/`: `section1b-tests.xml`,
+`section1b-recheck.xml`, zugehörige `.log`-Dateien und `section1b-coverage.json`.
+Die Coverage vereinigt beide Läufe bei unverändertem Produktionscode.
+
+Betroffene Qualitätsregeln geprüft: `action-setup`, `action-exceptions`,
+`common-modules`, `parallel-updates`, `test-coverage`, `strict-typing`,
+`exception-translations`, `docs-actions`, `docs-data-update`,
+`docs-known-limitations`. Keine Statusabsenkung oder neue Ausnahme.
+Unveränderte Module behalten ihre bisherigen Nachweise; kein vollständiger
+neuer CI-Lauf und keine neue offizielle HA-Qualitätsstufe behauptet.
+
+**Praxisabnahme bestanden:** Am **20.09.2026** bestätigt der Nutzer alle
+Prüfschritte der Anleitung für **1.3.0-dev.3** auf den beiden angefragten
+Testreceivern: Octagon SF8008 4K Supreme / OpenATV / OpenWebif 2.4.0 und
+Vu+ Solo² / VTi / OpenWebif 1.4.4. Dazu gehören Anlegen, Deaktivieren,
+Aktivieren und Löschen mit Antwortdaten, automatische Leerzeichenbereinigung,
+die erwartete Ablehnung einer erneuten Löschung, die anschließende Nachricht
+sowie bisherige Aufrufe ohne Antwortvariable. Die Bedienfolge überschneidet
+sich mit 1a; die genannten Antwort- und Eingabeeigenschaften sind die neuen
+Prüfpunkte. Eine neue HA-Version oder einzelne Antwortprotokolle wurden
+nicht mitgeteilt. Antwortverlust und Wiederholungsschutz sind ausschließlich
+durch die lokalen HTTP-Tests belegt; vollständige EPG-/Aufnahmeformate und
+Konfliktverhalten je Image bleiben Gegenstand der Folgeabschnitte.
+Nutzer und Codex bestätigen Abschnitt **1b** als fertig. Zugeordneter
+Abschlusscommit: `feat: add recording workflow foundations`.
+Kein Merge und kein Release.
+
+## Vu+-Timerkennung und Eingabekorrektur: 1.3.0-dev.2
+
+Nutzerbericht vom **20.09.2026**, getesteter Laufzeitstand **1.3.0-dev.1**:
+**Vu+ Solo²**, **VTi-Team Image 15.0.0 (2025-06-23-vti-master (4ef8eb3a9))**,
+**OpenWebif 1.4.4**. Nachricht und Timer anlegen bestanden. Aktivieren/Deaktivieren
+und das erste Löschen meldeten „Die Receiver-Anfrage ist fehlgeschlagen oder
+wurde abgelehnt.“ Erneutes Löschen meldete denselben Fehler; mangels bestätigter
+vorheriger Löschung ist dies **kein bestandener Ablehnungstest**. Die Nachricht
+nach der Ablehnung funktionierte; keine weiteren Auffälligkeiten gemeldet.
+
+Der erste Timerdurchlauf war **nicht bestanden**. Der anschließende Vergleich
+der Nutzerangaben belegt eine abweichende Timerkennung im Aufruf:
+
+- `timer_toggle` enthält ein führendes Leerzeichen vor
+  `1:0:19:283D:3FB:1:C00000:0:0:0:`, der gespeicherte Timer keines.
+- Die angefragten Zeiten 20.09.2026, 12:00–12:02 mit Offset `+02:00` entsprechen
+  exakt den gespeicherten Werten `begin=1789898400`, `end=1789898520`.
+- Der Timer ist laut Nutzer noch vorhanden; gemeldet sind `justplay=1`,
+  `disabled=0`, `state=0`.
+
+Der bisherige Code übergibt die abweichende Kennung unverändert als `sRef`.
+**Nutzer-Gegencheck am 20.09.2026 bestanden:** Nach manuellem Entfernen des
+Leerzeichens funktionieren Deaktivieren, Aktivieren und Löschen des Timers.
+Damit ist die abweichende Eingabe als Ursache bestätigt; aus diesem Befund ergibt
+sich keine VTi-/OpenWebif-Inkompatibilität. Dieser Gegencheck betrifft weiterhin
+den gemeldeten Stand **1.3.0-dev.1** mit bereinigter Eingabe, nicht die automatische
+Bereinigung in dev.2. Erneutes Löschen nach der erfolgreichen Löschung wurde
+nicht erneut berichtet. In Abschnitt 1a wurden Timerparameter und Zeitumrechnung
+nicht geändert.
+
+**Korrektur in 1.3.0-dev.2:** Das gemeinsame Schema von `timer_add`, `timer_toggle`
+und `timer_delete` entfernt äußere Leerzeichen und weist danach leere Kennungen
+vor einem Receiver-Aufruf ab. Interne Leerzeichen, Groß-/Kleinschreibung und
+Zeitangaben bleiben unverändert. **12 gezielte Tests bestanden** mit dem echten
+HA-Testframework und simuliertem Receiver, darunter neun neue parametrisierte
+Regressionen für alle drei Aktionen. Umfang: `tests/test_integration.py` mit
+`-k 'timer or service_target or actions_registered or action_rejection'`.
+Ruff, Formatierung, strenge Typprüfung und Syntaxprüfung bestanden; außerdem
+Versions-/Dokumentationskonsistenz und Offline-Lockprüfung. Keine vollständige
+neue Coverage-Messung und keine Absenkung bestehender Prüfgrenzen.
+Prüfberichte: `.work/recording-workflows-checks/timer-tests.xml` und
+`timer-tests.log` im ursprünglichen Arbeitsverzeichnis `V:\enigma2-connect`.
+
+**Praxisstatus:** Vu+-Timeraktionen mit bereinigter Eingabe sind nutzerbestätigt;
+die automatische Bereinigung in dev.2 ist durch die lokalen Regressionen geprüft.
+Octagon-Nachweis und Commit `e1dce95` behalten ihren ursprünglichen
+Umfang. Betroffen sind `action-exceptions`, `test-coverage`, `strict-typing`,
+`docs-actions`, `docs-known-limitations` und `docs-supported-devices`.
+Die Nachbesserung wurde am 20.09.2026 von Nutzer und Codex als fertig bestätigt.
+Zugeordneter Abschlusscommit: `fix: trim whitespace in timer service references`.
+Keine neue CI oder Abnahme anderer Geräte/Funktionen behauptet.
+
+## Aufnahme-Workflows: 1.3.0-dev.1, Abschnitt 1a
+
+Stand **19.09.2026**, Basis `origin/main` auf `1afa705`. Plan in der
+[Entwicklerdokumentation](ENTWICKLUNG.md#umsetzungsplan-aufnahme-workflows).
+Strukturierte API-Ergebnisse und interne Ablehnungsdetails implementiert.
+Gezielte Prüfung mit Python **3.14.7**, Home Assistant **2026.9.1** und
+`pytest-homeassistant-custom-component 0.13.364`: **88 Tests bestanden**,
+keine Fehler oder übersprungenen Tests. Umfang: `test_api.py`,
+`test_integration.py`, `test_regressions.py`, `test_silver_controls.py`.
+Das geänderte Modul `api.py` erreicht **96,35 % kombinierte Anweisungs-/
+Zweigabdeckung**; dies ist keine neue Abdeckungsmessung der gesamten Integration.
+Transport und Receiver sind simuliert, die HA-Regressionstests verwenden das
+echte Framework. Geprüft: erfolgreiche/abgelehnte Rückgaben, alter Rückgabevertrag,
+gemeinsame Befehlssperre, Abbruch/Transportfehler und übersetzte HA-Fehler ohne
+rohe Metadaten in Fehlermeldungen oder Logs.
+
+Ruff, Formatierung, strenge mypy-Prüfung der Integration und Syntaxprüfung der
+drei geänderten Python-Dateien bestanden. `uv lock --offline` sowie
+`uv lock --check --offline` bestanden; ausschließlich die lokale Projektversion
+änderte sich in der Lockdatei. Versionsstellen und lokale Dokumentationslinkziele
+geprüft. Lokaler Lauf gegen den Worktree; JUnit- und API-Coverage-Bericht liegen
+unter `V:\enigma2-connect\.work\recording-workflows-checks`.
+**Praxisnachweis aus Nutzerbericht vom 20.09.2026:** Octagon SF8008 4K Supreme,
+OpenATV **7.6.0.20260831 (2026-08-30)**, OpenWebif **2.4.0**, Teststand
+**1.3.0-dev.1**. Bildschirmnachricht, Timer anlegen, deaktivieren/aktivieren
+und löschen jeweils **OK**. Erneutes Löschen des entfernten Testtimers meldete
+wie erwartet: „Die Receiver-Anfrage ist fehlgeschlagen oder wurde abgelehnt.“
+Die anschließend gesendete Bildschirmnachricht funktionierte ebenfalls;
+keine weiteren Auffälligkeiten gemeldet. Dies ist ein vom Nutzer durchgeführter
+Test über Home Assistant mit einem echten Receiver, getrennt von den Simulationen
+oben. Die HA-Version der Nutzerinstallation wurde nicht mitgeteilt.
+
+Der Nachweis bestätigt die bestehenden Bedienabläufe, die sichtbare Ablehnung
+und die Weiterbenutzung danach auf diesem Gerät/Image. Interne strukturierte
+Antwortdaten, Parallelität und Abbruch sind weiterhin nur automatisiert geprüft.
+Keine neuen Receiver-Aktionen oder aktuelle CI für diesen Arbeitsstand.
+Die Abnahme erweitert sich nicht auf andere Receiver, Images oder Abschnitte.
+
+Betroffene Qualitätskriterien: `action-exceptions`, `parallel-updates`,
+`test-coverage`, `strict-typing`. Bestehende übersetzte HA-Fehler und Serialisierung
+bleiben erhalten; Testgrenzen werden nicht abgesenkt. Rückgabedetails sind intern
+und dürfen nicht vollständig in Logs oder Diagnosen gelangen. Die übrige
+Grundlage und Feature-Abschnitte 2–5 sind offen. Abschnitt **1a** ist mit der
+vorherigen Codex-Bestätigung und der vollständigen OK-Rückmeldung des Nutzers
+am 20.09.2026 beidseitig abgeschlossen. Die Praxisdokumentation vervollständigt
+denselben Abschnitt und behält dessen geprüfte Version **1.3.0-dev.1** bei;
+Laufzeitcode und Tests bleiben gegenüber dem erfolgreichen lokalen Lauf unverändert.
+Dokumentationslinks, Versionskonsistenz und `git diff --check` beim Abschluss
+erneut prüfen; kein Anlass für einen erneuten vollständigen Testlauf.
+Frühere Nachweise unten gelten nur für ihre Stände.
+
 ## PR-Vorbereitung / Issue #10: 1.2.1
 
 Die ersten [Push-HACS-Prüfungen](https://github.com/topic2k/enigma2-connect/actions/runs/35499303499)

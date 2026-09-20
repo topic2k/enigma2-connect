@@ -4,6 +4,7 @@
 
 ## Contents
 
+- [1.3.0](#130)
 - [1.2.1](#121)
 - [1.2.0](#120)
 - [1.1.3](#113)
@@ -13,6 +14,122 @@
 - [1.0.2](#102)
 - [1.0.1](#101)
 - [1.0.0](#100)
+
+## 1.3.0
+
+Unreleased. Target for the requested EPG, timer and
+recording extensions. Instant recording and timer editing are implemented;
+EPG search and cards have passed joint acceptance; library management has also passed joint acceptance.
+
+- Idea no. 6: free space per mounted disk and optional RAM/uptime sensors. Diagnostics refresh every five minutes; unknown values and disconnected disks are not reported as zero.
+
+- Added the HA dependencies required by real selector checks to the test
+  environment; aligned the device-ownership regression test with timer context.
+
+- Incorporated newer fixes from `main`: current HA device ownership lookup
+  for actions and exact-commit HACS validation are retained alongside the new
+  recording workflows.
+
+- Move/delete guards now match the selected recording rather than blocking all
+  receiver activity. Unrelated HA streams, reported streams and playback remain
+  usable; active timers are matched by file path. Unresolved file operations block
+  new streams only for source/destination paths. Deletion asks about the selected
+  title with its own button and requires fresh confirmation after action changes.
+
+- Completed recording titles can be changed during streaming or recording
+  playback; missing streaming status no longer blocks title-only changes.
+  Media paths and bytes stay unchanged. Recording/preparation guards and stricter
+  move/delete protection remain in place.
+
+- Recording management uses a modal dialog with keyboard support. Errors and
+  unconfirmed operations are clearly highlighted and remain visible on the card
+  after closing. Library loading failures are also prominent alerts.
+
+- Recording management in the card and HA actions: change title, move and
+  explicitly confirm deletion. Fresh selection checks, activity/destination
+  guards, unresolved-write lock and read-only completion checks. Section 5b
+  jointly accepted following local, Octagon and HA dialog checks.
+- Recording library card: automatic columns based on available list width.
+  Display order: title, duration, recording date, channel, progress, size.
+  Priority: title, recording date, channel, duration, progress, size. Updates
+  during use while preserving expanded details.
+- Recording library card: second compact row view with extra scrollbar spacing selectable in the visual
+  editor. Rows show extra fields when space permits; expand it for all
+  metadata. Existing detail view remains the default. Requires card file dev.16;
+  the library action introduced in dev.13 remains compatible.
+- Read-only recording library with a separate dashboard card and
+  `recordings_list` action: combined title/channel, tag, directory and progress
+  filters, complete catalog without a result limit, file size and receiver-reported
+  percentage. Missing values remain unknown; zero percent does not necessarily
+  mean unwatched. Native media views also show file size and tags.
+  The dev.13 library scope passed actual HA checks; the dev.16 row view
+  passed local checks; section 5a jointly accepted.
+  Title changes, move and delete are implemented and jointly accepted in 5b.
+- EPG search and similar programmes return all matching received results without
+  a local limit. List/single display with arrows around the count:
+  “[‹] Result 10 of 30 [›]”. Both cards default to single view; remote search is off.
+  Both integration and card require dev.12.
+- Reset search now clears input and results together. Late search replies are
+  discarded while pending recording requests retain their acknowledgement.
+- Remote card sections for EPG search, playback and numbers are independently
+  optional; added an EPG-only card and an explicit clear-input button.
+- Added EPG title search, similar programmes and guarded event recording as HA
+  actions plus a search/record view in the optional remote card. Fresh event and
+  timer checks and uncertain-write protection prevent stale/duplicate requests.
+  Direct Octagon and actual HA checks passed; section 4 jointly accepted.
+
+- Completed practical HA checks of selection controls, calendar updates, conflict
+  events and visible information messages with both receivers.
+- Documented direct receiver checks of editing, series, choice values and conflicts
+  on Octagon/OpenWebif 2.4.1 and Vu+/1.4.4. Both images may mutate a timer despite
+  rejecting an edit; see the additional practical HA checks.
+- Timer actions now offer named channel choices, native date/time controls in
+  the HA timezone and known receiver recording directory choices. Actions also offer
+  named message types and after-recording behavior. Channel/directory selections
+  are receiver-bound; manual YAML inputs remain supported. Ambiguous/nonexistent
+  local clock-change times are rejected.
+- Added timer editing with a separate old identity, preservation of omitted options
+  and readback. Add/edit support weekly series, directories, tags, disabled state
+  and recording type. Single timers and entire series are explicitly distinguished.
+  Receiver conflicts produce translated errors and structured HA events; rejected
+  edits may already have changed values. No automatic replay or rollback.
+  Section 3 accepted by both parties on 2026-09-20 following receiver and HA checks.
+
+- Added the “Record current programme” action and button: check fresh EPG and
+  timers, start event-mode recording and refresh state. Existing recordings remain
+  unchanged. Guard repeated/concurrent calls and lost responses; no fallback to
+  long recording. Optional responses identify the start or existing timer.
+  The user confirms creation, `started: false` for an existing recording and
+  rejection without EPG; section 2 confirmed complete by both parties.
+- Added section 1b foundations: validated internal EPG, timer, conflict and
+  recording models; existing timer actions offer optional HA response data
+  identifying the addressed timer. Errors remain translated exceptions.
+- Prevented automatic replay of timer writes after response loss. Uncertain
+  acknowledgements receive a dedicated error; timer actions refresh lists after
+  failures too and invalidate them on cancellation. Added regression tests and
+  bilingual practical test instructions. The user confirms all practical steps
+  on Octagon/OpenWebif 2.4.0 and Vu+/OpenWebif 1.4.4; both parties confirmed
+  section 1b complete. Response loss was tested using local simulation.
+- Recorded a differing user test on Vu+ Solo² with VTi 15.0.0 and OpenWebif
+  1.4.4: timer creation and messages passed; toggling timer status and deletion
+  initially failed. Subsequently supplied action and timer data establish a mismatching
+  service reference due to leading whitespace, with matching times. After manually
+  removing the space, the user confirms disabling, enabling and deletion on dev.1.
+  No general image incompatibility is established.
+- Timer actions trim outer whitespace from service references and reject empty
+  identifiers before contacting the receiver. Added regression tests for creation,
+  toggling and deletion; internal whitespace is preserved. Automatic trimming
+  tested locally; Vu+ retest with manually corrected input on dev.1 passed.
+- Documented the implementation plan for feature ideas 1–5 in both languages,
+  including confirmation by both parties before committing each finished section.
+- Started the API foundation: retain structured command responses and internal
+  rejection details. Existing commands still return `None`; exception messages
+  exclude raw receiver messages.
+- Section 1a confirmed through user testing on Octagon SF8008 4K Supreme with
+  OpenATV 7.6.0.20260831 and OpenWebif 2.4.0: messages, timer creation,
+  enabling/disabling and deletion, expected rejection of repeated deletion and
+  subsequent operation passed. Recorded practical evidence and completion by
+  both parties.
 
 ## 1.2.1
 

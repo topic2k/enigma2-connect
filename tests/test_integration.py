@@ -46,7 +46,16 @@ async def test_actions_registered_without_entries(hass):
         "restart_gui",
         "deep_standby",
         "message",
+        "record_now",
+        "epg_search",
+        "epg_similar",
+        "record_event",
+        "recordings_list",
+        "recording_manage",
+        "recording_operation_status",
+        "recording_destinations",
         "timer_add",
+        "timer_edit",
         "timer_delete",
         "timer_toggle",
     }
@@ -208,6 +217,7 @@ async def test_service_selects_owner_without_deprecated_config_entries(hass, ent
         second.runtime_data.client.command,
         "message",
         refresh=False,
+        timer_action=None,
         text="Hello",
         type=1,
         timeout=10,
@@ -417,3 +427,54 @@ async def test_reconfigure_and_reauth(hass, entry, receiver):
         )
         assert result["reason"] == "reauth_successful"
         assert entry.data["password"] == "new-secret"
+
+
+@pytest.mark.parametrize(
+    ("action", "endpoint"),
+    [
+        ("timer_add", "timeradd"),
+        ("timer_toggle", "timertogglestatus"),
+        ("timer_delete", "timerdelete"),
+    ],
+)
+async def test_timer_actions_trim_only_outer_reference_whitespace(
+    hass, entry, receiver, action, endpoint
+):
+    await setup(hass, entry)
+    device = dr.async_entries_for_config_entry(dr.async_get(hass), entry.entry_id)[0]
+    reference = "1:0:19:283D:3FB:1:C00000:0:0:0:"
+    stream_reference = "4097:0:0:0:0:0:0:0:0:0:http%3a//example.test/live:My Channel"
+    for supplied, expected in [
+        (" " + reference, reference),
+        ("\t" + reference + " \r\n", reference),
+        (reference, reference),
+        (" " + stream_reference + " ", stream_reference),
+    ]:
+        receiver[2].reset_mock()
+        data = {"device_id": device.id, "service_reference": supplied, "begin": 100, "end": 200}
+        if action == "timer_add":
+            data["name"] = "Whitespace regression"
+        await hass.services.async_call(DOMAIN, action, data, blocking=True)
+        assert receiver[2].await_count == 1
+        assert receiver[2].call_args.args == (endpoint,)
+        assert receiver[2].call_args.kwargs["sRef"] == expected
+        assert receiver[2].call_args.kwargs["begin"] == 100
+        assert receiver[2].call_args.kwargs["end"] == 200
+
+
+@pytest.mark.parametrize("action", ["timer_add", "timer_toggle", "timer_delete"])
+@pytest.mark.parametrize("reference", ["", " \t\r\n"])
+async def test_timer_actions_reject_blank_reference_before_receiver(
+    hass, entry, receiver, action, reference
+):
+    await setup(hass, entry)
+    device = dr.async_entries_for_config_entry(dr.async_get(hass), entry.entry_id)[0]
+    receiver[1].reset_mock()
+    receiver[2].reset_mock()
+    data = {"device_id": device.id, "service_reference": reference, "begin": 100, "end": 200}
+    if action == "timer_add":
+        data["name"] = "Blank reference"
+    with pytest.raises(vol.Invalid):
+        await hass.services.async_call(DOMAIN, action, data, blocking=True)
+    receiver[1].assert_not_awaited()
+    receiver[2].assert_not_awaited()

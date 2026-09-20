@@ -11,6 +11,7 @@ from yarl import URL
 
 from custom_components.enigma2_connect.api import (
     AuthenticationError,
+    CommandRejectedError,
     ConnectionError,
     OpenWebifClient,
     PowerCommandUnconfirmed,
@@ -175,3 +176,105 @@ async def test_missing_mute_state_does_not_toggle():
     with pytest.raises(ProtocolError):
         await client.set_mute(True)
     assert client.session.get.call_count == 1
+
+
+@pytest.mark.parametrize(
+    "data",
+    [
+        {"result": True, "timer": {"eit": 42}},
+        {"state": "true", "data": [1, 2]},
+        {},
+    ],
+)
+async def test_command_result_retains_success_and_legacy_return_contract(data):
+    client, _ = client_for(data=data)
+    assert await client.command_result("message", text="Test") == data
+    assert await client.command("message", text="Test") is None
+    assert client.session.get.call_count == 2
+    assert client.session.get.call_args.kwargs["params"] == {"text": "Test"}
+
+
+@pytest.mark.parametrize("flag", ["result", "state"])
+@pytest.mark.parametrize("value", [False, "false", 0, "0"])
+async def test_rejected_command_retains_details_without_exposing_them(flag, value):
+    conflicts = [{"name": "Private programme", "begin": 100, "end": 200}]
+    data = {flag: value, "message": "http://root:secret@receiver/", "conflicts": conflicts}
+    client, response = client_for(data=data)
+    with pytest.raises(CommandRejectedError) as caught:
+        await client.command_result("timerchange")
+    assert isinstance(caught.value, ProtocolError)
+    assert caught.value.response == data
+    assert caught.value.response["conflicts"] == conflicts
+    assert "secret" not in str(caught.value)
+    assert "Private programme" not in repr(caught.value)
+    assert client.session.get.call_count == 1
+    assert not client.command_lock.locked()
+    response.json.return_value = {"result": True}
+    assert await client.command_result("timerchange") == {"result": True}
+
+
+async def test_rejected_read_remains_a_protocol_error_with_details():
+    client, _ = client_for(data={"result": False, "conflicts": []})
+    with pytest.raises(ProtocolError) as caught:
+        await client.get("timeradd")
+    assert isinstance(caught.value, CommandRejectedError)
+    assert caught.value.response == {"result": False, "conflicts": []}
+
+
+async def test_command_results_share_lock_with_existing_commands():
+    client, response = client_for()
+    entered = asyncio.Event()
+    release = asyncio.Event()
+
+    async def reply(**_kwargs):
+        entered.set()
+        await release.wait()
+        return {"result": True}
+
+    response.json.side_effect = reply
+    first = asyncio.create_task(client.command_result("timeradd"))
+    await asyncio.wait_for(entered.wait(), timeout=5)
+    second = asyncio.create_task(client.command("timerdelete"))
+    try:
+        await asyncio.sleep(0)
+        assert client.session.get.call_count == 1
+        release.set()
+        assert await asyncio.gather(first, second) == [{"result": True}, None]
+        assert [call.args[0].path for call in client.session.get.call_args_list] == [
+            "/api/timeradd",
+            "/api/timerdelete",
+        ]
+    finally:
+        release.set()
+        await asyncio.gather(first, second, return_exceptions=True)
+
+
+async def test_cancelled_command_result_releases_lock():
+    client, response = client_for()
+    entered = asyncio.Event()
+
+    async def reply(**_kwargs):
+        entered.set()
+        await asyncio.Event().wait()
+
+    response.json.side_effect = reply
+    task = asyncio.create_task(client.command_result("recordnow"))
+    await asyncio.wait_for(entered.wait(), timeout=5)
+    task.cancel()
+    with pytest.raises(asyncio.CancelledError):
+        await task
+    assert not client.command_lock.locked()
+    response.json.side_effect = None
+    assert await client.command_result("timerdelete") == {"result": True}
+
+
+@pytest.mark.parametrize("error", [TimeoutError(), aiohttp.ClientPayloadError()])
+async def test_command_result_transport_failure_releases_lock(error):
+    client, response = client_for()
+    response.json.side_effect = error
+    with pytest.raises(ConnectionError):
+        await client.command_result("timerchange")
+    assert not client.command_lock.locked()
+    assert client.session.get.call_count == 1
+    response.json.side_effect = None
+    assert await client.command_result("timerdelete") == {"result": True}

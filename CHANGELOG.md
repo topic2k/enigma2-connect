@@ -4,6 +4,7 @@
 
 ## Inhaltsverzeichnis
 
+- [1.3.0](#130)
 - [1.2.1](#121)
 - [1.2.0](#120)
 - [1.1.3](#113)
@@ -13,6 +14,126 @@
 - [1.0.2](#102)
 - [1.0.1](#101)
 - [1.0.0](#100)
+
+## 1.3.0
+
+Unveröffentlicht. Zielversion für die beauftragten EPG-,
+Timer- und Aufnahmeerweiterungen. Sofortaufnahme und Timerbearbeitung sind
+umgesetzt; EPG-Suche und Karten sind gemeinsam abgenommen. Bibliotheksverwaltung ist ebenfalls gemeinsam abgenommen.
+
+- Idee Nr. 6: freier Speicher je eingebundenem Laufwerk sowie optionale RAM- und Laufzeitsensoren. Diagnosewerte werden alle fünf Minuten aktualisiert; unbekannte Werte und getrennte Laufwerke werden nicht als null gemeldet.
+
+- Testumgebung um die HA-Abhängigkeiten für reale Auswahlfeldprüfungen
+  ergänzt; Regressionstest der Gerätezuordnung an den Timer-Kontext angepasst.
+
+- Neuere Korrekturen aus `main` übernommen: aktuelle HA-Gerätezuordnung für
+  Aktionen und HACS-Prüfung des exakten Commits bleiben auch mit den neuen
+  Aufnahmefunktionen erhalten.
+
+- Verschieben und Löschen prüfen die betroffene Aufnahme statt pauschal alle
+  Receiveraktivitäten zu sperren. Andere HA-Streams, gemeldete Streams und
+  Wiedergaben bleiben nutzbar; laufende Timer werden nach Dateipfad zugeordnet.
+  Offene Dateiaufträge sperren neue Streams nur für Quelle/Ziel. Löschfrage mit
+  Aufnahmetitel und eigenem Button; Aktionswechsel erfordert neue Bestätigung.
+
+- Titel abgeschlossener Aufnahmen lassen sich während Streaming oder
+  Aufnahmewiedergabe ändern; auch eine fehlende Streaming-Statusangabe sperrt
+  die reine Titeländerung nicht mehr. Dateipfad und Videodaten bleiben gleich.
+  Schutz für laufende/vorbereitete Aufnahmen sowie Verschieben/Löschen bleibt erhalten.
+
+- Aufnahmeverwaltung in einem modalen Dialog mit Tastaturbedienung. Fehler und
+  unbestätigte Aufträge sind deutlich hervorgehoben und bleiben nach dem Schließen
+  auf der Karte sichtbar. Ladefehler der Bibliothek erscheinen ebenfalls als Warnhinweis.
+
+- Aufnahmeverwaltung in der Bibliothekskarte und über HA-Aktionen: Titel ändern,
+  verschieben und nach ausdrücklicher Bestätigung löschen. Frischer
+  Aufnahmeabgleich, Aktivitäts-/Zielprüfungen, Sperre für unbestätigte Aufträge
+  und lesender Statusabgleich. Abschnitt 5b nach lokalen, Octagon- und HA-Dialogprüfungen gemeinsam abgenommen.
+- Aufnahmebibliothekskarte: automatische Spaltenauswahl nach verfügbarer
+  Listenbreite. Reihenfolge Titel, Dauer, Aufnahmedatum, Sender, Wiedergabestand,
+  Dateigröße; Priorität Titel, Aufnahmedatum, Sender, Dauer, Wiedergabestand,
+  Dateigröße. Passt sich während der Nutzung an; aufgeklappte Details bleiben offen.
+- Aufnahmebibliothekskarte: zweite, kompakte Zeilenansicht im visuellen Editor
+  wählbar. Je nach Platz zusätzliche Angaben pro Zeile; alle Angaben
+  aufklappbar. Die bisherige Detailansicht bleibt Standard. Kartendatei dev.16
+  erforderlich; zusätzlicher Abstand zum Scrollbalken. Vorhandene Bibliotheksaktion ab dev.13 weiterhin kompatibel.
+- Lesende Aufnahmebibliothek mit eigener Dashboard-Karte und Aktion
+  `recordings_list`: Titel-/Sender-, Tag-, Ordner- und Fortschrittsfilter,
+  vollständiger Katalog ohne Trefferlimit, Dateigröße und vom Receiver gemeldeter
+  Prozentwert. Fehlende Angaben bleiben unbekannt; 0 % bedeutet nicht zwingend
+  „ungesehen“. Native Medienansichten zeigen zusätzlich Dateigröße und Tags.
+  Bibliotheksumfang aus dev.13 einschließlich realer HA-Prüfung bestanden;
+  Zeilenansicht aus dev.16 lokal geprüft; Abschnitt 5a gemeinsam abgenommen.
+  Titeländerung, Verschieben und Löschen sind in 5b umgesetzt und gemeinsam abgenommen.
+- EPG-Suche und ähnliche Sendungen liefern alle passenden empfangenen Treffer
+  ohne lokale Begrenzung. Listen- oder Einzelansicht mit Pfeilen um den Zähler:
+  „[‹] Treffer 10 von 30 [›]“. Beide Karten standardmäßig in Einzelansicht; Suche in der Fernbedienung aus.
+  Integration und Karte benötigen dev.12.
+- „Suche zurücksetzen“ leert Eingabe und Treffer gemeinsam. Verspätete
+  Suchantworten bleiben verworfen; laufende Aufnahmeaufträge behalten ihre Rückmeldung.
+- Fernbedienungskarte: EPG-Suche, Videosteuerung und Zahlentasten getrennt
+  ausblendbar; separate EPG-Suchkarte und Button zum Leeren des Suchfelds ergänzt.
+- EPG-Titelsuche, ähnliche Sendungen und ereignisbasierte Aufnahme als HA-Aktionen
+  ergänzt. Die optionale Fernbedienungskarte erhält eine Such-/Aufnahmeansicht.
+  Frische Ereignisprüfung, Timerabgleich und Wiederholungsschutz verhindern
+  veraltete Aufträge und unbeabsichtigte Mehrfachanlage. Direkte Octagon-Prüfung
+  und HA-Praxisprüfung bestanden; Abschnitt 4 gemeinsam abgenommen.
+
+- HA-Praxisprüfung der Auswahlfelder, Kalenderaktualisierung, Konfliktereignisse
+  und sichtbaren Informationsnachrichten mit beiden Receivern erfolgreich abgeschlossen.
+- Direkte Receiver-Prüfungen von Timerbearbeitung, Serien, Auswahlwerten und
+  Konflikten auf Octagon/OpenWebif 2.4.1 und Vu+/1.4.4 dokumentiert. Beide Images
+  können einen Timer trotz abgelehnter Bearbeitung verändern; siehe ergänzende HA-Praxisprüfung.
+- Timeraktionen erhalten Senderauswahl nach Namen, native Datum/Uhrzeit-Felder
+  in der HA-Zeitzone und eine zusätzliche Auswahl bekannter Receiver-Aufnahmeordner.
+  Nachrichtentyp und Verhalten nach der Aufnahme sind als benannte Auswahl verfügbar.
+  Auswahlen sind gerätegebunden; manuelle YAML-Eingaben bleiben unterstützt.
+  Mehrdeutige/nicht existierende lokale Zeiten beim Zeitwechsel werden abgelehnt.
+- Timerbearbeitung mit separater alter Kennung, Erhalt ausgelassener Optionen
+  und Nachlesen ergänzt. Anlegen/Bearbeiten unterstützen Wochenserien, Ordner,
+  Tags, Deaktivierung und Aufnahmeart. Einzeltermine und ganze Serien sind
+  ausdrücklich getrennt. Receiver-Konflikte erscheinen als übersetzter Fehler
+  und strukturiertes HA-Ereignis; Ablehnungen können bereits geänderte Timer
+  hinterlassen. Keine automatische Wiederholung oder Rücksetzung. Abschnitt 3 nach
+  Receiver- und HA-Praxisprüfung am 20.09.2026 beidseitig abgenommen.
+
+- Aktion und Button „Aktuelle Sendung aufnehmen“ ergänzt: gültiges EPG und
+  Timer frisch prüfen, Aufnahme im Ereignismodus starten und Zustand aktualisieren.
+  Vorhandene Aufnahmen bleiben unverändert. Wiederholte/parallele Aufrufe sowie
+  verlorene Antworten werden abgesichert; kein Ersatz durch lange Aufnahme.
+  Optionale Antwortdaten nennen Start oder vorhandenen Timer. Nutzer bestätigt
+  Anlegen, `started: false` bei laufender Aufnahme und Ablehnung ohne EPG;
+  Abschnitt 2 beidseitig als fertig bestätigt.
+- Grundlage 1b ergänzt: validierte interne EPG-, Timer-, Konflikt- und
+  Aufnahmemodelle; bestehende Timeraktionen bieten optionale HA-Antwortdaten
+  mit der angesprochenen Kennung. Fehler bleiben übersetzte Ausnahmen.
+- Automatisches Wiederholen schreibender Timeranfragen bei Antwortverlust
+  unterbunden. Unklare Bestätigungen werden gesondert gemeldet; Timeraktionen
+  aktualisieren die Listen auch nach Fehlern und invalidieren sie bei Abbruch.
+  Regressionstests und zweisprachige Praxisanleitung ergänzt. Nutzer bestätigt
+  alle Praxisschritte auf Octagon/OpenWebif 2.4.0 und Vu+/OpenWebif 1.4.4;
+  Abschnitt 1b beidseitig abgeschlossen. Antwortverlust lokal simuliert geprüft.
+- Abweichenden Nutzer-Praxistest auf Vu+ Solo² mit VTi 15.0.0 und OpenWebif
+  1.4.4 dokumentiert: Timer anlegen und Nachrichten bestanden; Umschalten des
+  Timerstatus und Löschen scheiterten zunächst. Nachgereichte Aktions- und Timerdaten
+  belegen eine abweichende Service-Referenz durch ein führendes Leerzeichen bei
+  passenden Zeiten. Nach manuellem Entfernen des Leerzeichens bestätigt der Nutzer
+  Deaktivieren, Aktivieren und Löschen auf dev.1. Keine allgemeine Image-Inkompatibilität.
+- Timeraktionen entfernen äußere Leerzeichen der Service-Referenz und weisen
+  leere Kennungen vor dem Receiver-Aufruf ab. Regressionstests für Anlegen,
+  Aktivieren/Deaktivieren und Löschen ergänzen; interne Leerzeichen bleiben
+  erhalten. Automatische Bereinigung lokal geprüft; Vu+-Gegencheck mit manuell
+  bereinigter Eingabe auf dev.1 bestanden.
+- Umsetzungsplan für die Feature-Ideen 1–5 einschließlich abschnittsweiser,
+  beidseitiger Fertigbestätigung vor Commits zweisprachig dokumentiert.
+- API-Grundlage begonnen: strukturierte Befehlsantworten und intern zugängliche
+  Ablehnungsdetails erhalten. Bestehende Befehle liefern weiterhin `None`;
+  Ausnahmetexte enthalten keine rohen Receiver-Nachrichten.
+- Abschnitt 1a durch Nutzerprüfung auf Octagon SF8008 4K Supreme mit OpenATV
+  7.6.0.20260831 und OpenWebif 2.4.0 bestätigt: Nachrichten, Timer anlegen,
+  aktivieren/deaktivieren und löschen sowie erwartete Ablehnung beim erneuten
+  Löschen und anschließende Weiterbenutzung bestanden. Praxisnachweis und
+  beidseitigen Abschnittsabschluss dokumentiert.
 
 ## 1.2.1
 

@@ -21,6 +21,7 @@ from homeassistant.helpers.translation import async_get_translations
 from homeassistant.util import dt as dt_util
 
 from .const import DOMAIN
+from .workflow_models import integer, tags
 
 
 async def async_recording_labels(hass: HomeAssistant) -> dict[str, str]:
@@ -63,6 +64,13 @@ def recording_title(movie: JsonObject, fallback_title: str = "Recording") -> str
         if seconds < 60 and (minutes or seconds):
             hours, minutes = divmod(minutes, 60)
             parts.append(f"{hours} h {minutes:02d} min" if hours else f"{minutes} min")
+    size = integer(movie.get("filesize"), minimum=1)
+    if size is not None:
+        parts.append(
+            f"{size / 1024**3:.1f} GiB" if size >= 1024**3 else f"{size / 1024**2:.1f} MiB"
+        )
+    if labels := tags(movie.get("tags")):
+        parts.append(", ".join(labels))
     return " · ".join(parts)
 
 

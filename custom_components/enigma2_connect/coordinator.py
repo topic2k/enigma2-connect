@@ -9,6 +9,7 @@ if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable
     from typing import Any
 
+import asyncio
 import logging
 from dataclasses import replace
 from datetime import timedelta
@@ -19,12 +20,28 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed, HomeAssistantError
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from .api import AuthenticationError, OpenWebifClient, PowerCommandUnconfirmed, ReceiverError
+from .action_choices import recording_directories
+from .api import (
+    AuthenticationError,
+    CommandRejectedError,
+    CommandUnconfirmed,
+    OpenWebifClient,
+    PowerCommandUnconfirmed,
+    ReceiverError,
+)
 from .channel_media import CONF_CHANNEL_BOUQUET, CONF_SHOW_CHANNELS
-from .const import CATALOG_INTERVAL, DOMAIN, SLOW_INTERVAL
+from .const import CATALOG_INTERVAL, DIAGNOSTICS_INTERVAL, DOMAIN, SLOW_INTERVAL
+from .epg import EpgError, EpgWorkflow
+from .instant_recording import InstantRecording, InstantRecordingError
 from .media_stream import MediaStream
 from .models import JsonObject, ReceiverState, Snapshot, services
 from .recording_images import RecordingImages
+from .recording_library import RecordingLibrary, RecordingLibraryError
+from .recording_management import RecordingManagementError, RecordingManager
+from .system_diagnostics import SystemDiagnostics
+from .timer_conflicts import conflicts, summary
+from .timer_edit import TimerEditError, TimerEditor, TimerEditRejected
+from .workflow_models import TimerIdentity
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -42,17 +59,22 @@ class EnigmaCoordinator(DataUpdateCoordinator[Snapshot]):
             always_update=False,
         )
         self.client = client
+        self.instant_recording = InstantRecording(client)
+        self.timer_editor = TimerEditor(client)
+        self.epg = EpgWorkflow(client)
+        self.recording_library = RecordingLibrary(client)
+        self.recording_manager = RecordingManager(client)
         self.entry = entry
         self.recording_images = RecordingImages(hass, self)
         self.media_stream = MediaStream(hass, self)
         self.info: dict[str, Any] = {}
+        self._diagnostics_due = 0.0
+        self._initial_system = SystemDiagnostics()
         self._slow_due = 0.0
         self._catalog_due = 0.0
         self._bouquet = entry.options.get("bouquet")
         self.optional_errors: set[str] = set()
         # Serialize catalog selection with polls so an old poll cannot overwrite it.
-        import asyncio
-
         self.data_lock = asyncio.Lock()
 
     async def _async_setup(self) -> None:
@@ -61,6 +83,8 @@ class EnigmaCoordinator(DataUpdateCoordinator[Snapshot]):
             self.info = data["info"]
             if not isinstance(self.info, dict) or not self.info.get("model"):
                 raise ValueError("Missing receiver model")
+            self._initial_system = SystemDiagnostics.parse(self.info)
+            self._diagnostics_due = monotonic() + DIAGNOSTICS_INTERVAL
         except AuthenticationError as err:
             raise ConfigEntryAuthFailed(
                 translation_domain=DOMAIN, translation_key="invalid_auth"
@@ -111,14 +135,27 @@ class EnigmaCoordinator(DataUpdateCoordinator[Snapshot]):
                     signal = await self.optional("signal")
                     current = await self.optional("getcurrent")
                 state = ReceiverState.parse(raw, current)
-                previous = self.data if self.data else Snapshot(state)
+                previous = self.data if self.data else Snapshot(state, system=self._initial_system)
+                system = previous.system
+                if monotonic() >= self._diagnostics_due:
+                    about = await self.optional("about")
+                    info = about.get("info") if about else None
+                    system = SystemDiagnostics.parse(info)
+                    if not isinstance(info, dict):
+                        self.optional_errors.add("about")
+                    self._diagnostics_due = monotonic() + DIAGNOSTICS_INTERVAL
                 # Reuse slow-changing lists between their own refresh deadlines.
                 # A failed list refresh replaces old data with None, not an empty list.
                 timers, movies = previous.timers, previous.movies
                 movie_directory = previous.movie_directory
+                directories = previous.recording_directories
                 catalog_refreshed = monotonic() >= self._slow_due
                 if catalog_refreshed:
-                    timers = await self.optional("timerlist", "timers")
+                    timer_data = await self.optional("timerlist")
+                    timers = timer_data.get("timers") if timer_data else None
+                    if not isinstance(timers, list):
+                        timers = None
+                        self.optional_errors.add("timerlist")
                     catalog = await self.optional("movielist", recursive=1)
                     movies = catalog.get("movies") if isinstance(catalog, dict) else None
                     movie_directory = (
@@ -129,6 +166,7 @@ class EnigmaCoordinator(DataUpdateCoordinator[Snapshot]):
                         self.optional_errors.add("movielist")
                     if not isinstance(movie_directory, str):
                         movie_directory = None
+                    directories = recording_directories(timer_data, movie_directory)
                     self._slow_due = monotonic() + SLOW_INTERVAL
                 bouquets, channels = previous.bouquets, previous.channels
                 media_channels = previous.media_channels
@@ -182,6 +220,8 @@ class EnigmaCoordinator(DataUpdateCoordinator[Snapshot]):
                     self._bouquet,
                     movie_directory,
                     media_channels,
+                    directories,
+                    system,
                 )
                 if catalog_refreshed:
                     self.recording_images.async_catalog_updated(snapshot)
@@ -195,11 +235,16 @@ class EnigmaCoordinator(DataUpdateCoordinator[Snapshot]):
                     translation_domain=DOMAIN, translation_key="cannot_update"
                 ) from err
 
-    async def perform(
-        self, method: Callable[..., Awaitable[Any]], *args: Any, refresh: bool = True, **kwargs: Any
-    ) -> None:
+    async def perform[T](
+        self,
+        method: Callable[..., Awaitable[T]],
+        *args: Any,
+        refresh: bool = True,
+        timer_action: str | None = None,
+        **kwargs: Any,
+    ) -> T:
         try:
-            await method(*args, **kwargs)
+            result = await method(*args, **kwargs)
         except AuthenticationError as err:
             self.entry.async_start_reauth(self.hass)
             raise HomeAssistantError(
@@ -209,12 +254,100 @@ class EnigmaCoordinator(DataUpdateCoordinator[Snapshot]):
             raise HomeAssistantError(
                 translation_domain=DOMAIN, translation_key="power_unconfirmed"
             ) from err
+        except (
+            InstantRecordingError,
+            TimerEditError,
+            EpgError,
+            RecordingLibraryError,
+            RecordingManagementError,
+        ) as err:
+            raise HomeAssistantError(translation_domain=DOMAIN, translation_key=err.reason) from err
+        except CommandUnconfirmed as err:
+            raise HomeAssistantError(
+                translation_domain=DOMAIN, translation_key="timer_unconfirmed"
+            ) from err
+        except CommandRejectedError as err:
+            items = conflicts(err.response) if timer_action else []
+            if items:
+                self.hass.bus.async_fire(
+                    f"{DOMAIN}_timer_conflict",
+                    {
+                        "config_entry_id": self.entry.entry_id,
+                        "action": timer_action,
+                        "conflicts": items,
+                        "timer_state": err.timer_state
+                        if isinstance(err, TimerEditRejected)
+                        else "unknown",
+                    },
+                )
+                raise HomeAssistantError(
+                    translation_domain=DOMAIN,
+                    translation_key="timer_conflict",
+                    translation_placeholders={"conflicts": summary(items)},
+                ) from err
+            raise HomeAssistantError(
+                translation_domain=DOMAIN,
+                translation_key="timer_edit_rejected"
+                if isinstance(err, TimerEditRejected)
+                else "request_failed",
+            ) from err
         except ReceiverError as err:
             raise HomeAssistantError(
                 translation_domain=DOMAIN, translation_key="request_failed"
             ) from err
         if refresh:
             await self.async_request_refresh()
+        return result
+
+    async def async_manage_recording(self, **params: Any) -> JsonObject:
+        # Hold stream admission while validating and dispatching a mutation.
+        async with self.media_stream.lock:
+            try:
+                in_use = params.get("action") != "rename" and self.media_stream.recording_in_use(
+                    params["service_reference"]
+                )
+            except RecordingManagementError as err:
+                raise HomeAssistantError(
+                    translation_domain=DOMAIN, translation_key=err.reason
+                ) from err
+            if in_use:
+                raise HomeAssistantError(
+                    translation_domain=DOMAIN, translation_key="recording_busy"
+                )
+            try:
+                return await self.perform(self.recording_manager.manage, refresh=False, **params)
+            finally:
+                self.invalidate_lists()
+                await self.async_request_refresh()
+
+    async def async_record_event(self, expected: JsonObject) -> JsonObject:
+        return await self._timer_workflow(self.epg.record, expected, timer_action="record_event")
+
+    async def async_record_now(self) -> JsonObject:
+        return await self._timer_workflow(self.instant_recording.start, timer_action="record_now")
+
+    async def async_timer_edit(
+        self, old: TimerIdentity, changes: JsonObject, scope: str
+    ) -> JsonObject:
+        return await self._timer_workflow(
+            self.timer_editor.edit, old, changes, scope, timer_action="timer_edit"
+        )
+
+    async def _timer_workflow(
+        self, method: Callable[..., Awaitable[JsonObject]], *args: Any, timer_action: str
+    ) -> JsonObject:
+        try:
+            result = await self.perform(method, *args, refresh=False, timer_action=timer_action)
+        except asyncio.CancelledError:
+            self.invalidate_lists()
+            raise
+        except HomeAssistantError:
+            self.invalidate_lists()
+            await self.async_request_refresh()
+            raise
+        self.invalidate_lists()
+        await self.async_request_refresh()
+        return result
 
     async def select_bouquet(self, reference: str) -> None:
         async def change() -> None:

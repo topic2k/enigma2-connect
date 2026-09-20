@@ -13,7 +13,9 @@ from homeassistant.core import Event, HomeAssistant
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
+from homeassistant.helpers.service import async_get_all_descriptions
 
+from .action_choices import CHOICES_KEY, ActionChoices
 from .api import OpenWebifClient, power_command_middleware
 from .channel_media import ChannelPiconView
 from .const import DEFAULT_INTERVAL, DOMAIN
@@ -38,6 +40,8 @@ CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:
     register_services(hass)
+    descriptions = await async_get_all_descriptions(hass)
+    hass.data[CHOICES_KEY] = ActionChoices(hass, descriptions[DOMAIN])
     hass.http.register_view(RecordingThumbnailView(hass))
     hass.http.register_view(ChannelPiconView(hass))
     hass.http.register_view(MediaStreamView(hass))
@@ -60,6 +64,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: EnigmaConfigEntry) -> bo
     )
     await coordinator.async_config_entry_first_refresh()
     entry.runtime_data = coordinator
+    choices: ActionChoices = hass.data[CHOICES_KEY]
+    entry.async_on_unload(choices.bind(coordinator))
 
     async def stop_stream(_event: Event) -> None:
         await coordinator.media_stream.async_close()

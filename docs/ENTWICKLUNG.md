@@ -22,6 +22,8 @@ die [README](../README.md) bleibt der kurze Einstieg für Anwender.
 - [Dokumentation und Änderungen](#dokumentation-und-änderungen)
 - [Identität und Datenverarbeitung](#identität-und-datenverarbeitung)
 - [Validierung von Aktionen](#validierung-von-aktionen)
+- [Umsetzungsplan: Aufnahme-Workflows](#umsetzungsplan-aufnahme-workflows)
+- [Festplattenspeicher und Systemdiagnose](#festplattenspeicher-und-systemdiagnose)
 - [Vorgemerkte Ideen](#vorgemerkte-ideen)
 - [Dateibestand und lokale Archive](#dateibestand-und-lokale-archive)
 
@@ -102,7 +104,7 @@ uv run --locked mypy
 uv run --locked pytest --cov=custom_components.enigma2_connect --cov-branch --cov-report=term-missing --cov-report=json:coverage.json
 uv run --locked python scripts/check_config_flow_coverage.py coverage.json --silver
 uv run --locked python -m compileall -q custom_components tests scripts
-node --test tests/frontend.test.cjs
+node --test tests/frontend.test.cjs tests/recordings_frontend.test.cjs
 git diff --check
 ```
 
@@ -111,6 +113,13 @@ deren Auflösung. Nach einer Versionsänderung `uv lock --offline` ausführen un
 prüfen, dass nur die erwarteten Projektmetadaten geändert wurden. Keine
 Abhängigkeiten nebenbei aktualisieren. Eine frische Umgebung benötigt beim
 ersten Synchronisieren Zugriff auf die Paketquellen.
+
+Die Tests der HA-Aktionsbeschreibungen prüfen echte Selektoren und Funktions-
+kennungen. HA importiert dafür globale Basis-Komponenten einschließlich Assist,
+Conversation, TTS und FFmpeg. Deren Importabhängigkeiten stehen deshalb in der
+Dev-Gruppe, fest auf die Anforderungen des HA-Teststands abgestimmt. Eine frische
+Umgebung aus der Lockdatei prüft die Vollständigkeit. Die Integration erhält
+dadurch keine zusätzlichen Laufzeitpakete.
 
 **Befristete Sicherheitsausnahme:** Home Assistant 2026.9.1 und 2026.9.2 binden
 `cryptography==48.0.1` und `pyOpenSSL==26.2.0`. Wegen
@@ -932,10 +941,423 @@ Ziffern und OK. Service-Referenzen lassen sich in OpenWebif ermitteln,
 Bouquetreferenzen über `/api/bouquets`. Die aktuelle Optionsoberfläche bietet
 eine feste Namensauswahl; frühere gespeicherte eigene Referenzen bleiben erhalten.
 
+## Umsetzungsplan: Aufnahme-Workflows
+
+### Ergänzung dev.20: Aufnahmebezogene Verwaltungssperren
+
+Umgesetzt (dev.20): Dateipfade der ausgewählten Aufnahme gegen laufende Timer, Receiver-
+Wiedergabe, gemeldete Streamreferenzen und eigene HA-Aufnahmestreams abgleichen.
+Andere bekannte Aktivitäten nicht sperren. Offene Verschiebe-/Löschaufträge nur
+für betroffene Quell-/Zielpfade gegen Streamstart absichern. Nicht eindeutig
+zuordenbare aktive Schreibvorgänge weiterhin abweisen. Löschfrage mit Titel und
+eindeutigem Button anzeigen, Bestätigung bei Aktionswechsel zurücksetzen.
+Gezielte Tests und realer Verschiebe-/Rückverschiebe-/Löschtest mit der ausdrücklich
+freigegebenen, entbehrlichen Aufnahme; deren Sicherungskopie bleibt unberührt.
+
+
+
+### Ergänzung dev.19: Titeländerung während Streaming
+
+Umgesetzt und am Octagon geprüft (Details in der Prüfübersicht): Bei reinen Titeländerungen Streaming und Aufnahmewiedergabe zulassen,
+da `movieinfo` nur den Anzeigenamen in der Metadatei ändert und die Mediendatei
+unter demselben Pfad bleibt. Aufnahme-/Vorbereitungssperren, Revisionsprüfung und
+Schutz bei unbestätigten Aufträgen erhalten. Verschieben/Löschen bleiben strenger
+gesperrt. Manager und HA-Aktionspfad gezielt testen, danach die vom Nutzer genannte
+Aufnahme auf dem Receiver kurz umbenennen und den Originaltitel wiederherstellen.
+
+
+
+### Ergänzung dev.18: Verwaltungsdialog
+
+Umgesetzter Plan: Verwaltung in einen nativen modalen Dialog verlegen, Fokus und Escape
+behandeln, Fehler und offene Aufträge deutlich hervorheben und nach dem Schließen
+in der Karte erhalten. Vorhandene Schreibsperren bewahren. Fehlermeldung zur
+Receiveraktivität lesend untersuchen; Dialog und Fehlerfälle automatisiert sowie
+im simulierten Browser prüfen.
+
+
+
+Auftrag vom **19.09.2026**: die Ideen 1–5 als nächste Funktionserweiterung
+umsetzen. Basis ist der frisch abgerufene `origin/main`-Commit `1afa705`
+(Version 1.2.0), Arbeitsbranch `feature/recording-workflows`, Worktree
+`V:\enigma2-connect-worktrees\recording-workflows`. Für diesen Auftrag gilt
+ausdrücklich `main` als Ausgangsbasis statt der allgemeinen `develop`-Regel.
+Ziel ist **1.3.0-dev.7**, da der gesamte geplante Umfang neue,
+rückwärtskompatible Funktionen enthält. Vor einem späteren PR ist die
+Versionsbasis erneut mit Remote, Tags und veröffentlichten Releases abzugleichen.
+
+**Commit-Regel dieses Auftrags:** Erst wenn Nutzer und Codex einen Abschnitt
+beide ausdrücklich als fertig bestätigt haben, wird dieser auf dem Arbeitsbranch
+committet. Lokale Tests oder ein fertiger Entwurf ersetzen die Nutzerbestätigung
+nicht. Bestätigungen und Commit-Zuordnung werden hier fortgeschrieben.
+
+### Abschnitte und Abnahme
+
+1. **Gemeinsame Grundlage.** OpenWebif-Antworten je Testreceiver/Image prüfen,
+   strukturierte Befehlsantworten und Konfliktdaten erhalten, anschließend
+   typisierte EPG-/Timer-/Aufnahmemodelle und die HA-Antwortverarbeitung ergänzen.
+   Bestehende Aktionen und Serialisierung erhalten. Vor neuen Schreibaktionen
+   Wiederholungsschutz bei verlorenen Antworten und Zustandsabgleich festlegen.
+   Abnahme: Transport-, Fehler-, Parallelitäts- und Abbruchtests; bekannte und
+   nicht unterstützte Antwortformate ausdrücklich unterscheiden.
+2. **Sofortaufnahme (Idee 4).** Aktion und Button für die aktuelle EPG-Sendung,
+   klarer Fehler ohne geeignetes EPG, kein stiller Wechsel zu langer Aufnahme.
+   Timer, Kalender und Aufnahmestatus nach Erfolg aktualisieren. Abnahme:
+   Aufnahmegrenzen, laufende Aufnahme, Mehrfachbetätigung und Fehlerfälle.
+3. **Timerbearbeitung und Konflikte (Ideen 2/3).** Anlegen und Bearbeiten um
+   Wochentage, Ordner, Tags und Aufnahmeoptionen erweitern. Alte Timerkennung von
+   neuen Werten trennen. Receiver-Konflikte mit Sender, Titel und Zeitraum für
+   Anzeige und Automationen bereitstellen. Abnahme: Wochenserien, Mitternacht,
+   Sommer-/Winterzeit, Erhalt vorhandener Timer bei Ablehnung; keine Behauptung
+   unabhängiger Konfliktvorhersage. Einzeltermin und gesamte Serie unterscheiden.
+4. **EPG-Suche (Idee 1).** Bedarfsabhängige Titelsuche, ähnliche Sendungen und
+   Wiederholungstermine, begrenzte Treffer mit Zeiten und Beschreibung. Aufnahme
+   über Ereigniskennung und Senderreferenz. HA-Aktionen mit Antwortdaten und eine
+   Such-/Aufnahmeansicht in der optionalen Dashboard-Karte. Abnahme: Suche bis
+   Kalender, veraltete Treffer, fehlendes EPG, vorhandene Timer und Konflikte.
+5. **Aufnahmebibliothek (Idee 5).** Zuerst Tags/Filter, verfügbare Dateigröße und
+   gespeicherten Wiedergabefortschritt ergänzen; fehlende Daten bleiben unbekannt.
+   Danach Umbenennen, Verschieben und Löschen über Aktionen und Verwaltungsansicht.
+   Receiver und Zielordner eindeutig prüfen, Löschen in der Oberfläche bestätigen,
+   Papierkorbverhalten je Image klären. Katalog, Medienkennungen, Vorschaubilder
+   und vorhandene Streaming-Sitzungen berücksichtigen. Abnahme mit eigens
+   angelegten Testaufnahmen, einschließlich laufender Aufnahmen und Zielkonflikten.
+
+Jeder Abschnitt erhält passende lokale Tests, DE/EN-Dokumentation und einen
+aktualisierten Changelog. Bestehende Qualitäts-/Coverage-Grenzen bleiben erhalten.
+Mehrere Receiver, nicht unterstützte Funktionen, Abbruch und Wiederverbindung
+gehören zu den betroffenen Querschnittsprüfungen. Echte Receiver-/HA-Nachweise
+bleiben von Simulationen getrennt. Vor Übernahme nach `main`: aktuelle CI,
+Qualitätsabgleich und ausdrückliche Nutzerfreigabe; Release nur auf Anweisung.
+
+### Stand und nächster Schritt
+
+- **1a – Plan und strukturierte API-Antworten:** beidseitig abgeschlossen am
+  **20.09.2026**, Version **1.3.0-dev.1**. Codex bestätigt die lokale Prüfung;
+  der Nutzer bestätigt alle Praxisschritte auf dem Octagon SF8008 4K Supreme
+  (siehe [Prüfübersicht](VALIDIERUNG.md)). Zugeordneter Abschlusscommit auf
+  `feature/recording-workflows`: `feat: preserve structured receiver command responses`.
+- **Folgeprüfung zu 1a – Vu+ Solo² / VTi / OpenWebif 1.4.4:** abgeschlossen
+  am 20.09.2026. Timer anlegen und Nachrichten bestanden, Aktivieren/Deaktivieren
+  und Löschen zunächst fehlgeschlagen. Aktions-/Timerdaten belegen eine führende Leerstelle
+  nur im Aufruf bei passenden Zeiten. `1.3.0-dev.2` bereinigt äußere Leerzeichen
+  der Service-Referenz und validiert leere Kennungen; 12 gezielte lokale Tests,
+  Ruff, Syntax und Typprüfung bestanden. Nutzer-Gegencheck auf dev.1 nach manuellem
+  Entfernen der Leerstelle bestanden: Deaktivieren, Aktivieren und Löschen.
+  Nutzer und Codex haben die Nachbesserung dev.2 als fertig bestätigt.
+  Zugeordneter Abschlusscommit: `fix: trim whitespace in timer service references`.
+  Der Octagon-Abschluss oben bleibt unverändert erhalten.
+- **1b – übrige Grundlage:** beidseitig abgeschlossen am **20.09.2026**,
+  Version **1.3.0-dev.3**. 201 unterschiedliche lokale Tests bestanden;
+  Nutzer bestätigt alle Praxisschritte auf beiden Testreceivern
+  (siehe Prüfübersicht). Zugeordneter Abschlusscommit:
+  `feat: add recording workflow foundations`.
+- **2 – Sofortaufnahme:** beidseitig als fertig bestätigt am **20.09.2026**,
+  Teststand **1.3.0-dev.4**; 240 lokale Tests bestanden. Nutzer bestätigt Anlegen,
+  `started: false` bei laufender Aufnahme und Ablehnung ohne EPG. Umfang und
+  verbleibende Praxisnachweise siehe Prüfübersicht. Zugeordneter Abschlusscommit:
+  `feat: add current programme instant recording`.
+- **3 – Timerbearbeitung und Konflikte:** einschließlich der neuen
+  Aktionsauswahlfelder implementiert in **1.3.0-dev.6**; aktuelle lokale
+  Nachweise stehen in der [Prüfübersicht](VALIDIERUNG.md). Direkte Receiver-Tests
+  auf Octagon und Vu+ sowie HA-Oberflächen-, Kalender- und Ereignisprüfungen bestanden.
+  Am **20.09.2026** von Codex und Nutzer als fertig bestätigt. Abschlusscommit:
+  `feat: add timer editing and action selectors`.
+- **4 – EPG-Suche und Karten:** beidseitig abgeschlossen am **20.09.2026**,
+  Teststand **1.3.0-dev.12**. Lokale Tests und reale HA-/Octagon-Prüfung bestanden;
+  Vu+ ohne EPG mit korrekter Leermeldung geprüft. Grenzen und Timer-Abgleich
+  siehe [Prüfübersicht](VALIDIERUNG.md). Abschlusscommit auf dem Arbeitsbranch:
+  `feat: add EPG search and recording cards`.
+  Umgesetzter Plan: drei Aktionen
+  `epg_search`, `epg_similar` und `record_event`; Suchtreffer enthalten die
+  ursprüngliche Ereigniskennung, Senderreferenz und exakten Unix-Zeiten.
+  Vor jeder Aufnahme frische EPG- und Timerprüfung unter der Befehlssperre,
+  anschließend genau ein Schreibversuch und Bestätigung über die Timerliste.
+  Unklare Antworten sperren erneutes Anlegen bis Sendungsende; bestehende
+  passende Timer bleiben erhalten. Die optionale Karte erhält eine aufklappbare
+  Suchansicht mit Aufnahme und ähnlichen Sendungen. Gezielte Backend-, HA- und
+  Frontendtests sowie Receiver-Prüfungen werden getrennt dokumentiert.
+- **5:** 5a einschließlich Kartenänderungen bis dev.16 am 20.09.2026 von Nutzer und Codex bestätigt. Reale HA-Prüfung durch Codex auf dev.13, spätere Kartenänderungen lokal geprüft und vom Nutzer abgenommen. 5b bis dev.20 nach lokalen Prüfungen, realen Octagon-Verwaltungsaktionen und lesender HA-Dialogprüfung ebenfalls am 20.09.2026 gemeinsam bestätigt. Punkte 1–5 abgeschlossen; Grenzen siehe Prüfübersicht.
+
+`OpenWebifClient.command_result()` liefert die strukturierte erfolgreiche
+Antwort unter derselben Sperre wie `command()`. Bestehendes `command()` liefert
+weiterhin `None`. Ablehnungen über `result=false` bzw. bei Befehlen `state=false`
+erzeugen `CommandRejectedError`, weiterhin ein `ProtocolError`, mit internem
+`response`-Attribut. Ausnahmetext und `repr` enthalten keine Receiver-Nachricht.
+Rohe Antworten können private Metadaten enthalten: nicht protokollieren oder
+vollständig an HA weiterreichen; spätere Modelle projizieren nur benötigte Felder.
+Der Coordinator verwendet vorerst weiterhin die bestehende übersetzte
+Fehlermeldung; seit Abschnitt 3 ergänzt er validierte Konfliktdetails.
+
+Schnittstellenbeleg: [OpenWebif-Timermodell](https://github.com/oe-alliance/OpenWebif/blob/main/plugin/controllers/models/timers.py),
+am 19.09.2026 gelesen. Konfliktantworten enthalten `result=false` und eine
+`conflicts`-Liste. Diese Recherche ersetzt keine Receiver-Prüfung; es wurde kein
+Upstream-Implementierungscode übernommen.
+
+### Abschnitt 1b: Datenmodelle, Aktionsantworten und unklare Ergebnisse
+
+Implementierungsplan vom **20.09.2026**, Teststand **1.3.0-dev.3**:
+
+1. Unveränderliche Modelle für EPG-Ereignisse, Timerkennungen, Timer,
+   Konflikte und Aufnahmen mit ausdrücklich validierten Pflichtfeldern ergänzen.
+2. Bestehenden Timeraktionen optionale HA-Antwortdaten geben und Fehler weiter
+   als übersetzte Ausnahmen behandeln.
+3. Automatisches Wiederholen schreibender Timer-GETs bei verlorener Antwort
+   unterbinden; Listen nach Erfolg und Fehler neu lesen, bei Abbruch invalidieren.
+4. Datenformate, echte lokale HTTP-Verbindungen, HA-Antworten und bisherige
+   Aufrufe prüfen; danach Praxisabnahme auf beiden Testreceivern.
+
+`workflow_models.py` projiziert ausschließlich benannte Felder. Die Modelle
+für EPG, vollständige Timer, Konflikte und Aufnahmen sind interne Grundlagen
+für die Folgeabschnitte; das bestehende Polling und der Kalender bleiben bei
+ihren bisherigen Formaten. Die Timerkennung wird bereits in Aktionsantworten
+verwendet. Unbekannte optionale Metadaten bleiben `None`; leere Listen sind
+gültig, fehlende Listen oder ungültige Einträge ergeben `DataFormatError`.
+Es werden keine fehlerhaften Einträge still aus einer Entscheidungsliste entfernt.
+Kennungen bleiben einschließlich innerer Leerzeichen und URL-Escapes erhalten.
+Ganzzahlen dürfen dezimale Zeichenketten sein; boolesche Werte und gerundete
+Fließkommazahlen sind keine IDs oder Zeitstempel. EPG-Dauer wird in Sekunden,
+Aufnahmelänge als Minuten:Sekunden gelesen. Wiedergabefortschritt wird noch
+nicht interpretiert. Das übermittelte Vu+-Timerformat ist als reduzierte
+Testdatenbasis abgebildet; andere Varianten sind synthetisch und anhand der
+Upstream-Schnittstellen geprüft, keine neue Hardware-Abnahme.
+
+`EnigmaCoordinator.perform()` erhält den typisierten Rückgabewert. Die Aktionen
+`timer_add`, `timer_toggle`, `timer_delete` unterstützen `SupportsResponse.OPTIONAL`:
+bei `return_response` erhalten Aufrufer `action` und `timer` mit
+`service_reference`, `begin`, `end`. Dies ist die angesprochene Kennung bei
+positiver Receiver-Bestätigung, kein vollständiger zurückgelesener Timerzustand.
+Rohe Nachrichten, Timerprotokolle und weitere Receiver-Felder werden nicht
+weitergereicht. Ablehnungen bleiben Ausnahmen; Konfliktdaten werden erst in
+Abschnitt 3 für Benutzer zugänglich gemacht. Bestehende Aufrufe ohne Antwort
+liefern weiterhin `None`.
+
+Die bestehende Session-Middleware `power_command_middleware` schützt zusätzlich
+`timeradd`, `timeraddbyeventid`, `timerchange`, `timerdelete`, `timertogglestatus`
+und `recordnow` vor dem transparenten aiohttp-GET-Retry. Sie wird weiterhin in
+der HA-verwalteten Session installiert. Ein nicht zustande gekommener
+Verbindungsaufbau bleibt ein Verbindungsfehler. Antwortverlust, ungültiges JSON
+oder eine fehlende/unbekannte Bestätigung ergeben `CommandUnconfirmed` und in
+HA `timer_unconfirmed`. Unterstützt sind `result`-/`state`-Flags als
+Boolean, 0/1 oder entsprechende Zeichenketten; ein negatives Flag ist eine
+Ablehnung. HTTP 404/405/501 bleibt ausdrücklich nicht unterstützt.
+
+Nach Erfolg oder Fehler einer Timeraktion werden die Listen invalidiert und
+ein Refresh angefordert. Scheitert auch das Lesen, bleiben die üblichen
+Nicht-verfügbar-/Unbekannt-Zustände erhalten; ein Refresh wandelt einen Fehler
+nicht nachträglich in Erfolg um. Bei Task-Abbruch werden die Listen für die
+nächste Abfrage invalidiert und der Abbruch weitergereicht. Es gibt keinen
+automatischen zweiten Schreibversuch und kein automatisches Rollback.
+Diese Regel garantiert keine Einmaligkeit über manuelle Wiederholungen,
+HA-Neustarts oder andere OpenWebif-Clients hinweg. Vor den neuen Aktionen in
+Abschnitt 2/3 werden deren konkrete Vorabprüfungen unter der Befehlssperre
+ergänzt. Das ist besonders bei `timerchange` nötig: die Upstream-Implementierung
+verändert Timerfelder bereits vor der Konfliktantwort. Eine Ablehnung belegt
+daher nicht, dass alle alten Werte unverändert blieben.
+
+Schnittstellen am 20.09.2026 gelesen: [EPG-Modell](https://github.com/oe-alliance/OpenWebif/blob/main/plugin/controllers/models/epg.py),
+[Timermodell](https://github.com/oe-alliance/OpenWebif/blob/main/plugin/controllers/models/timers.py),
+[Aufnahmemodell](https://github.com/oe-alliance/OpenWebif/blob/main/plugin/controllers/models/movies.py)
+und [HA-Aktionsantworten](https://developers.home-assistant.io/docs/dev_101_services/#response-data).
+Kein Upstream-Implementierungscode übernommen.
+
+### Abschnitt 2: Sofortaufnahme
+
+Plan vom **20.09.2026**, Teststand **1.3.0-dev.4**: `record_now` als
+gerätebezogene Aktion und Button „Aktuelle Sendung aufnehmen“ ergänzen.
+Vor dem Schreiben aktuellen Sender, gültiges EPG und Timer frisch lesen;
+Vorprüfung und Start gemeinsam mit anderen Befehlen sperren. Laufende
+Aufnahmen auf demselben Sender erhalten, Mehrfachstarts und Wiederholungen
+nach unklarer Antwort verhindern. Ausschließlich `recordnow` ohne Parameter
+für lange Aufnahme verwenden. Timer, Kalender und Aufnahmestatus aktualisieren.
+Danach Grenzzeiten, fehlendes EPG, Standby/Wiedergabe, Parallelität, Abbruch,
+Antwortverlust, Fehler, mehrere Receiver und HA-Aktion/Button lokal prüfen.
+Neue Praxisanleitung mit echten Testaufnahmen; Commit nach beidseitiger Abnahme.
+
+`InstantRecording.start()` hält die gemeinsame Client-Befehlssperre während
+Status-/EPG-Abfrage, Timerprüfung, zweiter Status-/EPG-Abfrage und `recordnow`.
+Es wird kein `infinite`- oder `undefinitely`-Parameter gesendet: bereits dessen
+Vorhandensein aktiviert im OpenWebif-Controller den anderen Modus. Aktuelles
+EPG muss Senderreferenz, Ereigniskennung, Beginn, positive Dauer und Titel
+enthalten und die aktuelle HA-Systemzeit einschließen. Standby, Dateiwiedergabe,
+fehlendes/veraltetes EPG und Wechsel während der Prüfung ergeben übersetzte Fehler.
+HA und Receiver müssen deshalb eine korrekte Uhrzeit haben.
+
+Die vollständige Timerliste muss lesbar sein. Ein aktiver Aufnahme-Timer auf
+demselben Sender wird unverändert zurückgegeben (`started=false`), auch wenn er
+früher endet als die Sendung. Berücksichtigt werden das aktuelle Zeitintervall
+und `state=2` für laufende Serien. Abgeschlossene, deaktivierte und reine
+Umschalt-Timer blockieren nicht. Unbekannte relevante Flags ergeben einen
+Fehler statt eines neuen Starts. Bei erfolgreichem `recordnow` werden die
+Kennung aus `newtimer` und dessen Ereigniskennung geprüft; fehlt `newtimer`,
+wird die Timerliste erneut gelesen. Nicht zuordenbare Bestätigungen werden
+als unklar gemeldet. Es werden keine Rohantworten an HA weitergereicht.
+
+Pro Receiver merken wir gestartete Versuche anhand Sender und EPG-ID;
+nachträgliche EPG-Zeitkorrekturen erzeugen keinen neuen Versuchsschlüssel. Ein bestätigter Start schützt zusätzlich zehn Sekunden gegen Listenverzug.
+Bei Antwortverlust oder Abbruch nach Beginn des Schreibversuchs bleibt die
+Sperre bis zum ursprünglich geprüften EPG-Ende bestehen. Weitere Aufrufe dürfen einen mittlerweile
+sichtbaren vorhandenen Timer zurückmelden, schreiben aber nicht erneut.
+Eindeutige Ablehnung, fehlende Unterstützung, Authentifizierungsfehler oder
+fehlgeschlagener Verbindungsaufbau erlauben einen neuen expliziten Versuch.
+Die Merkliste gilt nur für die laufende Integration und wird nicht über einen
+Reload/HA-Neustart gespeichert. Änderungen durch Fernbedienung oder andere
+OpenWebif-Clients lassen sich zwischen Prüfung und Schreiben nicht atomar
+ausschließen; abweichende zurückgemeldete Ereignisse werden als unklar behandelt.
+Kein automatischer Rollback und kein stiller Wechsel zum langen Aufnahmemodus.
+
+`EnigmaCoordinator.async_record_now()` aktualisiert nach Erfolg und Fehler die
+Listen und den Status; bei Abbruch markiert es die Listen für die nächste
+Abfrage. Aktion und standardmäßig aktivierter Button nutzen dieselbe Instanz.
+Die optionale Aktionsantwort enthält `started` und die bestätigte Timerkennung
+(`service_reference`, `begin`, `end`); kein Versprechen erfolgreicher Dateischreibung.
+Aufnahmeordner, Endzeit einschließlich möglichem Nachlauf und Persistenz des
+Soforttimers bestimmt der Receiver. Unterstützungs-/Hardware-Nachweise stehen in
+der Prüfübersicht, einschließlich Umfang der Nutzerbestätigung und noch
+nicht einzeln nachgewiesener Praxisschritte.
+
+Schnittstellen am 20.09.2026 geprüft: [OpenWebif-Controller](https://github.com/oe-alliance/OpenWebif/blob/main/plugin/controllers/web.py),
+[Timermodell](https://github.com/oe-alliance/OpenWebif/blob/main/plugin/controllers/models/timers.py)
+und [OpenATV-Timer](https://github.com/openatv/enigma2/blob/master/lib/python/RecordTimer.py).
+Die Implementierung ist eigenständig; keine Upstream-Codeübernahme.
+
+## Festplattenspeicher und Systemdiagnose
+
+Idee Nr. 6 ist umgesetzt. `about` liefert `info.mem1` (RAM gesamt), `mem2`
+(MemFree + Buffers + Cached), `uptime` (`Nd HH:MM`) und `hdd` mit `mount`/`free`.
+Grundlage: [OpenWebif-Informationsmodell][ideas-info] und
+[about-Controller][ideas-controller]. Dessen Vollabfrage erneuert die Messwerte.
+Die Initialantwort wird wiederverwendet; danach gilt eine eigene 300-Sekunden-Frist.
+Timer-/Aufnahmelisten-Invalidierung löst keine zusätzliche Diagnoseabfrage aus.
+
+Das immutable `SystemDiagnostics`-Modell normalisiert die von OpenWebif binär
+berechneten, aber kB/MB/GB/TB beschrifteten Werte in Bytes (auch KiB/MiB/GiB/TiB
+und Dezimalkomma). Unbekannte Einheiten, negative Werte, nicht endliche Zahlen
+und fehlende Angaben werden nicht geraten. Uptime wird als Dauer in Sekunden
+mit Minutenauflösung geliefert; ein Neustart darf den Wert verkleinern.
+Es wird kein Bootzeitpunkt mit vorgetäuschter Sekundengenauigkeit berechnet.
+
+Festplattensensoren verwenden normalisierte Mountpfade in der Unique-ID,
+erkennen spätere Laufwerke per Coordinator-Listener und behalten Registry-IDs
+bei Umordnung und Wiederverbindung. Doppelte Mountangaben bleiben unbekannt.
+Fehlende Laufwerke oder freie Werte bedeuten `unavailable`, nicht null.
+RAM/Laufzeit sind standardmäßig deaktivierte Diagnosen, mit DATA_SIZE bzw.
+DURATION und MEASUREMENT. Mountpfade sind am Sensor sichtbar, werden aber nicht
+zum bisherigen Allowlist-Diagnoseexport hinzugefügt.
+Der Discovery-Listener wird beim Entladen entfernt. Fehler einer optionalen
+Abfrage verwerfen alte Messwerte; Authentifizierungsfehler lösen weiterhin Reauth
+aus. Statische Geräteidentität bleibt bei Diagnosefehlern erhalten.
+Nicht von `hdd` gelieferte Netzwerk-Mounts werden nicht aus Aufnahmeordnern
+abgeleitet. Hardwareprüfung einschließlich möglichem HDD-Aufwecken bleibt offen.
+
 ## Vorgemerkte Ideen
 
-Diese Ideen sind unverbindlich; Prioritäten sind eine Einschätzung, keine Zusage
-für die nächste Version. Bereits vorhandene Teilfunktionen sind unten benannt.
+Die Ideen **1–5** sind seit 19.09.2026 zur Umsetzung beauftragt; Reihenfolge,
+Abnahme und Fortschritt stehen im [Umsetzungsplan](#umsetzungsplan-aufnahme-workflows).
+Die übrigen Ideen bleiben unverbindlich. Bereits vorhandene Teilfunktionen sind
+unten benannt.
+
+### Abschnitt 3: Timerbearbeitung und Konflikte
+
+Bedienergänzung vom **20.09.2026**, Ziel **1.3.0-dev.6**: Senderauswahl nach
+Namen aus dem gewählten Bouquet, native Datum/Uhrzeit-Felder und zusätzliche
+Auswahl bekannter Receiver-Aufnahmeordner ergänzen. HA-Aktionslisten sind global:
+Einträge nach Receiver kennzeichnen und die Gerätebindung vor jedem Aufruf prüfen.
+Manuelle YAML-Referenzen, Pfade und Zeiten mit Offset bleiben gültig. Lokale Zeiten
+in der HA-Zeitzone auslegen; mehrdeutige/nicht existierende Zeiten beim Zeitwechsel
+ablehnen. Auswahlmetadaten aus vorhandenen Abfragen aktualisieren und bei Entladen
+entfernen. HA-Selektoren, Gerätewechsel, Listenänderungen und Zeitgrenzen testen.
+
+
+Implementierungsplan vom **20.09.2026**, Ziel **1.3.0-dev.5**:
+
+1. `timer_add` um Wochentage, Ordner, Tags, deaktivierten Zustand und
+   Aufnahmeoptionen erweitern. `timer_edit` trennt alte Kennung und neue Werte;
+   nicht angegebene Felder aus einer frisch gelesenen Timerliste erhalten.
+2. Einzeltermin und ganze Serie ausdrücklich unterscheiden. Vorprüfung,
+   Änderung und Nachlesen unter derselben Befehlssperre ausführen; unvollständige
+   oder mehrdeutige Timerdaten vor dem Schreiben ablehnen.
+3. Receiver-Konflikte validieren und als übersetzten Fehler sowie strukturiertes
+   HA-Ereignis für Automationen bereitstellen. Keine lokale Tunerprognose.
+4. Bei Ablehnung den tatsächlichen Zustand neu lesen. OpenWebif kann vor der
+   Konfliktprüfung Änderungen vornehmen: Erhalt alter Werte prüfen, aber nicht
+   garantieren. Kein Löschen/Neuanlegen oder automatisches Rollback; unklare
+   Antworten nicht wiederholen.
+5. Wochenserien, Mitternacht, UTC-Offsets beim Zeitwechsel, Erhalt aller Optionen,
+   Konflikte mit und ohne Mutation, Abbruch, Antwortverlust und Gerätezuordnung
+   gezielt testen. DE/EN-Anleitung und Praxisprüfung ergänzen. Commit erst nach
+   beidseitiger Fertigbestätigung.
+
+
+`TimerEditor` liest vollständige Kennungen, verweigert auch Kollisionen der von
+OpenWebif verkürzten Senderreferenzen und erhält Pflichtwerte für die vollständige
+`timerchange`-Anfrage. Beschreibung und Name werden beim Zurückschreiben nicht
+HTML-dekodiert. Fehlende Pflichtwerte bleiben unbekannt und verhindern das
+Schreiben. Aufnahmeart und imageabhängige Optionen werden erhalten, soweit
+geliefert; Nachlaufwerte in Sekunden werden nur bei verlustfreier Umrechnung in
+ganze API-Minuten übergeben. VPS-Einstellungen und `allow_duplicate` werden
+ausdrücklich erhalten, weil Endpoint-Standardwerte sie sonst zurücksetzen.
+Ein Senderwechsel wird nicht angeboten: `timerchange` aktualisiert die EIT
+im geprüften Upstream nicht zuverlässig. Nullzeit-Umschalttimer sind als alte
+Kennung zulässig, der neue Zeitraum muss positive Dauer haben.
+
+Nach positiver Bestätigung werden Kennung und unterstützte Optionen erneut
+verglichen. Serien, die der Receiver auf einen anderen Termin weiterschiebt,
+oder abweichend gespeicherte Optionen bleiben damit unbestätigt. Erfolg enthält
+eine tatsächlich zurückgelesene Kennung, nicht bloß angefragte Zeiten. Nach
+Antwortverlust, Abbruch während/nach Schreiben oder fehlgeschlagenem Nachlesen
+bleibt die alte Kennung im laufenden Coordinator gesperrt. Neuladen löscht
+diese lokale Sperre; externe Clients werden nicht gesperrt. Der bekannte
+HTTP-Wiederholungsschutz gilt unverändert.
+
+Bei Ablehnung liest der Editor noch unter der Befehlssperre nach und vergleicht
+die unterstützten Felder des betroffenen Timers: `unchanged`, `changed`,
+`unknown`. Das schützt nicht atomar vor externen Änderungen oder Änderungen an
+anderen Konflikttimern. Es gibt kein automatisches Rollback. Die geplante
+Prüfung „Erhalt bei Ablehnung“ ist deshalb ein Zustandsvergleich, keine
+allgemeine Erhaltungsgarantie der Receiver-API.
+
+Der Coordinator projiziert nur vollständig validierte `TimerConflict`-Listen
+in `enigma2_connect_timer_conflict`, mit `config_entry_id`, `action`, `timer_state`
+und `conflicts`. Fehler bleiben HA-Ausnahmen auch bei angeforderten Antwortdaten;
+Automationen verwenden das Ereignis. Der Fehlertext zeigt höchstens fünf
+Konflikte mit begrenzten einzeiligen Namen und ISO-UTC-Zeiten; das Ereignis
+enthält alle gelieferten validierten Konflikte. Nachrichten, Zugangsdaten,
+Timerprotokolle und andere rohe Receiver-Felder werden nicht durchgereicht.
+Keine Speicherung einer letzten Konfliktliste und kein zusätzliches Polling.
+
+Schnittstellen am 20.09.2026 geprüft: [Controller](https://github.com/oe-alliance/OpenWebif/blob/main/plugin/controllers/web.py)
+und [Timermodell](https://github.com/oe-alliance/OpenWebif/blob/main/plugin/controllers/models/timers.py).
+Eigenständige Implementierung anhand der Schnittstellen; kein Upstream-Code
+übernommen. Diese Recherche ersetzt keine Abnahme auf OpenWebif 1.4.4/2.4.0.
+
+
+`action_choices.py` veröffentlicht HA-Aktionsbeschreibungen über
+`async_set_service_schema`. Sender und bekannte Aufnahmeordner stammen aus
+vorhandenen Coordinator-Abfragen; es gibt keine zusätzliche Receiver-Abfrage
+pro Formular. Auswahllisten sind global, mit Receiver-Namen beschriftet und
+als Kennung mit Konfigurationseintrag und Feldtyp gebunden. Umbenannte Anzeigen
+ändern die Kennung nicht. Manuelle und ausgewählte Werte schließen sich jeweils
+aus. Gespeicherte Auswahlen bleiben bei Bouquetwechsel gültig; die Gerätebindung
+wird immer geprüft, eine aktuelle Katalogmitgliedschaft wird nicht verlangt.
+Damit hängen gespeicherte Automationen nicht vom zuletzt geöffneten Bouquet ab.
+
+Die Listen werden bei Coordinator-Updates ersetzt, bei Fehlern geleert und beim
+Entladen entfernt. Der HA-Beschreibungscache wird über die öffentliche API
+aktualisiert; eine bereits geöffnete Aktionsseite muss zum erneuten Abruf neu
+geladen werden. Keine erfundenen Service-Registrierungsereignisse. Pfade umfassen
+`timerlist.locations`, `default`, bekannte Timerordner und `movielist.directory`.
+Es gibt keine Dateisystemnavigation oder Prüfung auf freien/beschreibbaren Speicher.
+
+`datetime`-Selektoren liefern lokale Zeichenketten. `action_epoch` interpretiert
+diese in `hass.config.time_zone`; der bestehende HA-unabhängige `epoch`-Parser
+bleibt für andere Aufrufer unverändert streng. UTC-Rückkonvertierung beider
+`fold`-Werte erkennt mehrdeutige und nicht existierende lokale Zeiten. Explizite
+UTC-Offsets und Unixsekunden behalten ihre bisherige Bedeutung.
+[HA-Selector](https://www.home-assistant.io/docs/blueprint/selectors/#date--time-selector),
+[Frontend-Ausgabe](https://github.com/home-assistant/frontend/blob/dev/src/components/ha-selector/ha-selector-datetime.ts);
+lokal gegen HA 2026.9.1 geprüft.
+
 
 ### Erweiterungen aus der OpenWebif-Recherche
 
@@ -953,7 +1375,7 @@ und Rückgabeformate vor einer Umsetzung je OpenWebif-Version und Image prüfen.
 | 3 | Hoch | Aufnahmekonflikte gezielt auswerten | Kollidierende Sendungen mit Zeiten anzeigen und Automationen zugänglich machen. Beim Anlegen/Bearbeiten liefert OpenWebif strukturierte `conflicts`. Das wäre eine Erweiterung der bisherigen Fehlerauswertung, keine belegte separate Konfliktvorhersage. [Timerimplementierung][ideas-timers] |
 | 4 | Hoch | Sofortaufnahme als eigene Aktion | Dashboard-Button oder Sprachaktion „Aktuelle Sendung aufnehmen“ über `recordnow`. Der Ereignismodus benötigt EPG; der alternativ „unendlich“ genannte Modus ist im untersuchten Code auf zehn Stunden begrenzt. [Timerimplementierung][ideas-timers] |
 | 5 | Hoch | Aufnahmebibliothek erweitern | Aufnahmeordner und HA-Medienquelle sind inzwischen vorhanden. Weitere Ausbaustufen: Tags/Filter, zusätzliche Metadaten wie Dateigröße und bisheriger Wiedergabefortschritt sowie Umbenennen, Verschieben und Löschen. OpenWebif bietet `movielist`, `fullmovielist` und Verwaltungsaktionen. Lösch-/Papierkorbverhalten je Image berücksichtigen. [Aufnahmeverwaltung][ideas-movies] |
-| 6 | Mittel | Festplattenspeicher und Systemdiagnose | Freien Aufnahmeplatz überwachen; RAM und Uptime als optionale Diagnosesensoren ergänzen. `about` liefert die Grundlagen. Einheiten normalisieren und langsam abfragen; als frei gemeldeter RAM enthält im untersuchten Code auch Buffer und Cache. [Informationsmodell][ideas-info] |
+| 6 | Umgesetzt | Festplattenspeicher und Systemdiagnose | Freier Platz je Mountpunkt sowie optionale RAM- und Laufzeitsensoren sind vorhanden. `about` liefert die Grundlagen. Einheiten normalisieren und langsam abfragen; als frei gemeldeter RAM enthält im untersuchten Code auch Buffer und Cache. [Informationsmodell][ideas-info] |
 | 7 | Mittel | Tonspur auswählen | Originalton, alternative Sprache oder Audiodeskription per dynamischer `select`-Entität wählen. Grundlage: `getaudiotracks` und `selectaudiotrack`; Auswahl nach Senderwechsel aktualisieren. [Audio-API][ideas-api] |
 | 8 | Mittel | Timeshift gezielt steuern und anzeigen | Start-/Stopp-Aktionen und „Timeshift aktiv“ über `tsstart`, `tsstop`, `tsstate`. `timeshiftEnabled` ist kein verlässlicher Pausezustand; der untersuchte Stopp-Pfad unterdrückt die Speicherrückfrage. [Controller][ideas-controller] |
 | 9 | Mittel | Wiedergabeposition bei Aufnahmen | Fortschritt und Restzeit im Medienplayer anzeigen. Das bereits abgefragte `getcurrent` liefert für bestimmte lokale Aufnahmen eine Position in Sekunden. Diese allein erlaubt keine sichere Pauseerkennung. [Controller][ideas-controller] |
@@ -962,9 +1384,9 @@ und Rückgabeformate vor einer Umsetzung je OpenWebif-Version und Image prüfen.
 | 12 | Optional | Text an Eingabefelder senden | Suchbegriffe direkt eingeben, statt einzelne Fernbedienungstasten zu senden. `remotecontrol` besitzt einen `text`-Parameter; das aktive Eingabefeld am Receiver bleibt entscheidend. [Controller][ideas-controller] |
 | 13 | Größeres Projekt | Live-TV und Aufnahmen auf anderen Geräten abspielen | Erste Ausbaustufe als optionale [HLS-Wiedergabe](#externe-wiedergabe) umgesetzt; VOD-Spulen für geeignete TS-Aufnahmen ist umgesetzt. Die konkrete Browser-/Cast-Abnahme bleibt offen. OpenWebif bietet Stream-/Playlist-Endpunkte einschließlich eines HLS-Einstiegs. Codec-Unterstützung, Authentifizierung und gegebenenfalls Transcoding separat lösen; ein API-Endpunkt belegt keine funktionierende Wiedergabe auf jedem Zielgerät. [Streaming-Endpunkte][ideas-controller] |
 
-Als mögliche erste Ausbaustufe bietet sich **Sofortaufnahme → Timerbearbeitung
-mit Konfliktdetails → EPG-Suche mit Aufnahmeaktion** an. Das ist eine vorgeschlagene
-Reihenfolge, kein Umsetzungsauftrag.
+Der beauftragte Umsetzungsplan folgt nach der gemeinsamen Grundlage der
+Reihenfolge **Sofortaufnahme → Timerbearbeitung mit Konfliktdetails → EPG-Suche
+mit Aufnahmeaktion → Aufnahmebibliothek**.
 
 [ideas-api]: https://github.com/oe-alliance/OpenWebif/wiki/OpenWebif-API-documentation
 [ideas-timers]: https://github.com/oe-alliance/OpenWebif/blob/main/plugin/controllers/models/timers.py
@@ -1036,3 +1458,210 @@ Teststand 16.09.2026: Der Modbus-Einzeltest war erfolgreich und nannte alle
 Fristen. Junie meldete rund 0,048 USD Modellkosten; das Standardmodell war
 Gemini 3.7 Flash. Die Top-up-Abbuchung ist noch nicht bestätigt. Der produktive Ablauf und weitere Relevanzfälle werden getrennt validiert.
 Siehe [Prüfübersicht](VALIDIERUNG.md).
+
+### EPG-Suche: Schnittstellen und Schutzgrenzen (Abschnitt 4)
+
+`epg.py` führt ausschließlich bedarfsabhängige Lesezugriffe aus: `epgsearch`
+ohne `full` (dessen Anwesenheit Volltextsuche aktiviert), `epgsimilar` und
+`event?sRef=…&idev=…`. Nur `/api/epgsimilar` darf eine JSON-Liste liefern; der
+Transport normalisiert diese auf `events`. Der Detail-Endpunkt verwendet
+`begin`/`duration` in Sekunden statt `begin_timestamp`/`duration_sec`.
+Strenge Listenparser verhindern Teilantworten als scheinbar vollständige Erfolge.
+Vergangene Treffer und Duplikate entfallen, alle übrigen Ergebnisse werden zurückgegeben.
+Die zusätzliche vorgelagerte Receiver-Begrenzung ist nicht zuverlässig erkennbar.
+
+`record_event` hält die gemeinsame Befehlssperre über zwei frische Ereignisabfragen,
+Timerprüfung, einen `timeraddbyeventid`-Aufruf und Timer-Nachlesen. Referenz,
+Ereignis-ID und beide ursprünglichen EPG-Zeiten müssen passen. Vor-/Nachlauf
+und Ordner bleiben beim Receiver; `justplay=0`, `afterevent=3`. Ein eindeutiger
+neuer Timer mit passendem EIT, Referenz und Abdeckung bestätigt Erfolg. Es gibt
+keine Wiederholung, Rücksetzung oder Löschung bei unklarem Ergebnis. Ein aktiver
+vollständig abdeckender Timer genügt als vorhandene Aufnahme auch bei anderem EIT.
+Serien auf demselben Sender werden konservativ nicht hochgerechnet; ihre
+gespeicherten Zeiten können bereits vergangene Vorkommen beschreiben.
+
+Die Karte verwendet HA-WebSocket `call_service` mit `return_response: true`.
+Sie bindet jeden Auftrag an die `device_id` der ausgewählten Integrations-Remote.
+Späte Antworten nach Receiver-/Sprachwechsel oder Entfernung der Karte werden
+verworfen. Suchdaten gelangen nur per `textContent` in den DOM, nicht als HTML.
+Keine EPG-Abfrage im regulären Polling und keine zusätzliche Laufzeitabhängigkeit.
+
+Schnittstellenbelege, am 20.09.2026 gelesen:
+[OpenWebif-Controller](https://github.com/oe-alliance/OpenWebif/blob/main/plugin/controllers/web.py),
+[Timermodell](https://github.com/oe-alliance/OpenWebif/blob/main/plugin/controllers/models/timers.py).
+Es wurde kein GPL-Code übernommen. Reale und simulierte Nachweise siehe Prüfübersicht.
+
+### Karten-Nachbesserung dev.8: Plan
+
+Nutzerfeedback zu dev.7: EPG-Suche, Videosteuerung und Zahlentasten einzeln
+abschaltbar machen; bisherige Vorgaben erhalten. Eine zweite, reine EPG-Karte
+nutzt dieselbe Suchlogik und dieselbe Ressourcendatei. Ein expliziter Button leert
+nur das Suchfeld, ohne Treffer oder laufende Aufnahmeaufträge zu verwerfen.
+Frontend-Regressionen und lokale Browserprobe ergänzen; Abschnitt 4 bleibt bis
+zur gemeinsamen Abnahme uncommittet.
+
+Die dev.8-Karten-Nachbesserung ist implementiert und lokal geprüft. Die native
+Editor-Schnittstelle nutzt `getConfigForm` und Boolean-Selektoren mit Vorgabe
+`true`; gemeinsames Rendering und `EpgController` bleiben für beide Kartentypen
+identisch. Details zu Nachweisen und offener HA-Abnahme siehe Prüfübersicht.
+
+### Suchansicht zurücksetzen (dev.9)
+
+Plan und Umsetzung: Eingabe und Treffer gemeinsam zurücksetzen; eine separate
+Suchrevision verwirft verspätete Leseantworten. Befehlssperre und Aufnahmerückmeldung
+bleiben erhalten. Gezielt Rücksetzen während Suche und Aufnahme prüfen.
+
+### Trefferanzeige dev.10: Plan und Umsetzung
+
+Gemeinsame Editoroption `results_view` (list/single), reine lokale Navigation mit
+Grenzprüfung und Zurücksetzen des Index bei neuen Ergebnissen. Zähler nennt die
+empfangenen Treffer und macht Kürzung sichtbar; kein behaupteter Gesamtzähler
+für unbekannte Receiver-Treffer. Gezielte Frontend- und Browserprüfung.
+
+### Unbegrenzte Treffer und Pfeilnavigation dev.12
+
+Plan und Umsetzung: lokale Kürzung in `epg.py` entfernen, `limit` aus den Aktionen
+und Übersetzungen entfernen und Kartenoption `max_results` aufgeben. Das bisherige
+Antwortfeld `truncated` bleibt kompatibel als `false`. Alte Kartenkonfigurationen
+werden akzeptiert, ihre Grenze ignoriert. Der Zähler steht zwischen zugänglichen
+Pfeiltasten; Randtasten bleiben gesperrt. Beide Karten standardmäßig einzeln, Suche in der Fernbedienung aus; explizite Auswahl hat Vorrang. Suche/Ähnliche mit 123
+Treffern sowie Navigation jenseits der bisherigen Grenze gezielt testen. Integration
+und Karte gemeinsam aktualisieren; keine neuen Qualitätsausnahmen.
+
+
+### Abschnitt 5 – Umsetzungsplan Aufnahmebibliothek
+
+Begonnen nach Nutzerfreigabe; Umsetzung auf `feature/recording-workflows`.
+
+1. **5a – Katalog und Ansicht:** Vorhandenes Aufnahmemodell um den vom Receiver
+   gemeldeten Prozentwert ergänzen. Die lesende Aktion `recordings_list` lädt den
+   rekursiven Katalog des ausdrücklich gewählten Receivers. Titel-/Senderfilter,
+   Tags, Ordner und Fortschrittsfilter ohne Ergebnislimit anbieten. Eine eigene
+   Bibliothekskarte zeigt Metadaten und unbekannte Werte; der Medienbrowser
+   erhält verfügbare Tags und Dateigrößen. Vorhandene Medienkennungen erhalten.
+   `lastseen=0` beweist keine ungesehene Aufnahme; es kann auch ein fehlender
+   Speicherstand sein. Dateigröße 0 wird in der Ansicht als unbekannt behandelt.
+2. **5a – Prüfung:** Parser, vollständige/fehlerhafte Kataloge, Filter,
+   eindeutige Receiverwahl, veraltete Kartenantworten und sichere Textausgabe
+   simuliert prüfen. Auf beiden Testreceivern ausschließlich Metadaten lesen;
+   Live-Nachweise von Simulationen trennen. HA-Kartenprüfung gesondert ausweisen.
+3. **5b – Verwaltung:** Danach Umbenennen, Verschieben und Löschen ergänzen.
+   Vor jedem Eingriff aktuellen Katalog, Receiver, laufende Aufnahme,
+   Zielordner und Zielkonflikte prüfen. Asynchrone Dateioperationen erst nach
+   Zustandsabgleich als abgeschlossen melden. Oberfläche bestätigt Löschen;
+   dauerhafte Löschung oder Papierkorb je Image ausdrücklich kenntlich machen.
+   Cache, Vorschaubilder, Medienkennungen und Streams berücksichtigen.
+   Praxisprüfung ausschließlich mit eigens angelegten Testaufnahmen.
+
+5a und 5b werden getrennt abgenommen. Ein Abschlusscommit erfolgt jeweils erst
+nach Bestätigung durch Nutzer und Codex; Abschnitt 5 bleibt bis 5b offen.
+
+### Aufnahmebibliothek 5a: Daten und Grenzen
+
+`RecordingLibrary.list` liest bei jedem Aufruf `movielist?recursive=1`, validiert
+die gesamte Liste und filtert erst danach. Fehlerhafte Identitäten oder eine
+fehlende Liste werden als `recording_data` gemeldet, nicht als leeres Ergebnis.
+Die Aktion bindet den Receiver über die bestehende eindeutige Geräteauflösung.
+Transport-/Authentifizierungsfehler verwenden die bestehende HA-Fehlerbehandlung.
+Keine zusätzlichen Hintergrundabfragen, Schreiboperationen oder Abhängigkeiten.
+Der neue Katalog verändert den Coordinator-Cache, Medienkennungen, Bilder und
+Streams nicht. Die Karte lädt ausdrücklich auf Knopfdruck und verwirft verspätete
+Antworten bei Receiverwechsel/Verbindungsverlust. Receivertexte werden escaped.
+
+`lastseen` wird ausschließlich als ganzzahliger Prozentwert 0–100 interpretiert,
+keinesfalls als Zeitposition. OpenWebif bildet auch fehlende Positionen auf 0 ab.
+Deshalb heißt die Filtergruppe „0 % gemeldet“, nicht „ungesehen“.
+`filesize=0` bleibt im Rohmodell 0, wird in der Ansicht/Aktionsantwort aber als
+unbekannt dargestellt, weil OpenWebif diesen Wert bei fehlender Dateiinformation
+verwenden kann. Dateigrößen sind Momentaufnahmen, besonders während Aufnahmen.
+Der Stand 5a enthält keine Verwaltungsschreibbefehle; die Erweiterung steht unten unter 5b.
+
+Referenzen: [OpenWebif-Aufnahmeschnittstelle](https://github.com/oe-alliance/OpenWebif/blob/main/plugin/controllers/models/movies.py),
+[Enigma2-Prozentberechnung](https://github.com/openatv/enigma2/blob/7.6/lib/python/Components/MovieList.py).
+Unabhängige Implementierung gegen die Schnittstellen; kein GPL-Code übernommen.
+
+### Aufnahmebibliothek: zweite Ansichtsvariante (dev.14)
+
+Plan: `display_mode` mit `details` (bisheriger Standard) und `rows` im visuellen
+Karteneditor ergänzen. In der Zeilenansicht stehen Titel, Größe und gemeldeter
+Fortschritt nebeneinander; native aufklappbare Details erhalten alle Metadaten
+und Tastaturbedienbarkeit. Receivertexte weiter sicher darstellen, Filter und
+Katalog unverändert verwenden. Beide Ansichten und schmale Karten lokal prüfen;
+DE/EN-Anleitungen und Versionsstellen fortschreiben. Die dev.13-HA-Abnahme bleibt
+als Nachweis bestehen; die neue Ansichtsvariante benötigt ihre eigene Abnahme.
+
+Umgesetzt und lokal geprüft; Nachweise und offene HA-Abnahme stehen in der
+[Prüfübersicht](VALIDIERUNG.md). Das zuletzt erzeugte Markup wird gespeichert,
+damit das native `open`-Attribut unveränderte HA-Updates übersteht.
+
+### Zeilenangaben und Scrollabstand (dev.15)
+
+Plan und Umsetzung: In der Zeilenzusammenfassung Titel, Aufnahmedatum mit
+Uhrzeit und Sender anzeigen; übrige Metadaten in den aufklappbaren Details
+erhalten. Datum lokalisiert in Browserzeitzone formatieren, Sendertexte
+escapen und fehlende Angaben als unbekannt darstellen. Rechts 12 Pixel
+Innenabstand plus stabilen Scrollbereich vorsehen; flexible Spalten umbrechen
+auf schmalen Karten. Frontendtests und lokale Browserprüfung durchführen.
+
+### Automatische Zeilenspalten (dev.16)
+
+Plan und Umsetzung: Alle sechs Werte sicher in der gewünschten Reihenfolge
+rendern. Benannte CSS-Containerabfragen auf der tatsächlichen Listenbreite
+blenden nach Priorität Datum, Sender, Dauer, Fortschritt und Größe ein. Der
+Titel bleibt sichtbar; Mindestbreiten reservieren Platz für lesbare Titel.
+Schwellen von 22/30/36/42/48 em beziehen sich auf die Schriftgröße der Liste,
+nicht die Fensterbreite. Scrollabstand bleibt erhalten. Reines CSS erhält
+offene Details, Fokus, Filter und Katalog; keine neuen Abfragen oder Listener.
+Frontendprüfung sowie dynamische Breitenwechsel im Browser prüfen.
+
+### Abschnitt 5b – Aufnahmeverwaltung (dev.17–dev.20)
+
+Plan: Frischen Katalog und Revision vor jedem Eingriff prüfen; Quelle eindeutig
+an den Receiver binden, aktive Aufnahmen/Streams sperren, Zielordner und
+Katalogkonflikte prüfen. Schreibzugriffe nicht automatisch wiederholen und den
+Abschluss anhand frischer Quell-/Zielkataloge bestätigen. HA-Aktionen und
+Kartendialog samt Löschbestätigung, Übersetzungen und gezielten Tests ergänzen.
+
+Umgesetzt: `recording_manage`, `recording_operation_status` und
+`recording_destinations`. Titeländerung nutzt `movieinfo` mit `title`, nicht
+Dateiumbenennung. Die zusätzliche URL-Decodierung dieses Endpunkts wird durch
+einmaliges Vorcodieren von `sRef` ausgeglichen. Verschieben nutzt `moviemove`,
+Löschen `moviedelete` ohne `force` (schon die Parameteranwesenheit erzwingt dort
+Löschen). Das Image entscheidet über Papierkorb/endgültig; die Karte bestätigt
+ausdrücklich das möglicherweise endgültige Löschen.
+
+Alle Operationen halten die vorhandene Befehlssperre einschließlich Vorprüfung
+und bis zu drei Zustandsabgleichen. HA-Streamstart wird während des Eingriffs
+serialisiert; ab dev.20 verhindern nur HA-Aufnahmestreams für dieselbe
+Datei Verschieben/Löschen. Reine
+Titeländerungen sind ab dev.19 auch bei bestehenden HA-Streams zulässig. Bei unbestätigtem
+Auftrag bleibt eine Sperre im Manager, auch bei Abbruch. Statusprüfung liest nur.
+Die Sperre ist nicht persistent: nach HA-Neustart/Reload ist ein manueller
+Receiverabgleich erforderlich. Externe Fernbedienungen teilen diese Sperre
+nicht. Zielkonfliktprüfung sieht die von OpenWebif gelisteten Aufnahmen, nicht
+verwaiste Begleitdateien; außerhalb von HA darf parallel nichts verschoben werden.
+Nur Quellen mit Datum, positiver Größe und geeignetem absoluten Dateipfad werden
+bearbeitet. Ab dev.20 werden Timer-Dateinamen (mit/ohne `.ts`), aktuelle
+Wiedergabepfade, `about.info.streams[].ref` und eigene HA-Streamquellen exakt
+verglichen. Keine Titel-/Teilstringsuche und keine doppelte URL-Decodierung.
+Unbekannte aktive Schreibvorgänge bleiben gesperrt; andere eindeutig zugeordnete
+Vorgänge nicht. `isStreaming` allein ist keine Dateizuordnung. Direkte externe
+HTTP-/Netzlaufwerkzugriffe und Pfadaliase sind nicht vollständig erkennbar.
+Offene Dateiaufträge sperren Streamstart nur für Quelle/Ziel; Titelaufträge
+sperren keine Leser. Optionale fehlende Streamliste ist keine Aktivitätsbestätigung.
+
+Katalogcache wird nach Aktionen invalidiert/aktualisiert; Titeländerungen ändern
+die vorhandene Bildversion, Verschieben die Medienkennung. Bestehende Stream-
+Sitzungen werden nicht beendet. Hintergrundoperationen werden erst nach
+Zustandsabgleich als abgeschlossen gemeldet. Titeländerung während Streaming
+am Octagon mit dev.19 direkt geprüft und Originaltitel wiederhergestellt;
+Verschieben, Zurückverschieben und bestätigtes Löschen am Octagon mit dev.20
+erfolgreich direkt geprüft. Nutzer bestätigt Installation von dev.20 und Abnahme;
+Codex prüfte anschließend den HA-Dialog lesend. Abschnitt 5b am 20.09.2026
+gemeinsam abgeschlossen. Reale schreibende Vu+-Abnahme und vollständige
+Qualitätsnachweise vor main bleiben offen; siehe Prüfübersicht. Abschlusscommit:
+`feat: add guarded recording management and dialogs`.
+
+Schnittstellen geprüft anhand des [OpenWebif-Controllers](https://github.com/oe-alliance/OpenWebif/blob/main/plugin/controllers/web.py)
+und [Aufnahmemodells](https://github.com/oe-alliance/OpenWebif/blob/main/plugin/controllers/models/movies.py).
+Unabhängige Implementierung; kein GPL-Code übernommen.
