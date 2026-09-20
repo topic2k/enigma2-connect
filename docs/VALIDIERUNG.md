@@ -2,6 +2,47 @@
 
 # Prüfübersicht
 
+## PR-Vorbereitung / Issue #10: 1.2.1
+
+Am **20.09.2026** Remote-Branches, Tags und veröffentlichte Releases abgeglichen:
+`main` steht auf `1afa705` mit Version **1.2.0**, das letzte stabile Release ist
+`v1.2.0`. Der Issue-Branch wurde auf diesen Stand aktualisiert. Die Korrektur
+ergibt **1.2.1**, ohne Entwicklungssuffix und weiterhin unveröffentlicht.
+Manifest, Projektmetadaten, Lockdatei und beide Changelogs sind synchron;
+veröffentlichte Historie und Abhängigkeiten bleiben erhalten.
+
+Auf dieser Basis erneut bestanden: alle **35 gezielten Tests** aus den unten
+genannten Dateien/Fällen mit **98 % Abdeckung für `services.py`**, Ruff,
+Formatierung, Python-Syntax und striktes mypy für nun **28 Integrationsmodule**.
+`uv lock --offline`, `uv lock --check --offline`, Versionskonsistenz, Erhalt der
+veröffentlichten Changelog-Historie und `git diff --check` ebenfalls bestanden.
+
+Die Qualitätscheckliste bleibt gegenüber `main` unverändert. Die unten für
+Issue #10 genannten Kriterien und Prüfgrenzen gelten weiterhin. Aktuelle CI
+ist vor dem Merge erforderlich; weder Merge noch Release sind damit freigegeben.
+
+## Geräteaktionen / Issue #10: 1.1.1-dev.5
+
+Am **20.09.2026** wurde die Zielauflösung auf `DeviceEntry.config_entry_id`
+umgestellt. Gezielt geprüft mit Home Assistant **2026.9.1** und Python **3.14.7**
+in WSL: `tests/test_integration.py` und `tests/test_silver_controls.py`, mit
+Zweigabdeckung für `services.py`: **34 Tests bestanden**. Ergänzend bestand
+`tests/test_regressions.py::test_two_receivers_require_exact_device`.
+Zusammen erreichen die **35 Tests** für `services.py` **98 % kombinierte
+Anweisungs-/Zweigabdeckung** (44/44 Anweisungen, 11/12 Zweige); der verbleibende
+Zweig betrifft Timeraktionen außer `timer_add`, nicht die geänderte Zielprüfung.
+Vier neue Fälle prüfen unbekannte/fremde Geräte, nicht geladene Einträge und
+die Auswahl des zweiten Receivers. Der Auswahltest lässt jeden Zugriff auf
+die veraltete Eigenschaft `config_entries` fehlschlagen.
+
+Ruff, Formatprüfung, Python-Syntax, striktes mypy für alle 23 Integrationsmodule
+und `uv lock --check --offline` bestanden. Qualitätscheckliste: `action-setup`,
+`action-exceptions`, `exception-translations`, `runtime-data`, `devices` und
+`test-coverage` geprüft; keine Kriterien oder Abdeckungsgrenzen abgesenkt.
+Die Tests verwenden echte HA-Registries mit simulierten Receiver-Antworten;
+keine neue Hardwareprüfung und kein Lauf unter HA 2026.10 oder 2027.10.
+Aktuelle CI für diesen Arbeitsstand bleibt vor einer Übernahme erforderlich.
+
 ## Veröffentlichung 1.2.0
 
 Am **16.09.2026** ausdrücklich zur Veröffentlichung beauftragt. Die Release-Pflege

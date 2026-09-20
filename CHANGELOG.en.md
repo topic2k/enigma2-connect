@@ -4,6 +4,7 @@
 
 ## Contents
 
+- [1.2.1](#121)
 - [1.2.0](#120)
 - [1.1.3](#113)
 - [1.1.2](#112)
@@ -12,6 +13,15 @@
 - [1.0.2](#102)
 - [1.0.1](#101)
 - [1.0.0](#100)
+
+## 1.2.1
+
+Unreleased.
+
+- Device actions use `DeviceEntry.config_entry_id` instead of the deprecated
+  `config_entries` property (issue #10). Loaded-entry validation and the
+  translated error for invalid targets are preserved. Regression tests cover
+  target validation and selection between two receivers.
 
 ## 1.2.0
 
