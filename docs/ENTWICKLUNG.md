@@ -113,6 +113,13 @@ prüfen, dass nur die erwarteten Projektmetadaten geändert wurden. Keine
 Abhängigkeiten nebenbei aktualisieren. Eine frische Umgebung benötigt beim
 ersten Synchronisieren Zugriff auf die Paketquellen.
 
+Die Tests der HA-Aktionsbeschreibungen prüfen echte Selektoren und Funktions-
+kennungen. HA importiert dafür globale Basis-Komponenten einschließlich Assist,
+Conversation, TTS und FFmpeg. Deren Importabhängigkeiten stehen deshalb in der
+Dev-Gruppe, fest auf die Anforderungen des HA-Teststands abgestimmt. Eine frische
+Umgebung aus der Lockdatei prüft die Vollständigkeit. Die Integration erhält
+dadurch keine zusätzlichen Laufzeitpakete.
+
 **Befristete Sicherheitsausnahme:** Home Assistant 2026.9.1 und 2026.9.2 binden
 `cryptography==48.0.1` und `pyOpenSSL==26.2.0`. Wegen
 [CVE-2026-69247](https://github.com/pyca/cryptography/security/advisories/GHSA-g6cj-pr64-35w5)

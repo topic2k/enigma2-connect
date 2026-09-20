@@ -339,6 +339,15 @@ wheels = [
 ]
 
 [[package]]
+name = "async-timeout"
+version = "5.0.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/a5/ae/136395dfbfe00dfc94da3f3e136d0b13f394cba8f4841120e34226265780/async_timeout-5.0.1.tar.gz", hash = "sha256:d9321a7a3d5a6a5e187e824d2fa0793ce379a202935782d555d6e9d2735677d3", size = 9274, upload-time = "2024-11-06T16:41:39.6Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/fe/ba/e2081de779ca30d473f21f5b30e0e737c438205440784c7dfc81efc2b029/async_timeout-5.0.1-py3-none-any.whl", hash = "sha256:39e3809566ff85354557ec2398b55e096c8364bacac9405a7a1fa429e77fe76c", size = 6233, upload-time = "2024-11-06T16:41:37.9Z" },
+]
+
+[[package]]
 name = "atomicwrites-homeassistant"
 version = "1.4.1"
 source = { registry = "https://pypi.org/simple" }
@@ -955,9 +964,13 @@ source = { virtual = "." }
 [package.dev-dependencies]
 dev = [
     { name = "gazetteer-matcher" },
+    { name = "ha-ffmpeg" },
     { name = "hassil" },
     { name = "home-assistant-intents" },
+    { name = "mutagen" },
     { name = "mypy" },
+    { name = "pymicro-vad" },
+    { name = "pyspeex-noise" },
     { name = "pytest-homeassistant-custom-component" },
     { name = "pyturbojpeg" },
     { name = "ruff" },
@@ -968,9 +981,13 @@ dev = [
 [package.metadata.requires-dev]
 dev = [
     { name = "gazetteer-matcher", specifier = "==1.1.0" },
+    { name = "ha-ffmpeg", specifier = "==3.2.2" },
     { name = "hassil", specifier = "==3.12.0" },
     { name = "home-assistant-intents", specifier = "==2026.8.28" },
+    { name = "mutagen", specifier = "==1.48.1" },
     { name = "mypy", specifier = "==2.3.1" },
+    { name = "pymicro-vad", specifier = "==1.0.1" },
+    { name = "pyspeex-noise", specifier = "==1.0.2" },
     { name = "pytest-homeassistant-custom-component", specifier = "==0.13.364" },
     { name = "pyturbojpeg", specifier = "==1.8.3" },
     { name = "ruff", specifier = "==0.16.7" },
@@ -1168,6 +1185,18 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/01/ee/02a2c011bdab74c6fb3c75474d40b3052059d95df7e73351460c8588d963/h11-0.16.0.tar.gz", hash = "sha256:4e35b956cf45792e4caa5885e69fba00bdbc6ffafbfa020300e549b208ee5ff1", size = 101250, upload-time = "2025-04-24T03:35:25.427Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/04/4b/29cac41a4d98d144bf5f6d33995617b185d14b22401f75ca86f384e87ff1/h11-0.16.0-py3-none-any.whl", hash = "sha256:63cf8bbe7522de3bf65932fda1d9c2772064ffb3dae62d55932da54b31cb6c86", size = 37515, upload-time = "2025-04-24T03:35:24.344Z" },
+]
+
+[[package]]
+name = "ha-ffmpeg"
+version = "3.2.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "async-timeout" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/1e/3b/bd1284a9bc39cc119b0da551a81be6cf30dc3cfb369ce8c62fb648d7a2ea/ha_ffmpeg-3.2.2.tar.gz", hash = "sha256:80e4a77b3eda73df456ec9cc3295a898ed7cbb8cd2d59798f10e8c10a8e6c401", size = 7608, upload-time = "2024-11-08T13:32:14.181Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/45/66/7863e5a3713bb71c02f050f14a751b02e7a2d50eaf2109c96a1202e65d8b/ha_ffmpeg-3.2.2-py3-none-any.whl", hash = "sha256:4fd4a4f4cdaf3243d2737942f3f41f141e4437d2af1167655815dc03283b1652", size = 8749, upload-time = "2024-11-08T13:32:12.69Z" },
 ]
 
 [[package]]
@@ -1672,6 +1701,15 @@ wheels = [
 ]
 
 [[package]]
+name = "mutagen"
+version = "1.48.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/df/70/1675da133ea92227da41bf5b24e1c66be597ff736a1533ade41da986852f/mutagen-1.48.1.tar.gz", hash = "sha256:8f95637ab9f6f305cec6bd1294e197debe207998e3e068596563c74f86b0a173", size = 1276978, upload-time = "2026-06-25T09:47:32.443Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/47/d8/a29e4e3991765e7ce4ed1f7e4074fe1ba9da03e0048639734de60f9cadb9/mutagen-1.48.1-py3-none-any.whl", hash = "sha256:4f077fe87d3fc7fba259aa63d8c026b18382ca6a42ef37c61e16f1b1b5b82fe7", size = 195706, upload-time = "2026-06-25T09:47:30.296Z" },
+]
+
+[[package]]
 name = "mypy"
 version = "2.3.1"
 source = { registry = "https://pypi.org/simple" }
@@ -2124,6 +2162,12 @@ crypto = [
 ]
 
 [[package]]
+name = "pymicro-vad"
+version = "1.0.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/2e/0f/a92acea368e2b37fbc706f6d049f04557497d981316a2f428b26f14666a9/pymicro_vad-1.0.1.tar.gz", hash = "sha256:60e0508b338b694c7ad71c633c0da6fcd2678a88abb8e948b80fa68934965111", size = 135575, upload-time = "2024-07-31T20:04:04.619Z" }
+
+[[package]]
 name = "pynacl"
 version = "1.6.2"
 source = { registry = "https://pypi.org/simple" }
@@ -2243,6 +2287,12 @@ name = "pyric"
 version = "0.1.6.3"
 source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/08/64/a99f27d3b4347486c7bfc0aa516016c46dc4c0f380ffccbd742a61af1eda/PyRIC-0.1.6.3.tar.gz", hash = "sha256:b539b01cafebd2406c00097f94525ea0f8ecd1dd92f7731f43eac0ef16c2ccc9", size = 870401, upload-time = "2016-12-04T07:54:48.374Z" }
+
+[[package]]
+name = "pyspeex-noise"
+version = "1.0.2"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/ee/1d/7d2ebb8f73c2b2e929b4ba5370b35dbc91f37268ea53f4b6acd9afa532cb/pyspeex_noise-1.0.2.tar.gz", hash = "sha256:56a888ca2ef7fdea2316aa7fad3636d2fcf5f4450f3a0db58caa7c10a614b254", size = 49882, upload-time = "2024-08-27T17:00:34.859Z" }
 
 [[package]]
 name = "pytest"

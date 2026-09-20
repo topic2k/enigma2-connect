@@ -108,6 +108,13 @@ resolution. After a version change, run `uv lock --offline` and verify that only
 the expected project metadata changed. Do not update dependencies incidentally.
 A fresh environment needs access to package sources for its first sync.
 
+HA action-description tests validate real selectors and feature identifiers.
+HA imports global base components for this, including Assist, Conversation, TTS
+and FFmpeg. Their import dependencies are therefore declared in the dev group,
+pinned to the HA test build requirements. A fresh environment built from the
+lockfile verifies completeness. The integration gains no additional runtime
+packages.
+
 **Temporary security override:** Home Assistant 2026.9.1 and 2026.9.2 pin
 `cryptography==48.0.1` and `pyOpenSSL==26.2.0`. To address
 [CVE-2026-69247](https://github.com/pyca/cryptography/security/advisories/GHSA-g6cj-pr64-35w5),
