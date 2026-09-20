@@ -33,7 +33,7 @@ def register_services(hass: HomeAssistant) -> None:
             entry
             for entry in hass.config_entries.async_entries(DOMAIN)
             if device
-            and entry.entry_id in device.config_entries
+            and entry.entry_id == device.config_entry_id
             and entry.state is ConfigEntryState.LOADED
         ]
         if len(entries) != 1:

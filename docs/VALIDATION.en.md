@@ -917,6 +917,55 @@ local run. Recheck documentation links, version consistency and `git diff --chec
 at completion; no reason to repeat the complete test run.
 Earlier evidence below remains limited to its documented states.
 
+## PR preparation / issue #10: 1.2.1
+
+The initial [push HACS checks](https://github.com/topic2k/enigma2-connect/actions/runs/35499303499)
+and [PR HACS checks](https://github.com/topic2k/enigma2-connect/actions/runs/35499314187)
+on `727d5af` failed while loading the branch reference with `Not Found`.
+The HACS action now receives `REPOSITORY_REF` with the PR head SHA, or `github.sha`
+for other events. This avoids special characters in reference URLs and validates
+the exact commit; no HACS check is skipped. Tests, Hassfest and CodeQL passed on
+the initial PR state. CI for this workflow correction must pass before merging.
+
+On **2026-09-20**, remote branches, tags and published releases were checked:
+`main` is at `1afa705` with version **1.2.0**, and the latest stable release is
+`v1.2.0`. The issue branch was updated to this base. The fix results in **1.2.1**,
+without a development suffix and still unreleased. Manifest, project metadata,
+lockfile and both changelogs are synchronized; published history and dependencies
+are preserved.
+
+Revalidated on this base: all **35 targeted tests** from the files/cases below
+passed with **98% coverage for `services.py`**, as did Ruff, formatting, Python
+syntax and strict mypy for the current **28 integration modules**.
+`uv lock --offline`, `uv lock --check --offline`, version consistency, preservation
+of published changelog history and `git diff --check` also passed.
+
+The quality checklist is unchanged from `main`. The criteria and test thresholds
+listed below for issue #10 still apply. Current CI is required before merging;
+this does not authorize a merge or release.
+
+## Device actions / issue #10: 1.1.1-dev.5
+
+On **2026-09-20**, target resolution was migrated to `DeviceEntry.config_entry_id`.
+Targeted checks use Home Assistant **2026.9.1** and Python **3.14.7** in WSL:
+`tests/test_integration.py` and `tests/test_silver_controls.py`, with branch
+coverage for `services.py`: **34 tests passed**. The additional
+`tests/test_regressions.py::test_two_receivers_require_exact_device` also passed.
+Together these **35 tests** reach **98% combined statement/branch coverage** for
+`services.py` (44/44 statements, 11/12 branches); the remaining branch concerns
+timer actions other than `timer_add`, not the modified target validation.
+Four new cases cover unknown/foreign devices, unloaded entries and selection
+of the second receiver. The selection test fails on any access to the deprecated
+`config_entries` property.
+
+Ruff, formatting, Python syntax, strict mypy for all 23 integration modules and
+`uv lock --check --offline` passed. Quality checklist: reviewed `action-setup`,
+`action-exceptions`, `exception-translations`, `runtime-data`, `devices` and
+`test-coverage`; no criteria or coverage thresholds were lowered.
+Tests use real HA registries with simulated receiver responses; no new hardware
+check and no execution on HA 2026.10 or 2027.10. Current CI for this working state
+is still required before merging.
+
 ## Release 1.2.0
 
 Explicit publication instruction received on **2026-09-16**. Release preparation

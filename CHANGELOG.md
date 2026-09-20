@@ -4,7 +4,8 @@
 
 ## Inhaltsverzeichnis
 
-- [1.3.0-dev.20](#130-dev20)
+- [1.3.0-dev.21](#130-dev21)
+- [1.2.1](#121)
 - [1.2.0](#120)
 - [1.1.3](#113)
 - [1.1.2](#112)
@@ -14,11 +15,15 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 1.3.0-dev.20
+## 1.3.0-dev.21
 
 Unveröffentlichte Entwicklerversion. Zielversion für die beauftragten EPG-,
 Timer- und Aufnahmeerweiterungen. Sofortaufnahme und Timerbearbeitung sind
 umgesetzt; EPG-Suche und Karten sind gemeinsam abgenommen. Bibliotheksverwaltung ist ebenfalls gemeinsam abgenommen.
+
+- Neuere Korrekturen aus `main` übernommen: aktuelle HA-Gerätezuordnung für
+  Aktionen und HACS-Prüfung des exakten Commits bleiben auch mit den neuen
+  Aufnahmefunktionen erhalten.
 
 - Verschieben und Löschen prüfen die betroffene Aufnahme statt pauschal alle
   Receiveraktivitäten zu sperren. Andere HA-Streams, gemeldete Streams und
@@ -124,6 +129,18 @@ umgesetzt; EPG-Suche und Karten sind gemeinsam abgenommen. Bibliotheksverwaltung
   aktivieren/deaktivieren und löschen sowie erwartete Ablehnung beim erneuten
   Löschen und anschließende Weiterbenutzung bestanden. Praxisnachweis und
   beidseitigen Abschnittsabschluss dokumentiert.
+
+## 1.2.1
+
+Unveröffentlicht.
+
+- HACS validiert den exakten Commit statt des Branchnamens, damit Sonderzeichen
+  wie `#` in Arbeitsbranches nicht zum Abbruch mit `Not Found` führen.
+
+- Geräteaktionen verwenden `DeviceEntry.config_entry_id` statt der veralteten
+  Eigenschaft `config_entries` (Issue #10). Die Prüfung auf einen geladenen
+  Eintrag und die übersetzte Fehlermeldung für ungültige Ziele bleiben erhalten.
+  Regressionstests sichern Zielprüfung und Auswahl zwischen zwei Receivern ab.
 
 ## 1.2.0
 

@@ -4,7 +4,8 @@
 
 ## Contents
 
-- [1.3.0-dev.20](#130-dev20)
+- [1.3.0-dev.21](#130-dev21)
+- [1.2.1](#121)
 - [1.2.0](#120)
 - [1.1.3](#113)
 - [1.1.2](#112)
@@ -14,11 +15,15 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 1.3.0-dev.20
+## 1.3.0-dev.21
 
 Unreleased development version. Target for the requested EPG, timer and
 recording extensions. Instant recording and timer editing are implemented;
 EPG search and cards have passed joint acceptance; library management has also passed joint acceptance.
+
+- Incorporated newer fixes from `main`: current HA device ownership lookup
+  for actions and exact-commit HACS validation are retained alongside the new
+  recording workflows.
 
 - Move/delete guards now match the selected recording rather than blocking all
   receiver activity. Unrelated HA streams, reported streams and playback remain
@@ -120,6 +125,18 @@ EPG search and cards have passed joint acceptance; library management has also p
   enabling/disabling and deletion, expected rejection of repeated deletion and
   subsequent operation passed. Recorded practical evidence and completion by
   both parties.
+
+## 1.2.1
+
+Unreleased.
+
+- HACS validates the exact commit instead of the branch name so special
+  characters such as `#` in working branches do not cause `Not Found` failures.
+
+- Device actions use `DeviceEntry.config_entry_id` instead of the deprecated
+  `config_entries` property (issue #10). Loaded-entry validation and the
+  translated error for invalid targets are preserved. Regression tests cover
+  target validation and selection between two receivers.
 
 ## 1.2.0
 
