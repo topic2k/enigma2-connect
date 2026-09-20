@@ -2,6 +2,46 @@
 
 # Prüfübersicht
 
+## Gesamtprüfung für develop – 1.3.0-dev.21
+
+Am **20.09.2026** die beauftragten Abschnitte 1–5 einschließlich der neueren
+`main`-Korrekturen zur Gerätezuordnung und HACS-Commitprüfung geprüft.
+Geprüfter Quellstand: `6d0adcba09cf5088de0b5070ef49f4a8486563a5`.
+
+- [Vollständige CI](https://github.com/topic2k/enigma2-connect/actions/runs/35533818331):
+  **862 Backend-Tests** und **49 Frontend-Tests** bestanden, Ruff und Formatprüfung
+  erfolgreich, Mypy ohne Fehler in **36 Modulen**. Python **3.14.7**, HA **2026.9.1**.
+- Config Flows erreichen **100 % Statement-/Branch-Abdeckung**;
+  **alle 36 Produktionsmodule über 95 %** kombinierter Abdeckung.
+  Neue Workflow-Module einschließlich Aufnahmeverwaltung erreichen 100 %.
+- [Hassfest und HACS](https://github.com/topic2k/enigma2-connect/actions/runs/35533818364)
+  für denselben Commit erfolgreich; HACS prüft den exakten Commit.
+- Lokal: **56 gezielte Auswahlfeld-/Integrationsprüfungen**, **49 Frontend-Tests**,
+  Syntax-, Versions-, Lock- und Diff-Prüfungen erfolgreich. Zusätzlich die vier
+  ursprünglich fehlgeschlagenen Fälle in einer frisch aus `uv.lock` aufgebauten
+  Umgebung erfolgreich geprüft. Lokale vollständige Läufe wurden zugunsten der
+  vollständigen CI abgebrochen und werden nicht als bestanden gewertet.
+
+Die ersten CI-Läufe deckten fehlende Testabhängigkeiten der globalen HA-
+Aktionsmetadatenvalidierung auf. Deren echte Assist-/Conversation-/TTS-/FFmpeg-
+Importanforderungen sind nun in der Dev-Gruppe festgelegt. Der mit `main`
+übernommene Gerätezuordnungstest berücksichtigt das neue Timer-Kontextargument;
+seine Zielprüfung bleibt erhalten. Keine Tests übersprungen, Prüfgrenzen oder
+Qualitätskriterien abgesenkt und keine neuen Integrations-Laufzeitabhängigkeiten.
+
+Betroffene Qualitätsanforderungen abgeglichen: Aktionsfehler und Übersetzungen,
+Gerätezuordnung, Parallelzugriffe, Entladen der Listener, Abfragen nur bei Bedarf,
+Async-I/O, Typisierung, Aktionsdokumentation und bekannte Grenzen. Die neuen
+Funktionen und Fehler-/Wiederholungsfälle sind dokumentiert; Prüfstrenge und
+bestehende Qualitätsanforderungen gegenüber aktuellem `main` bleiben erhalten.
+
+Diese automatisierten Prüfungen verwenden simulierte Receiver. Keine neue
+Receiver-/HA-Praxisabnahme von dev.21; die gemeinsam bestätigte dev.20-Abnahme
+und ihre Grenzen bleiben unten dokumentiert, insbesondere die fehlende reale
+schreibende Vu+-Abnahme. Der nachfolgende Nachweiscommit ändert nur diese beiden
+Prüfübersichten; die CI seines finalen Stands wird vor develop erneut kontrolliert.
+Die Nutzerfreigabe gilt für die Übernahme nach `develop`, nicht für main oder ein Release.
+
 ## Abschluss Abschnitt 5b – 1.3.0-dev.20
 
 Am **20.09.2026** hat der Nutzer die Aktualisierung auf dev.20 und den Abschluss

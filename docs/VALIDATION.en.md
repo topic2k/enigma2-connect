@@ -2,6 +2,44 @@
 
 # Verification summary
 
+## Complete verification for develop – 1.3.0-dev.21
+
+On **2026-09-20**, requested sections 1–5 were checked together with the newer
+`main` device-ownership and exact-commit HACS fixes.
+Verified source revision: `6d0adcba09cf5088de0b5070ef49f4a8486563a5`.
+
+- [Complete CI](https://github.com/topic2k/enigma2-connect/actions/runs/35533818331):
+  **862 backend tests** and **49 frontend tests** passed; Ruff and formatting
+  passed; Mypy found no issues in **36 modules**. Python **3.14.7**, HA **2026.9.1**.
+- Config flows reach **100% statement/branch coverage**;
+  **all 36 production modules exceed 95%** combined coverage.
+  New workflow modules, including recording management, reach 100%.
+- [Hassfest and HACS](https://github.com/topic2k/enigma2-connect/actions/runs/35533818364)
+  passed for the same commit; HACS validates the exact commit.
+- Locally: **56 focused selector/integration checks**, **49 frontend tests**,
+  syntax, version, lockfile and diff checks passed. The four originally failing
+  cases also passed in a fresh environment built from `uv.lock`. Local full runs
+  were stopped in favor of complete CI and are not counted as successful runs.
+
+Initial CI runs exposed missing test dependencies of HA's global service-metadata
+validation. Its real Assist/Conversation/TTS/FFmpeg import requirements are now
+pinned in the dev group. The device-ownership test inherited from `main` accounts
+for the new timer-context argument while preserving target validation. No tests
+were skipped, no thresholds or quality criteria were lowered, and no integration
+runtime dependencies were added.
+
+Affected quality requirements reviewed: translated action errors, device targeting,
+concurrency, listener unloading, on-demand queries, async I/O, typing, action
+documentation and known limitations. New functions and failure/replay behavior
+are documented; existing quality requirements and rigor relative to current
+`main` are preserved.
+
+These automated checks use simulated receivers. No new receiver/HA acceptance
+of dev.21 is claimed; joint dev.20 acceptance and its limits remain documented
+below, including the lack of actual Vu+ write acceptance. The subsequent evidence
+commit changes only these two verification summaries; its final CI is checked
+again before develop integration. User approval covers `develop`, not main or a release.
+
 ## Section 5b complete – 1.3.0-dev.20
 
 On **2026-09-20**, the user explicitly confirmed installing dev.20 and completing
