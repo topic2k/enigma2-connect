@@ -296,3 +296,37 @@ recordings_list:
         select:
           options: [all, in_progress, complete, zero, unknown]
           translation_key: recording_progress
+
+recording_manage:
+  fields:
+    device_id: *id002
+    service_reference:
+      required: true
+      selector:
+        text: {}
+    expected_revision:
+      required: true
+      selector:
+        text: {}
+    action:
+      required: true
+      selector:
+        select:
+          options: [rename, move, delete]
+          translation_key: recording_action
+    title:
+      selector:
+        text: {}
+    directory:
+      selector:
+        text: {}
+    confirm_delete:
+      default: false
+      selector:
+        boolean: {}
+recording_operation_status:
+  fields:
+    device_id: *id002
+recording_destinations:
+  fields:
+    device_id: *id002

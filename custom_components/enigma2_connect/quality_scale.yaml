@@ -87,7 +87,7 @@ rules:
     comment: test_repeated_poll_failure_logs_once_and_recovers verifies one failure and one recovery message across repeated polls.
   parallel-updates:
     status: done
-    comment: All nine platforms specify PARALLEL_UPDATES=0; API commands and coordinator catalogs use locks. Instant recording, timer editing and event recording hold the command lock across fresh preflight, write and confirmation.
+    comment: All nine platforms specify PARALLEL_UPDATES=0; API commands and coordinator catalogs use locks. Instant recording, timer editing and event recording and recording management hold the command lock across fresh preflight, write and confirmation.
   reauthentication-flow:
     status: done
     comment: ConfigEntryAuthFailed and action failures initiate reauth; UI recovery and wrong-device tests exist.

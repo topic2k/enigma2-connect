@@ -4,7 +4,7 @@
 
 ## Contents
 
-- [1.3.0-dev.16](#130-dev16)
+- [1.3.0-dev.20](#130-dev20)
 - [1.2.0](#120)
 - [1.1.3](#113)
 - [1.1.2](#112)
@@ -14,12 +14,31 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 1.3.0-dev.16
+## 1.3.0-dev.20
 
 Unreleased development version. Target for the requested EPG, timer and
 recording extensions. Instant recording and timer editing are implemented;
-EPG search and cards have passed joint acceptance; library management follows.
+EPG search and cards have passed joint acceptance; library management has also passed joint acceptance.
 
+- Move/delete guards now match the selected recording rather than blocking all
+  receiver activity. Unrelated HA streams, reported streams and playback remain
+  usable; active timers are matched by file path. Unresolved file operations block
+  new streams only for source/destination paths. Deletion asks about the selected
+  title with its own button and requires fresh confirmation after action changes.
+
+- Completed recording titles can be changed during streaming or recording
+  playback; missing streaming status no longer blocks title-only changes.
+  Media paths and bytes stay unchanged. Recording/preparation guards and stricter
+  move/delete protection remain in place.
+
+- Recording management uses a modal dialog with keyboard support. Errors and
+  unconfirmed operations are clearly highlighted and remain visible on the card
+  after closing. Library loading failures are also prominent alerts.
+
+- Recording management in the card and HA actions: change title, move and
+  explicitly confirm deletion. Fresh selection checks, activity/destination
+  guards, unresolved-write lock and read-only completion checks. Section 5b
+  jointly accepted following local, Octagon and HA dialog checks.
 - Recording library card: automatic columns based on available list width.
   Display order: title, duration, recording date, channel, progress, size.
   Priority: title, recording date, channel, duration, progress, size. Updates
@@ -35,7 +54,7 @@ EPG search and cards have passed joint acceptance; library management follows.
   mean unwatched. Native media views also show file size and tags.
   The dev.13 library scope passed actual HA checks; the dev.16 row view
   passed local checks; section 5a jointly accepted.
-  Rename, move and delete follow in 5b.
+  Title changes, move and delete are implemented and jointly accepted in 5b.
 - EPG search and similar programmes return all matching received results without
   a local limit. List/single display with arrows around the count:
   “[‹] Result 10 of 30 [›]”. Both cards default to single view; remote search is off.

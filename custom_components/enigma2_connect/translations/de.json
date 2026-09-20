@@ -216,6 +216,13 @@
         "zero": "0 % gemeldet",
         "unknown": "Unbekannt"
       }
+    },
+    "recording_action": {
+      "options": {
+        "rename": "Titel ändern",
+        "move": "Verschieben",
+        "delete": "Löschen"
+      }
     }
   },
   "entity": {
@@ -551,6 +558,33 @@
     },
     "recording_data": {
       "message": "Der Receiver hat keinen vollständig lesbaren Aufnahmekatalog geliefert. Bitte erneut laden."
+    },
+    "recording_path": {
+      "message": "Der Aufnahmepfad ist nicht eindeutig oder nicht geeignet."
+    },
+    "recording_destination": {
+      "message": "Zielordner nicht verfügbar. Wähle einen vorhandenen Aufnahmeordner dieses Receivers."
+    },
+    "recording_busy": {
+      "message": "Die ausgewählte Aufnahme wird gerade aufgezeichnet, vorbereitet, wiedergegeben oder gestreamt. Beende ihre Verwendung zuerst."
+    },
+    "recording_pending": {
+      "message": "Ein Aufnahmeauftrag ist noch unbestätigt. Prüfe seinen Status; führe ihn nicht erneut aus."
+    },
+    "recording_input": {
+      "message": "Ungültige Verwaltungsaktion oder ungültiger Titel."
+    },
+    "recording_confirm": {
+      "message": "Bestätige das möglicherweise endgültige Löschen ausdrücklich."
+    },
+    "recording_stale": {
+      "message": "Die Aufnahme wurde geändert oder ist nicht mehr vorhanden. Lade die Liste neu und wähle erneut."
+    },
+    "recording_collision": {
+      "message": "Im Zielordner liegt bereits eine gleichnamige Aufnahme. Es wird nichts überschrieben."
+    },
+    "recording_activity_unknown": {
+      "message": "Eine aktive Aufnahme oder Wiedergabe lässt sich keiner Datei sicher zuordnen. Prüfe den Receiverstatus."
     }
   },
   "services": {
@@ -901,6 +935,60 @@
         "progress": {
           "name": "Gemeldeter Wiedergabestand",
           "description": "Gemeldeter Wiedergabestand"
+        }
+      }
+    },
+    "recording_manage": {
+      "name": "Aufnahme verwalten",
+      "description": "Ändert den Titel, verschiebt oder löscht eine frisch abgeglichene Aufnahme. Löschen folgt dem Receiver und kann endgültig sein.",
+      "fields": {
+        "device_id": {
+          "name": "Receiver",
+          "description": "Receiver"
+        },
+        "service_reference": {
+          "name": "Aufnahme-Service-Referenz",
+          "description": "Aufnahme-Service-Referenz"
+        },
+        "expected_revision": {
+          "name": "Prüfwert aus recordings_list",
+          "description": "Prüfwert aus recordings_list"
+        },
+        "action": {
+          "name": "Aktion",
+          "description": "Aktion"
+        },
+        "title": {
+          "name": "Neuer angezeigter Titel",
+          "description": "Neuer angezeigter Titel"
+        },
+        "directory": {
+          "name": "Zielordner auf dem Receiver",
+          "description": "Zielordner auf dem Receiver"
+        },
+        "confirm_delete": {
+          "name": "Möglicherweise endgültiges Löschen bestätigen",
+          "description": "Möglicherweise endgültiges Löschen bestätigen"
+        }
+      }
+    },
+    "recording_operation_status": {
+      "name": "Aufnahmeauftrag prüfen",
+      "description": "Prüft einen offenen Auftrag ohne Wiederholung.",
+      "fields": {
+        "device_id": {
+          "name": "Receiver",
+          "description": "Receiver"
+        }
+      }
+    },
+    "recording_destinations": {
+      "name": "Aufnahme-Zielordner laden",
+      "description": "Liest vorhandene Aufnahme-Lesezeichen des Receivers.",
+      "fields": {
+        "device_id": {
+          "name": "Receiver",
+          "description": "Receiver"
         }
       }
     }

@@ -189,7 +189,7 @@ Dateigröße, Tags, Ordner und gemeldetem Wiedergabestand. Sie benötigt Integra
 1. Kopiere `www/enigma2-connect-recordings-card.js` nach
    `/config/www/enigma2-connect-recordings-card.js`.
 2. Ergänze unter **Einstellungen → Dashboards → Ressourcen** die Adresse
-   `/local/enigma2-connect-recordings-card.js?v=dev16` als **JavaScript-Modul**.
+   `/local/enigma2-connect-recordings-card.js?v=dev20` als **JavaScript-Modul**.
    Falls Ressourcen fehlen, aktiviere den erweiterten Modus im Benutzerprofil.
 3. Lade den Browser vollständig neu. Füge deinem Dashboard die Karte
    **Enigma2 Connect Aufnahmebibliothek** hinzu und wähle den Medienplayer des
@@ -211,14 +211,15 @@ hinzu. Verdeckte Spalten sind weiterhin in den aufklappbaren Details verfügbar.
 mit der Tastatur geht das über Tab und Eingabe oder Leertaste. Lange Titel
 umbrechen bei Bedarf. Filter und Trefferzähler funktionieren in beiden Ansichten.
 Manuell entspricht dies `display_mode: rows` beziehungsweise `display_mode: details`.
-Für diese Auswahl die Bibliotheks-Kartendatei auf dev.16 aktualisieren und den
-Ressourcenlink ändern; die HA-Aktion aus Integration dev.13 ist kompatibel.
+Für diese Auswahl die Bibliotheks-Kartendatei auf dev.17 aktualisieren und den
+Ressourcenlink ändern. Reine Anzeige ist ab Integration dev.13 kompatibel;
+für die Verwaltung wird Integration dev.17 benötigt.
 
 Fehlende Angaben erscheinen als **Unbekannt**. Eine gemeldete Dateigröße 0 gilt
 ebenfalls als unbekannt. **0 % gemeldet** kann bedeuten, dass keine Abspielposition
 gespeichert ist; es ist keine sichere Aussage „ungesehen“. Die Prozentwerte
-stammen vom Receiver und verfolgen keine Wiedergabe im HA-Browser. Die Karte
-ändert keine Aufnahmen; zur Wiedergabe nutze weiterhin **Medien durchsuchen**.
+stammen vom Receiver und verfolgen keine Wiedergabe im HA-Browser. Zur Wiedergabe nutze weiterhin **Medien durchsuchen**;
+Änderungen erfordern eine ausdrückliche Verwaltungsaktion.
 Bei Receiverwechsel oder Verbindungsverlust wird die geladene Liste verworfen.
 Datumswerte in dieser Karte folgen der Zeitzone des Browsers.
 
@@ -226,6 +227,69 @@ Bei manueller Kartenkonfiguration lautet der Typ
 `custom:enigma2-connect-recordings-card`; `entity` ist der zugehörige
 `media_player.…`, `name` ein optionaler Titel. Die neue Karte hat eine eigene
 JavaScript-Ressource; Fernbedienungs- und EPG-Karte bleiben separat verfügbar.
+
+### Aufnahmen in der Karte verwalten
+
+Die Verwaltung benötigt die Integration ab **1.3.0-dev.17**. Für den Dialog
+die Bibliothekskarte aus **1.3.0-dev.20** installieren, den Ressourcenlink
+auf `?v=dev20` ändern und die Seite neu laden.
+
+1. Lade die Aufnahmen des gewünschten Receivers. In der Zeilenansicht klappe
+   die Aufnahme auf und wähle **Verwalten**; in der Detailansicht steht der
+   Button direkt bei der Aufnahme.
+2. Im Dialog **Aufnahme verwalten** wähle die **Aktion**: **Titel ändern**, **Verschieben** oder **Löschen**.
+   Eine Titeländerung ändert den angezeigten Namen, nicht den Dateinamen.
+3. Gib den neuen Titel ein oder wähle den **Zielordner**. Die Auswahl enthält
+   vorhandene Aufnahmeordner und Receiver-Lesezeichen; neue Ordner werden
+   nicht angelegt. Bereits belegte Zieldateinamen werden abgewiesen.
+4. Für **Löschen** beantworte die Frage mit dem Aufnahmetitel durch das
+   Bestätigungsfeld und den Button **Aufnahme löschen**. Ein Aktionswechsel
+   setzt die Bestätigung zurück. Je nach
+   Receiver-Einstellung wird endgültig gelöscht oder ein Papierkorb verwendet.
+   Ein Papierkorb wird nicht zugesichert und keine erzwungene Löschung gesendet.
+5. Wähle **Ausführen**. Erfolg wird erst nach Prüfung der Receiverliste
+   angezeigt; anschließend lädt die Karte den Katalog erneut.
+
+Bei **Abschluss noch unbestätigt** nur **Auftragsstatus prüfen** verwenden,
+nicht den Auftrag erneut ausführen. Während eines offenen Auftrags sind weitere
+Verwaltungsaktionen gesperrt. Bei einem Fehler vor der Änderung zeigt die Karte
+den Grund als hervorgehobene Fehlermeldung im Dialog an. Nach dem Schließen
+bleibt die Meldung auf der Karte sichtbar. **Abbrechen**, **Schließen**, das Kreuz
+oder Escape schließen den Dialog und widerrufen keinen
+bereits gesendeten Auftrag.
+
+Vorhandene HA-Streams werden nicht beendet. Während eines
+offenen Verschiebe-/Löschauftrags starten keine neuen HA-Aufnahmestreams für
+dessen Quell-/Zieldatei; andere Aufnahmen bleiben nutzbar.
+Nach einem HA-Neustart/einem Neuladen der Integration zuerst den tatsächlichen
+Receiverzustand prüfen: Der Schutz für unbestätigte Aufträge lebt im Arbeitsspeicher.
+
+**Praxisprüfung für Abschnitt 5b:** Ausschließlich eine entbehrliche, eigens
+angelegte Testaufnahme verwenden. Titel ändern und kontrollieren, in einen
+vorhandenen freien Zielordner verschieben und anschließend zurückverschieben.
+Löschen zuletzt ausdrücklich bestätigen; danach Karte, OpenWebif und HA-Medienliste
+abgleichen. Die lokale Simulation ersetzt diese Geräteprüfung nicht.
+
+Der Hintergrund ist während des Dialogs gesperrt. Nach dem Schließen kehrt der
+Tastaturfokus zum Ausgangsbutton zurück. Während eine Anfrage läuft, bleibt der
+Dialog geöffnet; ein anschließend unbestätigter Auftrag kann geschlossen werden.
+**Auftragsstatus prüfen** öffnet den Dialog erneut. Auch ein Ladefehler der
+Bibliothek wird deutlich hervorgehoben.
+
+Ab Integration **1.3.0-dev.20** beziehen sich die Sperren auf die ausgewählte
+Aufnahme. Andere Live-TV- oder Aufnahmestreams und andere Receiver-Wiedergaben
+verhindern **Verschieben** und **Löschen** nicht mehr. Die ausgewählte Aufnahme
+bleibt gesperrt, wenn sie gerade am Receiver wiedergegeben, über diese Integration
+gestreamt oder in der Receiver-Streamliste als benutzt gemeldet wird.
+**Titel ändern** bleibt auch bei Wiedergabe dieser Aufnahme möglich.
+
+Laufende/vorbereitete Aufnahmen werden über ihren Dateipfad zugeordnet.
+Sind aktive Schreibvorgänge oder eine gemeldete Aufnahmewiedergabe keiner Datei
+sicher zuzuordnen, erscheint eine gesonderte Meldung. Fehlendes allgemeines
+Streaming-Signal allein sperrt nicht mehr. Externe direkte Dateiabrufe und andere
+Zugriffspfade auf dieselbe Datei kann die Integration nicht vollständig erkennen;
+beende solche Zugriffe auf die ausgewählte Aufnahme vor Verschieben/Löschen.
+
 
 ### Mehrere Receiver zusammen anzeigen
 
@@ -629,6 +693,32 @@ Katalog ohne lokale Begrenzung. Jeder Eintrag enthält `service_reference`,
 `size_bytes`, `tags`, `directory` und `progress_percent`. Unbekannte Werte sind
 `null`, eine bekannte leere Tagliste ist `[]`. Die Aktion liest nur Metadaten;
 sie startet weder Wiedergabe noch Aufnahme.
+
+### Aufnahmeverwaltung in Aktionen und Automationen
+
+`recording_manage` erhält den Receiver, `service_reference` und den aktuellen
+`revision`-Wert aus `recordings_list` als `expected_revision`. So wird eine
+inzwischen geänderte Aufnahme nicht versehentlich bearbeitet. Beispiel zur
+Titeländerung; Platzhalter aus einer frisch geladenen Aufnahme ersetzen:
+
+```yaml
+action: enigma2_connect.recording_manage
+data:
+  device_id: DEINE_RECEIVER_GERAETE_ID
+  service_reference: REFERENZ_AUS_RECORDINGS_LIST
+  expected_revision: PRUEFWERT_AUS_RECORDINGS_LIST
+  action: rename
+  title: Neuer Titel
+response_variable: aufnahmeauftrag
+```
+
+Für `action: move` stattdessen `directory` übergeben; `recording_destinations`
+liefert die Receiver-Lesezeichen. Für `action: delete` ist `confirm_delete: true`
+erforderlich. Das ist die ausdrückliche Zustimmung zu möglicherweise endgültigem
+Löschen und sollte nicht unbedacht in wiederholte Automationen aufgenommen werden.
+Die Antwort meldet `status: completed` oder `pending`. Bei `pending` die lesende
+Aktion `recording_operation_status` mit derselben `device_id` aufrufen. Diese
+liefert `idle`, `pending` oder `completed` und sendet den Auftrag nicht erneut.
 
 ### Aktionen und Beispiele
 

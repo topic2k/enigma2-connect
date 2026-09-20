@@ -1,15 +1,18 @@
 // SPDX-License-Identifier: Apache-2.0
 const {test, before} = require('node:test');
 const assert = require('node:assert/strict');
-let RecordingLibraryController, filterRecordings, recordingMarkup, Enigma2RecordingsCard;
+let RecordingManagementController, RecordingLibraryController, filterRecordings, recordingMarkup, Enigma2RecordingsCard;
 before(async () => {
   global.HTMLElement = class {
     attachShadow() {
       const nodes = new Map();
       this.shadowRoot = {innerHTML: '', querySelector(selector) {
         if (!this.innerHTML) return null;
-        if (!nodes.has(selector)) nodes.set(selector, {innerHTML: '', textContent: '', value: '', listeners: {},
-          addEventListener(name, callback) { this.listeners[name] = callback; }});
+        if (!nodes.has(selector)) nodes.set(selector, {innerHTML: '', textContent: '', value: '', listeners: {}, dataset: {}, attributes: {}, open: false, isConnected: true,
+          addEventListener(name, callback) { this.listeners[name] = callback; },
+          setAttribute(name, value) { this.attributes[name] = value; },
+          showModal() { this.open = true; }, close() { this.open = false; },
+          focus() { this.focused = true; }, scrollIntoView() { this.scrolled = true; }});
         return nodes.get(selector);
       }};
     }
@@ -17,7 +20,7 @@ before(async () => {
   const elements = new Map();
   global.customElements = {get: key => elements.get(key), define: (key, value) => elements.set(key, value)};
   global.window = {}; global.document = {documentElement: {lang: 'en'}};
-  ({RecordingLibraryController, filterRecordings, recordingMarkup, Enigma2RecordingsCard} = await import('../www/enigma2-connect-recordings-card.js'));
+  ({RecordingManagementController, RecordingLibraryController, filterRecordings, recordingMarkup, Enigma2RecordingsCard} = await import('../www/enigma2-connect-recordings-card.js'));
 });
 const row = {service_reference: 'opaque', title: 'A & B', service_name: 'News HD', tags: ['Film'], directory: '/media/movie',
   recorded_at: 1789000000, duration: 90, size_bytes: 2**30, progress_percent: 43};
@@ -164,4 +167,112 @@ test('row filters and counters agree; unchanged HA updates preserve expanded ent
   assert.equal(list.innerHTML, ''); assert.match(card.shadowRoot.querySelector('.status').textContent, /0 von 1/);
   card.shadowRoot.querySelector('.clear').listeners.click();
   assert.match(list.innerHTML, /<summary>/); assert.match(card.shadowRoot.querySelector('.status').textContent, /1 von 1/);
+});
+
+test('management binds receiver/revision, confirms deletion and suppresses duplicate clicks', async () => {
+  const calls = []; let finish;
+  const client = {callWS: async args => {calls.push(args); if (args.service === 'recording_destinations') return {response:{directories:['/target']}}; return new Promise(resolve => {finish=resolve;});}};
+  const controller = new RecordingManagementController(() => {});
+  await controller.open({...row,revision:'revision1'},client,'receiver1',['/media/movie']);
+  assert.equal(await controller.run('delete','','',false),false);
+  const pending = controller.run('delete','','',true);
+  assert.equal(await controller.run('delete','','',true),false);
+  assert.equal(calls.length,2);
+  assert.deepEqual(calls[1].service_data,{device_id:'receiver1',service_reference:'opaque',expected_revision:'revision1',action:'delete',confirm_delete:true});
+  finish({response:{status:'pending'}}); await pending;
+  assert.equal(await controller.run('delete','','',true),false);
+});
+test('management rejects unsafe form choices and discards replies after receiver change', async () => {
+  let finish; const controller = new RecordingManagementController(() => {});
+  await controller.open({...row,revision:'revision1'},{callWS:async()=>({response:{directories:['/target']}})},'old',['/media/movie']);
+  for (const args of [['rename',' ', '', false],['move','','/unknown',false],['move','','/media/movie',false],['bad','','',false]]) assert.equal(await controller.run(...args),false);
+  const pending=controller.call({callWS:()=>new Promise(resolve=>{finish=resolve;})},'old','recording_operation_status');
+  controller.reset(); finish({response:{status:'completed'}}); assert.equal(await pending,false);
+  assert.equal(controller.status,''); assert.equal(controller.selected,null);
+});
+test('uncertain management writes require read-only status checks', async () => {
+  const controller = new RecordingManagementController(() => {});
+  await controller.open({...row,revision:'r'},{callWS:async()=>{throw Error('lost');}},'device',[]);
+  assert.equal(controller.directoryError,true);
+  await controller.run('rename','New','',false); assert.equal(controller.status,'pending');
+  await controller.call({callWS:async()=>({response:{status:'completed'}})},'device','recording_operation_status');
+  assert.equal(controller.status,'completed'); assert.equal(controller.selected,null);
+});
+
+test('known preflight errors are localized and failed status checks preserve pending guard', async () => {
+  const controller = new RecordingManagementController(() => {});
+  const client = {callWS:async()=>{throw {translation_domain:'enigma2_connect',translation_key:'recording_busy'};},loadBackendTranslation:async()=>()=>'<Receiver beschäftigt>'};
+  await controller.call(client,'device','recording_manage');
+  assert.equal(controller.status,'managementFailed'); assert.equal(controller.errorMessage,'<Receiver beschäftigt>');
+  controller.status='pending';
+  await controller.call({callWS:async()=>{throw Error('offline');}},'device','recording_operation_status');
+  assert.equal(controller.status,'pending');
+});
+
+
+test('management dialog focuses errors, retains them after Escape and returns focus without writes', async () => {
+  const calls = []; const card = new Enigma2RecordingsCard();
+  card.setConfig({entity: 'media_player.receiver'});
+  card.hass = {...hass(), callWS: async args => {calls.push(args.service); if(args.service === 'recording_destinations') return {response:{directories:[]}}; throw {translation_domain:'enigma2_connect',translation_key:'recording_busy'};}, loadBackendTranslation: async () => () => 'Receiver beschäftigt <Text>'};
+  card.library.rows = [{...row,revision:'r'}];
+  const root = card.shadowRoot, node = selector => root.querySelector(selector);
+  const trigger = {dataset:{reference:'opaque'},isConnected:true,focus(){this.focused=true;}};
+  node('ul').listeners.click({target:{closest:()=>trigger}});
+  assert.equal(node('.management-dialog').open,true);
+  assert.equal(node('.management-action').focused,true);
+  await node('.execute').listeners.click();
+  assert.equal(node('.management-notice').attributes.role,'alert');
+  assert.equal(node('.management-notice').dataset.kind,'error');
+  assert.equal(node('.management-notice').focused,true);
+  assert.equal(node('.management-status').textContent,'Receiver beschäftigt <Text>');
+  assert.equal(node('.management-banner').hidden,true);
+  let prevented=false; node('.management-dialog').listeners.cancel({preventDefault(){prevented=true;}});
+  assert.equal(prevented,true); assert.equal(node('.management-dialog').open,false);
+  assert.equal(trigger.focused,true);
+  assert.equal(node('.management-banner').hidden,false);
+  assert.equal(node('.management-banner').attributes.role,'alert');
+  assert.equal(node('.banner-message').textContent,'Receiver beschäftigt <Text>');
+  assert.deepEqual(calls,['recording_destinations','recording_manage']);
+});
+
+test('dialog cannot dismiss a running call; closed pending operations still block repeats', async () => {
+  let finish; const calls=[];
+  const card = new Enigma2RecordingsCard(); card.setConfig({entity:'media_player.receiver'});
+  card.hass = {...hass(),callWS:async args=>{calls.push(args.service); if(args.service==='recording_destinations')return {response:{directories:[]}}; return new Promise(resolve=>{finish=resolve;});}};
+  await card.management.open({...row,revision:'r'},card._hass,card.identity,[]);
+  card.openManagement(); const root=card.shadowRoot, node=s=>root.querySelector(s);
+  const request=card.management.run('rename','Changed','',false);
+  card.closeManagement(); assert.equal(node('.management-dialog').open,true);
+  assert.equal(node('.dialog-close').disabled,true);
+  finish({response:{status:'pending'}});await request;
+  assert.equal(node('.dialog-check').hidden,false);assert.equal(node('.execute').disabled,true);
+  card.closeManagement();assert.equal(node('.management-banner').dataset.kind,'warning');
+  assert.equal(await card.management.run('rename','Again','',false),false);
+  card.openManagement();card.hass={...hass(),states:{'media_player.receiver':{state:'unavailable'}}};
+  assert.equal(node('.management-dialog').open,false);assert.equal(node('.management-banner').hidden,true);
+  assert.deepEqual(calls,['recording_destinations','recording_manage']);
+});
+
+test('catalog failures are prominent alerts and clear after successful reload', async () => {
+  const card=new Enigma2RecordingsCard(); card.setConfig({entity:'media_player.receiver'}); card.hass=hass();
+  await card.library.load({callWS:async()=>{throw Error('offline');}},card.identity);
+  const status=card.shadowRoot.querySelector('.status');
+  assert.equal(status.attributes.role,'alert');assert.equal(status.dataset.kind,'error');
+  assert.equal(status.className,'status notice');
+  await card.library.load(hass(),card.identity);
+  assert.equal(status.attributes.role,'status');assert.equal(status.className,'status');
+});
+
+
+test('delete asks about the selected title and action switches require fresh confirmation', () => {
+  const card=new Enigma2RecordingsCard();card.setConfig({entity:'media_player.receiver'});card.hass=hass();
+  card.management.selected={...row,title:'<Testaufnahme>',revision:'r'};
+  const node=s=>card.shadowRoot.querySelector(s);
+  node('.management-action').value='delete';card.updateManagement();
+  assert.equal(node('.delete-question').textContent,'Aufnahme „<Testaufnahme>“ wirklich löschen?');
+  assert.equal(node('.execute').textContent,'Aufnahme löschen');assert.equal(node('.execute').disabled,true);
+  node('.confirm-delete').checked=true;card.updateManagement();assert.equal(node('.execute').disabled,false);
+  node('.management-action').value='move';node('.management-action').listeners.change();
+  node('.management-action').value='delete';node('.management-action').listeners.change();
+  assert.equal(node('.confirm-delete').checked,false);assert.equal(node('.execute').disabled,true);
 });

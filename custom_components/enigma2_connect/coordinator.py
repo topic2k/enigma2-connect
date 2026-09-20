@@ -37,6 +37,7 @@ from .media_stream import MediaStream
 from .models import JsonObject, ReceiverState, Snapshot, services
 from .recording_images import RecordingImages
 from .recording_library import RecordingLibrary, RecordingLibraryError
+from .recording_management import RecordingManagementError, RecordingManager
 from .timer_conflicts import conflicts, summary
 from .timer_edit import TimerEditError, TimerEditor, TimerEditRejected
 from .workflow_models import TimerIdentity
@@ -61,6 +62,7 @@ class EnigmaCoordinator(DataUpdateCoordinator[Snapshot]):
         self.timer_editor = TimerEditor(client)
         self.epg = EpgWorkflow(client)
         self.recording_library = RecordingLibrary(client)
+        self.recording_manager = RecordingManager(client)
         self.entry = entry
         self.recording_images = RecordingImages(hass, self)
         self.media_stream = MediaStream(hass, self)
@@ -238,7 +240,13 @@ class EnigmaCoordinator(DataUpdateCoordinator[Snapshot]):
             raise HomeAssistantError(
                 translation_domain=DOMAIN, translation_key="power_unconfirmed"
             ) from err
-        except (InstantRecordingError, TimerEditError, EpgError, RecordingLibraryError) as err:
+        except (
+            InstantRecordingError,
+            TimerEditError,
+            EpgError,
+            RecordingLibraryError,
+            RecordingManagementError,
+        ) as err:
             raise HomeAssistantError(translation_domain=DOMAIN, translation_key=err.reason) from err
         except CommandUnconfirmed as err:
             raise HomeAssistantError(
@@ -276,6 +284,27 @@ class EnigmaCoordinator(DataUpdateCoordinator[Snapshot]):
         if refresh:
             await self.async_request_refresh()
         return result
+
+    async def async_manage_recording(self, **params: Any) -> JsonObject:
+        # Hold stream admission while validating and dispatching a mutation.
+        async with self.media_stream.lock:
+            try:
+                in_use = params.get("action") != "rename" and self.media_stream.recording_in_use(
+                    params["service_reference"]
+                )
+            except RecordingManagementError as err:
+                raise HomeAssistantError(
+                    translation_domain=DOMAIN, translation_key=err.reason
+                ) from err
+            if in_use:
+                raise HomeAssistantError(
+                    translation_domain=DOMAIN, translation_key="recording_busy"
+                )
+            try:
+                return await self.perform(self.recording_manager.manage, refresh=False, **params)
+            finally:
+                self.invalidate_lists()
+                await self.async_request_refresh()
 
     async def async_record_event(self, expected: JsonObject) -> JsonObject:
         return await self._timer_workflow(self.epg.record, expected, timer_action="record_event")

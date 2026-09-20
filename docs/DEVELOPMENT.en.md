@@ -871,6 +871,38 @@ saved custom references.
 
 ## Implementation plan: recording workflows
 
+### dev.20 addition: recording-specific management guards
+
+Implemented (dev.20): match the selected recording path against active timers, receiver playback,
+reported stream references and HA recording streams. Permit known unrelated
+activity. Guard new streams only for unresolved move/delete source/destination
+paths. Still reject ambiguous active writers. Show a title-specific deletion
+question and button; reset confirmation on action changes. Run focused tests and
+real move/restore/delete checks with the explicitly disposable test recording,
+leaving the user's backup copy untouched.
+
+
+
+### dev.19 addition: title changes during streaming
+
+Implemented and checked on Octagon (see verification summary): allow streaming and recording playback during display-title changes,
+because `movieinfo` edits the metadata title while the media path stays unchanged.
+Retain recording/preparation guards, revision checks and unresolved-operation
+protection. Keep stricter guards for moves/deletions. Test the manager and HA
+service path, then briefly change the user-selected recording title on the actual
+receiver and restore the original title.
+
+
+
+### dev.18 addition: management dialog
+
+Implemented plan: move management into a native modal dialog, handle focus and Escape,
+highlight errors and unresolved operations and preserve them on the card after
+closing. Retain write guards. Investigate the receiver activity error read-only;
+verify dialog and error paths with automated tests and a simulated browser.
+
+
+
 Request dated **2026-09-19**: implement ideas 1–5 as the next feature expansion.
 Base: freshly fetched `origin/main` commit `1afa705` (version 1.2.0), branch
 `feature/recording-workflows`, worktree
@@ -961,7 +993,7 @@ on instruction.
   Vu+ without EPG correctly returned empty results. See the
   [verification summary](VALIDATION.en.md) for limits and timer reconciliation.
   Working-branch completion commit: `feat: add EPG search and recording cards`.
-- **5:** 5a including card changes through dev.16 confirmed by user and Codex on 2026-09-20. Codex HA checks used dev.13; later cards passed local checks and user acceptance. 5b authorized as the next section.
+- **5:** 5a including card changes through dev.16 confirmed by user and Codex on 2026-09-20. Codex HA checks used dev.13; later cards passed local checks and user acceptance. 5b through dev.20 also jointly confirmed on 2026-09-20 following local checks, real Octagon management operations and a read-only HA dialog check. Items 1–5 complete; see the verification summary for limits.
 
 `OpenWebifClient.command_result()` returns structured success data under the same
 lock as `command()`. Existing `command()` still returns `None`. Rejections through
@@ -1409,7 +1441,7 @@ OpenWebif also converts missing positions to zero, so the filter says “0% repo
 not “unwatched”. Raw `filesize=0` remains zero in the model but becomes unknown
 in the view/action response: OpenWebif may use it when file information is absent.
 File sizes are snapshots, particularly for active recordings. The card and action
-contain no management writes; those follow in 5b.
+contained no management writes in 5a; the 5b extension is documented below.
 
 References: [OpenWebif recording interface](https://github.com/oe-alliance/OpenWebif/blob/main/plugin/controllers/models/movies.py),
 [Enigma2 percentage calculation](https://github.com/openatv/enigma2/blob/7.6/lib/python/Components/MovieList.py).
@@ -1446,3 +1478,49 @@ space for readable titles. Thresholds of 22/30/36/42/48 em use the list font siz
 not viewport width. Scrollbar spacing stays intact. CSS-only resizing preserves
 expanded details, focus, filters and catalog without new queries or listeners.
 Check frontend behavior and live width changes in the browser.
+
+### Section 5b – recording management (dev.17–dev.20)
+
+Plan: Check a fresh catalog/revision before each write, bind the source to its
+receiver, block active recording/streams and validate destinations/conflicts.
+Never replay writes automatically; confirm completion using fresh source/target
+catalogs. Add HA actions, card controls, deletion confirmation, translations
+and targeted tests.
+
+Implemented: `recording_manage`, `recording_operation_status` and
+`recording_destinations`. Title changes use `movieinfo` with `title`, without
+renaming files; pre-encoding `sRef` compensates for this endpoint's additional
+URL decoding. Moving uses `moviemove`; deletion uses `moviedelete` without
+`force` (parameter presence enables forced deletion). The image decides whether
+deletion uses trash or is permanent; the card explicitly confirms this risk.
+
+The shared command lock covers preflight, dispatch and up to three readbacks.
+HA stream admission is serialized while dispatching; from dev.20 only HA
+recording streams for the selected path block moves/deletions. Title-only changes permit existing HA streams from dev.19. Unconfirmed writes retain a manager guard even on cancellation;
+status checks are read-only. The guard is in memory, not persistent across HA
+restarts/reloads: manually verify receiver state before retrying. External
+remotes do not share this lock. Collision checks cover cataloged recordings,
+not orphaned sidecars; do not move files outside HA concurrently. Sources need
+a date, positive size and suitable absolute file path. From dev.20 timer filenames
+(with/without `.ts`), current playback paths, `about.info.streams[].ref` and local
+HA stream sources are matched exactly, without title/substrings or double decoding.
+Unidentified active writers still block; known unrelated activity does not. The
+global streaming flag is not a file identity. Direct external HTTP/network-share
+readers and path aliases cannot be fully detected. Pending file operations block
+only source/destination stream starts; title operations block no readers. Missing
+optional stream lists do not prove inactivity.
+
+Actions invalidate/refresh catalog caches; title changes update existing image
+versions, moves update media identifiers. Existing streams are not stopped.
+Background operations report success only after state reconciliation. Direct
+dev.19 title edits during streaming passed on Octagon with original title restored;
+direct dev.20 moves, return moves and confirmed deletion passed on Octagon.
+The user confirmed installing dev.20 and acceptance; Codex subsequently
+checked the HA dialog read-only. Section 5b jointly completed on 2026-09-20.
+Actual Vu+ write acceptance and complete pre-main quality evidence remain
+outstanding; see the verification summary. Completion commit:
+`feat: add guarded recording management and dialogs`.
+
+Interface references: [OpenWebif controller](https://github.com/oe-alliance/OpenWebif/blob/main/plugin/controllers/web.py)
+and [recording model](https://github.com/oe-alliance/OpenWebif/blob/main/plugin/controllers/models/movies.py).
+Independent implementation; no GPL code copied.

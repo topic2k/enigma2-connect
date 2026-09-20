@@ -2,6 +2,164 @@
 
 # Verification summary
 
+## Section 5b complete – 1.3.0-dev.20
+
+On **2026-09-20**, the user explicitly confirmed installing dev.20 and completing
+section 5b. Codex confirms completion based on the automated checks documented
+below, actual Octagon title-change, move, return-move and deletion tests, and
+the subsequent read-only check in the running Home Assistant interface.
+
+The HA library loaded **21 of 21 recordings**. An existing recording was used
+to check the management dialog and title-specific deletion question:
+**Delete recording** stayed disabled without confirmation; **Cancel** closed
+the dialog. **Check operation status** reported that the receiver confirmed the
+change. No recording was changed or deleted during this final check.
+The user reported installing dev.20; Codex verified the new dialog behavior,
+without separately checking the installed version number or file hashes.
+
+Section 5b and requested items 1–5 are now jointly complete.
+Working-branch completion commit:
+`feat: add guarded recording management and dialogs`.
+Earlier pending-acceptance notes below describe their historical state.
+Actual Vu+ write acceptance remains unverified. External direct file requests
+and path aliases cannot be fully detected. Complete quality evidence and current
+CI remain required before merging into main; section acceptance does not
+replace that evidence.
+
+## dev.20 addition – recording-specific guards and real management test
+
+Checked on **2026-09-20**. Known unrelated playback/streams and active timers
+mapped to other files no longer block the selected recording. A global or missing
+streaming signal is not a file-use identity. Ambiguous active writers stay guarded.
+
+- **Backend:** 150 focused management/streaming tests passed. Coverage includes
+  same/other file paths, receiver playback, reported stream references, HA streams,
+  active/preparing timers, absent optional stream lists, malformed data and pending
+  operations. Four HA service cases rerun after adding invalid-path error
+  translation. Management module: 100% statement/branch coverage; streaming module:
+  85% in this targeted subset. This is not a full-suite measurement; full module
+  thresholds and current CI remain required before merging. No requirement lowered.
+- **Frontend:** 49 tests passed. The deletion question names the selected title;
+  **Delete recording** stays disabled until confirmed. Switching actions clears
+  confirmation. Simulated browser also verified fresh confirmation after switching,
+  cancellation without writes and no browser errors.
+- **Real Octagon, explicitly disposable test recording:** Moved
+  “Inga Lindström: Rezept für die Liebe” from `/media/hdd/movie` to
+  `/media/hdd/movie/Inside Star Trek` and back. Fresh source/destination catalogs
+  confirmed both operations. Title, timestamp and size were preserved; hashes of
+  the first 4096 file bytes matched. No full-file hash or visual monitoring of the
+  ongoing playback was performed.
+- Deletion without `confirm_delete` returned `recording_confirm` without a
+  receiver write. Confirmed deletion then completed; the original test file is
+  absent from its source catalog. Exactly two `moviemove` and one `moviedelete`
+  calls, no `force` or stream-stop command. Receiver streaming remained reported
+  before, between and after these steps. The user's backup copy was not addressed.
+  No operation remains unresolved.
+- Ruff, formatting, Python/JavaScript syntax, Mypy (36 modules), translations,
+  version/changelog/lock alignment and diff checks passed.
+
+**Limits:** The write tests above used local dev.20 code directly.
+The subsequent HA dialog check and joint acceptance are documented above.
+Vu+ still lacks real management acceptance.
+External direct file requests and path aliases cannot be fully detected; guards
+cover HA streams and receiver-reported file use. Section 5b is jointly
+accepted; see the completion note above.
+
+
+
+## dev.19 addition – title changes during streaming
+
+Checked on **2026-09-20**. Streaming/playback now blocks moves/deletions only.
+Title-only changes allow existing streams and missing streaming status.
+Recording/preparation checks, revision binding and unresolved-write guards remain.
+
+- **Automated:** 119 distinct management, integration and stream-pool tests passed:
+  117 in the initial run and two HA service tests passed on a targeted rerun after
+  correcting the stream test double. Matrix covers title edits, moves/deletions,
+  active/inactive/unknown streaming and recording playback. HA action tests cover
+  existing live/recording streams, retained sessions, recording/preparation guards
+  and metadata checks.
+- `recording_management.py`: 100% statement/branch coverage. The targeted run
+  covers `coordinator.py` only partially (77%); this is not a full-suite measurement.
+  New action branches are tested; complete quality evidence and current CI remain
+  required before merging. No thresholds changed.
+- **Real Octagon:** Uniquely located the explicitly authorized recording
+  “Inga Lindström: Rezept für die Liebe”. Read-only preflight reproduced the old
+  guard with `isStreaming=true`. Using the local dev.19 manager, appended
+  ` [E2C-Test]` to its title and immediately restored the original. Both writes
+  returned `completed`, confirmed through fresh catalogs. Receiver streaming
+  remained reported before, between and after both operations. Media reference,
+  file size (517,973,652 bytes) and other checked metadata remained unchanged;
+  playback progress excluded. Exactly two `movieinfo` writes, no move, deletion
+  or stream-stop command. Video bytes were not fully hashed.
+- **Limits:** Direct receiver test using local integration code, not an installed
+  dev.19 HA instance. No visual monitoring of the playing video. The Vu+ did not
+  contain this recording; missing streaming status is covered by automated tests,
+  not a real title edit on that receiver. Hardware move/delete acceptance remains.
+- Ruff, formatting, Python syntax, Mypy, version/changelog/lock alignment and diff
+  checks passed. Frontend unchanged; dev.18 card evidence remains applicable.
+
+**Pending:** Install integration dev.19 in HA and test its service path there;
+the dev.18 card is compatible. Section 5b awaits joint confirmation; no completion
+commit was made.
+
+
+
+## dev.18 addition – management dialog
+
+Locally checked on **2026-09-20**; section 5b still awaits joint acceptance.
+
+- 48 frontend tests passed, including error focus, Escape, persistent guards
+  for unresolved operations, receiver changes and library loading errors.
+- Simulated browser: native modal dialog, prominent localized preflight error,
+  focus on the message, Escape with restored focus and persistent card message.
+  Delayed move completion confirmed by a status check without another write.
+  Light desktop and dark mobile layouts (390 × 844) checked; no horizontal
+  dialog overflow.
+- Read-only receiver diagnosis: Octagon reported `isStreaming=true`, no recording
+  and no preparing/running timers. Vu+ omitted `isStreaming`. Both trigger the
+  existing conservative management guard; this does not prove the cause of the
+  user's earlier attempt. No receiver write was performed.
+- JavaScript syntax, version/changelog alignment, offline lock check and diff
+  check passed. Backend unchanged from dev.17; its targeted evidence remains
+  applicable. Quality requirements unchanged.
+
+**Pending:** Install card dev.18 in Home Assistant and accept the dialog there;
+real write acceptance for section 5b remains open.
+
+
+
+## Section 5b – recording management, dev.17
+
+Locally checked on **2026-09-20**, not yet jointly accepted. No management
+operation was performed on a real receiver.
+
+- **Python/HA:** Targeted recording management/library, API and integration
+  tests passed. Final run after the last backend edit: 51 management tests
+  passed with 100% statement/branch coverage for `recording_management.py`.
+  Five separate translation/stream tests passed, including blocked stream
+  admission during a pending operation and independent recording streams.
+- **Frontend:** 45 tests passed, covering device/revision binding, deletion
+  confirmation, double clicks, stale responses, uncertain results, status
+  checks and localized preflight errors, alongside existing card behavior.
+- **Simulated browser:** Title change updates the catalog; delayed movement to
+  an offered destination blocks Apply. Status checks confirm completion without
+  another write. Delete is disabled without confirmation; confirming and
+  reconciling leaves the simulated catalog empty. Receiver switch clears the
+  selection. Readable at 390 × 844 pixels; no captured browser errors. This
+  simulation made no receiver requests.
+- **Other checks:** Ruff, formatting (102 files), Python/JS syntax, Mypy across
+  36 modules, version/changelog consistency, DE/EN action fields and
+  `uv lock --check --offline` passed. No quality requirements weakened. Command
+  serialization, translated errors and on-demand requests were checked against
+  the quality checklist; current complete CI remains required before merging.
+
+**Pending:** Install integration/card dev.17 and perform actual HA/receiver
+checks on both images using a disposable recording created for testing.
+Verify title change, move/return, sidecars/playability, catalogs/thumbnails and
+actual trash/deletion behavior. Untested sidecars and image variants are not
+claimed as verified. Section 5b remains uncommitted until joint acceptance.
+
 ## Section 5a complete – 1.3.0-dev.16
 
 On **2026-09-20**, the user explicitly confirmed section 5a complete. Codex

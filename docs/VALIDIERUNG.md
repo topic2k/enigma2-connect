@@ -2,6 +2,174 @@
 
 # Prüfübersicht
 
+## Abschluss Abschnitt 5b – 1.3.0-dev.20
+
+Am **20.09.2026** hat der Nutzer die Aktualisierung auf dev.20 und den Abschluss
+von Abschnitt 5b ausdrücklich bestätigt. Codex bestätigt den Abschluss anhand
+der unten dokumentierten automatisierten Prüfungen, der realen Octagon-Tests
+für Titeländerung, Verschieben, Zurückverschieben und Löschen sowie der
+anschließenden lesenden Prüfung in der laufenden Home-Assistant-Oberfläche.
+
+Die HA-Bibliothek lud **21 von 21 Aufnahmen**. An einer vorhandenen Aufnahme
+wurden der Verwaltungsdialog und die titelbezogene Löschfrage geprüft:
+**Aufnahme löschen** blieb ohne Bestätigung deaktiviert; **Abbrechen** schloss
+den Dialog. **Auftragsstatus prüfen** meldete „Änderung am Receiver bestätigt.“
+Bei dieser Abschlussprüfung wurde keine Aufnahme verändert oder gelöscht.
+Die Installation von dev.20 wurde vom Nutzer gemeldet; Codex prüfte das neue
+Dialogverhalten, nicht separat die installierte Versionsnummer oder Dateihashes.
+
+Damit sind Abschnitt 5b und die beauftragten Punkte 1–5 gemeinsam abgeschlossen.
+Abschlusscommit auf dem Arbeitsbranch:
+`feat: add guarded recording management and dialogs`.
+Frühere offene Abnahmevermerke unten beschreiben den damaligen Stand.
+Eine reale schreibende Vu+-Abnahme bleibt unbelegt. Externe direkte Dateiabrufe
+und Pfadaliase sind nicht vollständig erkennbar. Vollständige Qualitätsnachweise
+und aktuelle CI bleiben vor einer Übernahme nach main erforderlich; die
+Abschnittsabnahme ersetzt diese Nachweise nicht.
+
+## Ergänzung dev.20 – Aufnahmebezogene Sperren und realer Verwaltungstest
+
+Am **20.09.2026** geprüft. Bekannte andere Wiedergaben/Streams sowie eindeutig
+anderen Dateien zugeordnete aktive Timer blockieren die gewählte Aufnahme nicht.
+Ein allgemeines oder fehlendes Streaming-Signal wird nicht als Dateibelegung
+gewertet. Nicht zuordenbare aktive Schreibvorgänge bleiben geschützt.
+
+- **Backend:** 150 gezielte Verwaltungs-/Streamingtests bestanden. Gleiche/andere
+  Dateipfade, Receiver-Wiedergabe, gemeldete Streamreferenzen, HA-Streams,
+  laufende/vorbereitete Timer, fehlende optionale Streamlisten, fehlerhafte Daten
+  und offene Aufträge abgedeckt. Nach Ergänzung der Fehlerübersetzung für ungültige
+  Pfade die vier HA-Aktionsfälle erneut geprüft. Neues Verwaltungsmodul mit 100 %
+  Statement-/Branch-Abdeckung; Streamingmodul im gezielten Teilumfang 85 %.
+  Dies ersetzt keine Gesamtmessung: vollständige Modulgrenzen und aktuelle CI
+  bleiben vor Merge erforderlich, keine Anforderung abgesenkt.
+- **Frontend:** 49 Tests bestanden. Löschfrage nennt den gewählten Titel,
+  **Aufnahme löschen** bleibt bis zur Bestätigung gesperrt. Aktionswechsel setzt
+  die Bestätigung zurück. Im simulierten Browser ebenfalls geprüft: erneute
+  Bestätigung nach Wechsel nötig, Abbrechen ohne Schreibaufruf, keine Browserfehler.
+- **Realer Octagon, ausdrücklich freigegebene Testaufnahme:**
+  „Inga Lindström: Rezept für die Liebe“ aus `/media/hdd/movie` nach
+  `/media/hdd/movie/Inside Star Trek` verschoben und zurückverschoben. Beide
+  Vorgänge durch frische Quell-/Zielkataloge bestätigt; Titel, Datum und Größe
+  erhalten, Hash der ersten 4096 Dateibytes jeweils identisch. Keine vollständige
+  Dateiprüfsumme und keine Sichtprüfung der laufenden Wiedergabe.
+- Löschversuch ohne `confirm_delete` lieferte `recording_confirm`, ohne einen
+  Receiver-Schreibaufruf. Danach bestätigtes Löschen mit `completed`; die originale
+  Testdatei ist im Quellkatalog nicht mehr vorhanden. Genau zwei `moviemove`- und
+  ein `moviedelete`-Aufruf, kein `force`, kein Stream-Stopp. Der Receiver meldete
+  vor, zwischen und nach diesen Schritten Streaming. Die vom Nutzer erwähnte
+  Sicherungskopie wurde nicht angesprochen. Es bleibt kein offener Auftrag.
+- Ruff, Format, Python-/JavaScript-Syntax, Mypy (36 Module), Übersetzungen,
+  Versions-/Changelog-/Lockabgleich und Diff-Prüfung bestanden.
+
+**Grenzen:** Die obigen Schreibtests liefen direkt mit lokalem dev.20-Code.
+Die anschließende HA-Dialogprüfung und gemeinsame Abnahme sind oben dokumentiert.
+Vu+ weiterhin ohne reale Verwaltungsabnahme.
+Externe direkte Dateiabrufe und Dateipfadaliase sind nicht vollständig erkennbar;
+die Prüfung erfasst HA-Streams sowie vom Receiver mit Pfad gemeldete Nutzungen.
+Abschnitt 5b ist gemeinsam bestätigt; siehe Abschlussvermerk oben.
+
+
+
+## Ergänzung dev.19 – Titeländerung bei aktivem Stream
+
+Am **20.09.2026** geprüft. Die Sperre bei Streams/Wiedergabe betrifft jetzt nur
+Verschieben/Löschen. Reine Titeländerungen bleiben bei bestehendem Stream und
+fehlender Streaming-Statusangabe möglich. Aufnahme-/Vorbereitungsprüfung,
+Revisionsbindung und Schutz bei unbestätigten Aufträgen bleiben unverändert.
+
+- **Automatisiert:** 119 unterschiedliche Tests aus Verwaltung, Integration und
+  Stream-Pool erfolgreich: 117 im ersten Lauf, zwei HA-Aktionsprüfungen nach einer
+  Korrektur am Stream-Testmock gezielt erneut bestanden. Matrix für Titeländerung,
+  Verschieben/Löschen, aktiven/inaktiven/unbekannten Stream und Aufnahmewiedergabe;
+  HA-Aktionspfad mit bestehendem Live-/Aufnahmestream. Bestehende Sitzungen bleiben
+  erhalten. Aufnahme- und Vorbereitungssperren sowie Metadatenprüfung abgedeckt.
+- `recording_management.py`: 100 % Statement-/Branch-Abdeckung. Der gezielte Lauf
+  erfasst `coordinator.py` nur teilweise (77 %); dies ist keine Gesamtmessung der
+  Testsuite. Neue Aktionszweige gezielt geprüft, vollständiger Qualitätsnachweis
+  und aktuelle CI bleiben vor einem Merge erforderlich. Keine Grenzwerte geändert.
+- **Realer Octagon:** Die ausdrücklich freigegebene Aufnahme
+  „Inga Lindström: Rezept für die Liebe“ eindeutig gefunden. Die bisherige Sperre
+  bei `isStreaming=true` lesend nachvollzogen. Mit dem lokalen dev.19-Manager den
+  Titel um ` [E2C-Test]` ergänzt und den Originaltitel unmittelbar wiederhergestellt;
+  beide Schreibvorgänge mit `completed` durch frische Kataloge bestätigt.
+  Vorher, dazwischen und danach meldete der Receiver Streaming. Medienreferenz,
+  Dateigröße (517.973.652 Byte) und übrige geprüfte Metadaten unverändert;
+  Wiedergabestand aus dem Vergleich ausgenommen. Nur zwei `movieinfo`-Schreibaufrufe,
+  kein Verschieben, Löschen oder Stream-Stopp. Videodaten nicht vollständig gehasht.
+- **Grenzen:** Direkter Receiver-Test mit lokalem Integrationscode, keine dev.19-
+  Installation in HA. Keine Sichtprüfung des laufenden Videos. Die Aufnahme war
+  auf dem Vu+ nicht vorhanden; dessen fehlender Streamingstatus ist automatisiert,
+  nicht mit einer echten Titeländerung dort geprüft. Verschieben/Löschen bleiben
+  zur gesonderten Geräteabnahme offen.
+- Ruff, Formatierung, Python-Syntax, Mypy, Versions-/Changelog-/Lockabgleich und
+  Diff-Prüfung bestanden. Frontend unverändert; dev.18-Kartenprüfungen gelten weiter.
+
+**Offen:** Integration dev.19 in HA installieren und dort den Aktionsweg prüfen;
+Kartendatei dev.18 ist kompatibel. Abschnitt 5b bleibt bis zur gemeinsamen
+Bestätigung offen, kein Abschlusscommit.
+
+
+
+## Ergänzung dev.18 – Verwaltungsdialog
+
+Am **20.09.2026** lokal geprüft; Abschnitt 5b bleibt zur gemeinsamen Abnahme offen.
+
+- 48 Frontendtests bestanden, einschließlich Fehlermeldung/Fokus, Escape,
+  fortbestehender Sperre bei offenen Aufträgen, Receiverwechsel und Ladefehlern.
+- Simulierter Browser: nativer modaler Dialog, hervorgehobener lokalisierter
+  Vorprüfungsfehler, Fokus auf die Meldung, Escape mit Fokusrückkehr und bleibender
+  Kartenmeldung. Verschieben mit verzögertem Abschluss: Statusprüfung bestätigt
+  ohne weiteren Schreibaufruf. Helles Desktop- und dunkles mobiles Layout
+  (390 × 844) geprüft, kein horizontaler Dialogüberlauf.
+- Lesende Receiverdiagnose: Octagon meldete `isStreaming=true`, keine Aufnahme
+  und keine Timer in Vorbereitung/laufend. Vu+ lieferte keine `isStreaming`-Angabe.
+  Beides löst die bestehende konservative Verwaltungssperre aus; kein Nachweis
+  der Ursache des früheren Nutzerversuchs. Keine Receiver-Schreibaktion ausgeführt.
+- JavaScript-Syntax, Versions-/Changelog-Abgleich, Offline-Lockprüfung und
+  Diff-Prüfung bestanden. Backend unverändert gegenüber dev.17; dessen gezielte
+  Nachweise gelten weiter. Qualitätsanforderungen unverändert.
+
+**Offen:** Neue Kartendatei dev.18 in Home Assistant installieren und Dialog dort
+abnehmen; echte Schreibprüfung aus Abschnitt 5b bleibt offen.
+
+
+
+## Abschnitt 5b – Aufnahmeverwaltung, dev.17
+
+Implementierung am **20.09.2026** lokal geprüft, noch nicht gemeinsam abgenommen.
+Keine Verwaltungsaktion auf einem realen Receiver ausgeführt.
+
+- **Python/HA:** Gezielt `test_recording_management`, `test_recording_library`,
+  `test_api` und `test_integration` bestanden. Abschließender Lauf nach dem
+  letzten Backendedit: 51 Verwaltungstests bestanden, neues Modul
+  `recording_management.py` mit 100 % Statement-/Branch-Abdeckung. Separat fünf
+  Übersetzungs-/Streamtests bestanden, darunter blockierter Streamstart bei
+  offenem Aufnahmeauftrag und bestehende unabhängige Aufnahmestreams.
+- **Frontend:** 45 Tests bestanden. Geräte-/Revisionsbindung, Löschbestätigung,
+  Doppelklickschutz, veraltete Antworten, unklare Ergebnisse, Statusprüfungen
+  und lokalisierte Vorprüfungsfehler abgedeckt; bestehende Kartenfunktionen
+  bleiben geprüft.
+- **Simulierter Browser:** Titeländerung aktualisiert den Katalog; verschieben
+  in einen angebotenen Zielordner mit verzögertem Abschluss sperrt Ausführen.
+  Statusprüfung bestätigt den Abschluss ohne weiteren Schreibaufruf. Löschen
+  bleibt ohne Checkbox gesperrt; nach Bestätigung und Zustandsabgleich ist die
+  simulierte Liste leer. Receiverwechsel leert die Auswahl. Mobile Ansicht bei
+  390 × 844 Pixeln lesbar, keine erfassten Browserfehler. Kein Receiverkontakt
+  in dieser Simulation.
+- **Weitere Prüfungen:** Ruff, Formatierung (102 Dateien), Python-/JS-Syntax,
+  Mypy über 36 Module, Versions-/Changelog-Abgleich, DE/EN-Aktionsfelder und
+  `uv lock --check --offline` bestanden. Keine Qualitätsanforderung abgesenkt.
+  Die neue Befehlssperre, übersetzte Fehler und bedarfsabhängige Aufrufe wurden
+  gegen die Qualitätscheckliste geprüft; aktuelle vollständige CI vor Merge
+  bleibt erforderlich.
+
+**Offen:** Installation von Integration und Karte dev.17 sowie echte HA-/Receiver-
+Prüfung beider Images mit einer eigens angelegten entbehrlichen Testaufnahme.
+Dabei Titeländerung, hin-/zurückverschieben, Begleitdateien/Abspielbarkeit,
+Katalog/Vorschaubilder und das tatsächliche Papierkorb-/Löschverhalten prüfen.
+Keine Zusicherung zu nicht geprüften Begleitdateien oder Imagevarianten.
+Abschnitt 5b bleibt ohne Abschlusscommit bis zur gemeinsamen Bestätigung.
+
 ## Abschluss Abschnitt 5a – 1.3.0-dev.16
 
 Am **20.09.2026** hat der Nutzer Abschnitt 5a ausdrücklich als fertig bestätigt.

@@ -502,7 +502,7 @@ or newer.
 1. Copy `www/enigma2-connect-recordings-card.js` to
    `/config/www/enigma2-connect-recordings-card.js`.
 2. Under **Settings → Dashboards → Resources**, add
-   `/local/enigma2-connect-recordings-card.js?v=dev16` as a **JavaScript module**.
+   `/local/enigma2-connect-recordings-card.js?v=dev20` as a **JavaScript module**.
    Enable advanced mode in your profile if Resources is missing.
 3. Fully reload the browser. Add **Enigma2 Connect Recording library** to your
    dashboard and select the receiver's media player. Set an optional title in
@@ -523,20 +523,72 @@ order. Hidden columns remain available in expandable details. Tap it
 to expand all metadata; keyboard users can use Tab and Enter or Space. Long
 titles wrap when needed. Filters and the count work in both views. For manual
 configuration use `display_mode: rows` or `display_mode: details`. Update the
-library card file to dev.16 and change its resource URL to enable this option;
-the HA action from integration dev.13 remains compatible.
+library card file to dev.17 and change its resource URL to enable this option;
+read-only display remains compatible with integration dev.13; management
+requires integration dev.17.
 
 Missing values appear as **Unknown**. A reported file size of zero is also
 treated as unknown. **0% reported** can mean no saved position exists; it does
 not reliably mean unwatched. Percentages come from the receiver and do not
-track playback in the HA browser. The card does not change recordings; use
-**Browse media** for playback. Changing receiver or losing the connection clears
+track playback in the HA browser. Use **Browse media** for playback; changes require
+an explicit management action. Changing receiver or losing the connection clears
 the loaded list. Dates in this card use the browser's time zone.
 
 For manual card configuration, use type
 `custom:enigma2-connect-recordings-card`, the receiver's `media_player.…` as
 `entity` and an optional `name`. This card has its own JavaScript resource;
 the remote and EPG cards remain available separately.
+
+### Manage recordings in the card
+
+Management requires integration **1.3.0-dev.17** or newer. For the dialog, install
+the library card from **1.3.0-dev.20**, change its resource URL to `?v=dev20`
+and reload the page.
+
+1. Load recordings from the intended receiver. Expand a row and select
+   **Manage**; in detail view the button is directly below the recording.
+2. In the **Manage recording** dialog, choose **Change title**, **Move** or **Delete** under **Action**.
+   Changing the title updates the displayed name, not the filename.
+3. Enter the new title or select the **Destination directory**. Choices include
+   existing recording folders and receiver bookmarks; no folders are created.
+   Existing destination recordings with the same base name are rejected.
+4. **Delete** asks about the selected title. Tick the confirmation checkbox and
+   select **Delete recording**. Changing the action resets confirmation. Depending on receiver settings,
+   deletion is permanent or uses a trash folder. Trash is not guaranteed and
+   forced deletion is never requested.
+5. Select **Apply**. Success is shown only after checking receiver state; the
+   card then reloads the catalog.
+
+If completion is unconfirmed, use **Check operation status** without repeating
+the write. Further management is blocked while an operation is unresolved.
+Preflight errors show their reason in a prominent dialog alert that remains on
+the card after closing. **Cancel**, **Close**, the cross or Escape close the dialog;
+they do not undo a dispatched operation. The background is inert while the dialog
+is open, and closing restores focus to the initiating button. A running request
+keeps the dialog open; once pending, it can be closed. **Check operation status**
+opens it again. Library loading failures are also prominently highlighted.
+
+With integration **1.3.0-dev.20**, guards apply to the selected recording.
+Other live/recording streams and other receiver playback no longer block **Move**
+or **Delete**. The selected recording is blocked when played on the receiver,
+streamed by this integration or identified in the receiver's reported stream list.
+**Change title** remains possible even while that recording plays.
+
+Active/preparing recordings are matched by filename. Unidentified active writers
+or reported recording playback cause a specific error. Missing global streaming
+status alone does not block management. External direct file requests and aliases
+of the same file cannot be fully detected; stop such access to the selected
+recording before moving/deleting it.
+
+Existing HA streams are not stopped; new HA recording streams for an unresolved move/delete source or destination
+cannot start; unrelated recordings remain usable.
+After an HA restart/integration reload, verify receiver state before retrying:
+the unresolved-operation guard is held in memory.
+
+**Section 5b device acceptance:** Use only a disposable recording created for
+testing. Change its title, move it into a free existing destination and back.
+Explicitly confirm deletion last, then compare the card, OpenWebif and HA media
+library. Local simulations do not replace this hardware check.
 
 ## Messages and automations
 
@@ -591,6 +643,30 @@ seconds), `duration` (seconds), `size_bytes`, `tags`, `directory` and
 `progress_percent`. Unknown values are `null`; known empty tags are `[]`.
 The action only reads metadata; it starts neither playback nor recording.
 
+
+### Recording management actions and automations
+
+`recording_manage` requires the receiver, `service_reference` and the current
+`revision` returned by `recordings_list` as `expected_revision`. This prevents
+editing a changed selection. Replace placeholders using a freshly loaded item:
+
+```yaml
+action: enigma2_connect.recording_manage
+data:
+  device_id: YOUR_RECEIVER_DEVICE_ID
+  service_reference: REFERENCE_FROM_RECORDINGS_LIST
+  expected_revision: REVISION_FROM_RECORDINGS_LIST
+  action: rename
+  title: New title
+response_variable: recording_operation
+```
+
+For `action: move`, supply `directory` instead; `recording_destinations` returns
+receiver bookmarks. `action: delete` requires `confirm_delete: true`, explicitly
+authorizing potentially permanent deletion; avoid careless repeated automations.
+The response reports `status: completed` or `pending`. For `pending`, call the
+read-only `recording_operation_status` with the same `device_id`; it reports
+`idle`, `pending` or `completed` without repeating the operation.
 
 ### Actions and examples
 

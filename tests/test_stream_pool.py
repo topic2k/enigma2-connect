@@ -239,3 +239,38 @@ async def test_limit_option_validation_and_save(hass, entry, pool):
             flow["flow_id"], {**values, "stream_limit": 3}
         )
         assert result["type"] == "create_entry" and entry.options["stream_limit"] == 3
+
+
+async def test_unconfirmed_recording_change_blocks_new_recording_stream(pool, entry):
+    entry.runtime_data.recording_manager.pending = {"action": "move"}
+    with pytest.raises(Unresolvable) as error:
+        await pool.async_play(
+            URL("http://receiver.local/file?file=/media/movie/test.ts"), recording=True
+        )
+    assert error.value.translation_key == "recording_pending"
+    assert not pool.sessions
+
+
+async def test_pending_file_operation_allows_other_recording_streams(
+    pool, entry, spawn, socket_enabled
+):
+    entry.runtime_data.recording_manager.pending = {
+        "action": "move",
+        "service_reference": "1:0:0:0:0:0:0:0:0:0:/media/movie/test.ts",
+        "target_path": "/media/target/test.ts",
+    }
+    for path in ("/media/movie/test.ts", "/media/target/test.ts"):
+        with pytest.raises(Unresolvable) as error:
+            await pool.async_play(
+                URL("http://receiver.local/file").with_query(file=path), recording=True
+            )
+        assert error.value.translation_key == "recording_pending"
+    await pool.async_play(
+        URL("http://receiver.local/file").with_query(file="/media/movie/other.ts"), recording=True
+    )
+    assert len(pool.sessions) == 1
+    entry.runtime_data.recording_manager.pending = {"action": "rename"}
+    await pool.async_play(
+        URL("http://receiver.local/file").with_query(file="/media/movie/test.ts"), recording=True
+    )
+    assert len(pool.sessions) == 2

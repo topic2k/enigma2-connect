@@ -58,8 +58,12 @@ TIMER_COMMANDS = frozenset(
 )
 
 
+RECORDING_COMMANDS = frozenset({"movieinfo", "moviemove", "moviedelete"})
+WRITE_COMMANDS = TIMER_COMMANDS | RECORDING_COMMANDS
+
+
 class CommandUnconfirmed(ConnectionError):
-    """A timer command may have taken effect without a usable acknowledgement."""
+    """A write command may have taken effect without a usable acknowledgement."""
 
 
 class PowerCommandUnconfirmed(ReceiverError):
@@ -74,7 +78,7 @@ async def power_command_middleware(
     Install on the session so Home Assistant's own middleware remains active.
     Raising our own exception inside the handler prevents aiohttp's GET retry.
     """
-    timer_command = request.url.path.removeprefix("/api/") in TIMER_COMMANDS
+    timer_command = request.url.path.removeprefix("/api/") in WRITE_COMMANDS
     power_command = request.url.path == "/api/powerstate" and request.url.query.get("newstate") in (
         "1",
         "2",
@@ -88,7 +92,7 @@ async def power_command_middleware(
         raise ConnectionError("Cannot connect to receiver") from err
     except (aiohttp.ClientConnectionError, TimeoutError) as err:
         if timer_command:
-            raise CommandUnconfirmed("Timer command response was not received") from err
+            raise CommandUnconfirmed("Write command response was not received") from err
         raise PowerCommandUnconfirmed("Power command response was not received") from err
 
 
@@ -96,10 +100,10 @@ def command_response(endpoint: str, data: JsonObject) -> JsonObject:
     """Validate an acknowledgement, including callers already holding the lock."""
     if any(boolean(data[key]) is False for key in ("result", "state") if key in data):
         raise CommandRejectedError(data)
-    if endpoint in TIMER_COMMANDS:
+    if endpoint in WRITE_COMMANDS:
         flags = [boolean(data[key]) for key in ("result", "state") if key in data]
         if not flags or any(flag is not True for flag in flags):
-            raise CommandUnconfirmed("Unsupported timer command acknowledgement")
+            raise CommandUnconfirmed("Unsupported write command acknowledgement")
     return data
 
 
@@ -140,7 +144,7 @@ class OpenWebifClient:
     async def request(
         self, path: str, params: dict[str, Any] | None = None, *, image: bool = False
     ) -> JsonObject | bytes:
-        timer_command = path.removeprefix("/api/") in TIMER_COMMANDS
+        timer_command = path.removeprefix("/api/") in WRITE_COMMANDS
         disruptive_power = path == "/api/powerstate" and str((params or {}).get("newstate")) in (
             "1",
             "2",
@@ -174,7 +178,7 @@ class OpenWebifClient:
                     data = {"events": data}
                 if not isinstance(data, dict):
                     if timer_command:
-                        raise CommandUnconfirmed("Unsupported timer command response")
+                        raise CommandUnconfirmed("Unsupported write command response")
                     raise ProtocolError("Expected a JSON object")
                 if "result" in data and boolean(data["result"]) is False:
                     raise CommandRejectedError(data)
@@ -184,7 +188,7 @@ class OpenWebifClient:
             if timer_command and not isinstance(
                 err, (aiohttp.ClientConnectorError, aiohttp.ConnectionTimeoutError)
             ):
-                raise CommandUnconfirmed("Timer command response was not received") from err
+                raise CommandUnconfirmed("Write command response was not received") from err
             if (
                 disruptive_power
                 and isinstance(
@@ -198,7 +202,7 @@ class OpenWebifClient:
             raise ConnectionError("Cannot communicate with receiver") from err
         except (ValueError, UnicodeError) as err:
             if timer_command:
-                raise CommandUnconfirmed("Invalid timer command response") from err
+                raise CommandUnconfirmed("Invalid write command response") from err
             raise ProtocolError("Invalid JSON response") from err
 
     async def get(self, endpoint: str, **params: Any) -> JsonObject:

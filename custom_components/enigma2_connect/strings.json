@@ -216,6 +216,13 @@
         "zero": "0% reported",
         "unknown": "Unknown"
       }
+    },
+    "recording_action": {
+      "options": {
+        "rename": "Change title",
+        "move": "Move",
+        "delete": "Delete"
+      }
     }
   },
   "entity": {
@@ -551,6 +558,33 @@
     },
     "recording_data": {
       "message": "The receiver did not return a fully readable recording catalog. Please reload."
+    },
+    "recording_path": {
+      "message": "The recording path is ambiguous or unsuitable."
+    },
+    "recording_destination": {
+      "message": "Destination unavailable. Choose an existing recording directory on this receiver."
+    },
+    "recording_busy": {
+      "message": "The selected recording is being recorded, prepared, played or streamed. Stop its use first."
+    },
+    "recording_pending": {
+      "message": "A recording operation remains unconfirmed. Check its status; do not repeat it."
+    },
+    "recording_input": {
+      "message": "Invalid management action or title."
+    },
+    "recording_confirm": {
+      "message": "Explicitly confirm deletion, which may be permanent."
+    },
+    "recording_stale": {
+      "message": "The recording changed or no longer exists. Reload the list and select it again."
+    },
+    "recording_collision": {
+      "message": "The destination already contains a recording with the same base name. Nothing is overwritten."
+    },
+    "recording_activity_unknown": {
+      "message": "An active recording or playback cannot be reliably matched to a file. Check receiver state."
     }
   },
   "services": {
@@ -901,6 +935,60 @@
         "progress": {
           "name": "Reported playback progress",
           "description": "Reported playback progress"
+        }
+      }
+    },
+    "recording_manage": {
+      "name": "Manage recording",
+      "description": "Changes the title, moves or deletes a freshly verified recording. Deletion follows receiver policy and may be permanent.",
+      "fields": {
+        "device_id": {
+          "name": "Receiver",
+          "description": "Receiver"
+        },
+        "service_reference": {
+          "name": "Recording service reference",
+          "description": "Recording service reference"
+        },
+        "expected_revision": {
+          "name": "Revision from recordings_list",
+          "description": "Revision from recordings_list"
+        },
+        "action": {
+          "name": "Action",
+          "description": "Action"
+        },
+        "title": {
+          "name": "New display title",
+          "description": "New display title"
+        },
+        "directory": {
+          "name": "Destination directory on the receiver",
+          "description": "Destination directory on the receiver"
+        },
+        "confirm_delete": {
+          "name": "Confirm potentially permanent deletion",
+          "description": "Confirm potentially permanent deletion"
+        }
+      }
+    },
+    "recording_operation_status": {
+      "name": "Check recording operation",
+      "description": "Checks a pending operation without repeating it.",
+      "fields": {
+        "device_id": {
+          "name": "Receiver",
+          "description": "Receiver"
+        }
+      }
+    },
+    "recording_destinations": {
+      "name": "Load recording destinations",
+      "description": "Reads configured recording bookmarks from the receiver.",
+      "fields": {
+        "device_id": {
+          "name": "Receiver",
+          "description": "Receiver"
         }
       }
     }

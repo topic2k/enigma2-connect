@@ -33,6 +33,8 @@ Die optionale Fernbedienungskarte bietet Tasten sowie eine Such-/Aufnahmeansicht
 Eine zusätzliche Aufnahmebibliothekskarte filtert nach Titel, Sender, Tags, Ordner
 und gemeldetem Wiedergabestand und zeigt verfügbare Dateigrößen.
 
+Titeländerung, Verschieben und bestätigtes Löschen sind über die Bibliothekskarte möglich.
+
 ### Was du brauchst
 
 - Home Assistant **2026.9 oder neuer**.
@@ -89,6 +91,8 @@ and reported playback progress and shows available file sizes.
 Use **Record current programme** to start recording the current EPG programme.
 Edit timers, schedule weekly series and see recording conflicts with the
 details supplied by the receiver.
+
+The library card also supports title changes, moving and confirmed deletion.
 
 ### What you need
 

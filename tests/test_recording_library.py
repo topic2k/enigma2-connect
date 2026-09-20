@@ -15,6 +15,7 @@ from custom_components.enigma2_connect.recording_library import (
     RecordingLibraryError,
     progress_group,
 )
+from custom_components.enigma2_connect.recording_management import revision
 from custom_components.enigma2_connect.recordings import recording_title
 from custom_components.enigma2_connect.workflow_models import Recording
 
@@ -64,6 +65,7 @@ async def test_catalog_preserves_reference_and_returns_metadata_without_writes()
         "recordings": [
             {
                 "service_reference": REFERENCE,
+                "revision": revision(Recording.parse(MOVIE)),
                 "title": "A & B",
                 "service_name": "News HD",
                 "recorded_at": 1789000000,

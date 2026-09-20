@@ -22,6 +22,7 @@ from homeassistant.helpers.http import HomeAssistantView
 from yarl import URL
 
 from .const import DOMAIN
+from .recording_management import reference_path
 from .stream_codec import encoding_args, failure_reason, probe
 from .stream_receiver import ReceiverHLS, discover_hls, discover_transcoded
 from .stream_vod import RecordingVOD
@@ -407,6 +408,15 @@ class MediaStream:
             None,
         )
 
+    def recording_in_use(self, service_reference: str) -> bool:
+        """Caller holds admission lock; include already reserved starting streams."""
+        target = reference_path(service_reference)
+        return any(
+            recording
+            and (not source.query.get("file") or reference_path(source.query["file"]) == target)
+            for source, recording in self.sessions.values()
+        )
+
     async def _prune(self) -> None:
         stale = [
             session
@@ -427,6 +437,10 @@ class MediaStream:
         async with self.lock:
             if self.closed or not self.coordinator.entry.options.get(CONF_EXTERNAL_PLAYBACK, False):
                 raise Unresolvable(translation_domain=DOMAIN, translation_key="stream_disabled")
+            if recording and self.coordinator.recording_manager.blocks_stream(
+                source.query.get("file")
+            ):
+                raise Unresolvable(translation_domain=DOMAIN, translation_key="recording_pending")
             await self._prune()
             shared = next(
                 (

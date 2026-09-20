@@ -8,6 +8,7 @@ from pathlib import PurePosixPath
 
 from .api import OpenWebifClient, ReceiverError
 from .models import JsonObject
+from .recording_management import revision
 from .workflow_models import DataFormatError, Recording, parse_list
 
 PROGRESS_FILTERS = ("all", "in_progress", "complete", "zero", "unknown")
@@ -46,6 +47,7 @@ class RecordingLibrary:
                 filename = recording.service_reference.split(":", 10)[-1]
             path = PurePosixPath(filename)
             row = asdict(recording)
+            row["revision"] = revision(recording)
             row["title"] = recording.title or path.name or None
             row["directory"] = str(path.parent) if path.is_absolute() else None
             # OpenWebif also emits zero when stat fails. Do not imply an empty file.

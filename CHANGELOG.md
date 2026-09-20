@@ -4,7 +4,7 @@
 
 ## Inhaltsverzeichnis
 
-- [1.3.0-dev.16](#130-dev16)
+- [1.3.0-dev.20](#130-dev20)
 - [1.2.0](#120)
 - [1.1.3](#113)
 - [1.1.2](#112)
@@ -14,12 +14,31 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 1.3.0-dev.16
+## 1.3.0-dev.20
 
 Unveröffentlichte Entwicklerversion. Zielversion für die beauftragten EPG-,
 Timer- und Aufnahmeerweiterungen. Sofortaufnahme und Timerbearbeitung sind
-umgesetzt; EPG-Suche und Karten sind gemeinsam abgenommen. Bibliotheksverwaltung folgt.
+umgesetzt; EPG-Suche und Karten sind gemeinsam abgenommen. Bibliotheksverwaltung ist ebenfalls gemeinsam abgenommen.
 
+- Verschieben und Löschen prüfen die betroffene Aufnahme statt pauschal alle
+  Receiveraktivitäten zu sperren. Andere HA-Streams, gemeldete Streams und
+  Wiedergaben bleiben nutzbar; laufende Timer werden nach Dateipfad zugeordnet.
+  Offene Dateiaufträge sperren neue Streams nur für Quelle/Ziel. Löschfrage mit
+  Aufnahmetitel und eigenem Button; Aktionswechsel erfordert neue Bestätigung.
+
+- Titel abgeschlossener Aufnahmen lassen sich während Streaming oder
+  Aufnahmewiedergabe ändern; auch eine fehlende Streaming-Statusangabe sperrt
+  die reine Titeländerung nicht mehr. Dateipfad und Videodaten bleiben gleich.
+  Schutz für laufende/vorbereitete Aufnahmen sowie Verschieben/Löschen bleibt erhalten.
+
+- Aufnahmeverwaltung in einem modalen Dialog mit Tastaturbedienung. Fehler und
+  unbestätigte Aufträge sind deutlich hervorgehoben und bleiben nach dem Schließen
+  auf der Karte sichtbar. Ladefehler der Bibliothek erscheinen ebenfalls als Warnhinweis.
+
+- Aufnahmeverwaltung in der Bibliothekskarte und über HA-Aktionen: Titel ändern,
+  verschieben und nach ausdrücklicher Bestätigung löschen. Frischer
+  Aufnahmeabgleich, Aktivitäts-/Zielprüfungen, Sperre für unbestätigte Aufträge
+  und lesender Statusabgleich. Abschnitt 5b nach lokalen, Octagon- und HA-Dialogprüfungen gemeinsam abgenommen.
 - Aufnahmebibliothekskarte: automatische Spaltenauswahl nach verfügbarer
   Listenbreite. Reihenfolge Titel, Dauer, Aufnahmedatum, Sender, Wiedergabestand,
   Dateigröße; Priorität Titel, Aufnahmedatum, Sender, Dauer, Wiedergabestand,
@@ -35,7 +54,7 @@ umgesetzt; EPG-Suche und Karten sind gemeinsam abgenommen. Bibliotheksverwaltung
   „ungesehen“. Native Medienansichten zeigen zusätzlich Dateigröße und Tags.
   Bibliotheksumfang aus dev.13 einschließlich realer HA-Prüfung bestanden;
   Zeilenansicht aus dev.16 lokal geprüft; Abschnitt 5a gemeinsam abgenommen.
-  Umbenennen, Verschieben und Löschen folgen in 5b.
+  Titeländerung, Verschieben und Löschen sind in 5b umgesetzt und gemeinsam abgenommen.
 - EPG-Suche und ähnliche Sendungen liefern alle passenden empfangenen Treffer
   ohne lokale Begrenzung. Listen- oder Einzelansicht mit Pfeilen um den Zähler:
   „[‹] Treffer 10 von 30 [›]“. Beide Karten standardmäßig in Einzelansicht; Suche in der Fernbedienung aus.

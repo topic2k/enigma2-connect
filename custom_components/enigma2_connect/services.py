@@ -92,6 +92,24 @@ def register_services(hass: HomeAssistant) -> None:
                 return await coordinator.perform(coordinator.epg.similar, params, refresh=False)
             result = await coordinator.async_record_event(params)
             return result if call.return_response else None
+        if service == "recording_manage":
+            result = await coordinator.async_manage_recording(**params)
+            return result if call.return_response else None
+        if service == "recording_operation_status":
+            result = await coordinator.perform(coordinator.recording_manager.status, refresh=False)
+            coordinator.invalidate_lists()
+            await coordinator.async_request_refresh()
+            return result
+        if service == "recording_destinations":
+            data = await coordinator.perform(coordinator.client.get, "getlocations", refresh=False)
+            locations = data.get("locations")
+            if not isinstance(locations, list) or not all(
+                isinstance(item, str) and item.startswith("/") for item in locations
+            ):
+                raise HomeAssistantError(
+                    translation_domain=DOMAIN, translation_key="recording_destination"
+                )
+            return {"directories": sorted(set(locations))}
         if service == "recordings_list":
             return await coordinator.perform(
                 coordinator.recording_library.list, refresh=False, **params
@@ -187,6 +205,17 @@ def register_services(hass: HomeAssistant) -> None:
         vol.Required("end"): vol.All(exact_integer, vol.Range(min=1)),
     }
     schemas = {
+        "recording_manage": {
+            **base,
+            vol.Required("service_reference"): vol.All(str, vol.Length(min=1)),
+            vol.Required("expected_revision"): vol.All(str, vol.Match(r"^[0-9a-f]{64}$")),
+            vol.Required("action"): vol.In(("rename", "move", "delete")),
+            vol.Optional("title"): str,
+            vol.Optional("directory"): str,
+            vol.Optional("confirm_delete", default=False): bool,
+        },
+        "recording_operation_status": base,
+        "recording_destinations": base,
         "recordings_list": {
             **base,
             vol.Optional("query"): vol.All(str, vol.Strip, vol.Length(max=200)),
@@ -243,8 +272,10 @@ def register_services(hass: HomeAssistant) -> None:
             handle,
             schema=vol.Schema(schema),
             supports_response=SupportsResponse.ONLY
-            if name.startswith("epg_") or name == "recordings_list"
+            if name.startswith("epg_")
+            or name in ("recordings_list", "recording_operation_status", "recording_destinations")
             else SupportsResponse.OPTIONAL
-            if name.startswith("timer_") or name in ("record_now", "record_event")
+            if name.startswith("timer_")
+            or name in ("record_now", "record_event", "recording_manage")
             else SupportsResponse.NONE,
         )

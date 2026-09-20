@@ -927,6 +927,40 @@ eine feste Namensauswahl; frühere gespeicherte eigene Referenzen bleiben erhalt
 
 ## Umsetzungsplan: Aufnahme-Workflows
 
+### Ergänzung dev.20: Aufnahmebezogene Verwaltungssperren
+
+Umgesetzt (dev.20): Dateipfade der ausgewählten Aufnahme gegen laufende Timer, Receiver-
+Wiedergabe, gemeldete Streamreferenzen und eigene HA-Aufnahmestreams abgleichen.
+Andere bekannte Aktivitäten nicht sperren. Offene Verschiebe-/Löschaufträge nur
+für betroffene Quell-/Zielpfade gegen Streamstart absichern. Nicht eindeutig
+zuordenbare aktive Schreibvorgänge weiterhin abweisen. Löschfrage mit Titel und
+eindeutigem Button anzeigen, Bestätigung bei Aktionswechsel zurücksetzen.
+Gezielte Tests und realer Verschiebe-/Rückverschiebe-/Löschtest mit der ausdrücklich
+freigegebenen, entbehrlichen Aufnahme; deren Sicherungskopie bleibt unberührt.
+
+
+
+### Ergänzung dev.19: Titeländerung während Streaming
+
+Umgesetzt und am Octagon geprüft (Details in der Prüfübersicht): Bei reinen Titeländerungen Streaming und Aufnahmewiedergabe zulassen,
+da `movieinfo` nur den Anzeigenamen in der Metadatei ändert und die Mediendatei
+unter demselben Pfad bleibt. Aufnahme-/Vorbereitungssperren, Revisionsprüfung und
+Schutz bei unbestätigten Aufträgen erhalten. Verschieben/Löschen bleiben strenger
+gesperrt. Manager und HA-Aktionspfad gezielt testen, danach die vom Nutzer genannte
+Aufnahme auf dem Receiver kurz umbenennen und den Originaltitel wiederherstellen.
+
+
+
+### Ergänzung dev.18: Verwaltungsdialog
+
+Umgesetzter Plan: Verwaltung in einen nativen modalen Dialog verlegen, Fokus und Escape
+behandeln, Fehler und offene Aufträge deutlich hervorheben und nach dem Schließen
+in der Karte erhalten. Vorhandene Schreibsperren bewahren. Fehlermeldung zur
+Receiveraktivität lesend untersuchen; Dialog und Fehlerfälle automatisiert sowie
+im simulierten Browser prüfen.
+
+
+
 Auftrag vom **19.09.2026**: die Ideen 1–5 als nächste Funktionserweiterung
 umsetzen. Basis ist der frisch abgerufene `origin/main`-Commit `1afa705`
 (Version 1.2.0), Arbeitsbranch `feature/recording-workflows`, Worktree
@@ -1027,7 +1061,7 @@ Qualitätsabgleich und ausdrückliche Nutzerfreigabe; Release nur auf Anweisung.
   passende Timer bleiben erhalten. Die optionale Karte erhält eine aufklappbare
   Suchansicht mit Aufnahme und ähnlichen Sendungen. Gezielte Backend-, HA- und
   Frontendtests sowie Receiver-Prüfungen werden getrennt dokumentiert.
-- **5:** 5a einschließlich Kartenänderungen bis dev.16 am 20.09.2026 von Nutzer und Codex bestätigt. Reale HA-Prüfung durch Codex auf dev.13, spätere Kartenänderungen lokal geprüft und vom Nutzer abgenommen. 5b als nächster Abschnitt freigegeben.
+- **5:** 5a einschließlich Kartenänderungen bis dev.16 am 20.09.2026 von Nutzer und Codex bestätigt. Reale HA-Prüfung durch Codex auf dev.13, spätere Kartenänderungen lokal geprüft und vom Nutzer abgenommen. 5b bis dev.20 nach lokalen Prüfungen, realen Octagon-Verwaltungsaktionen und lesender HA-Dialogprüfung ebenfalls am 20.09.2026 gemeinsam bestätigt. Punkte 1–5 abgeschlossen; Grenzen siehe Prüfübersicht.
 
 `OpenWebifClient.command_result()` liefert die strukturierte erfolgreiche
 Antwort unter derselben Sperre wie `command()`. Bestehendes `command()` liefert
@@ -1495,7 +1529,7 @@ Deshalb heißt die Filtergruppe „0 % gemeldet“, nicht „ungesehen“.
 `filesize=0` bleibt im Rohmodell 0, wird in der Ansicht/Aktionsantwort aber als
 unbekannt dargestellt, weil OpenWebif diesen Wert bei fehlender Dateiinformation
 verwenden kann. Dateigrößen sind Momentaufnahmen, besonders während Aufnahmen.
-Die Karte und Aktion enthalten keine Verwaltungsschreibbefehle; diese folgen in 5b.
+Der Stand 5a enthält keine Verwaltungsschreibbefehle; die Erweiterung steht unten unter 5b.
 
 Referenzen: [OpenWebif-Aufnahmeschnittstelle](https://github.com/oe-alliance/OpenWebif/blob/main/plugin/controllers/models/movies.py),
 [Enigma2-Prozentberechnung](https://github.com/openatv/enigma2/blob/7.6/lib/python/Components/MovieList.py).
@@ -1534,3 +1568,55 @@ Schwellen von 22/30/36/42/48 em beziehen sich auf die Schriftgröße der Liste,
 nicht die Fensterbreite. Scrollabstand bleibt erhalten. Reines CSS erhält
 offene Details, Fokus, Filter und Katalog; keine neuen Abfragen oder Listener.
 Frontendprüfung sowie dynamische Breitenwechsel im Browser prüfen.
+
+### Abschnitt 5b – Aufnahmeverwaltung (dev.17–dev.20)
+
+Plan: Frischen Katalog und Revision vor jedem Eingriff prüfen; Quelle eindeutig
+an den Receiver binden, aktive Aufnahmen/Streams sperren, Zielordner und
+Katalogkonflikte prüfen. Schreibzugriffe nicht automatisch wiederholen und den
+Abschluss anhand frischer Quell-/Zielkataloge bestätigen. HA-Aktionen und
+Kartendialog samt Löschbestätigung, Übersetzungen und gezielten Tests ergänzen.
+
+Umgesetzt: `recording_manage`, `recording_operation_status` und
+`recording_destinations`. Titeländerung nutzt `movieinfo` mit `title`, nicht
+Dateiumbenennung. Die zusätzliche URL-Decodierung dieses Endpunkts wird durch
+einmaliges Vorcodieren von `sRef` ausgeglichen. Verschieben nutzt `moviemove`,
+Löschen `moviedelete` ohne `force` (schon die Parameteranwesenheit erzwingt dort
+Löschen). Das Image entscheidet über Papierkorb/endgültig; die Karte bestätigt
+ausdrücklich das möglicherweise endgültige Löschen.
+
+Alle Operationen halten die vorhandene Befehlssperre einschließlich Vorprüfung
+und bis zu drei Zustandsabgleichen. HA-Streamstart wird während des Eingriffs
+serialisiert; ab dev.20 verhindern nur HA-Aufnahmestreams für dieselbe
+Datei Verschieben/Löschen. Reine
+Titeländerungen sind ab dev.19 auch bei bestehenden HA-Streams zulässig. Bei unbestätigtem
+Auftrag bleibt eine Sperre im Manager, auch bei Abbruch. Statusprüfung liest nur.
+Die Sperre ist nicht persistent: nach HA-Neustart/Reload ist ein manueller
+Receiverabgleich erforderlich. Externe Fernbedienungen teilen diese Sperre
+nicht. Zielkonfliktprüfung sieht die von OpenWebif gelisteten Aufnahmen, nicht
+verwaiste Begleitdateien; außerhalb von HA darf parallel nichts verschoben werden.
+Nur Quellen mit Datum, positiver Größe und geeignetem absoluten Dateipfad werden
+bearbeitet. Ab dev.20 werden Timer-Dateinamen (mit/ohne `.ts`), aktuelle
+Wiedergabepfade, `about.info.streams[].ref` und eigene HA-Streamquellen exakt
+verglichen. Keine Titel-/Teilstringsuche und keine doppelte URL-Decodierung.
+Unbekannte aktive Schreibvorgänge bleiben gesperrt; andere eindeutig zugeordnete
+Vorgänge nicht. `isStreaming` allein ist keine Dateizuordnung. Direkte externe
+HTTP-/Netzlaufwerkzugriffe und Pfadaliase sind nicht vollständig erkennbar.
+Offene Dateiaufträge sperren Streamstart nur für Quelle/Ziel; Titelaufträge
+sperren keine Leser. Optionale fehlende Streamliste ist keine Aktivitätsbestätigung.
+
+Katalogcache wird nach Aktionen invalidiert/aktualisiert; Titeländerungen ändern
+die vorhandene Bildversion, Verschieben die Medienkennung. Bestehende Stream-
+Sitzungen werden nicht beendet. Hintergrundoperationen werden erst nach
+Zustandsabgleich als abgeschlossen gemeldet. Titeländerung während Streaming
+am Octagon mit dev.19 direkt geprüft und Originaltitel wiederhergestellt;
+Verschieben, Zurückverschieben und bestätigtes Löschen am Octagon mit dev.20
+erfolgreich direkt geprüft. Nutzer bestätigt Installation von dev.20 und Abnahme;
+Codex prüfte anschließend den HA-Dialog lesend. Abschnitt 5b am 20.09.2026
+gemeinsam abgeschlossen. Reale schreibende Vu+-Abnahme und vollständige
+Qualitätsnachweise vor main bleiben offen; siehe Prüfübersicht. Abschlusscommit:
+`feat: add guarded recording management and dialogs`.
+
+Schnittstellen geprüft anhand des [OpenWebif-Controllers](https://github.com/oe-alliance/OpenWebif/blob/main/plugin/controllers/web.py)
+und [Aufnahmemodells](https://github.com/oe-alliance/OpenWebif/blob/main/plugin/controllers/models/movies.py).
+Unabhängige Implementierung; kein GPL-Code übernommen.

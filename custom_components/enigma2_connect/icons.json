@@ -204,6 +204,15 @@
     },
     "recordings_list": {
       "service": "mdi:movie-open-outline"
+    },
+    "recording_manage": {
+      "service": "mdi:movie-edit-outline"
+    },
+    "recording_operation_status": {
+      "service": "mdi:progress-check"
+    },
+    "recording_destinations": {
+      "service": "mdi:folder-outline"
     }
   }
 }
