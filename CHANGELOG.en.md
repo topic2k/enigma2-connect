@@ -18,6 +18,9 @@
 
 Unreleased.
 
+- HACS validates the exact commit instead of the branch name so special
+  characters such as `#` in working branches do not cause `Not Found` failures.
+
 - Device actions use `DeviceEntry.config_entry_id` instead of the deprecated
   `config_entries` property (issue #10). Loaded-entry validation and the
   translated error for invalid targets are preserved. Regression tests cover

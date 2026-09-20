@@ -4,6 +4,14 @@
 
 ## PR preparation / issue #10: 1.2.1
 
+The initial [push HACS checks](https://github.com/topic2k/enigma2-connect/actions/runs/35499303499)
+and [PR HACS checks](https://github.com/topic2k/enigma2-connect/actions/runs/35499314187)
+on `727d5af` failed while loading the branch reference with `Not Found`.
+The HACS action now receives `REPOSITORY_REF` with the PR head SHA, or `github.sha`
+for other events. This avoids special characters in reference URLs and validates
+the exact commit; no HACS check is skipped. Tests, Hassfest and CodeQL passed on
+the initial PR state. CI for this workflow correction must pass before merging.
+
 On **2026-09-20**, remote branches, tags and published releases were checked:
 `main` is at `1afa705` with version **1.2.0**, and the latest stable release is
 `v1.2.0`. The issue branch was updated to this base. The fix results in **1.2.1**,

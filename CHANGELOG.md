@@ -18,6 +18,9 @@
 
 Unveröffentlicht.
 
+- HACS validiert den exakten Commit statt des Branchnamens, damit Sonderzeichen
+  wie `#` in Arbeitsbranches nicht zum Abbruch mit `Not Found` führen.
+
 - Geräteaktionen verwenden `DeviceEntry.config_entry_id` statt der veralteten
   Eigenschaft `config_entries` (Issue #10). Die Prüfung auf einen geladenen
   Eintrag und die übersetzte Fehlermeldung für ungültige Ziele bleiben erhalten.
