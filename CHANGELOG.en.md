@@ -4,7 +4,7 @@
 
 ## Contents
 
-- [1.3.0-dev.22](#130-dev22)
+- [1.3.0](#130)
 - [1.2.1](#121)
 - [1.2.0](#120)
 - [1.1.3](#113)
@@ -15,9 +15,9 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 1.3.0-dev.22
+## 1.3.0
 
-Unreleased development version. Target for the requested EPG, timer and
+Unreleased. Target for the requested EPG, timer and
 recording extensions. Instant recording and timer editing are implemented;
 EPG search and cards have passed joint acceptance; library management has also passed joint acceptance.
 

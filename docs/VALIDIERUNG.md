@@ -2,6 +2,38 @@
 
 # Prüfübersicht
 
+## Vorbereitung der Übernahme nach main – 1.3.0
+
+Am **20.09.2026** den aktuellen Remote-Stand einschließlich Tags und Releases
+abgeglichen: letztes stabiles Release **1.2.0**, Version auf `main` **1.2.1**
+(`df39aead765fd6f4b56d88067f2295d3ca5925da`). Die rückwärtskompatiblen neuen
+Funktionen ergeben **1.3.0**, weiterhin unveröffentlicht.
+
+Für den vollständigen Funktionsstand `a936b4373ca513ba0bcb060f9ca76f17b769d9ec`
+sind [Tests](https://github.com/topic2k/enigma2-connect/actions/runs/35535122919)
+und [Hassfest/HACS](https://github.com/topic2k/enigma2-connect/actions/runs/35535122875)
+erfolgreich: **896 Backend-Tests**, beide Frontend-Testsuiten, Ruff,
+Formatierung und striktes Mypy (**37 Module**). Config Flows haben **100 %**
+Anweisungs-/Zweigabdeckung; alle **37 Produktionsmodule über 95 %** kombinierte
+Abdeckung. CI-Prüfgrenzen, Qualitätsstatus und vorhandene Ausnahmen wurden
+gegenüber `main` nicht abgesenkt oder erweitert.
+
+Qualitätsabgleich: die bisherigen Aufnahme-/Aktionsnachweise und die unten
+beschriebenen Diagnoseprüfungen decken den geänderten Code ab. Zusätzlich
+Diagnose-Parser, Sensoridentität, Einheiten, Listener-Abbau, Polling und beide
+Benutzerhandbücher geprüft. Dynamische Laufwerke behalten ihre Mount-Identität;
+unbekannte Werte erhalten keine erfundenen Nullwerte. Optionale Sensoren,
+Aktivierung, Abfrageintervall und mögliche Festplatten-Weckeffekte sind in
+beiden Sprachen dokumentiert. Kein neuer Anspruch auf Hardwareabnahme:
+Diagnosewerte/Netzwerk-Mounts und weitere Image-/Sprachvarianten sowie die reale
+schreibende Vu+-Abnahme bleiben wie unten beschrieben offen.
+
+Die Vorbereitung ändert nur Versionsmetadaten und Dokumentation. Die Lockdatei
+ändert ausschließlich die lokale Paketversion; Abhängigkeiten bleiben gleich.
+Der endgültige PR-Stand benötigt vor dem Merge erneut erfolgreiche Jobs
+`test`, `hassfest` und `hacs`. Die Nutzeranweisung autorisiert PR und Merge,
+kein Tag oder Release.
+
 ## Festplattenspeicher und Systemdiagnose – 1.3.0-dev.22
 
 Am **20.09.2026** wurden die neuen Diagnosewerte und dynamischen

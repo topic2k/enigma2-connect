@@ -4,7 +4,7 @@
 
 ## Inhaltsverzeichnis
 
-- [1.3.0-dev.22](#130-dev22)
+- [1.3.0](#130)
 - [1.2.1](#121)
 - [1.2.0](#120)
 - [1.1.3](#113)
@@ -15,9 +15,9 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 1.3.0-dev.22
+## 1.3.0
 
-Unveröffentlichte Entwicklerversion. Zielversion für die beauftragten EPG-,
+Unveröffentlicht. Zielversion für die beauftragten EPG-,
 Timer- und Aufnahmeerweiterungen. Sofortaufnahme und Timerbearbeitung sind
 umgesetzt; EPG-Suche und Karten sind gemeinsam abgenommen. Bibliotheksverwaltung ist ebenfalls gemeinsam abgenommen.
 

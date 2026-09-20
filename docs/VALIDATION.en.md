@@ -2,6 +2,36 @@
 
 # Verification summary
 
+## Preparation for merging into main – 1.3.0
+
+On **2026-09-20**, refreshed remote branches, tags and releases: latest stable
+release **1.2.0**, version on `main` **1.2.1**
+(`df39aead765fd6f4b56d88067f2295d3ca5925da`). The backward-compatible new
+features require **1.3.0**, still unreleased.
+
+For the complete implementation `a936b4373ca513ba0bcb060f9ca76f17b769d9ec`,
+[Tests](https://github.com/topic2k/enigma2-connect/actions/runs/35535122919)
+and [Hassfest/HACS](https://github.com/topic2k/enigma2-connect/actions/runs/35535122875)
+succeeded: **896 backend tests**, both frontend suites, Ruff, formatting and
+strict Mypy (**37 modules**). Config flows have **100%** statement/branch
+coverage; all **37 production modules exceed 95%** combined coverage. CI
+thresholds, quality status and existing exceptions were neither lowered nor
+expanded compared with `main`.
+
+Quality comparison: existing recording/action evidence and the diagnostics
+checks below cover the changed code. Additionally reviewed the diagnostics
+parser, sensor identity, units, listener cleanup, polling and both user guides.
+Dynamic disks retain mount-based identity; unknown measurements never become
+invented zero values. Optional sensors, activation, polling interval and
+possible disk wakeups are documented in both languages. No new hardware
+acceptance is claimed: diagnostics/network mounts, additional image/language
+variants and real write acceptance on Vu+ remain pending as documented below.
+
+Preparation changes only version metadata and documentation. The lockfile
+changes only the local package version; dependencies remain unchanged.
+The final PR revision must pass `test`, `hassfest` and `hacs` again before
+merging. The user request authorizes the PR and merge, not a tag or release.
+
 ## Disk space and system diagnostics – 1.3.0-dev.22
 
 On **2026-09-20**, the new system measurements and dynamic disk sensors were
