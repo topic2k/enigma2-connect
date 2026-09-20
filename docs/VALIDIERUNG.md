@@ -2,6 +2,182 @@
 
 # Prüfübersicht
 
+## Abschluss Abschnitt 5a – 1.3.0-dev.16
+
+Am **20.09.2026** hat der Nutzer Abschnitt 5a ausdrücklich als fertig bestätigt.
+Codex bestätigt den Abschluss anhand der dokumentierten lokalen Prüfungen,
+Receiver-Leseprüfungen und realen HA-Prüfung von dev.13. Die späteren
+Kartenänderungen bis dev.16 sind lokal im Browser geprüft und vom Nutzer
+abgenommen; eine eigene erneute HA-Prüfung von dev.16 durch Codex wird nicht
+behauptet. Frühere offene Abnahmevermerke unten beschreiben den damaligen Stand.
+Der vereinbarte Abschlusscommit erfolgt auf dem Arbeitsbranch. Abschnitt 5b
+(Umbenennen, Verschieben, Löschen) folgt und ist noch nicht abgenommen.
+
+## Dynamische Zeilenspalten – dev.16
+
+Am **20.09.2026** lokal geprüft: 41 Frontendtests, JavaScript-Syntax,
+Versions-/Changelog-Abgleich und `uv lock --check --offline` bestanden.
+Der Rendertest prüft Reihenfolge und sichere Ausgabe aller sechs Spalten sowie
+unbekannte Werte. Keine Python-Funktionsänderung oder neue Abhängigkeit.
+
+**Simulierte Browserprüfung:** 20 Aufnahmen mit aktivem Scrollbalken. Bei
+unverändertem Fenster (1280 × 900) wurde nur die Testkarte dynamisch verbreitert:
+
+| Kartenbreite im Test | Sichtbare Spalten von links nach rechts |
+| --- | --- |
+| 340 px | Titel |
+| 390 px | Titel, Aufnahmedatum |
+| 500 px | Titel, Aufnahmedatum, Sender |
+| 570 px | Titel, Dauer, Aufnahmedatum, Sender |
+| 650 px | Titel, Dauer, Aufnahmedatum, Sender, Wiedergabestand |
+| 760 / 1000 px | Titel, Dauer, Aufnahmedatum, Sender, Wiedergabestand, Dateigröße |
+
+Die tatsächlichen Umschaltpunkte beziehen sich auf die nutzbare Listenbreite
+nach Innenabständen/Scrollbereich, nicht auf feste Geräteklassen. Zurück auf
+340 px blendet alle Zusatzspalten wieder aus. Geöffnete Details bleiben offen,
+der Abfragezähler bleibt bei einer Abfrage; kein horizontaler Überlauf in allen
+Stufen. Filtertext und Trefferzähler (5 von 20) bleiben beim Breitenwechsel
+erhalten. Bei 390 × 844 Fenstergröße sind alle versteckten Angaben per Tastatur
+aufklappbar. Breite und schmale Darstellung visuell geprüft; keine erfassten
+Browserfehler. Scrollabstand bleibt erhalten.
+
+Qualitätscheckliste: Keine zusätzliche Receiverlast oder geänderte Aktionslogik,
+keine abgeschwächten Anforderungen; DE/EN-Dokumentation aktualisiert. Echte
+HA-Prüfung dieses Kartenstands und gemeinsame Abschnittsabnahme bleiben offen.
+
+## Angepasste Zeilenangaben – dev.15
+
+Am **20.09.2026** lokal geprüft: Zeilen zeigen Titel, Aufnahmedatum mit Uhrzeit
+und Sender; Dateigröße und Wiedergabestand bleiben in den aufklappbaren Details.
+41 Frontendtests, JS-Syntax, Versions-/Changelog-Abgleich und
+`uv lock --check --offline` bestanden. Der angepasste Rendertest prüft die
+Spaltenreihenfolge, sichere Sendertexte, fehlende/ungültige Datumswerte und
+erhaltene Detailangaben. Keine Python-Funktionsänderung.
+
+Simulierte Browserprüfung mit 20 Einträgen und aktivem Scrollbalken bestanden:
+12 Pixel Innenabstand rechts plus stabiler Scrollbereich, kein horizontaler
+Überlauf, lesbare umgebrochene Spalten bei 390 × 844 Pixeln. Geöffnete Details
+bleiben bei unverändertem HA-Update erhalten; keine erfassten Browserfehler.
+Qualitätsanforderungen bleiben unverändert. DE/EN-Anleitungen aktualisiert.
+Die echte HA-Prüfung dieses Kartenstands und gemeinsame 5a-Abnahme bleiben offen.
+
+## Zeilenansicht der Aufnahmebibliothek – dev.14
+
+Am **20.09.2026** lokal geprüft. 41 Frontendtests bestanden (22 bestehende
+Fernbedienungs-/EPG-Tests und 19 Bibliothekstests). Neue Nachweise: kompatibler
+Standard `details`, Auswahl `rows`, sichere Textdarstellung, vollständige
+aufklappbare Metadaten, unbekannter gegenüber explizitem 0-%-Wert, Filter und
+Zähler sowie Erhalt geöffneter Zeilen bei unveränderten HA-Aktualisierungen.
+JavaScript-Syntax, synchronisierte Versionsstellen und Changelog-Anker sowie
+`uv lock --check --offline` bestanden; Python-Syntax und DE/EN-Aktionsfelder
+ebenfalls geprüft. Keine Python-Funktionsänderung gegenüber dev.13.
+
+**Simulierte Browserprüfung:** Vier Testaufnahmen in beiden Ansichten,
+Auf-/Zuklappen per Klick, Enter und Leertaste, Erhalt geöffneter Details bei
+HA-Aktualisierung, Fortschrittsfilter, Zurücksetzen und englische Anzeige
+bestanden. Bei 390 × 844 Pixeln bleiben Titel, Größe, Fortschritt und
+aufgeklappte Angaben lesbar; kein horizontaler Überlauf. HTML-artige Titel
+erscheinen als Text. Keine erfassten Browserfehler.
+
+Qualitätscheckliste auf Auswirkungen geprüft: keine neuen Receiverabfragen,
+Schreibaktionen oder Abhängigkeiten; Dokumentation und sichere Anzeige
+fortgeschrieben, keine Prüf- oder Coverage-Anforderung abgesenkt.
+
+**Offen:** Prüfung des neuen Auswahlfelds und der Zeilenansicht im echten HA
+nach Aktualisierung der Kartendatei. Die folgende dev.13-Praxisprüfung belegt
+den bisherigen Bibliotheksumfang, nicht die neue Ansicht. Gemeinsame Abnahme
+von 5a und Abschlusscommit bleiben offen; 5b bleibt geplant.
+
+## Reale HA-Praxisprüfung von Abschnitt 5a – dev.13
+
+Am **20.09.2026** nach Installation durch den Nutzer im freigegebenen Dashboard
+`codex-lab` geprüft. HA zeigt **Version 1.3.0-dev.13**. Die ausgelieferte
+Bibliotheks-JavaScript-Datei stimmt per SHA-256 mit dem lokal geprüften Stand
+überein. Der separate Ressourceneintrag fehlte zunächst und wurde als
+`/local/enigma2-connect-recordings-card.js?v=dev13` (JavaScript-Modul) ergänzt.
+Danach funktioniert die bereits vorhandene Bibliothekskarte. Keine weitere
+Karte hinzugefügt; temporäre Receiverwechsel im Editor nicht gespeichert.
+
+- **Octagon:** 21 Aufnahmen aus drei Ordnern, ein verfügbarer Tag. Dateigröße,
+  Sender, Datum, Dauer, Tags, Ordner und gemeldeter Wiedergabestand angezeigt.
+  Fortschrittsfilter: sieben Treffer bei 1–99 %, sechs bei 100 %, acht bei 0 %,
+  keine bei unbekannt. Die frühere direkte Leseprüfung mit 20 Aufnahmen bleibt
+  als damaliger Stand dokumentiert.
+- **Kombinierte Filter:** Tag und Unterordner ergeben acht Aufnahmen; zusätzlicher
+  Titeltext in Großbuchstaben eine Aufnahme. Erneutes Laden erhält alle drei
+  Filter und den Treffer. Nicht passender Text ergibt 0 von 21; Zurücksetzen
+  leert die Filter und zeigt wieder alle 21 Aufnahmen.
+- **Receiverwahl:** Der visuelle Editor bietet die beiden Enigma2-Medienplayer.
+  Die Live-Vorschau für Vu+ zeigt korrekt 0 von 0 Aufnahmen mit leeren Tag- und
+  Ordnerlisten. Zurückwechseln zum Octagon verwirft die bisherigen Ergebnisse
+  und fordert erneutes Laden. Originale Kartenkonfiguration beibehalten.
+- **Bestehende Medienansichten:** Sowohl „Medien durchsuchen“ am Octagon-Player
+  als auch „Medien → Enigma2 Connect“ funktionieren einschließlich
+  Unterordnernavigation, Dateigrößen und Tags. Keine Wiedergabe gestartet.
+- **Mobile Darstellung:** Echte HA-Ansicht bei 390 × 844 Pixeln geprüft.
+  Filter, Buttons, Zähler und Metadaten sind lesbar; lange Titel und Ordnerpfade
+  umbrechen. Kein erfasster Enigma2-JavaScript-Fehler im Browserprotokoll.
+
+Keine Aufnahme angelegt, umbenannt, verschoben oder gelöscht und keine
+Receiversteuerung ausgelöst. Positive Metadaten mit einer vorhandenen Aufnahme
+auf dem Vu+ bleiben mangels Aufnahmen ungeprüft; unbekannte Metadaten und
+Verbindungsverlust wurden zuvor simuliert geprüft. Keine solche Live-Prüfung
+behauptet. Lokaler Kurzbericht im Hauptarbeitsverzeichnis:
+`.work/recording-workflows-checks/ha13-acceptance.json`.
+
+**Codex bestätigt 5a im verfügbaren Geräteumfang als bestanden.** Die
+Nutzerbestätigung und der vereinbarte Abschlusscommit stehen aus; 5b bleibt offen.
+
+
+## Aufnahmebibliothek 5a – 1.3.0-dev.13
+
+Implementiert auf `feature/recording-workflows`; noch keine gemeinsame
+Abschlussbestätigung und kein Abschlusscommit. Abschnitt 5b (Umbenennen,
+Verschieben, Löschen) bleibt geplant.
+
+**Lokale Prüfungen:** 182 Python-/HA-Tests für Bibliotheksaktion, Modelle,
+Medienbrowser, Medienquelle, Integrationsaktionen und EPG bestanden. Ein
+abschließender Lauf nach Formatierung mit 107 teilweise überlappenden Tests
+einschließlich Übersetzungen bestand ebenfalls. Statement-/Branch-Abdeckung:
+`recording_library.py` 100 %, `workflow_models.py` 100 %, `recordings.py` 97,7 %.
+38 Frontendtests bestanden (16 neue, 22 bestehende), ebenso Ruff, Formatierung,
+Python-/JS-Syntax, Mypy über 35 Module und `uv lock --check --offline`.
+Versionsstellen, Changelog-Anker sowie DE/EN-Aktionsfelder und Auswahlwerte
+sind synchron. Die CI führt beide Frontend-Testdateien aus.
+
+Geprüft sind vollständige und fehlerhafte Kataloge, unbekannte Werte, alle
+Filtergruppen, kombinierte Filter, mehr als 150 Ergebnisse ohne Limit,
+eindeutige Gerätezuordnung, Fehlerweitergabe, veraltete Antworten,
+Verbindungsverlust, sicher dargestellte Receivertexte und Filtererhalt beim
+Aktualisieren. Bestehende Medienkennungen und Wiedergabepfade bleiben erhalten.
+Die Qualitätsanforderungen für bedarfsabhängige Abfragen, Aktionsregistrierung,
+Fehler, Übersetzungen und Dokumentation wurden auf Auswirkungen geprüft;
+keine Anforderung oder Coverage-Grenze abgesenkt. Aktuelle vollständige CI und
+Qualitätsabgleich vor einem späteren Merge bleiben erforderlich.
+
+**Echte Receiver-Leseprüfung am 20.09.2026:** Der neue Bibliothekscode liest
+`movielist?recursive=1` mit den freigegebenen Zugangsdaten.
+
+| Receiver | Befund |
+| --- | --- |
+| Octagon SF8008 4K Supreme / OpenATV 7.6 / OpenWebif 2.4.0 | 20 Aufnahmen, drei Ordner, ein unterschiedlicher Tag. Alle 20 mit positiver Dateigröße. Fortschritt: achtmal 0 %, sechsmal 100 %, sechs Werte zwischen 1 und 99 %. Filter ohne Treffer liefert 0 bei Gesamtkatalog 20. |
+| Vu+ Solo² / VTi 15 / OpenWebif 1.4.4 | Leerer Katalog korrekt erkannt; Filter ohne Treffer ebenfalls leer. Keine positive Metadatenprüfung mit vorhandener Aufnahme möglich. |
+
+Keine Aufnahme angelegt, abgespielt, umbenannt, verschoben oder gelöscht.
+Der anonymisierte Bericht liegt lokal im Hauptarbeitsverzeichnis unter
+`.work/recording-workflows-checks/library13-live.json`, Coverage und Testlog
+unter `library13-coverage.json` und `library13-final-tests.log` im selben Ordner.
+
+**Browserprobe mit simulierten Daten:** Laden, kombinierte Tag-/Fortschrittsfilter,
+Textfilter ohne Treffer, Rücksetzen, leerer Receiver, Deutsch/Englisch und
+Verbindungsverlust bestanden. Bei 360 × 800 Pixeln sind Felder und Metadaten
+lesbar, längere Texte umbrechend. HTML im Aufnahmetitel bleibt sichtbarer Text;
+keine erfassten JavaScript-Fehler. Dies ersetzt keine reale HA-Praxisprüfung.
+
+**Aktualisierung:** Die zuvor offene HA-Praxisprüfung ist inzwischen bestanden
+(siehe oben). Nutzerbestätigung von 5a und der vereinbarte Commit stehen aus.
+
+
 ## Gemeinsamer Abschluss von Abschnitt 4
 
 Am **20.09.2026** bestätigt der Nutzer nach Codex-Prüfung und realer HA-Praxisprüfung

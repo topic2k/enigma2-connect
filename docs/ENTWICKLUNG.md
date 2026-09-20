@@ -103,7 +103,7 @@ uv run --locked mypy
 uv run --locked pytest --cov=custom_components.enigma2_connect --cov-branch --cov-report=term-missing --cov-report=json:coverage.json
 uv run --locked python scripts/check_config_flow_coverage.py coverage.json --silver
 uv run --locked python -m compileall -q custom_components tests scripts
-node --test tests/frontend.test.cjs
+node --test tests/frontend.test.cjs tests/recordings_frontend.test.cjs
 git diff --check
 ```
 
@@ -1027,7 +1027,7 @@ Qualitätsabgleich und ausdrückliche Nutzerfreigabe; Release nur auf Anweisung.
   passende Timer bleiben erhalten. Die optionale Karte erhält eine aufklappbare
   Suchansicht mit Aufnahme und ähnlichen Sendungen. Gezielte Backend-, HA- und
   Frontendtests sowie Receiver-Prüfungen werden getrennt dokumentiert.
-- **5:** geplant, nicht begonnen.
+- **5:** 5a einschließlich Kartenänderungen bis dev.16 am 20.09.2026 von Nutzer und Codex bestätigt. Reale HA-Prüfung durch Codex auf dev.13, spätere Kartenänderungen lokal geprüft und vom Nutzer abgenommen. 5b als nächster Abschnitt freigegeben.
 
 `OpenWebifClient.command_result()` liefert die strukturierte erfolgreiche
 Antwort unter derselben Sperre wie `command()`. Bestehendes `command()` liefert
@@ -1448,3 +1448,89 @@ werden akzeptiert, ihre Grenze ignoriert. Der Zähler steht zwischen zugänglich
 Pfeiltasten; Randtasten bleiben gesperrt. Beide Karten standardmäßig einzeln, Suche in der Fernbedienung aus; explizite Auswahl hat Vorrang. Suche/Ähnliche mit 123
 Treffern sowie Navigation jenseits der bisherigen Grenze gezielt testen. Integration
 und Karte gemeinsam aktualisieren; keine neuen Qualitätsausnahmen.
+
+
+### Abschnitt 5 – Umsetzungsplan Aufnahmebibliothek
+
+Begonnen nach Nutzerfreigabe; Umsetzung auf `feature/recording-workflows`.
+
+1. **5a – Katalog und Ansicht:** Vorhandenes Aufnahmemodell um den vom Receiver
+   gemeldeten Prozentwert ergänzen. Die lesende Aktion `recordings_list` lädt den
+   rekursiven Katalog des ausdrücklich gewählten Receivers. Titel-/Senderfilter,
+   Tags, Ordner und Fortschrittsfilter ohne Ergebnislimit anbieten. Eine eigene
+   Bibliothekskarte zeigt Metadaten und unbekannte Werte; der Medienbrowser
+   erhält verfügbare Tags und Dateigrößen. Vorhandene Medienkennungen erhalten.
+   `lastseen=0` beweist keine ungesehene Aufnahme; es kann auch ein fehlender
+   Speicherstand sein. Dateigröße 0 wird in der Ansicht als unbekannt behandelt.
+2. **5a – Prüfung:** Parser, vollständige/fehlerhafte Kataloge, Filter,
+   eindeutige Receiverwahl, veraltete Kartenantworten und sichere Textausgabe
+   simuliert prüfen. Auf beiden Testreceivern ausschließlich Metadaten lesen;
+   Live-Nachweise von Simulationen trennen. HA-Kartenprüfung gesondert ausweisen.
+3. **5b – Verwaltung:** Danach Umbenennen, Verschieben und Löschen ergänzen.
+   Vor jedem Eingriff aktuellen Katalog, Receiver, laufende Aufnahme,
+   Zielordner und Zielkonflikte prüfen. Asynchrone Dateioperationen erst nach
+   Zustandsabgleich als abgeschlossen melden. Oberfläche bestätigt Löschen;
+   dauerhafte Löschung oder Papierkorb je Image ausdrücklich kenntlich machen.
+   Cache, Vorschaubilder, Medienkennungen und Streams berücksichtigen.
+   Praxisprüfung ausschließlich mit eigens angelegten Testaufnahmen.
+
+5a und 5b werden getrennt abgenommen. Ein Abschlusscommit erfolgt jeweils erst
+nach Bestätigung durch Nutzer und Codex; Abschnitt 5 bleibt bis 5b offen.
+
+### Aufnahmebibliothek 5a: Daten und Grenzen
+
+`RecordingLibrary.list` liest bei jedem Aufruf `movielist?recursive=1`, validiert
+die gesamte Liste und filtert erst danach. Fehlerhafte Identitäten oder eine
+fehlende Liste werden als `recording_data` gemeldet, nicht als leeres Ergebnis.
+Die Aktion bindet den Receiver über die bestehende eindeutige Geräteauflösung.
+Transport-/Authentifizierungsfehler verwenden die bestehende HA-Fehlerbehandlung.
+Keine zusätzlichen Hintergrundabfragen, Schreiboperationen oder Abhängigkeiten.
+Der neue Katalog verändert den Coordinator-Cache, Medienkennungen, Bilder und
+Streams nicht. Die Karte lädt ausdrücklich auf Knopfdruck und verwirft verspätete
+Antworten bei Receiverwechsel/Verbindungsverlust. Receivertexte werden escaped.
+
+`lastseen` wird ausschließlich als ganzzahliger Prozentwert 0–100 interpretiert,
+keinesfalls als Zeitposition. OpenWebif bildet auch fehlende Positionen auf 0 ab.
+Deshalb heißt die Filtergruppe „0 % gemeldet“, nicht „ungesehen“.
+`filesize=0` bleibt im Rohmodell 0, wird in der Ansicht/Aktionsantwort aber als
+unbekannt dargestellt, weil OpenWebif diesen Wert bei fehlender Dateiinformation
+verwenden kann. Dateigrößen sind Momentaufnahmen, besonders während Aufnahmen.
+Die Karte und Aktion enthalten keine Verwaltungsschreibbefehle; diese folgen in 5b.
+
+Referenzen: [OpenWebif-Aufnahmeschnittstelle](https://github.com/oe-alliance/OpenWebif/blob/main/plugin/controllers/models/movies.py),
+[Enigma2-Prozentberechnung](https://github.com/openatv/enigma2/blob/7.6/lib/python/Components/MovieList.py).
+Unabhängige Implementierung gegen die Schnittstellen; kein GPL-Code übernommen.
+
+### Aufnahmebibliothek: zweite Ansichtsvariante (dev.14)
+
+Plan: `display_mode` mit `details` (bisheriger Standard) und `rows` im visuellen
+Karteneditor ergänzen. In der Zeilenansicht stehen Titel, Größe und gemeldeter
+Fortschritt nebeneinander; native aufklappbare Details erhalten alle Metadaten
+und Tastaturbedienbarkeit. Receivertexte weiter sicher darstellen, Filter und
+Katalog unverändert verwenden. Beide Ansichten und schmale Karten lokal prüfen;
+DE/EN-Anleitungen und Versionsstellen fortschreiben. Die dev.13-HA-Abnahme bleibt
+als Nachweis bestehen; die neue Ansichtsvariante benötigt ihre eigene Abnahme.
+
+Umgesetzt und lokal geprüft; Nachweise und offene HA-Abnahme stehen in der
+[Prüfübersicht](VALIDIERUNG.md). Das zuletzt erzeugte Markup wird gespeichert,
+damit das native `open`-Attribut unveränderte HA-Updates übersteht.
+
+### Zeilenangaben und Scrollabstand (dev.15)
+
+Plan und Umsetzung: In der Zeilenzusammenfassung Titel, Aufnahmedatum mit
+Uhrzeit und Sender anzeigen; übrige Metadaten in den aufklappbaren Details
+erhalten. Datum lokalisiert in Browserzeitzone formatieren, Sendertexte
+escapen und fehlende Angaben als unbekannt darstellen. Rechts 12 Pixel
+Innenabstand plus stabilen Scrollbereich vorsehen; flexible Spalten umbrechen
+auf schmalen Karten. Frontendtests und lokale Browserprüfung durchführen.
+
+### Automatische Zeilenspalten (dev.16)
+
+Plan und Umsetzung: Alle sechs Werte sicher in der gewünschten Reihenfolge
+rendern. Benannte CSS-Containerabfragen auf der tatsächlichen Listenbreite
+blenden nach Priorität Datum, Sender, Dauer, Fortschritt und Größe ein. Der
+Titel bleibt sichtbar; Mindestbreiten reservieren Platz für lesbare Titel.
+Schwellen von 22/30/36/42/48 em beziehen sich auf die Schriftgröße der Liste,
+nicht die Fensterbreite. Scrollabstand bleibt erhalten. Reines CSS erhält
+offene Details, Fokus, Filter und Katalog; keine neuen Abfragen oder Listener.
+Frontendprüfung sowie dynamische Breitenwechsel im Browser prüfen.

@@ -20,6 +20,7 @@ from homeassistant.helpers import device_registry as dr
 from .action_choices import action_epoch, resolve_choices
 from .const import DOMAIN
 from .models import epoch, timer_range
+from .recording_library import PROGRESS_FILTERS
 from .timer_edit import WEEKDAYS, options
 from .workflow_models import TimerIdentity
 
@@ -91,6 +92,10 @@ def register_services(hass: HomeAssistant) -> None:
                 return await coordinator.perform(coordinator.epg.similar, params, refresh=False)
             result = await coordinator.async_record_event(params)
             return result if call.return_response else None
+        if service == "recordings_list":
+            return await coordinator.perform(
+                coordinator.recording_library.list, refresh=False, **params
+            )
         if service == "record_now":
             result = await coordinator.async_record_now()
             return result if call.return_response else None
@@ -182,6 +187,13 @@ def register_services(hass: HomeAssistant) -> None:
         vol.Required("end"): vol.All(exact_integer, vol.Range(min=1)),
     }
     schemas = {
+        "recordings_list": {
+            **base,
+            vol.Optional("query"): vol.All(str, vol.Strip, vol.Length(max=200)),
+            vol.Optional("tag"): str,
+            vol.Optional("directory"): str,
+            vol.Optional("progress", default="all"): vol.In(PROGRESS_FILTERS),
+        },
         "epg_search": {
             **base,
             vol.Required("query"): vol.All(str, vol.Strip, vol.Length(min=1, max=200)),
@@ -231,7 +243,7 @@ def register_services(hass: HomeAssistant) -> None:
             handle,
             schema=vol.Schema(schema),
             supports_response=SupportsResponse.ONLY
-            if name.startswith("epg_")
+            if name.startswith("epg_") or name == "recordings_list"
             else SupportsResponse.OPTIONAL
             if name.startswith("timer_") or name in ("record_now", "record_event")
             else SupportsResponse.NONE,

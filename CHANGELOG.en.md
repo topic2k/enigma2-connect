@@ -4,7 +4,7 @@
 
 ## Contents
 
-- [1.3.0-dev.12](#130-dev12)
+- [1.3.0-dev.16](#130-dev16)
 - [1.2.0](#120)
 - [1.1.3](#113)
 - [1.1.2](#112)
@@ -14,12 +14,28 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 1.3.0-dev.12
+## 1.3.0-dev.16
 
 Unreleased development version. Target for the requested EPG, timer and
 recording extensions. Instant recording and timer editing are implemented;
 EPG search and cards have passed joint acceptance; library management follows.
 
+- Recording library card: automatic columns based on available list width.
+  Display order: title, duration, recording date, channel, progress, size.
+  Priority: title, recording date, channel, duration, progress, size. Updates
+  during use while preserving expanded details.
+- Recording library card: second compact row view with extra scrollbar spacing selectable in the visual
+  editor. Rows show extra fields when space permits; expand it for all
+  metadata. Existing detail view remains the default. Requires card file dev.16;
+  the library action introduced in dev.13 remains compatible.
+- Read-only recording library with a separate dashboard card and
+  `recordings_list` action: combined title/channel, tag, directory and progress
+  filters, complete catalog without a result limit, file size and receiver-reported
+  percentage. Missing values remain unknown; zero percent does not necessarily
+  mean unwatched. Native media views also show file size and tags.
+  The dev.13 library scope passed actual HA checks; the dev.16 row view
+  passed local checks; section 5a jointly accepted.
+  Rename, move and delete follow in 5b.
 - EPG search and similar programmes return all matching received results without
   a local limit. List/single display with arrows around the count:
   “[‹] Result 10 of 30 [›]”. Both cards default to single view; remote search is off.
@@ -31,7 +47,7 @@ EPG search and cards have passed joint acceptance; library management follows.
 - Added EPG title search, similar programmes and guarded event recording as HA
   actions plus a search/record view in the optional remote card. Fresh event and
   timer checks and uncertain-write protection prevent stale/duplicate requests.
-  Direct Octagon checks passed; section 4 awaits actual HA acceptance.
+  Direct Octagon and actual HA checks passed; section 4 jointly accepted.
 
 - Completed practical HA checks of selection controls, calendar updates, conflict
   events and visible information messages with both receivers.

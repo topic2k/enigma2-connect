@@ -207,6 +207,15 @@
         "2": "Tiefschlaf",
         "3": "Automatisch"
       }
+    },
+    "recording_progress": {
+      "options": {
+        "all": "Alle",
+        "in_progress": "1–99 % gemeldet",
+        "complete": "100 % gemeldet",
+        "zero": "0 % gemeldet",
+        "unknown": "Unbekannt"
+      }
     }
   },
   "entity": {
@@ -539,6 +548,9 @@
     },
     "epg_timer_ambiguous": {
       "message": "Für diesen Sender besteht ein überlappender oder wiederholter Timer, dessen Abdeckung nicht sicher feststeht. Bitte die Receiver-Timer prüfen; es wurde kein zusätzlicher Timer angelegt."
+    },
+    "recording_data": {
+      "message": "Der Receiver hat keinen vollständig lesbaren Aufnahmekatalog geliefert. Bitte erneut laden."
     }
   },
   "services": {
@@ -863,6 +875,32 @@
         "end": {
           "name": "EPG-Ende (Unix-Sekunden)",
           "description": "EPG-Ende (Unix-Sekunden)"
+        }
+      }
+    },
+    "recordings_list": {
+      "name": "Aufnahmebibliothek laden",
+      "description": "Liest den aktuellen Aufnahmekatalog des Receivers. Filter werden kombiniert; kein Trefferlimit. 0 % kann einen fehlenden Speicherstand bedeuten.",
+      "fields": {
+        "device_id": {
+          "name": "Receiver",
+          "description": "Receiver"
+        },
+        "query": {
+          "name": "Titel oder Sender",
+          "description": "Titel oder Sender"
+        },
+        "tag": {
+          "name": "Tag",
+          "description": "Tag"
+        },
+        "directory": {
+          "name": "Ordner (exakter Pfad)",
+          "description": "Ordner (exakter Pfad)"
+        },
+        "progress": {
+          "name": "Gemeldeter Wiedergabestand",
+          "description": "Gemeldeter Wiedergabestand"
         }
       }
     }

@@ -165,7 +165,7 @@ Open the required subfolders and select a recording. In the Media sidebar,
 select the receiver that holds the recording as the player at the bottom.
 For “Web browser” or another device, enable external playback as described below.
 
-Titles include the date, time, channel and duration when available. Times use
+Titles include date, time, channel, duration, file size and tags when available. Times use
 Home Assistant's configured time zone. Folders appear before recordings. The
 list reflects what OpenWebif reports from the recording directory and its subfolders.
 
@@ -493,6 +493,51 @@ change the existing resource URL suffix to e.g. `?v=dev12` and reload the browse
 For unlimited search, update both the integration and card to dev.12 or newer
 and restart Home Assistant.
 
+### Recording library card
+
+The additional card shows one receiver's recordings with file size, tags,
+directory and reported playback progress. Requires integration **1.3.0-dev.13**
+or newer.
+
+1. Copy `www/enigma2-connect-recordings-card.js` to
+   `/config/www/enigma2-connect-recordings-card.js`.
+2. Under **Settings → Dashboards → Resources**, add
+   `/local/enigma2-connect-recordings-card.js?v=dev16` as a **JavaScript module**.
+   Enable advanced mode in your profile if Resources is missing.
+3. Fully reload the browser. Add **Enigma2 Connect Recording library** to your
+   dashboard and select the receiver's media player. Set an optional title in
+   the card editor.
+4. Press **Load / Refresh**. Select a tag, directory or playback progress filter;
+   **Title or channel** additionally filters while typing. Choices come only
+   from the selected receiver.
+5. **Reset filters** restores all loaded recordings. The count shows matching
+   and total loaded recordings. Scroll the list to see all entries; there is no
+   result limit. **Load / Refresh** retrieves the latest state.
+
+In the card editor, **Display** selects **Detail view** (default) or **Row view**.
+Visible columns adapt automatically to the current list width, including
+resizing during use. Left to right: **title, duration, recording date/time,
+channel, playback progress, file size**. At narrow widths the title remains;
+more space adds date, then channel, duration, progress and size in that priority
+order. Hidden columns remain available in expandable details. Tap it
+to expand all metadata; keyboard users can use Tab and Enter or Space. Long
+titles wrap when needed. Filters and the count work in both views. For manual
+configuration use `display_mode: rows` or `display_mode: details`. Update the
+library card file to dev.16 and change its resource URL to enable this option;
+the HA action from integration dev.13 remains compatible.
+
+Missing values appear as **Unknown**. A reported file size of zero is also
+treated as unknown. **0% reported** can mean no saved position exists; it does
+not reliably mean unwatched. Percentages come from the receiver and do not
+track playback in the HA browser. The card does not change recordings; use
+**Browse media** for playback. Changing receiver or losing the connection clears
+the loaded list. Dates in this card use the browser's time zone.
+
+For manual card configuration, use type
+`custom:enigma2-connect-recordings-card`, the receiver's `media_player.…` as
+`entity` and an optional `name`. This card has its own JavaScript resource;
+the remote and EPG cards remain available separately.
+
 ## Messages and automations
 
 First try a screen message under **Developer tools → Actions**: choose
@@ -517,6 +562,35 @@ The examples below show you the matching actions.
 The integration provides no custom device triggers or conditions. Use the standard
 Home Assistant state triggers and conditions in automations, for example a
 change of the recording or connection indicator.
+
+### Load and filter the recording library
+
+Under **Developer tools → Actions**, select **Enigma2 Connect: Load recording
+library** and choose the receiver first. All filters are optional. Tags and
+directories must exactly match values reported by that receiver; a directory
+filter matches that directory only, not its subdirectories. The response contains
+`recordings`, `count` (matching recordings), `total` (entire catalog), and available
+`tags` and `directories`. This action requires response data; in scripts and
+automations, use `response_variable`:
+
+```yaml
+action: enigma2_connect.recordings_list
+data:
+  device_id: YOUR_RECEIVER_DEVICE_ID
+  query: News
+  progress: in_progress
+response_variable: library
+```
+
+`query` searches titles and channel names case-insensitively. `progress` accepts
+`all`, `in_progress` (1–99%), `complete` (100%), `zero` (0% reported) and `unknown`.
+Add `tag` and `directory` to narrow the results further. All selected filters
+must match; omitting them returns the full catalog without a local limit. Each
+entry includes `service_reference`, `title`, `service_name`, `recorded_at` (Unix
+seconds), `duration` (seconds), `size_bytes`, `tags`, `directory` and
+`progress_percent`. Unknown values are `null`; known empty tags are `[]`.
+The action only reads metadata; it starts neither playback nor recording.
+
 
 ### Actions and examples
 

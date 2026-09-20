@@ -99,7 +99,7 @@ uv run --locked mypy
 uv run --locked pytest --cov=custom_components.enigma2_connect --cov-branch --cov-report=term-missing --cov-report=json:coverage.json
 uv run --locked python scripts/check_config_flow_coverage.py coverage.json --silver
 uv run --locked python -m compileall -q custom_components tests scripts
-node --test tests/frontend.test.cjs
+node --test tests/frontend.test.cjs tests/recordings_frontend.test.cjs
 git diff --check
 ```
 
@@ -961,7 +961,7 @@ on instruction.
   Vu+ without EPG correctly returned empty results. See the
   [verification summary](VALIDATION.en.md) for limits and timer reconciliation.
   Working-branch completion commit: `feat: add EPG search and recording cards`.
-- **5:** planned, not started.
+- **5:** 5a including card changes through dev.16 confirmed by user and Codex on 2026-09-20. Codex HA checks used dev.13; later cards passed local checks and user acceptance. 5b authorized as the next section.
 
 `OpenWebifClient.command_result()` returns structured success data under the same
 lock as `command()`. Existing `command()` still returns `None`. Rejections through
@@ -1300,7 +1300,7 @@ the timer list. Retain uncertain-write guards until programme end. Add a
 collapsible search, similar-programme and recording view to the optional card.
 Keep backend/HA/frontend simulations separate from real receiver evidence.
 Historical plan status: section 4 was not yet accepted. Its dev.12 completion
-is recorded above; section 5 has not started.
+is recorded above; the section 5 implementation plan follows below.
 
 ### EPG interfaces and guard boundaries (section 4)
 
@@ -1365,3 +1365,84 @@ Place the count between accessible arrow buttons, keeping boundary guards.
 Both cards default to single view, remote search is off; explicit settings take precedence.
 Test search/similar with 123 results and navigation beyond the former limit.
 Update both integration and card; no new quality exemptions.
+
+
+### Section 5 – Recording library implementation plan
+
+Started with user approval on `feature/recording-workflows`.
+
+1. **5a – Catalog and view:** Extend the recording model with receiver-reported
+   percentage. The read-only `recordings_list` action loads the recursive catalog
+   for the explicitly selected receiver. Provide title/channel, tag, directory
+   and progress filters without a result limit. A separate library card displays
+   metadata and unknown values; add available tags and file sizes to the native
+   media browser. Preserve existing media identifiers. `lastseen=0` does not prove
+   a recording is unwatched: the stored position may be missing. Display file
+   size zero as unknown.
+2. **5a – Validation:** Simulate parser behavior, complete/malformed catalogs,
+   filters, unambiguous receiver targeting, stale card responses and safe text
+   rendering. Read metadata only on both test receivers; distinguish live
+   evidence from simulations. Report HA card acceptance separately.
+3. **5b – Management:** Then add rename, move and delete. Check the current
+   catalog, receiver, active recordings, destination and collisions before every
+   write. Confirm asynchronous file operations through state reconciliation.
+   Confirm deletion in the UI and explicitly identify permanent deletion versus
+   image-specific trash behavior. Account for caches, thumbnails, media IDs and
+   streams. Use purpose-made test recordings for live write checks.
+
+Accept 5a and 5b separately. Commit each only after both user and Codex confirm
+completion; section 5 remains open until 5b is complete.
+
+### Recording library 5a: data and limits
+
+`RecordingLibrary.list` reads `movielist?recursive=1` on every call, validates
+the entire list and then filters it. Invalid identities or missing lists raise
+`recording_data` rather than returning an empty result. The action uses existing
+unambiguous device resolution and HA transport/authentication error handling.
+No additional background polling, writes or dependencies. This catalog does not
+change coordinator caches, media IDs, images or streams. The card loads on an
+explicit button press and discards late replies after receiver changes or loss
+of connection. Receiver strings are escaped.
+
+`lastseen` means an integer percentage from 0 to 100, never a time position.
+OpenWebif also converts missing positions to zero, so the filter says “0% reported”,
+not “unwatched”. Raw `filesize=0` remains zero in the model but becomes unknown
+in the view/action response: OpenWebif may use it when file information is absent.
+File sizes are snapshots, particularly for active recordings. The card and action
+contain no management writes; those follow in 5b.
+
+References: [OpenWebif recording interface](https://github.com/oe-alliance/OpenWebif/blob/main/plugin/controllers/models/movies.py),
+[Enigma2 percentage calculation](https://github.com/openatv/enigma2/blob/7.6/lib/python/Components/MovieList.py).
+Independently implemented against these interfaces; no GPL code copied.
+
+### Recording library: second display mode (dev.14)
+
+Plan: add `display_mode` with `details` (existing default) and `rows` to the visual
+card editor. Rows place title, size and reported progress beside each other;
+native expandable details retain all metadata and keyboard access. Continue
+escaping receiver strings and reuse existing filters/catalog. Check both modes
+and narrow cards locally; update DE/EN guides and version locations. Actual HA
+acceptance for dev.13 remains evidence for that version; the new view requires
+its own acceptance.
+
+Implemented and locally checked; evidence and pending HA acceptance are in
+the [verification summary](VALIDATION.en.md). The last generated markup is
+cached so the native `open` attribute survives unchanged HA updates.
+
+### Row fields and scrollbar spacing (dev.15)
+
+Plan and implementation: Show title, recording date/time and channel in the
+row summary; retain other metadata in expandable details. Localize dates in
+the browser time zone, escape channel text and mark missing values unknown.
+Add 12 pixels of right padding and a stable scrollbar gutter; flexible columns
+wrap on narrow cards. Run frontend tests and local browser checks.
+
+### Automatic row columns (dev.16)
+
+Plan and implementation: Safely render all six values in the requested order.
+Named CSS container queries on actual list width reveal date, channel, duration,
+progress and size by priority. The title stays visible; minimum widths reserve
+space for readable titles. Thresholds of 22/30/36/42/48 em use the list font size,
+not viewport width. Scrollbar spacing stays intact. CSS-only resizing preserves
+expanded details, focus, filters and catalog without new queries or listeners.
+Check frontend behavior and live width changes in the browser.

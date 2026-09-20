@@ -175,10 +175,57 @@ Medien-Seitenleiste wählst du unten den Receiver als Wiedergabegerät aus,
 auf dem die Aufnahme liegt. Für „Webbrowser“ oder andere Geräte aktiviere zuerst
 die unten beschriebene externe Wiedergabe.
 
-Neben dem Titel stehen Datum, Uhrzeit, Sender und Länge, soweit diese Angaben
+Neben dem Titel stehen Datum, Uhrzeit, Sender, Länge, Dateigröße und Tags, soweit diese Angaben
 vorhanden sind. Die Uhrzeit richtet sich nach der in Home Assistant eingestellten
 Zeitzone. Ordner stehen vor Aufnahmen; aufgeführt wird, was OpenWebif aus dem
 Aufnahmeverzeichnis einschließlich Unterordnern meldet.
+
+### Aufnahmebibliothek als Karte
+
+Die zusätzliche Karte zeigt Aufnahmen eines ausgewählten Receivers mit
+Dateigröße, Tags, Ordner und gemeldetem Wiedergabestand. Sie benötigt Integration
+**1.3.0-dev.13** oder neuer.
+
+1. Kopiere `www/enigma2-connect-recordings-card.js` nach
+   `/config/www/enigma2-connect-recordings-card.js`.
+2. Ergänze unter **Einstellungen → Dashboards → Ressourcen** die Adresse
+   `/local/enigma2-connect-recordings-card.js?v=dev16` als **JavaScript-Modul**.
+   Falls Ressourcen fehlen, aktiviere den erweiterten Modus im Benutzerprofil.
+3. Lade den Browser vollständig neu. Füge deinem Dashboard die Karte
+   **Enigma2 Connect Aufnahmebibliothek** hinzu und wähle den Medienplayer des
+   Receivers. Einen eigenen Titel kannst du im Karteneditor vergeben.
+4. Drücke **Laden / Aktualisieren**. Wähle bei Bedarf einen Tag, einen Ordner oder
+   einen Wiedergabestand; **Titel oder Sender** filtert zusätzlich während der
+   Eingabe. Die Auswahllisten stammen nur vom gewählten Receiver.
+5. **Filter zurücksetzen** zeigt wieder alle geladenen Aufnahmen. Der Zähler
+   nennt passende und insgesamt geladene Aufnahmen. Die Liste ist scrollbar;
+   es gibt kein Trefferlimit. **Laden / Aktualisieren** holt den aktuellen Stand.
+
+Im Karteneditor wählst du unter **Ansicht** zwischen **Detailansicht** (Standard)
+und **Zeilenansicht**. Die Zeilenansicht passt die sichtbaren Spalten automatisch
+an ihre aktuelle Breite an, auch beim Vergrößern oder Verkleinern während der
+Nutzung. Von links nach rechts: **Titel, Dauer, Aufnahmedatum mit Uhrzeit, Sender,
+Wiedergabestand, Dateigröße**. Bei wenig Platz bleibt der Titel; mit mehr Platz
+kommen zuerst Aufnahmedatum, dann Sender, Dauer, Wiedergabestand und Dateigröße
+hinzu. Verdeckte Spalten sind weiterhin in den aufklappbaren Details verfügbar. Tippe eine Zeile an, um alle Angaben aufzuklappen;
+mit der Tastatur geht das über Tab und Eingabe oder Leertaste. Lange Titel
+umbrechen bei Bedarf. Filter und Trefferzähler funktionieren in beiden Ansichten.
+Manuell entspricht dies `display_mode: rows` beziehungsweise `display_mode: details`.
+Für diese Auswahl die Bibliotheks-Kartendatei auf dev.16 aktualisieren und den
+Ressourcenlink ändern; die HA-Aktion aus Integration dev.13 ist kompatibel.
+
+Fehlende Angaben erscheinen als **Unbekannt**. Eine gemeldete Dateigröße 0 gilt
+ebenfalls als unbekannt. **0 % gemeldet** kann bedeuten, dass keine Abspielposition
+gespeichert ist; es ist keine sichere Aussage „ungesehen“. Die Prozentwerte
+stammen vom Receiver und verfolgen keine Wiedergabe im HA-Browser. Die Karte
+ändert keine Aufnahmen; zur Wiedergabe nutze weiterhin **Medien durchsuchen**.
+Bei Receiverwechsel oder Verbindungsverlust wird die geladene Liste verworfen.
+Datumswerte in dieser Karte folgen der Zeitzone des Browsers.
+
+Bei manueller Kartenkonfiguration lautet der Typ
+`custom:enigma2-connect-recordings-card`; `entity` ist der zugehörige
+`media_player.…`, `name` ein optionaler Titel. Die neue Karte hat eine eigene
+JavaScript-Ressource; Fernbedienungs- und EPG-Karte bleiben separat verfügbar.
 
 ### Mehrere Receiver zusammen anzeigen
 
@@ -553,6 +600,35 @@ Die Integration stellt keine eigenen Geräteauslöser oder Bedingungen bereit.
 Für Timerkonflikte gibt es das unten beschriebene Ereignis. Verwende in
 Automationen die Standard-Auslöser und Zustandsbedingungen von Home Assistant,
 zum Beispiel eine Änderung der Aufnahme- oder Verbindungsanzeige.
+
+### Aufnahmebibliothek laden und filtern
+
+Wähle unter **Entwicklerwerkzeuge → Aktionen** die Aktion **Enigma2 Connect:
+Aufnahmebibliothek laden** und zuerst den Receiver. Die übrigen Filter sind
+optional. Tags und Ordner müssen exakt einem vom Receiver gemeldeten Wert
+entsprechen; ein Ordnerfilter umfasst genau diesen Ordner, keine Unterordner.
+Die Antwort enthält `recordings`, `count` (passende Aufnahmen), `total`
+(gesamter Katalog) sowie verfügbare `tags` und `directories`. Diese Aktion
+benötigt Antwortdaten; in Skripten/Automationen verwende `response_variable`:
+
+```yaml
+action: enigma2_connect.recordings_list
+data:
+  device_id: DEINE_RECEIVER_GERAETE_ID
+  query: Tatort
+  progress: in_progress
+response_variable: bibliothek
+```
+
+`query` sucht ohne Beachtung der Groß-/Kleinschreibung in Titel und Sender.
+`progress` akzeptiert `all`, `in_progress` (1–99 %), `complete` (100 %), `zero`
+(0 % gemeldet) und `unknown`. Mit `tag` und `directory` kannst du zusätzlich
+filtern. Alle gesetzten Filter müssen passen. Weglassen liefert den vollständigen
+Katalog ohne lokale Begrenzung. Jeder Eintrag enthält `service_reference`,
+`title`, `service_name`, `recorded_at` (Unix-Sekunden), `duration` (Sekunden),
+`size_bytes`, `tags`, `directory` und `progress_percent`. Unbekannte Werte sind
+`null`, eine bekannte leere Tagliste ist `[]`. Die Aktion liest nur Metadaten;
+sie startet weder Wiedergabe noch Aufnahme.
 
 ### Aktionen und Beispiele
 

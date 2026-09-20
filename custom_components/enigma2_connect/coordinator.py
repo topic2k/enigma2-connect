@@ -36,6 +36,7 @@ from .instant_recording import InstantRecording, InstantRecordingError
 from .media_stream import MediaStream
 from .models import JsonObject, ReceiverState, Snapshot, services
 from .recording_images import RecordingImages
+from .recording_library import RecordingLibrary, RecordingLibraryError
 from .timer_conflicts import conflicts, summary
 from .timer_edit import TimerEditError, TimerEditor, TimerEditRejected
 from .workflow_models import TimerIdentity
@@ -59,6 +60,7 @@ class EnigmaCoordinator(DataUpdateCoordinator[Snapshot]):
         self.instant_recording = InstantRecording(client)
         self.timer_editor = TimerEditor(client)
         self.epg = EpgWorkflow(client)
+        self.recording_library = RecordingLibrary(client)
         self.entry = entry
         self.recording_images = RecordingImages(hass, self)
         self.media_stream = MediaStream(hass, self)
@@ -236,7 +238,7 @@ class EnigmaCoordinator(DataUpdateCoordinator[Snapshot]):
             raise HomeAssistantError(
                 translation_domain=DOMAIN, translation_key="power_unconfirmed"
             ) from err
-        except (InstantRecordingError, TimerEditError, EpgError) as err:
+        except (InstantRecordingError, TimerEditError, EpgError, RecordingLibraryError) as err:
             raise HomeAssistantError(translation_domain=DOMAIN, translation_key=err.reason) from err
         except CommandUnconfirmed as err:
             raise HomeAssistantError(

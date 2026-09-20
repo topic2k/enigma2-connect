@@ -30,6 +30,8 @@ Timer lassen sich bearbeiten und als Wochenserien planen; Aufnahmekonflikte
 werden mit den vom Receiver gelieferten Details angezeigt.
 Durchsuche das EPG, finde ähnliche Sendungen und plane Treffer zur Aufnahme ein.
 Die optionale Fernbedienungskarte bietet Tasten sowie eine Such-/Aufnahmeansicht.
+Eine zusätzliche Aufnahmebibliothekskarte filtert nach Titel, Sender, Tags, Ordner
+und gemeldetem Wiedergabestand und zeigt verfügbare Dateigrößen.
 
 ### Was du brauchst
 
@@ -81,6 +83,8 @@ Control your Enigma2 receiver directly from Home Assistant: change channels,
 adjust the volume, play recordings on your TV and display messages.
 Search the EPG, find similar programmes and schedule a result for recording.
 The optional remote card provides buttons and a search/record view.
+An additional recording library card filters by title, channel, tags, directory
+and reported playback progress and shows available file sizes.
 
 Use **Record current programme** to start recording the current EPG programme.
 Edit timers, schedule weekly series and see recording conflicts with the

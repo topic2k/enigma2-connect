@@ -8,7 +8,7 @@ rules:
     comment: __init__.async_setup registers services before any entry is loaded.
   appropriate-polling:
     status: done
-    comment: Coordinator polls state every 15 s by default, lists every 120 s and channels every 300 s. EPG search and similar queries run only on demand.
+    comment: Coordinator polls state every 15 s by default, lists every 120 s and channels every 300 s. EPG search, similar queries and recording-library reads run only on demand.
   brands:
     status: done
     comment: Eight shipped brand PNGs follow HA 2026.3 custom-integration support; tested through HA's local brands API without CDN access. Core branding remains part of a separate admission.

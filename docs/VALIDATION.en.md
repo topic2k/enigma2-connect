@@ -2,6 +2,174 @@
 
 # Verification summary
 
+## Section 5a complete – 1.3.0-dev.16
+
+On **2026-09-20**, the user explicitly confirmed section 5a complete. Codex
+confirms completion based on documented local checks, receiver reads and
+actual dev.13 HA checks. Later card changes through dev.16 passed local browser
+checks and were accepted by the user; no additional Codex HA test of dev.16 is
+claimed. Earlier pending-acceptance notes below describe their historical state.
+The agreed completion commit is made on the working branch. Section 5b
+(rename, move, delete) follows and has not yet been accepted.
+
+## Dynamic row columns – dev.16
+
+Locally checked on **2026-09-20**: 41 frontend tests, JavaScript syntax,
+version/changelog consistency and `uv lock --check --offline` passed. The
+rendering test covers order, safe output of all six fields and unknown values.
+No Python behavior changes or new dependencies.
+
+**Simulated browser check:** 20 recordings with an active scrollbar. Only the
+test card was resized dynamically within an unchanged 1280 × 900 viewport:
+
+| Test card width | Visible columns from left to right |
+| --- | --- |
+| 340 px | Title |
+| 390 px | Title, recording date |
+| 500 px | Title, recording date, channel |
+| 570 px | Title, duration, recording date, channel |
+| 650 px | Title, duration, recording date, channel, progress |
+| 760 / 1000 px | Title, duration, recording date, channel, progress, size |
+
+Actual thresholds use available list width after padding/scrollbar space,
+not fixed device classes. Returning to 340 px hides the additional columns.
+Expanded details stay open, the request counter remains at one, and there is
+no horizontal overflow at any tier. Query text and count (5 of 20) survive
+resizing. At a 390 × 844 viewport, hidden metadata remain keyboard-accessible
+through expandable details. Wide and narrow layouts visually checked; no
+captured browser errors. Scrollbar spacing is retained.
+
+Quality checklist: No additional receiver traffic or changed action behavior,
+no weakened requirements; DE/EN documentation updated. Actual HA testing of
+this card version and joint section acceptance remain pending.
+
+## Updated row fields – dev.15
+
+Locally checked on **2026-09-20**: Rows show title, recording date/time and
+channel; size and playback progress remain in expandable details. All 41
+frontend tests, JS syntax, version/changelog consistency and
+`uv lock --check --offline` passed. The updated rendering test covers column
+order, safe channel text, missing/invalid dates and retained metadata.
+No Python behavior changes.
+
+Simulated browser checks with 20 entries and an active scrollbar passed:
+12 pixels of right padding plus a stable scrollbar gutter, no horizontal
+overflow, and readable wrapped columns at 390 × 844 pixels. Expanded details
+survive unchanged HA updates; no captured browser errors. Quality requirements
+remain unchanged. DE/EN guides updated. Actual HA testing of this card version
+and joint section 5a acceptance remain pending.
+
+## Recording library row view – dev.14
+
+Locally checked on **2026-09-20**. All 41 frontend tests passed (22 existing
+remote/EPG tests and 19 library tests). New evidence covers the compatible
+`details` default, `rows` selection, safe text rendering, complete expandable
+metadata, unknown versus explicit zero progress, filters and counters, and
+preservation of expanded entries during unchanged HA updates. JavaScript
+syntax, synchronized versions and changelog anchors, and
+`uv lock --check --offline` passed; Python syntax and DE/EN action fields also
+checked. No Python behavior change compared with dev.13.
+
+**Simulated browser check:** Four sample recordings in both views, expansion
+by click, Enter and Space, open details retained during an HA update, progress
+filter, reset and English display passed. At 390 × 844 pixels, titles, sizes,
+progress and expanded metadata remain readable without horizontal overflow.
+HTML-like titles appear as text. No captured browser errors.
+
+Quality checklist impact reviewed: no additional receiver queries, writes or
+dependencies; documentation and safe rendering updated without weakening any
+test or coverage requirement.
+
+**Pending:** Actual HA testing of the new editor selection and row view after
+updating the card file. The dev.13 acceptance below covers the previous library
+scope, not the new view. Joint 5a acceptance and completion commit remain
+pending; 5b remains planned.
+
+## Actual HA acceptance of section 5a – dev.13
+
+Checked on **2026-09-20** after user installation in the authorized `codex-lab`
+dashboard. HA shows **version 1.3.0-dev.13**. The served library JavaScript file
+matches the locally tested copy by SHA-256. Its separate resource entry was
+initially missing; added `/local/enigma2-connect-recordings-card.js?v=dev13`
+as a JavaScript module. The existing library card then worked. No additional
+card was added; temporary receiver switches in the editor were not saved.
+
+- **Octagon:** 21 recordings from three directories with one available tag.
+  File size, channel, date, duration, tags, directory and reported progress are
+  displayed. Progress filters return seven at 1–99%, six at 100%, eight at 0%,
+  and none for unknown. The earlier direct read with 20 recordings remains
+  documented as the state at that time.
+- **Combined filters:** Tag plus subdirectory returns eight recordings; an
+  additional uppercase title query narrows this to one. Refresh retains all
+  three filters and the result. Nonmatching text gives 0 of 21; reset clears
+  filters and restores all 21 recordings.
+- **Receiver selection:** The visual editor offers both Enigma2 media players.
+  The live preview for Vu+ correctly shows 0 of 0 recordings and empty tag and
+  directory choices. Switching back to Octagon clears results and requires a
+  fresh load. Original card configuration preserved.
+- **Existing media views:** Both the Octagon player's Browse media and
+  Media → Enigma2 Connect work, including subdirectory navigation, file sizes
+  and tags. No playback was started.
+- **Mobile display:** Actual HA at 390 × 844 pixels checked. Filters, buttons,
+  count and metadata remain readable; long titles and directory paths wrap.
+  No captured Enigma2 JavaScript errors in browser logs.
+
+No recording was created, renamed, moved or deleted, and no receiver controls
+were sent. Positive metadata with an existing Vu+ recording remain untested
+because its catalog is empty. Unknown metadata and connection loss were
+previously simulated, not claimed as live checks. Local summary in the main
+checkout: `.work/recording-workflows-checks/ha13-acceptance.json`.
+
+**Codex confirms 5a passed within the available device coverage.** User
+confirmation and the agreed completion commit remain pending; 5b remains open.
+
+
+## Recording library 5a – 1.3.0-dev.13
+
+Implemented on `feature/recording-workflows`; joint acceptance and the completion
+commit are pending. Section 5b (rename, move, delete) remains planned.
+
+**Local checks:** 182 Python/HA tests passed for the library action, models,
+media browser/source, integration actions and EPG. A final run after formatting
+with 107 partially overlapping tests, including translations, also passed.
+Combined statement/branch coverage: `recording_library.py` 100%,
+`workflow_models.py` 100%, `recordings.py` 97.7%. All 38 frontend tests passed
+(16 new, 22 existing), as did Ruff, formatting, Python/JS syntax, Mypy across
+35 modules and `uv lock --check --offline`. Version locations, changelog anchors
+and DE/EN action fields/selectors are synchronized. CI runs both frontend suites.
+
+Checks cover complete/malformed catalogs, unknown values, all progress groups,
+combined filters, more than 150 results without a limit, unambiguous device
+targeting, errors, stale responses, connection loss, escaped receiver strings and
+preserving filters during refresh. Existing media IDs and playback paths remain
+unchanged. Reviewed affected quality requirements for on-demand reads, action
+registration, errors, translations and documentation; no requirement or coverage
+threshold was reduced. Current complete CI and the quality review remain required
+before any later merge.
+
+**Actual receiver read checks on 2026-09-20:** The new library code reads
+`movielist?recursive=1` using the authorized credentials.
+
+| Receiver | Findings |
+| --- | --- |
+| Octagon SF8008 4K Supreme / OpenATV 7.6 / OpenWebif 2.4.0 | 20 recordings, three directories, one distinct tag. All 20 have positive file sizes. Progress: eight at 0%, six at 100%, six between 1 and 99%. Nonmatching filter returns zero with total 20. |
+| Vu+ Solo² / VTi 15 / OpenWebif 1.4.4 | Empty catalog handled correctly, including a nonmatching filter. No positive metadata check with an existing recording was possible. |
+
+No recording was created, played, renamed, moved or deleted. The anonymized
+local report is `.work/recording-workflows-checks/library13-live.json` in the main
+checkout; `library13-coverage.json` and `library13-final-tests.log` hold coverage
+and final test results in the same directory.
+
+**Browser check using simulated data:** Loading, combined tag/progress filters,
+nonmatching text, reset, empty receiver, German/English and connection loss passed.
+At 360 × 800 pixels, fields and metadata remain readable and long text wraps.
+HTML in recording titles remains visible text; no captured JavaScript errors.
+This does not replace actual HA acceptance.
+
+**Update:** The previously pending actual HA checks have passed (see above).
+User confirmation of 5a and the agreed commit remain pending.
+
+
 ## Joint completion of section 4
 
 On **2026-09-20**, following Codex review and actual HA checks, the user explicitly

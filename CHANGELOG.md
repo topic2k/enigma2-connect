@@ -4,7 +4,7 @@
 
 ## Inhaltsverzeichnis
 
-- [1.3.0-dev.12](#130-dev12)
+- [1.3.0-dev.16](#130-dev16)
 - [1.2.0](#120)
 - [1.1.3](#113)
 - [1.1.2](#112)
@@ -14,12 +14,28 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 1.3.0-dev.12
+## 1.3.0-dev.16
 
 Unveröffentlichte Entwicklerversion. Zielversion für die beauftragten EPG-,
 Timer- und Aufnahmeerweiterungen. Sofortaufnahme und Timerbearbeitung sind
 umgesetzt; EPG-Suche und Karten sind gemeinsam abgenommen. Bibliotheksverwaltung folgt.
 
+- Aufnahmebibliothekskarte: automatische Spaltenauswahl nach verfügbarer
+  Listenbreite. Reihenfolge Titel, Dauer, Aufnahmedatum, Sender, Wiedergabestand,
+  Dateigröße; Priorität Titel, Aufnahmedatum, Sender, Dauer, Wiedergabestand,
+  Dateigröße. Passt sich während der Nutzung an; aufgeklappte Details bleiben offen.
+- Aufnahmebibliothekskarte: zweite, kompakte Zeilenansicht im visuellen Editor
+  wählbar. Je nach Platz zusätzliche Angaben pro Zeile; alle Angaben
+  aufklappbar. Die bisherige Detailansicht bleibt Standard. Kartendatei dev.16
+  erforderlich; zusätzlicher Abstand zum Scrollbalken. Vorhandene Bibliotheksaktion ab dev.13 weiterhin kompatibel.
+- Lesende Aufnahmebibliothek mit eigener Dashboard-Karte und Aktion
+  `recordings_list`: Titel-/Sender-, Tag-, Ordner- und Fortschrittsfilter,
+  vollständiger Katalog ohne Trefferlimit, Dateigröße und vom Receiver gemeldeter
+  Prozentwert. Fehlende Angaben bleiben unbekannt; 0 % bedeutet nicht zwingend
+  „ungesehen“. Native Medienansichten zeigen zusätzlich Dateigröße und Tags.
+  Bibliotheksumfang aus dev.13 einschließlich realer HA-Prüfung bestanden;
+  Zeilenansicht aus dev.16 lokal geprüft; Abschnitt 5a gemeinsam abgenommen.
+  Umbenennen, Verschieben und Löschen folgen in 5b.
 - EPG-Suche und ähnliche Sendungen liefern alle passenden empfangenen Treffer
   ohne lokale Begrenzung. Listen- oder Einzelansicht mit Pfeilen um den Zähler:
   „[‹] Treffer 10 von 30 [›]“. Beide Karten standardmäßig in Einzelansicht; Suche in der Fernbedienung aus.
@@ -32,7 +48,7 @@ umgesetzt; EPG-Suche und Karten sind gemeinsam abgenommen. Bibliotheksverwaltung
   ergänzt. Die optionale Fernbedienungskarte erhält eine Such-/Aufnahmeansicht.
   Frische Ereignisprüfung, Timerabgleich und Wiederholungsschutz verhindern
   veraltete Aufträge und unbeabsichtigte Mehrfachanlage. Direkte Octagon-Prüfung
-  bestanden; HA-Praxisabnahme von Abschnitt 4 steht noch aus.
+  und HA-Praxisprüfung bestanden; Abschnitt 4 gemeinsam abgenommen.
 
 - HA-Praxisprüfung der Auswahlfelder, Kalenderaktualisierung, Konfliktereignisse
   und sichtbaren Informationsnachrichten mit beiden Receivern erfolgreich abgeschlossen.

@@ -201,6 +201,9 @@
     },
     "record_event": {
       "service": "mdi:record-rec"
+    },
+    "recordings_list": {
+      "service": "mdi:movie-open-outline"
     }
   }
 }

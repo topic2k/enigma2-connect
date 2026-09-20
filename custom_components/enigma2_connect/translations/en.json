@@ -207,6 +207,15 @@
         "2": "Deep standby",
         "3": "Automatic"
       }
+    },
+    "recording_progress": {
+      "options": {
+        "all": "All",
+        "in_progress": "1–99% reported",
+        "complete": "100% reported",
+        "zero": "0% reported",
+        "unknown": "Unknown"
+      }
     }
   },
   "entity": {
@@ -539,6 +548,9 @@
     },
     "epg_timer_ambiguous": {
       "message": "This channel has an overlapping or repeated timer whose coverage is uncertain. Check receiver timers; no additional timer was created."
+    },
+    "recording_data": {
+      "message": "The receiver did not return a fully readable recording catalog. Please reload."
     }
   },
   "services": {
@@ -863,6 +875,32 @@
         "end": {
           "name": "EPG end (Unix seconds)",
           "description": "EPG end (Unix seconds)"
+        }
+      }
+    },
+    "recordings_list": {
+      "name": "Load recording library",
+      "description": "Reads the current receiver recording catalog. Combines filters without a result limit. Zero percent can mean a missing stored position.",
+      "fields": {
+        "device_id": {
+          "name": "Receiver",
+          "description": "Receiver"
+        },
+        "query": {
+          "name": "Title or channel",
+          "description": "Title or channel"
+        },
+        "tag": {
+          "name": "Tag",
+          "description": "Tag"
+        },
+        "directory": {
+          "name": "Directory (exact path)",
+          "description": "Directory (exact path)"
+        },
+        "progress": {
+          "name": "Reported playback progress",
+          "description": "Reported playback progress"
         }
       }
     }

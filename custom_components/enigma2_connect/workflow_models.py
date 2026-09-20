@@ -159,6 +159,7 @@ class Recording:
     duration: int | None
     size_bytes: int | None
     tags: tuple[str, ...] | None
+    progress_percent: int | None = None
 
     @classmethod
     def parse(cls, row: JsonObject) -> Recording:
@@ -177,4 +178,5 @@ class Recording:
             duration,
             integer(row.get("filesize")),
             tags(row.get("tags")),
+            integer(row.get("lastseen"), maximum=100),
         )

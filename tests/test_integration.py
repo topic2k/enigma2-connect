@@ -49,6 +49,7 @@ async def test_actions_registered_without_entries(hass):
         "epg_search",
         "epg_similar",
         "record_event",
+        "recordings_list",
         "timer_add",
         "timer_edit",
         "timer_delete",
