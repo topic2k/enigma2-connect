@@ -268,6 +268,18 @@
       },
       "timers": {
         "name": "Timer"
+      },
+      "ram_free": {
+        "name": "Freier RAM (inkl. Cache)"
+      },
+      "ram_total": {
+        "name": "Gesamter RAM"
+      },
+      "uptime": {
+        "name": "Laufzeit"
+      },
+      "disk_free": {
+        "name": "Freier Speicher {mount}"
       }
     },
     "binary_sensor": {

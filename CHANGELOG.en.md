@@ -4,7 +4,7 @@
 
 ## Contents
 
-- [1.3.0-dev.21](#130-dev21)
+- [1.3.0-dev.22](#130-dev22)
 - [1.2.1](#121)
 - [1.2.0](#120)
 - [1.1.3](#113)
@@ -15,11 +15,13 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 1.3.0-dev.21
+## 1.3.0-dev.22
 
 Unreleased development version. Target for the requested EPG, timer and
 recording extensions. Instant recording and timer editing are implemented;
 EPG search and cards have passed joint acceptance; library management has also passed joint acceptance.
+
+- Idea no. 6: free space per mounted disk and optional RAM/uptime sensors. Diagnostics refresh every five minutes; unknown values and disconnected disks are not reported as zero.
 
 - Added the HA dependencies required by real selector checks to the test
   environment; aligned the device-ownership regression test with timer context.

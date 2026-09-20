@@ -4,7 +4,7 @@
 
 ## Inhaltsverzeichnis
 
-- [1.3.0-dev.21](#130-dev21)
+- [1.3.0-dev.22](#130-dev22)
 - [1.2.1](#121)
 - [1.2.0](#120)
 - [1.1.3](#113)
@@ -15,11 +15,13 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 1.3.0-dev.21
+## 1.3.0-dev.22
 
 Unveröffentlichte Entwicklerversion. Zielversion für die beauftragten EPG-,
 Timer- und Aufnahmeerweiterungen. Sofortaufnahme und Timerbearbeitung sind
 umgesetzt; EPG-Suche und Karten sind gemeinsam abgenommen. Bibliotheksverwaltung ist ebenfalls gemeinsam abgenommen.
+
+- Idee Nr. 6: freier Speicher je eingebundenem Laufwerk sowie optionale RAM- und Laufzeitsensoren. Diagnosewerte werden alle fünf Minuten aktualisiert; unbekannte Werte und getrennte Laufwerke werden nicht als null gemeldet.
 
 - Testumgebung um die HA-Abhängigkeiten für reale Auswahlfeldprüfungen
   ergänzt; Regressionstest der Gerätezuordnung an den Timer-Kontext angepasst.

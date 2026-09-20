@@ -2,6 +2,34 @@
 
 # Verification summary
 
+## Disk space and system diagnostics – 1.3.0-dev.22
+
+On **2026-09-20**, the new system measurements and dynamic disk sensors were
+tested with Python **3.14.7** and Home Assistant **2026.9.1**. The targeted run
+of `test_system_diagnostics.py`, `test_integration.py`, `test_gold_lifecycle.py`
+and `test_translations.py` passed **76 tests**. After adding the oversized
+uptime guard, all **34 diagnostics tests** passed again (77 distinct cases
+in total). Both `sensor.py` and `system_diagnostics.py` reach **100% combined
+statement/branch coverage**. Ruff, formatting, syntax, strict Mypy (37 modules),
+version consistency, `uv lock --check --offline` and diff checks passed.
+
+Evidence covers units/zero/invalid data, multiple disks, reordering, late
+discovery, removal/reconnection, the five-minute deadline, uptime decreasing
+after reboot, optional failures/recovery, reauthentication, RAM/uptime disabled
+by default and listener cleanup. Quality criteria reviewed: entity-category,
+entity-device-class, entity-disabled-by-default, entity-translations,
+icon-translations, entity-unavailable, runtime-data, reauthentication-flow,
+config-entry-unloading, docs-data-update, docs-supported-functions,
+docs-known-limitations, strict-typing and test-coverage. No criteria or
+verification thresholds were lowered.
+
+Tests use real Home Assistant registries with simulated receiver responses.
+No new hardware acceptance: storage readings, additional image/language
+variants, network mounts and possible sleeping-disk wakeups remain to be
+checked on hardware. Fresh full CI and the complete quality comparison remain
+required before merging into `main`; the following full validation documents
+the unchanged preceding baseline.
+
 ## Complete verification for develop – 1.3.0-dev.21
 
 On **2026-09-20**, requested sections 1–5 were checked together with the newer

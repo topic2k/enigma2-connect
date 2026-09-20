@@ -30,7 +30,7 @@ from .api import (
     ReceiverError,
 )
 from .channel_media import CONF_CHANNEL_BOUQUET, CONF_SHOW_CHANNELS
-from .const import CATALOG_INTERVAL, DOMAIN, SLOW_INTERVAL
+from .const import CATALOG_INTERVAL, DIAGNOSTICS_INTERVAL, DOMAIN, SLOW_INTERVAL
 from .epg import EpgError, EpgWorkflow
 from .instant_recording import InstantRecording, InstantRecordingError
 from .media_stream import MediaStream
@@ -38,6 +38,7 @@ from .models import JsonObject, ReceiverState, Snapshot, services
 from .recording_images import RecordingImages
 from .recording_library import RecordingLibrary, RecordingLibraryError
 from .recording_management import RecordingManagementError, RecordingManager
+from .system_diagnostics import SystemDiagnostics
 from .timer_conflicts import conflicts, summary
 from .timer_edit import TimerEditError, TimerEditor, TimerEditRejected
 from .workflow_models import TimerIdentity
@@ -67,6 +68,8 @@ class EnigmaCoordinator(DataUpdateCoordinator[Snapshot]):
         self.recording_images = RecordingImages(hass, self)
         self.media_stream = MediaStream(hass, self)
         self.info: dict[str, Any] = {}
+        self._diagnostics_due = 0.0
+        self._initial_system = SystemDiagnostics()
         self._slow_due = 0.0
         self._catalog_due = 0.0
         self._bouquet = entry.options.get("bouquet")
@@ -80,6 +83,8 @@ class EnigmaCoordinator(DataUpdateCoordinator[Snapshot]):
             self.info = data["info"]
             if not isinstance(self.info, dict) or not self.info.get("model"):
                 raise ValueError("Missing receiver model")
+            self._initial_system = SystemDiagnostics.parse(self.info)
+            self._diagnostics_due = monotonic() + DIAGNOSTICS_INTERVAL
         except AuthenticationError as err:
             raise ConfigEntryAuthFailed(
                 translation_domain=DOMAIN, translation_key="invalid_auth"
@@ -130,7 +135,15 @@ class EnigmaCoordinator(DataUpdateCoordinator[Snapshot]):
                     signal = await self.optional("signal")
                     current = await self.optional("getcurrent")
                 state = ReceiverState.parse(raw, current)
-                previous = self.data if self.data else Snapshot(state)
+                previous = self.data if self.data else Snapshot(state, system=self._initial_system)
+                system = previous.system
+                if monotonic() >= self._diagnostics_due:
+                    about = await self.optional("about")
+                    info = about.get("info") if about else None
+                    system = SystemDiagnostics.parse(info)
+                    if not isinstance(info, dict):
+                        self.optional_errors.add("about")
+                    self._diagnostics_due = monotonic() + DIAGNOSTICS_INTERVAL
                 # Reuse slow-changing lists between their own refresh deadlines.
                 # A failed list refresh replaces old data with None, not an empty list.
                 timers, movies = previous.timers, previous.movies
@@ -208,6 +221,7 @@ class EnigmaCoordinator(DataUpdateCoordinator[Snapshot]):
                     movie_directory,
                     media_channels,
                     directories,
+                    system,
                 )
                 if catalog_refreshed:
                     self.recording_images.async_catalog_updated(snapshot)

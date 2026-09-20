@@ -153,6 +153,25 @@ enable/disable choices are preserved on upgrades. Receiver states also cover
 standby, recording, streaming and connectivity; connectivity and **Refresh lists**
 are diagnostics.
 
+### Disk space and system diagnostics
+
+On the receiver device, **Free space /media/hdd** shows the free space of each
+mounted disk. Multiple disks have separate sensors named with their mount paths.
+New disks appear on the next diagnostics refresh. Removed disks become
+**Unavailable** and retain their entity when reconnected. A full disk reports
+an actual **0 GiB**.
+
+**Free RAM (including cache)**, **Total RAM** and **Uptime** start disabled.
+Open **Settings → Devices & services → Entities**, show disabled entities and
+enable the sensors you need. RAM is displayed in MiB, disk space in GiB and
+uptime in hours. Free RAM includes buffers and cache; uptime has minute precision.
+
+Values refresh approximately every five minutes, including normal standby.
+Unsupported RAM/uptime values remain **Unknown**. Only mounted disks reported
+by OpenWebif are covered; network recording folders are not automatically covered.
+Check the sensor path against your recording folder before using it for storage
+warnings. Depending on the receiver image, polling may wake a sleeping disk.
+
 ## Browse recordings and channels
 
 There are two ways to find recordings:

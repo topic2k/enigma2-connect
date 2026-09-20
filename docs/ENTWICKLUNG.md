@@ -23,6 +23,7 @@ die [README](../README.md) bleibt der kurze Einstieg für Anwender.
 - [Identität und Datenverarbeitung](#identität-und-datenverarbeitung)
 - [Validierung von Aktionen](#validierung-von-aktionen)
 - [Umsetzungsplan: Aufnahme-Workflows](#umsetzungsplan-aufnahme-workflows)
+- [Festplattenspeicher und Systemdiagnose](#festplattenspeicher-und-systemdiagnose)
 - [Vorgemerkte Ideen](#vorgemerkte-ideen)
 - [Dateibestand und lokale Archive](#dateibestand-und-lokale-archive)
 
@@ -1220,6 +1221,35 @@ Schnittstellen am 20.09.2026 geprüft: [OpenWebif-Controller](https://github.com
 und [OpenATV-Timer](https://github.com/openatv/enigma2/blob/master/lib/python/RecordTimer.py).
 Die Implementierung ist eigenständig; keine Upstream-Codeübernahme.
 
+## Festplattenspeicher und Systemdiagnose
+
+Idee Nr. 6 ist umgesetzt. `about` liefert `info.mem1` (RAM gesamt), `mem2`
+(MemFree + Buffers + Cached), `uptime` (`Nd HH:MM`) und `hdd` mit `mount`/`free`.
+Grundlage: [OpenWebif-Informationsmodell][ideas-info] und
+[about-Controller][ideas-controller]. Dessen Vollabfrage erneuert die Messwerte.
+Die Initialantwort wird wiederverwendet; danach gilt eine eigene 300-Sekunden-Frist.
+Timer-/Aufnahmelisten-Invalidierung löst keine zusätzliche Diagnoseabfrage aus.
+
+Das immutable `SystemDiagnostics`-Modell normalisiert die von OpenWebif binär
+berechneten, aber kB/MB/GB/TB beschrifteten Werte in Bytes (auch KiB/MiB/GiB/TiB
+und Dezimalkomma). Unbekannte Einheiten, negative Werte, nicht endliche Zahlen
+und fehlende Angaben werden nicht geraten. Uptime wird als Dauer in Sekunden
+mit Minutenauflösung geliefert; ein Neustart darf den Wert verkleinern.
+Es wird kein Bootzeitpunkt mit vorgetäuschter Sekundengenauigkeit berechnet.
+
+Festplattensensoren verwenden normalisierte Mountpfade in der Unique-ID,
+erkennen spätere Laufwerke per Coordinator-Listener und behalten Registry-IDs
+bei Umordnung und Wiederverbindung. Doppelte Mountangaben bleiben unbekannt.
+Fehlende Laufwerke oder freie Werte bedeuten `unavailable`, nicht null.
+RAM/Laufzeit sind standardmäßig deaktivierte Diagnosen, mit DATA_SIZE bzw.
+DURATION und MEASUREMENT. Mountpfade sind am Sensor sichtbar, werden aber nicht
+zum bisherigen Allowlist-Diagnoseexport hinzugefügt.
+Der Discovery-Listener wird beim Entladen entfernt. Fehler einer optionalen
+Abfrage verwerfen alte Messwerte; Authentifizierungsfehler lösen weiterhin Reauth
+aus. Statische Geräteidentität bleibt bei Diagnosefehlern erhalten.
+Nicht von `hdd` gelieferte Netzwerk-Mounts werden nicht aus Aufnahmeordnern
+abgeleitet. Hardwareprüfung einschließlich möglichem HDD-Aufwecken bleibt offen.
+
 ## Vorgemerkte Ideen
 
 Die Ideen **1–5** sind seit 19.09.2026 zur Umsetzung beauftragt; Reihenfolge,
@@ -1345,7 +1375,7 @@ und Rückgabeformate vor einer Umsetzung je OpenWebif-Version und Image prüfen.
 | 3 | Hoch | Aufnahmekonflikte gezielt auswerten | Kollidierende Sendungen mit Zeiten anzeigen und Automationen zugänglich machen. Beim Anlegen/Bearbeiten liefert OpenWebif strukturierte `conflicts`. Das wäre eine Erweiterung der bisherigen Fehlerauswertung, keine belegte separate Konfliktvorhersage. [Timerimplementierung][ideas-timers] |
 | 4 | Hoch | Sofortaufnahme als eigene Aktion | Dashboard-Button oder Sprachaktion „Aktuelle Sendung aufnehmen“ über `recordnow`. Der Ereignismodus benötigt EPG; der alternativ „unendlich“ genannte Modus ist im untersuchten Code auf zehn Stunden begrenzt. [Timerimplementierung][ideas-timers] |
 | 5 | Hoch | Aufnahmebibliothek erweitern | Aufnahmeordner und HA-Medienquelle sind inzwischen vorhanden. Weitere Ausbaustufen: Tags/Filter, zusätzliche Metadaten wie Dateigröße und bisheriger Wiedergabefortschritt sowie Umbenennen, Verschieben und Löschen. OpenWebif bietet `movielist`, `fullmovielist` und Verwaltungsaktionen. Lösch-/Papierkorbverhalten je Image berücksichtigen. [Aufnahmeverwaltung][ideas-movies] |
-| 6 | Mittel | Festplattenspeicher und Systemdiagnose | Freien Aufnahmeplatz überwachen; RAM und Uptime als optionale Diagnosesensoren ergänzen. `about` liefert die Grundlagen. Einheiten normalisieren und langsam abfragen; als frei gemeldeter RAM enthält im untersuchten Code auch Buffer und Cache. [Informationsmodell][ideas-info] |
+| 6 | Umgesetzt | Festplattenspeicher und Systemdiagnose | Freier Platz je Mountpunkt sowie optionale RAM- und Laufzeitsensoren sind vorhanden. `about` liefert die Grundlagen. Einheiten normalisieren und langsam abfragen; als frei gemeldeter RAM enthält im untersuchten Code auch Buffer und Cache. [Informationsmodell][ideas-info] |
 | 7 | Mittel | Tonspur auswählen | Originalton, alternative Sprache oder Audiodeskription per dynamischer `select`-Entität wählen. Grundlage: `getaudiotracks` und `selectaudiotrack`; Auswahl nach Senderwechsel aktualisieren. [Audio-API][ideas-api] |
 | 8 | Mittel | Timeshift gezielt steuern und anzeigen | Start-/Stopp-Aktionen und „Timeshift aktiv“ über `tsstart`, `tsstop`, `tsstate`. `timeshiftEnabled` ist kein verlässlicher Pausezustand; der untersuchte Stopp-Pfad unterdrückt die Speicherrückfrage. [Controller][ideas-controller] |
 | 9 | Mittel | Wiedergabeposition bei Aufnahmen | Fortschritt und Restzeit im Medienplayer anzeigen. Das bereits abgefragte `getcurrent` liefert für bestimmte lokale Aufnahmen eine Position in Sekunden. Diese allein erlaubt keine sichere Pauseerkennung. [Controller][ideas-controller] |

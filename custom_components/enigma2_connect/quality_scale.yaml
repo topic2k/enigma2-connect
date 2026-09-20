@@ -133,13 +133,13 @@ rules:
     comment: One receiver per entry. Real HA tests add a second receiver and all its entities after initial setup without a restart.
   entity-category:
     status: done
-    comment: Connectivity, refresh and tuner measurements are diagnostics; normal controls and media states retain their primary function.
+    comment: Connectivity, refresh, tuner and system/disk measurements are diagnostics; normal controls and media states retain their primary function.
   entity-device-class:
     status: done
-    comment: Connectivity uses CONNECTIVITY; SNR, percentage quality and receiver-specific BER deliberately avoid semantically wrong classes. Rationale in developer guides.
+    comment: Disk/RAM use DATA_SIZE and uptime uses DURATION; connectivity uses CONNECTIVITY; SNR, percentage quality and receiver-specific BER deliberately avoid semantically wrong classes. Rationale in developer guides.
   entity-disabled-by-default:
     status: done
-    comment: Individual key buttons and noisy tuner diagnostics start disabled; existing user registry decisions are preserved.
+    comment: Individual key buttons, noisy tuner diagnostics and RAM/uptime sensors start disabled; existing user registry decisions are preserved.
   entity-translations:
     status: done
     comment: EnigmaEntity translation keys use synchronized German and English catalogs, verified in HA tests.

@@ -2,6 +2,36 @@
 
 # Prüfübersicht
 
+## Festplattenspeicher und Systemdiagnose – 1.3.0-dev.22
+
+Am **20.09.2026** wurden die neuen Diagnosewerte und dynamischen
+Festplattensensoren mit Python **3.14.7** und Home Assistant **2026.9.1** geprüft.
+Der gezielte Lauf aus `test_system_diagnostics.py`, `test_integration.py`,
+`test_gold_lifecycle.py` und `test_translations.py` bestand mit **76 Tests**.
+Nach der zusätzlichen Absicherung gegen überlange Laufzeitangaben bestanden
+alle **34 Diagnose-Tests** erneut (zusammen 77 unterschiedliche Testfälle).
+`sensor.py` und `system_diagnostics.py` erreichen jeweils **100 % kombinierte
+Anweisungs-/Zweigabdeckung**. Ruff, Formatierung, Syntax, striktes Mypy
+(37 Module), Versionskonsistenz, `uv lock --check --offline` und Diff-Prüfung
+bestanden.
+
+Nachweise decken Einheiten/Nullwerte/ungültige Angaben, mehrere Laufwerke,
+Umordnung, spätes Hinzufügen, Entfernen/Wiederverbinden, Fünf-Minuten-Frist,
+Neustart mit verringerter Laufzeit, optionale Abfragefehler/Wiederherstellung,
+Reauth, standardmäßig deaktivierte RAM-/Laufzeitsensoren und Listener-Abbau ab.
+Geprüfte Qualitätskriterien: entity-category, entity-device-class,
+entity-disabled-by-default, entity-translations, icon-translations,
+entity-unavailable, runtime-data, reauthentication-flow, config-entry-unloading,
+docs-data-update, docs-supported-functions, docs-known-limitations,
+strict-typing und test-coverage. Keine Kriterien oder Prüfgrenzen abgesenkt.
+
+Die Tests verwenden echte Home-Assistant-Registries mit simulierten
+Receiver-Antworten. Keine neue Hardwareabnahme: Speicherwerte, weitere
+Image-/Sprachvarianten, Netzwerk-Mounts und mögliches Aufwecken schlafender
+Festplatten bleiben praktisch zu prüfen. Die neue Gesamt-CI und der vollständige
+Qualitätsabgleich bleiben vor einer Übernahme nach `main` erforderlich;
+die folgende Gesamtprüfung belegt den unveränderten vorherigen Stand.
+
 ## Gesamtprüfung für develop – 1.3.0-dev.21
 
 Am **20.09.2026** die beauftragten Abschnitte 1–5 einschließlich der neueren

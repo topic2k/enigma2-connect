@@ -23,6 +23,7 @@ and everyday use, see the [user guide](USER_GUIDE.en.md). The
 - [Identity and data handling](#identity-and-data-handling)
 - [Action validation](#action-validation)
 - [Implementation plan: recording workflows](#implementation-plan-recording-workflows)
+- [Disk space and system diagnostics](#disk-space-and-system-diagnostics)
 - [Recorded ideas](#recorded-ideas)
 - [Files and local archives](#files-and-local-archives)
 
@@ -1141,6 +1142,33 @@ Interfaces checked on 2026-09-20: [OpenWebif controller](https://github.com/oe-a
 and [OpenATV timers](https://github.com/openatv/enigma2/blob/master/lib/python/RecordTimer.py).
 The implementation is independent; no upstream code was copied.
 
+## Disk space and system diagnostics
+
+Idea no. 6 is implemented. `about` supplies `info.mem1` (total RAM), `mem2`
+(MemFree + Buffers + Cached), `uptime` (`Nd HH:MM`) and `hdd` with `mount`/`free`.
+Sources: [OpenWebif information model][ideas-info] and
+[about controller][ideas-controller], whose full request refreshes measurements.
+The initial response is reused; subsequent refreshes have a separate 300-second
+deadline. Invalidating timer/recording lists does not force diagnostics polling.
+
+The immutable `SystemDiagnostics` model converts OpenWebif's binary values
+labelled kB/MB/GB/TB to bytes, also accepting KiB/MiB/GiB/TiB and decimal commas.
+Unknown units, negative/non-finite values and missing fields are not guessed.
+Uptime is a duration in seconds with minute resolution and may decrease after
+a reboot; no boot timestamp with false second precision is calculated.
+
+Disk sensors use normalized mount paths in their unique IDs. A coordinator
+listener discovers later disks and preserves registry IDs across reordering
+and reconnection. Duplicate mounts remain unknown. Missing disks or free values
+mean `unavailable`, not zero. RAM/uptime are disabled diagnostic entities by
+default, with DATA_SIZE/DURATION and MEASUREMENT semantics. Mount paths are
+visible in sensor names but are not added to the existing allowlist diagnostics
+export. The discovery listener is removed on unload. Optional refresh failures
+discard stale measurements; authentication errors still initiate reauthentication.
+Static device identity survives diagnostics failures. Network mounts absent
+from `hdd` are not inferred from recording folders. Hardware validation, including
+possible disk wakeups, remains outstanding.
+
 ## Recorded ideas
 
 Ideas **1–5** were requested for implementation on 2026-09-19; order, acceptance
@@ -1257,7 +1285,7 @@ support and response formats for each OpenWebif version and image before impleme
 | 3 | High | Expose recording conflict details | Display conflicting programmes and times and make them available to automations. OpenWebif returns structured `conflicts` when creating/editing timers. This would extend current error handling, not establish a separate conflict prediction API. [Timer implementation][ideas-timers] |
 | 4 | High | Dedicated instant recording action | Dashboard button or voice action to record the current programme through `recordnow`. Event mode requires EPG; the alternative mode called “infinite” is limited to ten hours in the examined code. [Timer implementation][ideas-timers] |
 | 5 | High | Extend the recording library | Recording folders and the HA media source now exist. Further additions: tags/filters, metadata such as file size and previous playback progress, plus renaming, moving and deleting. OpenWebif offers `movielist`, `fullmovielist` and management actions. Account for image-specific deletion/trash behaviour. [Recording management][ideas-movies] |
-| 6 | Medium | Disk space and system diagnostics | Monitor free recording space; add RAM and uptime as optional diagnostic sensors. `about` supplies the underlying information. Normalize units and poll slowly; reported free RAM includes buffers and cache in the examined code. [Information model][ideas-info] |
+| 6 | Implemented | Disk space and system diagnostics | Free space per mount and optional RAM/uptime sensors are available. `about` supplies the underlying information. Normalize units and poll slowly; reported free RAM includes buffers and cache in the examined code. [Information model][ideas-info] |
 | 7 | Medium | Select audio tracks | Select original audio, another language or audio description through a dynamic `select` entity. Uses `getaudiotracks` and `selectaudiotrack`; refresh choices after channel changes. [Audio API][ideas-api] |
 | 8 | Medium | Explicit timeshift controls and status | Start/stop actions and a timeshift-active indicator through `tsstart`, `tsstop`, `tsstate`. `timeshiftEnabled` does not reliably indicate pause; the examined stop path suppresses the save prompt. [Controller][ideas-controller] |
 | 9 | Medium | Playback position for recordings | Display progress and remaining time in the media player. The already queried `getcurrent` returns a position in seconds for certain local recordings. This alone does not reliably establish pause state. [Controller][ideas-controller] |

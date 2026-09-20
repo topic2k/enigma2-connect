@@ -5,6 +5,7 @@ DOMAIN = "enigma2_connect"
 DEFAULT_INTERVAL = 15
 SLOW_INTERVAL = 120
 CATALOG_INTERVAL = 300
+DIAGNOSTICS_INTERVAL = 300
 KEYS = {
     **{str(n): n + 1 for n in range(1, 10)},
     "0": 11,

@@ -24,6 +24,18 @@
       },
       "timers": {
         "default": "mdi:timer-outline"
+      },
+      "disk_free": {
+        "default": "mdi:harddisk"
+      },
+      "ram_free": {
+        "default": "mdi:memory"
+      },
+      "ram_total": {
+        "default": "mdi:memory"
+      },
+      "uptime": {
+        "default": "mdi:timer-outline"
       }
     },
     "binary_sensor": {

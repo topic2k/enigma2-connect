@@ -162,6 +162,28 @@ Vorhandene Aktivierungsentscheidungen bleiben bei Updates erhalten. Der Receiver
 bietet außerdem Zustandsanzeigen für Standby, Aufnahme, Streaming und Verbindung;
 Verbindung und **Listen aktualisieren** gehören zu den Diagnosen.
 
+### Speicherplatz und Systemdiagnose
+
+Unter dem Receiver-Gerät zeigt **Freier Speicher /media/hdd** den freien Platz
+des jeweiligen eingebundenen Laufwerks an. Bei mehreren Laufwerken gibt es je
+Mountpunkt einen Sensor; der Name enthält den vom Receiver gemeldeten Pfad.
+Neue Laufwerke erscheinen beim nächsten Diagnoseabruf. Entfernte Laufwerke
+werden **Nicht verfügbar**; bei Wiederverbindung bleibt ihre Entität erhalten.
+Ein voller Datenträger zeigt dagegen tatsächlich **0 GiB** an.
+
+**Freier RAM (inkl. Cache)**, **Gesamter RAM** und **Laufzeit** sind zunächst
+deaktiviert. Öffne **Einstellungen → Geräte & Dienste → Entitäten**, blende
+deaktivierte Entitäten ein und aktiviere die gewünschten Sensoren.
+RAM wird in MiB, Festplattenspeicher in GiB und Laufzeit in Stunden angezeigt.
+Der freie RAM umfasst auch Buffer und Cache; die Laufzeit ist minutengenau.
+
+Die Werte werden etwa alle fünf Minuten aktualisiert, auch im normalen Standby.
+Nicht unterstützte RAM-/Laufzeitangaben bleiben **Unbekannt**.
+OpenWebif meldet nur die von ihm erkannten eingebundenen Festplatten; insbesondere
+Netzwerk-Aufnahmeordner sind damit nicht automatisch abgedeckt. Prüfe den Pfad
+des Sensors gegen deinen Aufnahmeordner, bevor du ihn für Speicherwarnungen nutzt.
+Der Abruf kann je nach Receiver-Image eine schlafende Festplatte aufwecken.
+
 ## Aufnahmen und Sender durchsuchen
 
 Es gibt zwei Zugänge zu deinen Aufnahmen:

@@ -34,6 +34,7 @@ Eine zusätzliche Aufnahmebibliothekskarte filtert nach Titel, Sender, Tags, Ord
 und gemeldetem Wiedergabestand und zeigt verfügbare Dateigrößen.
 
 Titeländerung, Verschieben und bestätigtes Löschen sind über die Bibliothekskarte möglich.
+Sensoren zeigen freien Festplattenspeicher sowie optional RAM und Laufzeit an.
 
 ### Was du brauchst
 
@@ -93,6 +94,7 @@ Edit timers, schedule weekly series and see recording conflicts with the
 details supplied by the receiver.
 
 The library card also supports title changes, moving and confirmed deletion.
+Sensors show free disk space and optionally RAM and uptime.
 
 ### What you need
 

@@ -11,6 +11,8 @@ from datetime import datetime
 from html import unescape
 from typing import Any
 
+from .system_diagnostics import SystemDiagnostics
+
 # OpenWebif adds image-specific fields; validate values when projecting this
 # transport boundary into the typed receiver state and service models below.
 type JsonObject = dict[str, Any]
@@ -219,3 +221,4 @@ class Snapshot:
     movie_directory: str | None = None
     media_channels: dict[str, Service] | None = None
     recording_directories: tuple[str, ...] = ()
+    system: SystemDiagnostics = field(default_factory=SystemDiagnostics)
