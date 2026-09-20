@@ -2,6 +2,202 @@
 
 # Prüfübersicht
 
+## Home-Assistant-Praxisprüfung: 1.3.0-dev.6
+
+Am **20.09.2026** in der tatsächlichen HA-Installation des Nutzers geprüft.
+Die Integrationsseite zeigte **1.3.0-dev.6**, zwei Receiver und 130 Entitäten.
+Bedienung erfolgte im Browser unter **Werkzeuge → Aktionen**, **Ereignisse** und
+**Kalender**; zusätzlich wurden die gespeicherten Testtimer direkt auf den Receivern
+nachgelesen. Es wurden keine Dashboards oder Integrationsoptionen verändert.
+
+- Sender- und Aufnahmeordnerlisten zeigten beide Receiver mit korrekter Zuordnung.
+  Der native Kalenderdialog und die Uhrzeitfelder wurden bedient. Über die Formulare
+  angelegte deaktivierte Testtimer kamen auf beiden Receivern mit 29.09.2026,
+  16:25–16:27 Uhr, dem gewählten Sender, `/media/hdd/movie/` und `afterevent: 0` an.
+- **Nach Aufnahme** zeigte Nichts tun, Standby, Tiefschlaf und Automatisch;
+  **Nachrichtentyp** zeigte Ja/Nein-Frage, Information, Warnung und Fehler.
+  Die Informationsnachricht wurde über HA an beide Receiver gesendet und jeweils
+  auf deren Bildausgabe visuell bestätigt. Andere Nachrichtentypen wurden nicht
+  erneut einzeln auf dem Bildschirm geprüft.
+- Die Kombination Vu+ als Ziel und Octagon-Sender/-Pfadauswahl wurde mit der
+  übersetzten Zuordnungsfehlermeldung abgelehnt; kein zusätzlicher Timer entstand.
+- Reale Konflikte beim **Anlegen und Bearbeiten auf beiden Receivern** wurden
+  durch HA-Aktionen ausgelöst. Vier Ereignisse wurden in der HA-Ereignisansicht
+  empfangen und einzeln geprüft: korrekte `config_entry_id`, `action: timer_add`
+  mit `timer_state: unknown` beziehungsweise `action: timer_edit` mit
+  `timer_state: changed`. Die Oberfläche zeigte konkrete Konfliktdetails und den
+  Hinweis auf möglicherweise bereits geänderte Timer. Das Abonnement wurde beendet.
+- Nach Aktivierung erschienen beide Formular-Testtimer im HA-Kalender um 16:25 Uhr.
+  Eine weitere HA-Bearbeitung des Octagon-Timers änderte Name und Ende; der Kalender
+  zeigte den neuen Namen und im Detail **16:25–16:30 Uhr**.
+- Sämtliche eigenen Testtimer wurden entfernt. Abschließendes Nachlesen: Octagon
+  wieder sieben ursprüngliche Timer, Vu+ null; die geprüften Felder der ursprünglichen
+  Timer sind unverändert. Wiederholtes Löschen meldete erwartungsgemäß einen Fehler.
+
+Nachweis: `ha-ui-validation.json`, `.work/ha_ui_receiver_check.py` und lokale
+Bildprüfungen `ha-ui-message-0.jpg`/`ha-ui-message-1.jpg` unter
+`V:\enigma2-connect\.work\recording-workflows-checks` (Skript im übergeordneten
+`.work/`). Keine Zugangsdaten in Berichten. Diese Ergebnisse ergänzen die getrennt
+dokumentierten direkten Receiver- und simulierten HA-Prüfungen.
+
+**Abschnitt 3 beidseitig abgenommen:** Codex bestätigt die abgeschlossenen Prüfungen;
+der Nutzer bestätigte am **20.09.2026** ausdrücklich die Fertigstellung.
+Abschlusscommit auf `feature/recording-workflows`: `feat: add timer editing and action selectors`. Kein tatsächlicher wöchentlicher
+Aufnahmestart wurde abgewartet; das fehlende DVB-S-Signal/EPG am Vu+ bleibt eine bekannte
+Testgrenze. Keine Änderung am Produktionscode, keine erneute vollständige CI notwendig;
+Remote-Abgleich und erforderliche aktuelle CI bleiben vor einem PR/Merge verpflichtend.
+
+## Echte Receiver-Prüfung: 1.3.0-dev.6, Abschnitt 3
+
+Am **20.09.2026** mit Nutzerfreigabe über die aktuellen Produktionsmodule
+`OpenWebifClient`, `TimerEditor`, `action_choices` und `timer_conflicts` gegen beide
+echten Receiver geprüft. Das lokale Prüfskript rief die Module direkt auf;
+es wurde keine Home-Assistant-Oberfläche bedient und kein HA-Service auf der
+Nutzerinstallation aufgerufen. Zugangsdaten stammen aus einer ignorierten lokalen
+Datei und sind nicht Bestandteil der Berichte.
+
+| Prüfung | Octagon SF8008 4K Supreme | Vu+ Solo² |
+| --- | --- | --- |
+| Gemeldetes OpenWebif | 2.4.1 | 1.4.4 |
+| Sender im ersten TV-Bouquet / bekannte Pfade | 41 / 4 | 34 / 1 |
+| Deaktivierten Testtimer anlegen, bearbeiten, Optionen erhalten | bestanden | bestanden |
+| Veraltete Kennung ohne weitere Änderung ablehnen | bestanden | bestanden |
+| Wochenmasken Mo/Fr → Di/Do, falschen Einzelumfang ablehnen | bestanden | bestanden |
+| Termin über Mitternacht, zehn Minuten | bestanden | bestanden |
+| Sender-/Pfadauswahlwerte, lokale Uhrzeit, Nach Aufnahme = Nichts tun | gespeichert und nachgelesen | gespeichert und nachgelesen |
+| Aktivieren/deaktivieren, löschen, erneutes Löschen ablehnen | bestanden | bestanden |
+| Informationsnachricht nach Ablehnung | API bestätigt; Anzeige ungeprüft | API bestätigt; Anzeige ungeprüft |
+| Konflikt beim dritten parallelen Testtimer / Konflikt beim Bearbeiten | beide erkannt | beide erkannt |
+| Timerzustand nach abgelehnter Bearbeitung | `changed` | `changed` |
+| Aufräumen / ursprüngliche Timer | keine Testtimer; 7 unverändert | keine Testtimer; weiterhin 0 |
+
+Die Konflikte entstanden mit eigenen, kurz danach wieder gelöschten Testtimern auf
+unterschiedlichen Transpondern zwei Wochen in der Zukunft, außerhalb der ermittelten
+Zeiträume bestehender Timer. Beide Antworten lieferten jeweils drei durch den
+Produktionsparser verwertbare Konflikte. **Beide Images verändern beim abgelehnten
+Bearbeiten bereits den Testtimer.** `TimerEditor` erkennt dies durch Nachlesen;
+es gibt keine automatische Rücknahme. Ursprüngliche Timer wurden anhand Kennung,
+Name, Beschreibung, deaktiviert/aktiv, Aufnahme-/Umschaltmodus, Nach-Aufnahme-Verhalten,
+Wochenmaske, Tags und Pfad vor/nach jedem Testlauf verglichen und blieben gleich.
+
+Der erste Serienversuch beließ beim Wechsel auf Di/Do den Montag als Startdatum.
+Beide Receiver verschoben den Termin und die Integration meldete korrekt
+`CommandUnconfirmed`. Danach wurde gemäß Anleitung auch der erste Termin auf Dienstag
+gesetzt; alle Serienprüfungen bestanden. Jeder Versuch wurde separat aufgeräumt.
+Die Wochenmasken und gespeicherten Termine wurden nachgelesen; ein tatsächlicher
+wöchentlicher Aufnahmestart wurde nicht abgewartet. Der Vu+ hat laut Nutzerdatei
+kein DVB-S-Signal und kein EPG. Sein Pfad stammt aus `movielist.directory`, nicht
+aus `timerlist.locations`.
+
+Berichte: `receiver-section3-*.json` und Prüfskript `.work/receiver_section3.py`
+im ursprünglichen lokalen Checkout; Berichte unter
+`V:\enigma2-connect\.work\recording-workflows-checks`. Die Berichte der ersten
+Serienversuche bleiben ebenfalls erhalten. Keine Änderung am Produktionscode.
+
+Die damals offenen HA-Punkte wurden anschließend geprüft; Ergebnisse und
+Abnahmestatus stehen im vorangestellten Abschnitt zur Home-Assistant-Praxisprüfung.
+
+## Aktionsauswahlfelder: 1.3.0-dev.6, Ergänzung zu Abschnitt 3
+
+Stand **20.09.2026**. Senderauswahl, native Datum/Uhrzeit-Felder, Auswahl bekannter
+Receiver-Aufnahmeordner sowie benannte Optionen für Nachrichtentyp und Nach Aufnahme
+implementiert. [Praxisanleitung](BENUTZERHANDBUCH.md#abschnitt-3-auf-dem-receiver-prüfen).
+
+**Lokale Prüfung bestanden:** 273 unterschiedliche Tests in drei sich überlappenden
+Läufen mit Python **3.14.7**, Home Assistant **2026.9.1** und
+pytest-homeassistant-custom-component **0.13.364**. Der erste Lauf hatte 269 erfolgreiche
+Tests und zwei Fehler durch eine veraltete Zeitzonen-Test-API. Nach Umstellung auf
+`async_set_time_zone` wurden beide Fälle und die betroffenen Aktionsprüfungen erneut
+erfolgreich geprüft. Drei bestehende Sofortaufnahme-/Gerätezuordnungstests ergänzen
+den Abdeckungsnachweis des letzten Quellstands. Receiver sind simuliert;
+keine echte Frontend- oder Receiver-Abnahme.
+
+Geprüft: HA-Selektorschemas und Übersetzungen, lokale Zeitumrechnung einschließlich
+mehrdeutiger/nicht existierender Uhrzeiten, zwei Receiver und falsche Gerätezuordnung,
+Aktualisierung und Entladen der Listen, Pfadquellen, manuelle YAML-Alternativen,
+benannte Auswahlwerte und bisherige Integer-Werte 0–3 mit identischen Receiver-Parametern,
+Standardwerte sowie bestehende Timer-, Aufnahme- und Fehlerbehandlung.
+
+Kombinierte Statement-/Branch-Coverage: letzter Aktionslauf für `services.py`,
+erster Lauf für die anschließend unveränderten übrigen Module:
+
+| Modul | Coverage |
+| --- | --- |
+| `__init__.py` | 97.96 % |
+| `action_choices.py` | 100.00 % |
+| `coordinator.py` | 98.51 % |
+| `models.py` | 95.52 % |
+| `services.py` | 98.45 % |
+| `timer_edit.py` | 100.00 % |
+| `timer_conflicts.py` | 100.00 % |
+
+Unveränderte Grenze über 95 % eingehalten. Ruff, Formatierung, Syntax,
+mypy strict für **33** Produktionsmodule, Versions-/Dokumentationsabgleich und
+`uv lock --check --offline` (159 Pakete) bestanden. Berichte `action-choices-*`
+und `action-enums-*` sowie `action-tail-*` unter
+`V:\enigma2-connect\.work\recording-workflows-checks`.
+Qualitätsabgleich umfasst zusätzlich die neuen Bedienelemente unter `action-setup`,
+`action-exceptions`, `exception-translations`, `strict-typing`, `test-coverage`,
+`docs-actions`, `docs-data-update` und `docs-known-limitations`; keine Kriterien abgesenkt.
+
+Die ergänzende HA-Praxisprüfung und die beidseitige Abnahme sind oben dokumentiert. CI und Remote-Abgleich vor PR/Merge bleiben erforderlich.
+
+## Timerbearbeitung und Konflikte: 1.3.0-dev.5, Abschnitt 3
+
+Stand **20.09.2026**. `timer_edit`, erweiterte Anlageoptionen und strukturierte
+Konfliktereignisse implementiert. [Plan und Grenzen](ENTWICKLUNG.md#abschnitt-3-timerbearbeitung-und-konflikte),
+[Receiver-Prüfanleitung](BENUTZERHANDBUCH.md#abschnitt-3-auf-dem-receiver-prüfen).
+
+**Lokale Prüfung bestanden:** Python **3.14.7**, Home Assistant **2026.9.1**,
+pytest-homeassistant-custom-component **0.13.364**. Zunächst 221 Tests bestanden;
+nach Review der Anmelde-/Abbruchbehandlung beim Nachlesen einer Ablehnung und
+Vereinheitlichung der Ereignis-Aktionsnamen derselbe Umfang samt Zusatzfällen
+erneut geprüft: **228 Tests bestanden**, keine Fehler oder ausgelassenen Fälle.
+Alle Receiver sind in diesen Tests simuliert, auch in den echten HA-Aktionsprüfungen.
+
+Geprüft: alte/neue Kennung, Erhalt ausgelassener Optionen, VPS und Nachlauf,
+unvollständige und mehrdeutige Timerdaten, Wochenmasken und expliziter Serienumfang,
+Mitternacht sowie explizite UTC-Offsets beim Sommer-/Winterzeitwechsel,
+Konflikte mit und ohne bereits erfolgte Mutation, Nachlesen und unklare Erfolge,
+Antwortverlust, Abbruch, Sperre weiterer Versuche, gemeinsame Befehlssperre,
+Konfliktprojektion ohne Rohdaten, übersetzte Fehler, Ereignisse, gültige HA-Selektoren,
+Aufrufe mit/ohne Antwort und Trennung zweier Receiver. Keine unabhängige
+Konfliktvorhersage oder Garantie unveränderter Timer bei Receiver-Ablehnung.
+
+Umfang: `test_timer_edit`, `test_workflow_actions`, `test_instant_recording`,
+`test_integration`, `test_translations`, `test_silver_controls`, `test_channel_media`,
+`test_gold_lifecycle`, `test_regressions`. Vorhandene lokale HTTP-Tests prüfen
+weiterhin den Schutz vor automatischem Wiederholen schreibender Timeranfragen.
+Kombinierte Statement-/Branch-Coverage der geänderten/neuen Produktionsmodule:
+
+| Modul | Coverage |
+| --- | --- |
+| `coordinator.py` | 99.48 % |
+| `services.py` | 98.18 % |
+| `timer_edit.py` | 100.00 % |
+| `timer_conflicts.py` | 100.00 % |
+
+Alle liegen über der unveränderten 95-%-Grenze. Ruff, Formatierung, Syntax und
+mypy strict für **32** Produktionsmodule bestanden. Versionsstellen und lokale
+Dokumentationsziele konsistent; `uv lock --check --offline` bestanden, die
+Lockdatei ändert nur die Projektversion. Berichte: `section3-tests.xml`,
+`section3-tests.log`, `section3-coverage.json` unter
+`V:\enigma2-connect\.work\recording-workflows-checks`.
+
+Qualitätsabgleich: `action-setup`, `action-exceptions`, `parallel-updates`,
+`exception-translations`, `icon-translations`, `strict-typing`, `test-coverage`,
+`docs-actions`, `docs-triggers`, `docs-data-update`, `docs-known-limitations`.
+Keine Kriterien oder Grenzen abgesenkt. Unveränderte Module behalten ihre
+bisherigen Nachweise; keine vollständige CI oder offizielle HA-Qualitätsstufe behauptet.
+
+**Historischer Stand vor der späteren Praxisabnahme (siehe oben):** Die neue Anleitung auf Octagon und Vu+ mit separaten
+Testtimern prüfen. Optionserhalt, tatsächliche Wochenwiederholung und
+Receiver-Konflikte einschließlich Änderungen trotz Ablehnung sind noch nicht
+praktisch bestätigt. Ein nicht herstellbarer Konflikt ist „nicht geprüft“.
+Codex bestätigt die lokale Umsetzung als prüfbereit; Nutzerbestätigung und
+Abschnittscommit stehen aus. Aktuellen Remote-/Main-Abgleich vor einem PR
+erneuern; keine Übernahme oder Veröffentlichung in diesem Abschnitt.
+
 ## Sofortaufnahme: 1.3.0-dev.4, Abschnitt 2
 
 Stand **20.09.2026**. Aktion `record_now` und Button **Aktuelle Sendung aufnehmen**

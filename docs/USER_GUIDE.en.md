@@ -470,7 +470,7 @@ currently returned to Home Assistant.
 Channel changes, standby and button sequences can also be automated.
 The examples below show you the matching actions.
 
-The integration provides no custom triggers or conditions. Use the standard
+The integration provides no custom device triggers or conditions. Use the standard
 Home Assistant state triggers and conditions in automations, for example a
 change of the recording or connection indicator.
 
@@ -478,8 +478,8 @@ change of the recording or connection indicator.
 
 Use these examples for your own scripts and automations. Try them in YAML
 mode under **Developer tools → Actions**, or insert them as an individual
-action in an automation. YAML is the text view of the settings. These
-examples do not include a trigger.
+action in an automation. YAML is the text view of the settings. Individual
+action examples do not include a trigger.
 
 Replace the example entities with your own targets. For a device action,
 select the receiver in the interface first; switch to YAML to see its
@@ -494,8 +494,9 @@ select the receiver in the interface first; switch to YAML to see its
 | `enigma2_connect.message` | `device_id`, `text`, optional `type` (0–3, default 1) and `timeout` (1–120 seconds, default 10) |
 | `enigma2_connect.reboot`, `.restart_gui`, `.deep_standby` | `device_id`; receiver restart, GUI restart or deep standby |
 | `enigma2_connect.record_now` | `device_id`; record the current EPG programme starting now |
-| `enigma2_connect.timer_add` | `device_id`, `service_reference`, `begin`, `end`, `name`; optional `description`, `justplay`, `afterevent` |
-| `enigma2_connect.timer_delete`, `.timer_toggle` | `device_id`, `service_reference`, `begin`, `end` of the existing timer |
+| `enigma2_connect.timer_add` | `device_id`, `channel` or `service_reference`, `begin`, `end`, `name`; optional `description`, `justplay`, `afterevent`, `weekdays`, `directory` or `directory_selection`, `tags`, `disabled`, `recording_type` |
+| `enigma2_connect.timer_edit` | `device_id`, `channel` or `old_service_reference`, `old_begin`, `old_end`, `scope`; supply only intended new values |
+| `enigma2_connect.timer_delete`, `.timer_toggle` | `device_id`, `channel` or `service_reference`, `begin`, `end` of the existing timer |
 
 Always select the intended receiver as the target. Names starting with a dot
 in the table share the beginning of the first action in that row.
@@ -504,7 +505,7 @@ For button sequences, use names such as `menu`, `up`, `down` and `ok`.
 the sequence. A `hold_secs` value greater than 0 sends a long press; its
 actual duration depends on the receiver.
 
-Enter timer start and end values with a date, time and time zone as shown in the
+In YAML, enter timer start and end with a date, time and time zone as shown in the
 example. Its `+02:00` means German summer time; adjust it to your date and location.
 With `justplay: true`, the receiver switches to the channel without recording.
 `afterevent` controls what happens afterwards: 0 = nothing, 1 = standby,
@@ -560,6 +561,182 @@ data:
   justplay: false
   afterevent: 3
 ```
+
+#### Enter timers using the action form
+
+1. Open **Developer tools → Actions**, choose the timer action and receiver.
+2. Under **Select channel**, choose the entry showing your receiver and channel.
+   The list contains channels from the selected bouquet. Change that bouquet
+   using the receiver's bouquet selection, then reload the action page to fetch
+   updated choices.
+3. Use the **Start/End** date/time controls. Values use the **Home Assistant
+   timezone** under **Settings → System → General**. This also applies to
+   **Existing start/end** when editing. Ambiguous or nonexistent clock-change
+   times require YAML with an explicit UTC offset.
+4. Optionally use **Select recording directory**. Choices include receiver-reported
+   bookmarks, the default path and known directories from timer/recording data.
+   This is a list, not a freely navigable filesystem browser. Enter missing/new
+   paths under **Manual recording path (alternative)**.
+
+**Message type** offers Yes/no question, Information, Warning and Error.
+**After recording** offers Do nothing, Standby, Deep standby and Automatic.
+Existing YAML integers 0–3 remain valid. When omitted, messages still default to
+Information and timer creation to Automatic; editing preserves the existing value.
+Yes/no answers are still not returned to HA.
+
+Lists are shared across configured receivers, so entries include receiver names.
+Each choice must match **Receiver**, otherwise the action is rejected before
+writing. Use one method per value: **Select channel** or **Manual service reference
+(alternative)**, and directory selection or manual path. Omit unused optional
+fields. Selecting a timer channel does not switch the live channel.
+
+Use **Refresh lists**, then reload the action page to see fresh choices. Lists
+may be empty during connection failures. A listed directory does not prove that
+the drive is currently mounted or writable. Stored choices retain their channel
+or path identity even after a bouquet change; the receiver must still support it.
+
+Existing YAML using `service_reference`/`old_service_reference`, `directory`,
+offset-aware ISO times or Unix seconds remains valid. Switching a selection to
+YAML shows `channel` and `directory_selection` with a stored receiver binding.
+Copy these values from the interface; select them again when changing receivers.
+
+#### Edit timers, weekly series and conflicts
+
+Under **Developer tools → Actions**, **Add timer** now supports weekdays,
+recording directory, tags, disabled state and recording type. Without weekdays
+it creates a single timer; multiple days create a weekly series at the specified
+time in the receiver's timezone. Start and end must describe the first intended
+occurrence, including its date. For an end after midnight, use the next day.
+ISO times require the correct UTC offset. Recurrence and clock changes are
+handled by the receiver.
+
+```yaml
+action: enigma2_connect.timer_add
+data:
+  device_id: YOUR_DEVICE_ID
+  service_reference: "1:0:19:283D:3FB:1:C00000:0:0:0:"
+  name: "E2C Test 3 Series"
+  begin: "2026-09-21T18:00:00+02:00"
+  end: "2026-09-21T18:02:00+02:00"
+  weekdays: [mon, fri]
+  tags: [E2C, Test]
+  disabled: true
+  afterevent: 0
+```
+
+Adjust date, channel and device. `directory` is an absolute receiver path;
+empty selects the default. Use an existing writable directory. `recording_type`
+accepts `normal`, `descrambled` (with ECM) or `scrambled`; support and decoding
+depend on the receiver. `justplay: true` creates a zap timer. `afterevent` is
+0: nothing, 1: standby, 2: shutdown, 3: automatic. Each tag is one word.
+An empty list explicitly clears tags or weekdays.
+
+**Edit timer** changes supplied fields on the same channel. Read the stored
+identity in OpenWebif at `/api/timerlist`: `serviceref`, `begin`, `end`. Use these
+as `old_service_reference`, `old_begin`, `old_end`. After changing times, use
+the new identity for subsequent actions.
+
+```yaml
+action: enigma2_connect.timer_edit
+data:
+  device_id: YOUR_DEVICE_ID
+  old_service_reference: "1:0:19:283D:3FB:1:C00000:0:0:0:"
+  old_begin: 1790006400
+  old_end: 1790006520
+  scope: series
+  end: "2026-09-21T18:05:00+02:00"
+  name: "E2C Test 3 changed"
+```
+
+The old timestamps are placeholders: copy the actual stored values. Select
+`scope: single` for a single timer and `scope: series` (**Entire series**) for
+an existing or newly created series. Individual series occurrences cannot be
+edited here. Omit unchanged fields entirely; an empty string or list is an edit.
+Omitted options are read fresh and preserved, including existing VPS/padding
+options. Incomplete or ambiguous timer data is rejected before writing. The
+optional response contains `action: timer_edit` and the reread identity under
+`timer`. Calls without a response variable also work.
+
+**On conflict:** The action fails with the channels, titles and intervals
+reported by the receiver. An edit may already have changed values despite
+rejection. Check the current OpenWebif list. There is no automatic rollback or
+independent tuner prediction. Uncertain replies are not retried. Editing the
+same old identity remains blocked until the integration is reloaded. Inspect
+the actual state before reloading and trying again. If the receiver advances
+a series or stores different options, the edit is reported as unconfirmed.
+
+Automations receive `enigma2_connect_timer_conflict` when a valid conflict list
+is available. It contains `config_entry_id`, `action`, `timer_state` and
+`conflicts`. Each conflict includes `service_reference`, `name`, `service_name`,
+`begin`, `end` (Unix seconds). Unavailable names are `null`. For edits,
+`timer_state` compares supported options of the affected timer after rereading:
+`unchanged`, `changed` or `unknown`. It does not guarantee other timers or later
+changes. Other rejections without a usable list remain ordinary action errors.
+
+Listen under **Developer tools → Events**. Use the reported `config_entry_id`
+to distinguish receivers in an automation:
+
+```yaml
+alias: Report receiver timer conflict
+triggers:
+  - trigger: event
+    event_type: enigma2_connect_timer_conflict
+    event_data:
+      config_entry_id: YOUR_CONFIG_ENTRY_ID
+actions:
+  - action: persistent_notification.create
+    data:
+      title: Timer conflict
+      message: >-
+        {{ trigger.event.data.conflicts | count }} conflicts reported.
+        Please check the timer list in OpenWebif.
+```
+
+#### Test section 3 on the receiver
+
+Test build **1.3.0-dev.6**. Test Octagon and Vu+ separately. Update the integration
+and restart Home Assistant. Record receiver, image, OpenWebif and integration
+versions. Use dedicated test timers only.
+
+1. **New controls:** Reload the action page after the integration update. Create
+   the following test timer using the channel name, date/time controls and an
+   offered directory. Check channel, local times and path in OpenWebif. Check
+   receiver binding on both devices; choices from the other receiver must be
+   rejected. Also verify an existing YAML call with manual reference and offset.
+   Send a message with **Message type: Information** and check its appearance.
+   Select **After recording: Do nothing** for the disabled test timer and verify
+   the saved setting in OpenWebif.
+2. **Single timer:** Create a disabled two-minute recording timer for a future
+   date with `afterevent: 0`, a name, description, two tags and a known directory.
+   Read its stored identity. With **Edit timer**, `scope: single`, change only
+   the end (+3 minutes) and name. Expect the new values and preservation of
+   description, tags, directory, disabled state and other recording options.
+   Check the response and HA calendar against the updated list. Disabled timers
+   may not appear in the HA calendar.
+3. **Weekly series:** Create the disabled example series with a future date.
+   Expect Monday/Friday (`repeated: 17`). With `scope: series`, change weekdays
+   to Tuesday/Thursday (`weekdays: [tue, thu]`, `repeated: 10`) and adjust the
+   first occurrence to a selected weekday. An inconsistent weekday can be shifted
+   by the receiver and therefore reported as unconfirmed. Check times and preserved options. `scope: single` must
+   reject the series edit without writing.
+4. **Midnight:** Change a separate test timer to 23:55–00:05 the following day.
+   Expect ten minutes. For additional clock-change tests use appropriate
+   offsets and check the receiver timezone; do not change the system clock.
+5. **Stale identity:** After changing times, reuse the old identity. Expect a
+   clear error and no additional timer change.
+6. **Conflict:** Listen for `enigma2_connect_timer_conflict`. If your tuner setup
+   allows a deliberate conflict, create overlapping enabled test timers on
+   enough different transponders, away from production recordings. Test adding
+   and rescheduling into a conflict. Expect a detailed error and an event for
+   the correct receiver. Compare actual timer values afterwards and explicitly
+   report whether they changed. If no conflict can be produced, report not tested.
+7. **Cleanup:** Delete test timers using their current identities. Verify that
+   the other receiver remained unchanged. Never use production timers for
+   conflict or deletion tests.
+
+Report per receiver: single timer/option preservation, weekly series, midnight,
+stale identity, add/edit conflicts, values after rejection, conflict event and
+other findings. Joint acceptance and the section commit follow afterwards.
 
 #### Record the current programme immediately
 

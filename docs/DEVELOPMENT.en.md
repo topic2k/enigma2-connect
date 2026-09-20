@@ -876,7 +876,7 @@ Base: freshly fetched `origin/main` commit `1afa705` (version 1.2.0), branch
 `feature/recording-workflows`, worktree
 `V:\enigma2-connect-worktrees\recording-workflows`. This request explicitly
 selects `main` instead of the general `develop` branch rule. Target version:
-**1.3.0-dev.4**, reflecting the complete planned backward-compatible feature
+**1.3.0-dev.6**, reflecting the complete planned backward-compatible feature
 scope. Recheck remote branches, tags and published releases before a later PR.
 
 **Commit rule for this request:** Commit a section to the working branch only
@@ -950,7 +950,13 @@ on instruction.
   `started: false` for an existing recording and rejection without EPG. See the
   verification summary for scope and remaining practical evidence. Completion commit:
   `feat: add current programme instant recording`.
-- **3–5:** planned, not started.
+- **3 – timer editing and conflicts:** including the new action controls,
+  implemented in **1.3.0-dev.6**; current local evidence is recorded in the
+  [validation overview](VALIDATION.en.md). Direct checks on Octagon and Vu+ passed;
+  HA frontend, calendar and event checks also passed. Codex and the user confirmed
+  completion on **2026-09-20**. Completion commit:
+  `feat: add timer editing and action selectors`.
+- **4–5:** planned, not started.
 
 `OpenWebifClient.command_result()` returns structured success data under the same
 lock as `command()`. Existing `command()` still returns `None`. Rejections through
@@ -959,7 +965,7 @@ a `ProtocolError`, with an internal `response` attribute. Exception text and
 `repr` exclude receiver messages. Raw responses may contain private metadata:
 do not log or forward them wholesale to HA; later models will project only the
 required fields. The coordinator still uses its existing translated failure
-message; conflict details are not available in the UI yet.
+message; section 3 adds validated conflict details.
 
 Interface evidence: [OpenWebif timer model](https://github.com/oe-alliance/OpenWebif/blob/main/plugin/controllers/models/timers.py),
 read on 2026-09-19. Conflict replies contain `result=false` and a `conflicts`
@@ -1089,6 +1095,99 @@ Ideas **1–5** were requested for implementation on 2026-09-19; order, acceptan
 and progress are tracked in the [implementation plan](#implementation-plan-recording-workflows).
 The remaining ideas are tentative. Existing parts of the proposed features are
 identified below.
+
+### Section 3: Timer editing and conflicts
+
+Usability addition dated **2026-09-20**, target **1.3.0-dev.6**: add named channel
+choices from the selected bouquet, native date/time fields and an additional
+choice of known receiver recording directories. HA action lists are global:
+label entries by receiver and validate device binding before every call. Manual
+YAML references, paths and offset-aware times remain valid. Interpret local times
+in HA's timezone, rejecting ambiguous/nonexistent clock-change times. Refresh
+choice metadata from existing queries and remove it on unload. Test HA selectors,
+receiver isolation, catalog changes and time boundaries.
+
+
+Implementation plan dated **2026-09-20**, target **1.3.0-dev.5**:
+
+1. Extend `timer_add` with weekdays, directory, tags, disabled state and recording
+   options. `timer_edit` separates the old identity from new values and preserves
+   omitted fields from a freshly fetched timer list.
+2. Explicitly distinguish a single timer from an entire series. Hold the common
+   command lock across preflight, editing and readback; reject incomplete or
+   ambiguous timer data before writing.
+3. Validate receiver conflicts and expose a translated error plus a structured
+   HA event for automations. No local tuner prediction.
+4. Reread actual state after rejection. OpenWebif can mutate before checking for
+   conflicts: check preservation, but do not guarantee it. No delete/recreate or
+   automatic rollback; never replay uncertain replies.
+5. Test weekly series, midnight, UTC offsets at clock changes, option preservation,
+   conflicts with/without mutation, cancellation, response loss and receiver
+   targeting. Add DE/EN guidance and practical checks. Commit only after both
+   parties confirm completion.
+
+
+`TimerEditor` reads complete identities, rejects collisions under OpenWebif's
+shortened reference matching and preserves required values for a complete
+`timerchange` request. Titles/descriptions are not HTML-decoded when written
+back. Missing required values remain unknown and prevent writes. Recording
+type and image-specific options are preserved when supplied; padding seconds
+are passed only when conversion to whole API minutes is lossless. VPS settings
+and `allow_duplicate` are explicitly preserved because endpoint defaults could
+otherwise reset them. Channel changes are not offered: the inspected upstream
+does not reliably update EIT during editing. Zero-duration zap timers are valid
+old identities, but the new interval must have positive duration.
+
+After positive acknowledgement, identity and supported options are reread and
+compared. Series advanced by the receiver or differently stored options remain
+unconfirmed. Success contains a reread identity rather than just requested times.
+Response loss, cancellation during/after writing or failed readback block the
+old identity within the current coordinator. Reload clears this local guard;
+external clients are not blocked. Existing HTTP replay protection still applies.
+
+On rejection, the editor rereads under the command lock and compares supported
+fields of the affected timer: `unchanged`, `changed`, `unknown`. This is not atomic
+protection against external changes or changes to other conflicting timers.
+There is no automatic rollback. The planned preservation-on-rejection check is
+therefore a state comparison, not a general receiver API preservation guarantee.
+
+The coordinator projects only fully validated `TimerConflict` lists into
+`enigma2_connect_timer_conflict`, with `config_entry_id`, `action`, `timer_state`
+and `conflicts`. Errors remain HA exceptions even when responses are requested;
+automations use the event. Error text shows up to five conflicts with bounded
+single-line names and ISO UTC times; the event contains every validated conflict.
+Messages, credentials, timer logs and other raw receiver fields are excluded.
+No last-conflict storage or additional polling is added.
+
+Interfaces checked on 2026-09-20: [controller](https://github.com/oe-alliance/OpenWebif/blob/main/plugin/controllers/web.py)
+and [timer model](https://github.com/oe-alliance/OpenWebif/blob/main/plugin/controllers/models/timers.py).
+Independent implementation from interface behavior; no upstream code copied.
+This research does not replace acceptance on OpenWebif 1.4.4/2.4.0.
+
+
+`action_choices.py` publishes action descriptions through
+`async_set_service_schema`. Channels and known recording directories come from
+existing coordinator queries, with no extra receiver query per form. Lists are
+global, labelled by receiver and identified with the config entry and field type.
+Renaming labels leaves identities stable. Manual and selected inputs are mutually
+exclusive. Stored choices survive bouquet changes: receiver binding is always
+checked, but current catalog membership is not required. Saved automations do
+not depend on the most recently opened bouquet.
+
+Lists are replaced on coordinator updates, cleared on failure and removed on
+unload. The public API updates HA's description cache; an already open action
+page needs reloading to fetch changes. No artificial service-registration events.
+Paths include `timerlist.locations`, `default`, known timer directories and
+`movielist.directory`. No filesystem navigation or free/writable-space check.
+
+Native `datetime` selectors return local strings. `action_epoch` interprets these
+in `hass.config.time_zone`; the existing HA-independent `epoch` parser remains
+strict for other callers. UTC round trips of both `fold` values detect ambiguous
+and nonexistent local times. Explicit offsets and Unix seconds retain their
+previous meaning. [HA selector](https://www.home-assistant.io/docs/blueprint/selectors/#date--time-selector),
+[frontend output](https://github.com/home-assistant/frontend/blob/dev/src/components/ha-selector/ha-selector-datetime.ts);
+checked locally against HA 2026.9.1.
+
 
 ### Extensions from the OpenWebif research
 

@@ -167,6 +167,46 @@
         "auto": "Automatisch",
         "compatible": "Kompatibilität (immer umwandeln)"
       }
+    },
+    "timer_scope": {
+      "options": {
+        "single": "Einzeltermin",
+        "series": "Gesamte Serie"
+      }
+    },
+    "timer_weekdays": {
+      "options": {
+        "mon": "Montag",
+        "tue": "Dienstag",
+        "wed": "Mittwoch",
+        "thu": "Donnerstag",
+        "fri": "Freitag",
+        "sat": "Samstag",
+        "sun": "Sonntag"
+      }
+    },
+    "recording_type": {
+      "options": {
+        "normal": "Normal",
+        "descrambled": "Entschlüsselt mit ECM",
+        "scrambled": "Verschlüsselt"
+      }
+    },
+    "message_type": {
+      "options": {
+        "0": "Ja/Nein-Frage",
+        "1": "Information",
+        "2": "Warnung",
+        "3": "Fehler"
+      }
+    },
+    "after_recording": {
+      "options": {
+        "0": "Nichts tun",
+        "1": "Standby",
+        "2": "Tiefschlaf",
+        "3": "Automatisch"
+      }
     }
   },
   "entity": {
@@ -399,7 +439,7 @@
       "message": "Wähle genau einen geladenen Enigma2-Connect-Receiver."
     },
     "invalid_time": {
-      "message": "Gib eine Zeitzone und ein Ende nach dem Beginn an."
+      "message": "Prüfe Beginn und Ende. Die Auswahl verwendet die Home-Assistant-Zeitzone. Bei mehrdeutigen oder nicht existierenden Uhrzeiten während der Zeitumstellung nutze YAML mit explizitem UTC-Offset. Das Ende muss nach dem Beginn liegen."
     },
     "power_unconfirmed": {
       "message": "Keine vollständige Antwort auf den Power-Befehl erhalten. Der Receiver startet möglicherweise bereits neu oder fährt herunter. Prüfe seinen Zustand, bevor du erneut einen Befehl sendest."
@@ -472,6 +512,24 @@
     },
     "recording_timer_data": {
       "message": "Die vorhandenen Timer konnten nicht sicher geprüft werden. Prüfe die Timerliste in OpenWebif. Es wurde keine Aufnahme gestartet."
+    },
+    "timer_edit_data": {
+      "message": "Die Timerdaten sind unvollständig oder die neuen Zeiten ungültig. Es wurde keine Änderung gesendet. Prüfe den Timer in OpenWebif."
+    },
+    "timer_edit_missing": {
+      "message": "Die bisherige Timerkennung ist nicht mehr eindeutig vorhanden. Lies Senderreferenz, Beginn und Ende erneut in OpenWebif ab."
+    },
+    "timer_edit_scope": {
+      "message": "Diese Änderung betrifft eine ganze Serie. Wähle ausdrücklich „Gesamte Serie“. Einzelne Serienfolgen können hier nicht bearbeitet werden."
+    },
+    "timer_edit_rejected": {
+      "message": "Der Receiver hat die Änderung abgelehnt. Timerwerte können trotzdem geändert worden sein. Prüfe die aktualisierte Liste in OpenWebif."
+    },
+    "timer_conflict": {
+      "message": "Der Receiver meldet Timerkonflikte: {conflicts}. Die Aktion wurde abgelehnt; beim Bearbeiten können Werte trotzdem geändert worden sein. Prüfe OpenWebif."
+    },
+    "invalid_action_choice": {
+      "message": "Wähle genau einen Sender: Senderauswahl oder manuelle Referenz. Die Auswahl muss zum gewählten Receiver passen. Gib auch den Aufnahmeordner nur über eines der beiden Felder an."
     }
   },
   "services": {
@@ -519,7 +577,7 @@
         },
         "type": {
           "name": "Nachrichtentyp",
-          "description": "0 = Ja/Nein-Frage, 1 = Information, 2 = Warnung, 3 = Fehler. Standard: 1 (Information)."
+          "description": "Ja/Nein-Frage, Information, Warnung oder Fehler. Standard: Information. Antworten auf Fragen werden nicht an Home Assistant zurückgegeben."
         },
         "timeout": {
           "name": "Dauer (Sekunden)",
@@ -536,16 +594,16 @@
           "description": "Receiver"
         },
         "service_reference": {
-          "name": "Sender-Service-Referenz",
-          "description": "Sender-Service-Referenz"
+          "name": "Senderreferenz manuell (Alternative)",
+          "description": "Nur ausfüllen, wenn keine Senderauswahl verwendet wird. Beim Bearbeiten ist dies der bisherige Sender."
         },
         "begin": {
-          "name": "Beginn (ISO mit Zeitzone oder Unix-Sekunden)",
-          "description": "Beginn (ISO mit Zeitzone oder Unix-Sekunden)"
+          "name": "Beginn",
+          "description": "Datum und Uhrzeit in der Home-Assistant-Zeitzone. YAML akzeptiert auch ISO-Zeiten mit UTC-Offset oder Unixsekunden."
         },
         "end": {
-          "name": "Ende (ISO mit Zeitzone oder Unix-Sekunden)",
-          "description": "Ende (ISO mit Zeitzone oder Unix-Sekunden)"
+          "name": "Ende",
+          "description": "Datum und Uhrzeit in der Home-Assistant-Zeitzone. YAML akzeptiert auch ISO-Zeiten mit UTC-Offset oder Unixsekunden."
         },
         "name": {
           "name": "Name",
@@ -560,8 +618,36 @@
           "description": "Nur umschalten"
         },
         "afterevent": {
-          "name": "Nach Aufnahme (0: nichts, 1: Standby, 2: Ausschalten, 3: automatisch)",
-          "description": "Nach Aufnahme (0: nichts, 1: Standby, 2: Ausschalten, 3: automatisch)"
+          "name": "Nach Aufnahme",
+          "description": "Nichts tun, Standby, Tiefschlaf oder automatisch. Beim Anlegen standardmäßig automatisch; beim Bearbeiten ohne Angabe unverändert."
+        },
+        "weekdays": {
+          "name": "Wochentage",
+          "description": "Wochentage"
+        },
+        "directory": {
+          "name": "Aufnahmepfad manuell (Alternative)",
+          "description": "Aufnahmeordner (leer: Standard)"
+        },
+        "tags": {
+          "name": "Tags (ein Wort pro Tag)",
+          "description": "Tags (ein Wort pro Tag)"
+        },
+        "disabled": {
+          "name": "Deaktiviert",
+          "description": "Deaktiviert"
+        },
+        "recording_type": {
+          "name": "Aufnahmeart",
+          "description": "Aufnahmeart"
+        },
+        "channel": {
+          "name": "Sender auswählen",
+          "description": "Sender aus dem gewählten Bouquet. Wähle den Eintrag deines Receivers. Alternativ die manuelle Referenz verwenden, nicht beide Felder."
+        },
+        "directory_selection": {
+          "name": "Aufnahmeordner auswählen",
+          "description": "Bekannte Aufnahmeordner des Receivers. Alternativ den Pfad manuell angeben. Kein Dateisystem-Browser."
         }
       }
     },
@@ -574,16 +660,20 @@
           "description": "Receiver"
         },
         "service_reference": {
-          "name": "Sender-Service-Referenz",
-          "description": "Sender-Service-Referenz"
+          "name": "Senderreferenz manuell (Alternative)",
+          "description": "Nur ausfüllen, wenn keine Senderauswahl verwendet wird. Beim Bearbeiten ist dies der bisherige Sender."
         },
         "begin": {
-          "name": "Beginn (ISO mit Zeitzone oder Unix-Sekunden)",
-          "description": "Beginn (ISO mit Zeitzone oder Unix-Sekunden)"
+          "name": "Beginn",
+          "description": "Datum und Uhrzeit in der Home-Assistant-Zeitzone. YAML akzeptiert auch ISO-Zeiten mit UTC-Offset oder Unixsekunden."
         },
         "end": {
-          "name": "Ende (ISO mit Zeitzone oder Unix-Sekunden)",
-          "description": "Ende (ISO mit Zeitzone oder Unix-Sekunden)"
+          "name": "Ende",
+          "description": "Datum und Uhrzeit in der Home-Assistant-Zeitzone. YAML akzeptiert auch ISO-Zeiten mit UTC-Offset oder Unixsekunden."
+        },
+        "channel": {
+          "name": "Sender auswählen",
+          "description": "Sender aus dem gewählten Bouquet. Wähle den Eintrag deines Receivers. Alternativ die manuelle Referenz verwenden, nicht beide Felder."
         }
       }
     },
@@ -596,16 +686,20 @@
           "description": "Receiver"
         },
         "service_reference": {
-          "name": "Sender-Service-Referenz",
-          "description": "Sender-Service-Referenz"
+          "name": "Senderreferenz manuell (Alternative)",
+          "description": "Nur ausfüllen, wenn keine Senderauswahl verwendet wird. Beim Bearbeiten ist dies der bisherige Sender."
         },
         "begin": {
-          "name": "Beginn (ISO mit Zeitzone oder Unix-Sekunden)",
-          "description": "Beginn (ISO mit Zeitzone oder Unix-Sekunden)"
+          "name": "Beginn",
+          "description": "Datum und Uhrzeit in der Home-Assistant-Zeitzone. YAML akzeptiert auch ISO-Zeiten mit UTC-Offset oder Unixsekunden."
         },
         "end": {
-          "name": "Ende (ISO mit Zeitzone oder Unix-Sekunden)",
-          "description": "Ende (ISO mit Zeitzone oder Unix-Sekunden)"
+          "name": "Ende",
+          "description": "Datum und Uhrzeit in der Home-Assistant-Zeitzone. YAML akzeptiert auch ISO-Zeiten mit UTC-Offset oder Unixsekunden."
+        },
+        "channel": {
+          "name": "Sender auswählen",
+          "description": "Sender aus dem gewählten Bouquet. Wähle den Eintrag deines Receivers. Alternativ die manuelle Referenz verwenden, nicht beide Felder."
         }
       }
     },
@@ -616,6 +710,84 @@
         "device_id": {
           "name": "Receiver",
           "description": "Receiver"
+        }
+      }
+    },
+    "timer_edit": {
+      "name": "Timer bearbeiten",
+      "description": "Ändert angegebene Felder eines Timers auf demselben Sender. Leere Felder nur senden, wenn sie gelöscht werden sollen. Serien werden als Ganzes bearbeitet.",
+      "fields": {
+        "device_id": {
+          "name": "Receiver",
+          "description": "Receiver"
+        },
+        "begin": {
+          "name": "Beginn",
+          "description": "Datum und Uhrzeit in der Home-Assistant-Zeitzone. YAML akzeptiert auch ISO-Zeiten mit UTC-Offset oder Unixsekunden."
+        },
+        "end": {
+          "name": "Ende",
+          "description": "Datum und Uhrzeit in der Home-Assistant-Zeitzone. YAML akzeptiert auch ISO-Zeiten mit UTC-Offset oder Unixsekunden."
+        },
+        "name": {
+          "name": "Name",
+          "description": "Name"
+        },
+        "description": {
+          "name": "Beschreibung",
+          "description": "Beschreibung"
+        },
+        "justplay": {
+          "name": "Nur umschalten",
+          "description": "Nur umschalten"
+        },
+        "afterevent": {
+          "name": "Nach Aufnahme",
+          "description": "Nichts tun, Standby, Tiefschlaf oder automatisch. Beim Anlegen standardmäßig automatisch; beim Bearbeiten ohne Angabe unverändert."
+        },
+        "weekdays": {
+          "name": "Wochentage",
+          "description": "Wochentage"
+        },
+        "directory": {
+          "name": "Aufnahmepfad manuell (Alternative)",
+          "description": "Aufnahmeordner (leer: Standard)"
+        },
+        "tags": {
+          "name": "Tags (ein Wort pro Tag)",
+          "description": "Tags (ein Wort pro Tag)"
+        },
+        "disabled": {
+          "name": "Deaktiviert",
+          "description": "Deaktiviert"
+        },
+        "recording_type": {
+          "name": "Aufnahmeart",
+          "description": "Aufnahmeart"
+        },
+        "old_service_reference": {
+          "name": "Senderreferenz manuell (Alternative)",
+          "description": "Nur ausfüllen, wenn keine Senderauswahl verwendet wird. Beim Bearbeiten ist dies der bisherige Sender."
+        },
+        "old_begin": {
+          "name": "Bisheriger Beginn",
+          "description": "Datum und Uhrzeit in der Home-Assistant-Zeitzone. YAML akzeptiert auch ISO-Zeiten mit UTC-Offset oder Unixsekunden."
+        },
+        "old_end": {
+          "name": "Bisheriges Ende",
+          "description": "Datum und Uhrzeit in der Home-Assistant-Zeitzone. YAML akzeptiert auch ISO-Zeiten mit UTC-Offset oder Unixsekunden."
+        },
+        "scope": {
+          "name": "Umfang der Änderung",
+          "description": "Umfang der Änderung"
+        },
+        "channel": {
+          "name": "Sender auswählen",
+          "description": "Sender aus dem gewählten Bouquet. Wähle den Eintrag deines Receivers. Alternativ die manuelle Referenz verwenden, nicht beide Felder."
+        },
+        "directory_selection": {
+          "name": "Aufnahmeordner auswählen",
+          "description": "Bekannte Aufnahmeordner des Receivers. Alternativ den Pfad manuell angeben. Kein Dateisystem-Browser."
         }
       }
     }

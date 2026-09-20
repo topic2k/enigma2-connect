@@ -41,7 +41,7 @@ rules:
     comment: Both user guides describe removing the entry and custom integration files.
   docs-triggers:
     status: done
-    comment: No integration-specific triggers; user guides explain standard HA state triggers.
+    comment: User guides document standard HA state triggers and the enigma2_connect_timer_conflict event with receiver targeting and validated conflict details.
   entity-event-setup:
     status: done
     comment: CoordinatorEntity owns entity subscriptions; recording preparation is stopped on entry unload.
@@ -87,7 +87,7 @@ rules:
     comment: test_repeated_poll_failure_logs_once_and_recovers verifies one failure and one recovery message across repeated polls.
   parallel-updates:
     status: done
-    comment: All nine platforms specify PARALLEL_UPDATES=0; API commands and coordinator catalogs use locks. Instant recording holds the command lock across fresh preflight, write and confirmation.
+    comment: All nine platforms specify PARALLEL_UPDATES=0; API commands and coordinator catalogs use locks. Instant recording and timer editing hold the command lock across fresh preflight, write and confirmation.
   reauthentication-flow:
     status: done
     comment: ConfigEntryAuthFailed and action failures initiate reauth; UI recovery and wrong-device tests exist.

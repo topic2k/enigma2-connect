@@ -167,6 +167,46 @@
         "auto": "Automatic",
         "compatible": "Compatibility (always convert)"
       }
+    },
+    "timer_scope": {
+      "options": {
+        "single": "Single timer",
+        "series": "Entire series"
+      }
+    },
+    "timer_weekdays": {
+      "options": {
+        "mon": "Monday",
+        "tue": "Tuesday",
+        "wed": "Wednesday",
+        "thu": "Thursday",
+        "fri": "Friday",
+        "sat": "Saturday",
+        "sun": "Sunday"
+      }
+    },
+    "recording_type": {
+      "options": {
+        "normal": "Normal",
+        "descrambled": "Descrambled with ECM",
+        "scrambled": "Scrambled"
+      }
+    },
+    "message_type": {
+      "options": {
+        "0": "Yes/no question",
+        "1": "Information",
+        "2": "Warning",
+        "3": "Error"
+      }
+    },
+    "after_recording": {
+      "options": {
+        "0": "Do nothing",
+        "1": "Standby",
+        "2": "Deep standby",
+        "3": "Automatic"
+      }
     }
   },
   "entity": {
@@ -399,7 +439,7 @@
       "message": "Select exactly one loaded Enigma2 Connect receiver."
     },
     "invalid_time": {
-      "message": "Provide a timezone and an end after the start."
+      "message": "Check start and end. Date/time selection uses the Home Assistant timezone. For ambiguous or nonexistent clock-change times, use YAML with an explicit UTC offset. End must follow start."
     },
     "power_unconfirmed": {
       "message": "No complete response to the power command was received. The receiver may already be restarting or shutting down. Check its state before sending another command."
@@ -472,6 +512,24 @@
     },
     "recording_timer_data": {
       "message": "Existing timers could not be checked reliably. Check the timer list in OpenWebif. No recording was started."
+    },
+    "timer_edit_data": {
+      "message": "Timer data is incomplete or the new times are invalid. No edit was sent. Check the timer in OpenWebif."
+    },
+    "timer_edit_missing": {
+      "message": "The existing timer identity is no longer unique or present. Reread its service reference, start and end in OpenWebif."
+    },
+    "timer_edit_scope": {
+      "message": "This edit affects an entire series. Explicitly select Entire series. Individual occurrences cannot be edited here."
+    },
+    "timer_edit_rejected": {
+      "message": "The receiver rejected the edit. Timer values may still have changed. Check the refreshed list in OpenWebif."
+    },
+    "timer_conflict": {
+      "message": "The receiver reports timer conflicts: {conflicts}. The action was rejected; edits may still have changed values. Check OpenWebif."
+    },
+    "invalid_action_choice": {
+      "message": "Choose exactly one channel input: channel selection or manual reference. Choices must belong to the selected receiver. Use only one of the two recording directory fields."
     }
   },
   "services": {
@@ -519,7 +577,7 @@
         },
         "type": {
           "name": "Message type",
-          "description": "0 = Yes/no question, 1 = Information, 2 = Warning, 3 = Error. Default: 1 (Information)."
+          "description": "Yes/no question, information, warning or error. Default: Information. Answers to questions are not returned to Home Assistant."
         },
         "timeout": {
           "name": "Duration (seconds)",
@@ -536,16 +594,16 @@
           "description": "Receiver"
         },
         "service_reference": {
-          "name": "Channel service reference",
-          "description": "Channel service reference"
+          "name": "Manual service reference (alternative)",
+          "description": "Fill only when not using channel selection. For editing, this identifies the existing channel."
         },
         "begin": {
-          "name": "Start (ISO with timezone or Unix seconds)",
-          "description": "Start (ISO with timezone or Unix seconds)"
+          "name": "Start",
+          "description": "Date and time in the Home Assistant timezone. YAML also accepts ISO times with UTC offset or Unix seconds."
         },
         "end": {
-          "name": "End (ISO with timezone or Unix seconds)",
-          "description": "End (ISO with timezone or Unix seconds)"
+          "name": "End",
+          "description": "Date and time in the Home Assistant timezone. YAML also accepts ISO times with UTC offset or Unix seconds."
         },
         "name": {
           "name": "Name",
@@ -560,8 +618,36 @@
           "description": "Zap only"
         },
         "afterevent": {
-          "name": "After recording (0: nothing, 1: standby, 2: shutdown, 3: automatic)",
-          "description": "After recording (0: nothing, 1: standby, 2: shutdown, 3: automatic)"
+          "name": "After recording",
+          "description": "Do nothing, standby, deep standby or automatic. Creation defaults to automatic; editing preserves the existing setting when omitted."
+        },
+        "weekdays": {
+          "name": "Weekdays",
+          "description": "Weekdays"
+        },
+        "directory": {
+          "name": "Manual recording path (alternative)",
+          "description": "Recording directory (empty: default)"
+        },
+        "tags": {
+          "name": "Tags (one word per tag)",
+          "description": "Tags (one word per tag)"
+        },
+        "disabled": {
+          "name": "Disabled",
+          "description": "Disabled"
+        },
+        "recording_type": {
+          "name": "Recording type",
+          "description": "Recording type"
+        },
+        "channel": {
+          "name": "Select channel",
+          "description": "Channel from the selected bouquet. Choose the entry for your receiver. Alternatively use the manual reference, not both fields."
+        },
+        "directory_selection": {
+          "name": "Select recording directory",
+          "description": "Known recording directories on the receiver. Alternatively enter the path manually. This is not a filesystem browser."
         }
       }
     },
@@ -574,16 +660,20 @@
           "description": "Receiver"
         },
         "service_reference": {
-          "name": "Channel service reference",
-          "description": "Channel service reference"
+          "name": "Manual service reference (alternative)",
+          "description": "Fill only when not using channel selection. For editing, this identifies the existing channel."
         },
         "begin": {
-          "name": "Start (ISO with timezone or Unix seconds)",
-          "description": "Start (ISO with timezone or Unix seconds)"
+          "name": "Start",
+          "description": "Date and time in the Home Assistant timezone. YAML also accepts ISO times with UTC offset or Unix seconds."
         },
         "end": {
-          "name": "End (ISO with timezone or Unix seconds)",
-          "description": "End (ISO with timezone or Unix seconds)"
+          "name": "End",
+          "description": "Date and time in the Home Assistant timezone. YAML also accepts ISO times with UTC offset or Unix seconds."
+        },
+        "channel": {
+          "name": "Select channel",
+          "description": "Channel from the selected bouquet. Choose the entry for your receiver. Alternatively use the manual reference, not both fields."
         }
       }
     },
@@ -596,16 +686,20 @@
           "description": "Receiver"
         },
         "service_reference": {
-          "name": "Channel service reference",
-          "description": "Channel service reference"
+          "name": "Manual service reference (alternative)",
+          "description": "Fill only when not using channel selection. For editing, this identifies the existing channel."
         },
         "begin": {
-          "name": "Start (ISO with timezone or Unix seconds)",
-          "description": "Start (ISO with timezone or Unix seconds)"
+          "name": "Start",
+          "description": "Date and time in the Home Assistant timezone. YAML also accepts ISO times with UTC offset or Unix seconds."
         },
         "end": {
-          "name": "End (ISO with timezone or Unix seconds)",
-          "description": "End (ISO with timezone or Unix seconds)"
+          "name": "End",
+          "description": "Date and time in the Home Assistant timezone. YAML also accepts ISO times with UTC offset or Unix seconds."
+        },
+        "channel": {
+          "name": "Select channel",
+          "description": "Channel from the selected bouquet. Choose the entry for your receiver. Alternatively use the manual reference, not both fields."
         }
       }
     },
@@ -616,6 +710,84 @@
         "device_id": {
           "name": "Receiver",
           "description": "Receiver"
+        }
+      }
+    },
+    "timer_edit": {
+      "name": "Edit timer",
+      "description": "Edits supplied fields of a timer on the same channel. Send empty fields only to clear them. Series are edited as a whole.",
+      "fields": {
+        "device_id": {
+          "name": "Receiver",
+          "description": "Receiver"
+        },
+        "begin": {
+          "name": "Start",
+          "description": "Date and time in the Home Assistant timezone. YAML also accepts ISO times with UTC offset or Unix seconds."
+        },
+        "end": {
+          "name": "End",
+          "description": "Date and time in the Home Assistant timezone. YAML also accepts ISO times with UTC offset or Unix seconds."
+        },
+        "name": {
+          "name": "Name",
+          "description": "Name"
+        },
+        "description": {
+          "name": "Description",
+          "description": "Description"
+        },
+        "justplay": {
+          "name": "Zap only",
+          "description": "Zap only"
+        },
+        "afterevent": {
+          "name": "After recording",
+          "description": "Do nothing, standby, deep standby or automatic. Creation defaults to automatic; editing preserves the existing setting when omitted."
+        },
+        "weekdays": {
+          "name": "Weekdays",
+          "description": "Weekdays"
+        },
+        "directory": {
+          "name": "Manual recording path (alternative)",
+          "description": "Recording directory (empty: default)"
+        },
+        "tags": {
+          "name": "Tags (one word per tag)",
+          "description": "Tags (one word per tag)"
+        },
+        "disabled": {
+          "name": "Disabled",
+          "description": "Disabled"
+        },
+        "recording_type": {
+          "name": "Recording type",
+          "description": "Recording type"
+        },
+        "old_service_reference": {
+          "name": "Manual service reference (alternative)",
+          "description": "Fill only when not using channel selection. For editing, this identifies the existing channel."
+        },
+        "old_begin": {
+          "name": "Existing start",
+          "description": "Date and time in the Home Assistant timezone. YAML also accepts ISO times with UTC offset or Unix seconds."
+        },
+        "old_end": {
+          "name": "Existing end",
+          "description": "Date and time in the Home Assistant timezone. YAML also accepts ISO times with UTC offset or Unix seconds."
+        },
+        "scope": {
+          "name": "Scope of change",
+          "description": "Scope of change"
+        },
+        "channel": {
+          "name": "Select channel",
+          "description": "Channel from the selected bouquet. Choose the entry for your receiver. Alternatively use the manual reference, not both fields."
+        },
+        "directory_selection": {
+          "name": "Select recording directory",
+          "description": "Known recording directories on the receiver. Alternatively enter the path manually. This is not a filesystem browser."
         }
       }
     }

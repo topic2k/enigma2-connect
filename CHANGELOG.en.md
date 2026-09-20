@@ -4,7 +4,7 @@
 
 ## Contents
 
-- [1.3.0-dev.4](#130-dev4)
+- [1.3.0-dev.6](#130-dev6)
 - [1.2.0](#120)
 - [1.1.3](#113)
 - [1.1.2](#112)
@@ -14,11 +14,28 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 1.3.0-dev.4
+## 1.3.0-dev.6
 
 Unreleased development version. Target for the requested EPG, timer and
-recording extensions. Instant recording is implemented; EPG search, timer
-editing and library management follow in later sections.
+recording extensions. Instant recording and timer editing are implemented;
+EPG search and library management follow in later sections.
+
+- Completed practical HA checks of selection controls, calendar updates, conflict
+  events and visible information messages with both receivers.
+- Documented direct receiver checks of editing, series, choice values and conflicts
+  on Octagon/OpenWebif 2.4.1 and Vu+/1.4.4. Both images may mutate a timer despite
+  rejecting an edit; see the additional practical HA checks.
+- Timer actions now offer named channel choices, native date/time controls in
+  the HA timezone and known receiver recording directory choices. Actions also offer
+  named message types and after-recording behavior. Channel/directory selections
+  are receiver-bound; manual YAML inputs remain supported. Ambiguous/nonexistent
+  local clock-change times are rejected.
+- Added timer editing with a separate old identity, preservation of omitted options
+  and readback. Add/edit support weekly series, directories, tags, disabled state
+  and recording type. Single timers and entire series are explicitly distinguished.
+  Receiver conflicts produce translated errors and structured HA events; rejected
+  edits may already have changed values. No automatic replay or rollback.
+  Section 3 accepted by both parties on 2026-09-20 following receiver and HA checks.
 
 - Added the “Record current programme” action and button: check fresh EPG and
   timers, start event-mode recording and refresh state. Existing recordings remain

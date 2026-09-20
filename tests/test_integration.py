@@ -47,6 +47,7 @@ async def test_actions_registered_without_entries(hass):
         "message",
         "record_now",
         "timer_add",
+        "timer_edit",
         "timer_delete",
         "timer_toggle",
     }

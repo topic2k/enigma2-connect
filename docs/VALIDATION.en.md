@@ -2,6 +2,193 @@
 
 # Verification summary
 
+## Home Assistant practical checks: 1.3.0-dev.6
+
+Tested on **2026-09-20** in the user's actual HA installation. The integration page
+showed **1.3.0-dev.6**, two receivers and 130 entities. Browser checks used
+**Tools → Actions**, **Events** and **Calendar**, with direct receiver readback of
+test timers. No dashboards or integration settings were changed.
+
+- Channel/directory lists displayed both receivers with correct binding. The native
+  calendar dialog and time controls were operated. Disabled timers created through
+  the forms were stored on both receivers for 2026-09-29, 16:25–16:27 local time,
+  with the selected channel, `/media/hdd/movie/` and `afterevent: 0`.
+- **After recording** and **Message type** displayed all four named German options.
+  Information messages sent through HA were visually confirmed on both receiver
+  screenshots. Other message types were not individually rechecked on screen.
+- Selecting the Vu+ device with Octagon channel/directory choices produced the
+  translated targeting error and created no additional timer.
+- Actual conflicts on **addition and editing, on both receivers**, were triggered
+  through HA actions. Four events were received and individually inspected in the
+  HA event viewer: correct `config_entry_id`, `action: timer_add` with
+  `timer_state: unknown`, and `action: timer_edit` with `timer_state: changed`.
+  The action UI showed concrete conflicts and the warning that timer data might
+  already have changed. The event subscription was stopped.
+- After enabling them, both form-created timers appeared in the HA calendar at
+  16:25. Another HA edit changed the Octagon timer's name/end; the calendar displayed
+  the new name and **16:25–16:30** in the event detail.
+- All dedicated test timers were removed. Final readback showed the original seven
+  Octagon timers and zero Vu+ timers; checked original fields were unchanged.
+  Repeated deletion produced the expected error.
+
+Evidence: `ha-ui-validation.json`, `.work/ha_ui_receiver_check.py`, and locally
+inspected `ha-ui-message-0.jpg`/`ha-ui-message-1.jpg` under
+`V:\enigma2-connect\.work\recording-workflows-checks` (harness in the parent
+`.work/`). Reports contain no credentials. These findings supplement the separate
+direct receiver and simulated HA checks.
+
+**Section 3 accepted by both parties:** Codex confirmed the completed checks;
+the user explicitly confirmed completion on **2026-09-20**. Completion commit on
+`feature/recording-workflows`: `feat: add timer editing and action selectors`. Actual weekly recording execution
+was not awaited; the Vu+'s missing DVB-S signal/EPG remains a known test boundary.
+No production source changed and no full CI rerun is needed for this evidence update;
+remote reconciliation and required current CI remain mandatory before PR/merge.
+
+## Real receiver checks: 1.3.0-dev.6, section 3
+
+On **2026-09-20**, with user authorization, the current production modules
+`OpenWebifClient`, `TimerEditor`, `action_choices` and `timer_conflicts` were tested
+against both physical receivers. The local harness invoked these modules directly;
+it did not operate the HA frontend or call services on the user's HA installation.
+Credentials came from an ignored local file and are excluded from reports.
+
+| Check | Octagon SF8008 4K Supreme | Vu+ Solo² |
+| --- | --- | --- |
+| Reported OpenWebif | 2.4.1 | 1.4.4 |
+| First TV bouquet channels / known paths | 41 / 4 | 34 / 1 |
+| Create disabled timer, edit and preserve options | passed | passed |
+| Reject stale identity without another change | passed | passed |
+| Mon/Fri → Tue/Thu weekly masks, reject single scope | passed | passed |
+| Ten-minute interval across midnight | passed | passed |
+| Channel/directory choice values, local time, After recording = Do nothing | saved and read back | saved and read back |
+| Enable/disable, delete, reject repeated deletion | passed | passed |
+| Information message after rejection | API acknowledged; display unchecked | API acknowledged; display unchecked |
+| Conflict on third simultaneous timer / conflict on edit | both detected | both detected |
+| Timer state after rejected edit | `changed` | `changed` |
+| Cleanup / original timers | no test timers; 7 unchanged | no test timers; still 0 |
+
+Conflicts used dedicated test timers on different transponders two weeks ahead,
+outside the computed windows of existing timers; all were removed immediately after
+the checks. Each response contained three conflicts accepted by the production
+parser. **Both images mutate the test timer before rejecting the edit.** Readback
+in `TimerEditor` detects this; no automatic rollback occurs. Original timers were
+compared before/after every run by identity, name, description, disabled status,
+recording/zap mode, after-event behavior, weekly mask, tags and directory; these
+fields remained unchanged.
+
+The first series attempt retained Monday as the start date while changing to
+Tue/Thu. Both receivers moved the date and the integration correctly raised
+`CommandUnconfirmed`. Updating the first occurrence to Tuesday as instructed made
+all series checks pass. Every attempt was cleaned up separately. Weekly masks and
+stored dates were read back; actual weekly recording execution was not awaited.
+According to the user file, the Vu+ has no DVB-S signal or EPG. Its directory came
+from `movielist.directory`, not `timerlist.locations`.
+
+Reports: `receiver-section3-*.json`; harness: `.work/receiver_section3.py` in the
+original local checkout. Reports reside under
+`V:\enigma2-connect\.work\recording-workflows-checks`, including the initial series
+attempts. No production code changed.
+
+The HA items pending at this stage were subsequently checked; see the preceding
+Home Assistant practical-check section for results and acceptance status.
+
+## Action controls: 1.3.0-dev.6, addition to section 3
+
+As of **2026-09-20**. Implemented named channel choices, native date/time controls,
+known receiver directory choices and named message-type/after-recording options.
+[Practical guide](USER_GUIDE.en.md#test-section-3-on-the-receiver).
+
+**Local checks passed:** 273 distinct tests across three overlapping runs using
+Python **3.14.7**, Home Assistant **2026.9.1** and
+pytest-homeassistant-custom-component **0.13.364**. The first run had 269 passing
+tests and two failures caused by an outdated timezone test API. After switching to
+`async_set_time_zone`, both cases and affected action tests passed on rerun.
+Three existing instant-recording/device-targeting tests complete coverage for the
+final source version. Receivers are simulated; this is not real frontend or receiver acceptance.
+
+Checks cover HA selector schemas/translations, local-time conversion including
+ambiguous/nonexistent times, two receivers and incorrect targeting, list updates
+and unloading, directory sources, manual YAML alternatives, named options and
+legacy integers 0–3 producing identical receiver parameters, defaults, and existing
+timer, recording and error handling.
+
+Combined statement/branch coverage uses the final action run for `services.py`
+and the first run for other modules, whose source remained unchanged:
+
+| Module | Coverage |
+| --- | --- |
+| `__init__.py` | 97.96 % |
+| `action_choices.py` | 100.00 % |
+| `coordinator.py` | 98.51 % |
+| `models.py` | 95.52 % |
+| `services.py` | 98.45 % |
+| `timer_edit.py` | 100.00 % |
+| `timer_conflicts.py` | 100.00 % |
+
+All exceed the unchanged 95% threshold. Ruff, formatting, syntax, strict mypy for
+**33** production modules, version/documentation checks and offline `uv lock --check`
+(159 packages) passed. Reports: `action-choices-*`, `action-enums-*` and `action-tail-*` under
+`V:\enigma2-connect\.work\recording-workflows-checks`. Quality review additionally
+covers the new controls under `action-setup`, `action-exceptions`,
+`exception-translations`, `strict-typing`, `test-coverage`, `docs-actions`,
+`docs-data-update` and `docs-known-limitations`; no criteria were lowered.
+
+The additional HA practical checks and acceptance by both parties are documented above. CI and remote reconciliation are required before PR/merge.
+
+## Timer editing and conflicts: 1.3.0-dev.5, section 3
+
+As of **2026-09-20**. Implemented `timer_edit`, extended creation options and
+structured conflict events. [Plan and limits](DEVELOPMENT.en.md#section-3-timer-editing-and-conflicts),
+[receiver test guide](USER_GUIDE.en.md#test-section-3-on-the-receiver).
+
+**Local checks passed:** Python **3.14.7**, Home Assistant **2026.9.1**,
+pytest-homeassistant-custom-component **0.13.364**. Initial run: 221 tests passed.
+After reviewing authentication/cancellation during rejected-edit readback and
+normalizing event action names, reran the same scope plus additional cases:
+**228 tests passed**, with no failures or skipped cases. All receivers are
+simulated, including those used in real HA action tests.
+
+Checked: old/new identities, omitted-option preservation, VPS and padding,
+incomplete/ambiguous timer data, weekday masks and explicit series scope,
+midnight and explicit UTC offsets across clock changes, conflicts with and
+without mutation, readback and uncertain successes, response loss, cancellation,
+later-attempt guards, shared command lock, conflict projection without raw data,
+translated errors, events, valid HA selectors, calls with/without responses
+and isolation of two receivers. No independent conflict prediction or guarantee
+that receiver rejection preserves timer values.
+
+Scope: `test_timer_edit`, `test_workflow_actions`, `test_instant_recording`,
+`test_integration`, `test_translations`, `test_silver_controls`, `test_channel_media`,
+`test_gold_lifecycle`, `test_regressions`. Existing local HTTP tests continue
+to verify protection from automatic timer-write replay. Combined statement/branch
+coverage for changed/new production modules:
+
+| Module | Coverage |
+| --- | --- |
+| `coordinator.py` | 99.48 % |
+| `services.py` | 98.18 % |
+| `timer_edit.py` | 100.00 % |
+| `timer_conflicts.py` | 100.00 % |
+
+All exceed the unchanged 95% threshold. Ruff, formatting, syntax and mypy strict
+passed for **32** production modules. Version metadata and local documentation
+targets are consistent; `uv lock --check --offline` passed, with only the project
+version changing in the lockfile. Reports: `section3-tests.xml`, `section3-tests.log`,
+`section3-coverage.json` under `V:\enigma2-connect\.work\recording-workflows-checks`.
+
+Quality review: `action-setup`, `action-exceptions`, `parallel-updates`,
+`exception-translations`, `icon-translations`, `strict-typing`, `test-coverage`,
+`docs-actions`, `docs-triggers`, `docs-data-update`, `docs-known-limitations`.
+No criteria or thresholds lowered. Unchanged modules retain their previous
+evidence; no complete CI run or official HA quality tier is claimed.
+
+**Historical status before subsequent practical acceptance (see above):** Follow the new guide on Octagon and Vu+ using
+dedicated test timers. Option preservation, actual weekly recurrence and receiver
+conflicts including mutation despite rejection are not yet practically confirmed.
+A conflict that cannot be produced is not tested. Codex considers the local
+implementation ready for testing; user confirmation and the section commit remain
+pending. Refresh remote/main comparison before a PR; no merge or release here.
+
 ## Instant recording: 1.3.0-dev.4, section 2
 
 As of **2026-09-20**. Implemented `record_now` and the **Record current programme**

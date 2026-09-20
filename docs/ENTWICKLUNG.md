@@ -932,7 +932,7 @@ umsetzen. Basis ist der frisch abgerufene `origin/main`-Commit `1afa705`
 (Version 1.2.0), Arbeitsbranch `feature/recording-workflows`, Worktree
 `V:\enigma2-connect-worktrees\recording-workflows`. Für diesen Auftrag gilt
 ausdrücklich `main` als Ausgangsbasis statt der allgemeinen `develop`-Regel.
-Ziel ist **1.3.0-dev.4**, da der gesamte geplante Umfang neue,
+Ziel ist **1.3.0-dev.6**, da der gesamte geplante Umfang neue,
 rückwärtskompatible Funktionen enthält. Vor einem späteren PR ist die
 Versionsbasis erneut mit Remote, Tags und veröffentlichten Releases abzugleichen.
 
@@ -1007,7 +1007,13 @@ Qualitätsabgleich und ausdrückliche Nutzerfreigabe; Release nur auf Anweisung.
   `started: false` bei laufender Aufnahme und Ablehnung ohne EPG. Umfang und
   verbleibende Praxisnachweise siehe Prüfübersicht. Zugeordneter Abschlusscommit:
   `feat: add current programme instant recording`.
-- **3–5:** geplant, nicht begonnen.
+- **3 – Timerbearbeitung und Konflikte:** einschließlich der neuen
+  Aktionsauswahlfelder implementiert in **1.3.0-dev.6**; aktuelle lokale
+  Nachweise stehen in der [Prüfübersicht](VALIDIERUNG.md). Direkte Receiver-Tests
+  auf Octagon und Vu+ sowie HA-Oberflächen-, Kalender- und Ereignisprüfungen bestanden.
+  Am **20.09.2026** von Codex und Nutzer als fertig bestätigt. Abschlusscommit:
+  `feat: add timer editing and action selectors`.
+- **4–5:** geplant, nicht begonnen.
 
 `OpenWebifClient.command_result()` liefert die strukturierte erfolgreiche
 Antwort unter derselben Sperre wie `command()`. Bestehendes `command()` liefert
@@ -1017,7 +1023,7 @@ erzeugen `CommandRejectedError`, weiterhin ein `ProtocolError`, mit internem
 Rohe Antworten können private Metadaten enthalten: nicht protokollieren oder
 vollständig an HA weiterreichen; spätere Modelle projizieren nur benötigte Felder.
 Der Coordinator verwendet vorerst weiterhin die bestehende übersetzte
-Fehlermeldung; Konfliktdetails sind noch nicht in der Oberfläche verfügbar.
+Fehlermeldung; seit Abschnitt 3 ergänzt er validierte Konfliktdetails.
 
 Schnittstellenbeleg: [OpenWebif-Timermodell](https://github.com/oe-alliance/OpenWebif/blob/main/plugin/controllers/models/timers.py),
 am 19.09.2026 gelesen. Konfliktantworten enthalten `result=false` und eine
@@ -1157,6 +1163,108 @@ Die Ideen **1–5** sind seit 19.09.2026 zur Umsetzung beauftragt; Reihenfolge,
 Abnahme und Fortschritt stehen im [Umsetzungsplan](#umsetzungsplan-aufnahme-workflows).
 Die übrigen Ideen bleiben unverbindlich. Bereits vorhandene Teilfunktionen sind
 unten benannt.
+
+### Abschnitt 3: Timerbearbeitung und Konflikte
+
+Bedienergänzung vom **20.09.2026**, Ziel **1.3.0-dev.6**: Senderauswahl nach
+Namen aus dem gewählten Bouquet, native Datum/Uhrzeit-Felder und zusätzliche
+Auswahl bekannter Receiver-Aufnahmeordner ergänzen. HA-Aktionslisten sind global:
+Einträge nach Receiver kennzeichnen und die Gerätebindung vor jedem Aufruf prüfen.
+Manuelle YAML-Referenzen, Pfade und Zeiten mit Offset bleiben gültig. Lokale Zeiten
+in der HA-Zeitzone auslegen; mehrdeutige/nicht existierende Zeiten beim Zeitwechsel
+ablehnen. Auswahlmetadaten aus vorhandenen Abfragen aktualisieren und bei Entladen
+entfernen. HA-Selektoren, Gerätewechsel, Listenänderungen und Zeitgrenzen testen.
+
+
+Implementierungsplan vom **20.09.2026**, Ziel **1.3.0-dev.5**:
+
+1. `timer_add` um Wochentage, Ordner, Tags, deaktivierten Zustand und
+   Aufnahmeoptionen erweitern. `timer_edit` trennt alte Kennung und neue Werte;
+   nicht angegebene Felder aus einer frisch gelesenen Timerliste erhalten.
+2. Einzeltermin und ganze Serie ausdrücklich unterscheiden. Vorprüfung,
+   Änderung und Nachlesen unter derselben Befehlssperre ausführen; unvollständige
+   oder mehrdeutige Timerdaten vor dem Schreiben ablehnen.
+3. Receiver-Konflikte validieren und als übersetzten Fehler sowie strukturiertes
+   HA-Ereignis für Automationen bereitstellen. Keine lokale Tunerprognose.
+4. Bei Ablehnung den tatsächlichen Zustand neu lesen. OpenWebif kann vor der
+   Konfliktprüfung Änderungen vornehmen: Erhalt alter Werte prüfen, aber nicht
+   garantieren. Kein Löschen/Neuanlegen oder automatisches Rollback; unklare
+   Antworten nicht wiederholen.
+5. Wochenserien, Mitternacht, UTC-Offsets beim Zeitwechsel, Erhalt aller Optionen,
+   Konflikte mit und ohne Mutation, Abbruch, Antwortverlust und Gerätezuordnung
+   gezielt testen. DE/EN-Anleitung und Praxisprüfung ergänzen. Commit erst nach
+   beidseitiger Fertigbestätigung.
+
+
+`TimerEditor` liest vollständige Kennungen, verweigert auch Kollisionen der von
+OpenWebif verkürzten Senderreferenzen und erhält Pflichtwerte für die vollständige
+`timerchange`-Anfrage. Beschreibung und Name werden beim Zurückschreiben nicht
+HTML-dekodiert. Fehlende Pflichtwerte bleiben unbekannt und verhindern das
+Schreiben. Aufnahmeart und imageabhängige Optionen werden erhalten, soweit
+geliefert; Nachlaufwerte in Sekunden werden nur bei verlustfreier Umrechnung in
+ganze API-Minuten übergeben. VPS-Einstellungen und `allow_duplicate` werden
+ausdrücklich erhalten, weil Endpoint-Standardwerte sie sonst zurücksetzen.
+Ein Senderwechsel wird nicht angeboten: `timerchange` aktualisiert die EIT
+im geprüften Upstream nicht zuverlässig. Nullzeit-Umschalttimer sind als alte
+Kennung zulässig, der neue Zeitraum muss positive Dauer haben.
+
+Nach positiver Bestätigung werden Kennung und unterstützte Optionen erneut
+verglichen. Serien, die der Receiver auf einen anderen Termin weiterschiebt,
+oder abweichend gespeicherte Optionen bleiben damit unbestätigt. Erfolg enthält
+eine tatsächlich zurückgelesene Kennung, nicht bloß angefragte Zeiten. Nach
+Antwortverlust, Abbruch während/nach Schreiben oder fehlgeschlagenem Nachlesen
+bleibt die alte Kennung im laufenden Coordinator gesperrt. Neuladen löscht
+diese lokale Sperre; externe Clients werden nicht gesperrt. Der bekannte
+HTTP-Wiederholungsschutz gilt unverändert.
+
+Bei Ablehnung liest der Editor noch unter der Befehlssperre nach und vergleicht
+die unterstützten Felder des betroffenen Timers: `unchanged`, `changed`,
+`unknown`. Das schützt nicht atomar vor externen Änderungen oder Änderungen an
+anderen Konflikttimern. Es gibt kein automatisches Rollback. Die geplante
+Prüfung „Erhalt bei Ablehnung“ ist deshalb ein Zustandsvergleich, keine
+allgemeine Erhaltungsgarantie der Receiver-API.
+
+Der Coordinator projiziert nur vollständig validierte `TimerConflict`-Listen
+in `enigma2_connect_timer_conflict`, mit `config_entry_id`, `action`, `timer_state`
+und `conflicts`. Fehler bleiben HA-Ausnahmen auch bei angeforderten Antwortdaten;
+Automationen verwenden das Ereignis. Der Fehlertext zeigt höchstens fünf
+Konflikte mit begrenzten einzeiligen Namen und ISO-UTC-Zeiten; das Ereignis
+enthält alle gelieferten validierten Konflikte. Nachrichten, Zugangsdaten,
+Timerprotokolle und andere rohe Receiver-Felder werden nicht durchgereicht.
+Keine Speicherung einer letzten Konfliktliste und kein zusätzliches Polling.
+
+Schnittstellen am 20.09.2026 geprüft: [Controller](https://github.com/oe-alliance/OpenWebif/blob/main/plugin/controllers/web.py)
+und [Timermodell](https://github.com/oe-alliance/OpenWebif/blob/main/plugin/controllers/models/timers.py).
+Eigenständige Implementierung anhand der Schnittstellen; kein Upstream-Code
+übernommen. Diese Recherche ersetzt keine Abnahme auf OpenWebif 1.4.4/2.4.0.
+
+
+`action_choices.py` veröffentlicht HA-Aktionsbeschreibungen über
+`async_set_service_schema`. Sender und bekannte Aufnahmeordner stammen aus
+vorhandenen Coordinator-Abfragen; es gibt keine zusätzliche Receiver-Abfrage
+pro Formular. Auswahllisten sind global, mit Receiver-Namen beschriftet und
+als Kennung mit Konfigurationseintrag und Feldtyp gebunden. Umbenannte Anzeigen
+ändern die Kennung nicht. Manuelle und ausgewählte Werte schließen sich jeweils
+aus. Gespeicherte Auswahlen bleiben bei Bouquetwechsel gültig; die Gerätebindung
+wird immer geprüft, eine aktuelle Katalogmitgliedschaft wird nicht verlangt.
+Damit hängen gespeicherte Automationen nicht vom zuletzt geöffneten Bouquet ab.
+
+Die Listen werden bei Coordinator-Updates ersetzt, bei Fehlern geleert und beim
+Entladen entfernt. Der HA-Beschreibungscache wird über die öffentliche API
+aktualisiert; eine bereits geöffnete Aktionsseite muss zum erneuten Abruf neu
+geladen werden. Keine erfundenen Service-Registrierungsereignisse. Pfade umfassen
+`timerlist.locations`, `default`, bekannte Timerordner und `movielist.directory`.
+Es gibt keine Dateisystemnavigation oder Prüfung auf freien/beschreibbaren Speicher.
+
+`datetime`-Selektoren liefern lokale Zeichenketten. `action_epoch` interpretiert
+diese in `hass.config.time_zone`; der bestehende HA-unabhängige `epoch`-Parser
+bleibt für andere Aufrufer unverändert streng. UTC-Rückkonvertierung beider
+`fold`-Werte erkennt mehrdeutige und nicht existierende lokale Zeiten. Explizite
+UTC-Offsets und Unixsekunden behalten ihre bisherige Bedeutung.
+[HA-Selector](https://www.home-assistant.io/docs/blueprint/selectors/#date--time-selector),
+[Frontend-Ausgabe](https://github.com/home-assistant/frontend/blob/dev/src/components/ha-selector/ha-selector-datetime.ts);
+lokal gegen HA 2026.9.1 geprüft.
+
 
 ### Erweiterungen aus der OpenWebif-Recherche
 

@@ -218,3 +218,4 @@ class Snapshot:
     bouquet: str | None = None
     movie_directory: str | None = None
     media_channels: dict[str, Service] | None = None
+    recording_directories: tuple[str, ...] = ()

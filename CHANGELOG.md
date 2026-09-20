@@ -4,7 +4,7 @@
 
 ## Inhaltsverzeichnis
 
-- [1.3.0-dev.4](#130-dev4)
+- [1.3.0-dev.6](#130-dev6)
 - [1.2.0](#120)
 - [1.1.3](#113)
 - [1.1.2](#112)
@@ -14,11 +14,29 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 1.3.0-dev.4
+## 1.3.0-dev.6
 
 Unveröffentlichte Entwicklerversion. Zielversion für die beauftragten EPG-,
-Timer- und Aufnahmeerweiterungen. Sofortaufnahme ist umgesetzt; EPG-Suche,
-Timerbearbeitung und Bibliotheksverwaltung folgen in weiteren Abschnitten.
+Timer- und Aufnahmeerweiterungen. Sofortaufnahme und Timerbearbeitung sind
+umgesetzt; EPG-Suche und Bibliotheksverwaltung folgen in weiteren Abschnitten.
+
+- HA-Praxisprüfung der Auswahlfelder, Kalenderaktualisierung, Konfliktereignisse
+  und sichtbaren Informationsnachrichten mit beiden Receivern erfolgreich abgeschlossen.
+- Direkte Receiver-Prüfungen von Timerbearbeitung, Serien, Auswahlwerten und
+  Konflikten auf Octagon/OpenWebif 2.4.1 und Vu+/1.4.4 dokumentiert. Beide Images
+  können einen Timer trotz abgelehnter Bearbeitung verändern; siehe ergänzende HA-Praxisprüfung.
+- Timeraktionen erhalten Senderauswahl nach Namen, native Datum/Uhrzeit-Felder
+  in der HA-Zeitzone und eine zusätzliche Auswahl bekannter Receiver-Aufnahmeordner.
+  Nachrichtentyp und Verhalten nach der Aufnahme sind als benannte Auswahl verfügbar.
+  Auswahlen sind gerätegebunden; manuelle YAML-Eingaben bleiben unterstützt.
+  Mehrdeutige/nicht existierende lokale Zeiten beim Zeitwechsel werden abgelehnt.
+- Timerbearbeitung mit separater alter Kennung, Erhalt ausgelassener Optionen
+  und Nachlesen ergänzt. Anlegen/Bearbeiten unterstützen Wochenserien, Ordner,
+  Tags, Deaktivierung und Aufnahmeart. Einzeltermine und ganze Serien sind
+  ausdrücklich getrennt. Receiver-Konflikte erscheinen als übersetzter Fehler
+  und strukturiertes HA-Ereignis; Ablehnungen können bereits geänderte Timer
+  hinterlassen. Keine automatische Wiederholung oder Rücksetzung. Abschnitt 3 nach
+  Receiver- und HA-Praxisprüfung am 20.09.2026 beidseitig abgenommen.
 
 - Aktion und Button „Aktuelle Sendung aufnehmen“ ergänzt: gültiges EPG und
   Timer frisch prüfen, Aufnahme im Ereignismodus starten und Zustand aktualisieren.

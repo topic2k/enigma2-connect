@@ -17,8 +17,10 @@ from homeassistant.core import ServiceResponse, SupportsResponse, callback
 from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers import device_registry as dr
 
+from .action_choices import action_epoch, resolve_choices
 from .const import DOMAIN
-from .models import timer_range
+from .models import epoch, timer_range
+from .timer_edit import WEEKDAYS, options
 from .workflow_models import TimerIdentity
 
 
@@ -44,6 +46,44 @@ def register_services(hass: HomeAssistant) -> None:
         params = dict(call.data)
         params.pop("device_id")
         service = call.service
+        if service.startswith("timer_"):
+            try:
+                resolve_choices(
+                    params,
+                    coordinator.entry.entry_id,
+                    "old_service_reference" if service == "timer_edit" else "service_reference",
+                )
+            except ValueError as err:
+                raise ServiceValidationError(
+                    translation_domain=DOMAIN, translation_key="invalid_action_choice"
+                ) from err
+            try:
+                for key in ("begin", "end", "old_begin", "old_end"):
+                    if key in params:
+                        params[key] = action_epoch(params[key], hass.config.time_zone)
+            except ValueError as err:
+                raise ServiceValidationError(
+                    translation_domain=DOMAIN, translation_key="invalid_time"
+                ) from err
+        if service == "timer_edit":
+            try:
+                old = TimerIdentity(
+                    params.pop("old_service_reference"),
+                    epoch(params.pop("old_begin")),
+                    epoch(params.pop("old_end")),
+                )
+                if old.end < old.begin:
+                    raise ValueError("Invalid old interval")
+                for key in ("begin", "end"):
+                    if key in params:
+                        params[key] = epoch(params[key])
+            except ValueError as err:
+                raise ServiceValidationError(
+                    translation_domain=DOMAIN, translation_key="invalid_time"
+                ) from err
+            scope = params.pop("scope")
+            result = await coordinator.async_timer_edit(old, params, scope)
+            return result if call.return_response else None
         if service == "record_now":
             result = await coordinator.async_record_now()
             return result if call.return_response else None
@@ -66,7 +106,9 @@ def register_services(hass: HomeAssistant) -> None:
                 ) from err
             params["sRef"] = params.pop("service_reference")
             if service == "timer_add":
-                params.update(justplay=int(params["justplay"]), disabled=0, eit=0)
+                params = options(params)
+                params.setdefault("disabled", 0)
+                params["eit"] = 0
         is_timer = service.startswith("timer_")
         try:
             method = (
@@ -74,7 +116,13 @@ def register_services(hass: HomeAssistant) -> None:
                 if call.return_response
                 else coordinator.client.command
             )
-            await coordinator.perform(method, endpoint, refresh=False, **params)
+            await coordinator.perform(
+                method,
+                endpoint,
+                refresh=False,
+                timer_action=service if is_timer else None,
+                **params,
+            )
         except asyncio.CancelledError:
             if is_timer:
                 coordinator.invalidate_lists()
@@ -96,10 +144,23 @@ def register_services(hass: HomeAssistant) -> None:
     base: dict[Any, Any] = {vol.Required("device_id"): str}
     timer = {
         **base,
-        vol.Required("service_reference"): vol.All(str, vol.Strip, vol.Length(min=1)),
+        vol.Optional("service_reference"): vol.All(str, vol.Strip, vol.Length(min=1)),
+        vol.Optional("channel"): str,
         vol.Required("begin"): vol.Any(str, int),
         vol.Required("end"): vol.Any(str, int),
     }
+    extra = {
+        vol.Optional("directory_selection"): str,
+        vol.Optional("weekdays"): [vol.In(WEEKDAYS)],
+        vol.Optional("directory"): vol.All(str, vol.Match(r"^(?:/[^\x00\r\n]*|)\Z")),
+        vol.Optional("tags"): [vol.All(str, vol.Match(r"^\S+\Z"))],
+        vol.Optional("disabled"): bool,
+        vol.Optional("recording_type"): vol.In(("normal", "descrambled", "scrambled")),
+    }
+    enum_number = vol.All(
+        vol.Any(vol.All(int, vol.Range(min=0, max=3)), vol.In(("0", "1", "2", "3"))),
+        vol.Coerce(int),
+    )
     schemas = {
         "record_now": base,
         "reboot": base,
@@ -108,15 +169,31 @@ def register_services(hass: HomeAssistant) -> None:
         "message": {
             **base,
             vol.Required("text"): str,
-            vol.Optional("type", default=1): vol.All(int, vol.Range(min=0, max=3)),
+            vol.Optional("type", default=1): enum_number,
             vol.Optional("timeout", default=10): vol.All(int, vol.Range(min=1, max=120)),
         },
         "timer_add": {
             **timer,
+            **extra,
             vol.Required("name"): str,
             vol.Optional("description", default=""): str,
             vol.Optional("justplay", default=False): bool,
-            vol.Optional("afterevent", default=3): vol.All(int, vol.Range(min=0, max=3)),
+            vol.Optional("afterevent", default=3): enum_number,
+        },
+        "timer_edit": {
+            **base,
+            **extra,
+            vol.Optional("old_service_reference"): vol.All(str, vol.Strip, vol.Length(min=1)),
+            vol.Optional("channel"): str,
+            vol.Required("old_begin"): vol.Any(str, int),
+            vol.Required("old_end"): vol.Any(str, int),
+            vol.Required("scope"): vol.In(("single", "series")),
+            vol.Optional("begin"): vol.Any(str, int),
+            vol.Optional("end"): vol.Any(str, int),
+            vol.Optional("name"): str,
+            vol.Optional("description"): str,
+            vol.Optional("justplay"): bool,
+            vol.Optional("afterevent"): enum_number,
         },
         "timer_delete": timer,
         "timer_toggle": timer,

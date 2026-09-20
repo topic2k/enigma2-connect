@@ -499,7 +499,8 @@ Antworten auf Ja/Nein-Fragen werden derzeit nicht an Home Assistant zurückgegeb
 Auch Senderwechsel, Standby und Tastenfolgen lassen sich automatisieren.
 Die folgenden Beispiele zeigen dir die passenden Aktionen.
 
-Die Integration stellt keine eigenen Auslöser oder Bedingungen bereit. Verwende in
+Die Integration stellt keine eigenen Geräteauslöser oder Bedingungen bereit.
+Für Timerkonflikte gibt es das unten beschriebene Ereignis. Verwende in
 Automationen die Standard-Auslöser und Zustandsbedingungen von Home Assistant,
 zum Beispiel eine Änderung der Aufnahme- oder Verbindungsanzeige.
 
@@ -508,7 +509,7 @@ zum Beispiel eine Änderung der Aufnahme- oder Verbindungsanzeige.
 Die folgenden Beispiele helfen dir bei eigenen Skripten und Automationen.
 Du kannst sie unter **Entwicklerwerkzeuge → Aktionen** im YAML-Modus ausprobieren
 oder als einzelne Aktion in eine Automation übernehmen. YAML ist dabei die
-Textansicht der Einstellungen. Die Beispiele enthalten keinen Auslöser.
+Textansicht der Einstellungen. Einzelne Aktionsbeispiele enthalten keinen Auslöser.
 
 Ersetze die Beispiel-Entitäten durch deine eigenen Ziele. Wähle bei einer
 Geräteaktion den Receiver zuerst in der Oberfläche aus; die YAML-Ansicht zeigt
@@ -523,8 +524,9 @@ dir seine `device_id`. Passe auch Senderkennungen und Termine an.
 | `enigma2_connect.message` | `device_id`, `text`, optional `type` (0–3, Standard 1) und `timeout` (1–120 Sekunden, Standard 10) |
 | `enigma2_connect.reboot`, `.restart_gui`, `.deep_standby` | `device_id`; Receiver-Neustart, GUI-Neustart oder Tiefschlaf |
 | `enigma2_connect.record_now` | `device_id`; laufende EPG-Sendung ab jetzt aufnehmen |
-| `enigma2_connect.timer_add` | `device_id`, `service_reference`, `begin`, `end`, `name`; optional `description`, `justplay`, `afterevent` |
-| `enigma2_connect.timer_delete`, `.timer_toggle` | `device_id`, `service_reference`, `begin`, `end` des vorhandenen Timers |
+| `enigma2_connect.timer_add` | `device_id`, `channel` oder `service_reference`, `begin`, `end`, `name`; optional `description`, `justplay`, `afterevent`, `weekdays`, `directory` oder `directory_selection`, `tags`, `disabled`, `recording_type` |
+| `enigma2_connect.timer_edit` | `device_id`, `channel` oder `old_service_reference`, `old_begin`, `old_end`, `scope`; nur gewünschte neue Werte angeben |
+| `enigma2_connect.timer_delete`, `.timer_toggle` | `device_id`, `channel` oder `service_reference`, `begin`, `end` des vorhandenen Timers |
 
 Wähle immer den gewünschten Receiver als Ziel. Namen mit einem führenden Punkt
 in der Tabelle beginnen genauso wie die erste Aktion derselben Zeile.
@@ -533,7 +535,7 @@ Für Tastenfolgen kannst du beispielsweise `menu`, `up`, `down` und `ok` verwend
 wiederholt die Folge. `hold_secs` größer als 0 sendet einen langen Tastendruck;
 wie lange er wirkt, hängt vom Receiver ab.
 
-Gib Beginn und Ende eines Timers mit Datum, Uhrzeit und Zeitzone wie im Beispiel
+Gib Beginn und Ende in YAML mit Datum, Uhrzeit und Zeitzone wie im Beispiel
 an. `+02:00` steht dort für die deutsche Sommerzeit; passe den Wert an deinen
 Termin und Standort an. Mit `justplay: true` schaltet der Receiver zum Sender,
 ohne aufzunehmen. `afterevent` bestimmt das Verhalten danach: 0 = nichts,
@@ -589,6 +591,202 @@ data:
   justplay: false
   afterevent: 3
 ```
+
+#### Timer bequem in der Aktionsoberfläche eingeben
+
+1. Öffne **Entwicklerwerkzeuge → Aktionen**, wähle die Timeraktion und den Receiver.
+2. Unter **Sender auswählen** wähle den Eintrag mit Receiver- und Sendernamen.
+   Die Liste enthält Sender aus dem aktuell gewählten Bouquet. Das Bouquet
+   kannst du über die Bouquet-Auswahl des Receivers ändern. Lade danach die
+   Aktionsseite neu, damit deren Auswahlliste neu eingelesen wird.
+3. Wähle **Beginn** und **Ende** mit den Datum/Uhrzeit-Feldern. Es gilt die
+   **Home-Assistant-Zeitzone** aus **Einstellungen → System → Allgemein**.
+   Dies gilt auch für **Bisheriger Beginn/Bisheriges Ende** beim Bearbeiten.
+   Bei Sommer-/Winterzeit sind doppelte oder nicht existierende Uhrzeiten nicht
+   eindeutig auswählbar: Verwende dann YAML mit einem ausdrücklichen UTC-Offset.
+4. Optional: Wähle **Aufnahmeordner auswählen**. Angeboten werden die vom
+   Receiver gemeldeten Lesezeichen, sein Standardordner und bekannte Ordner aus
+   Timer-/Aufnahmedaten. Es handelt sich um eine Liste, nicht um einen frei
+   navigierbaren Dateibrowser. Fehlende oder neue Pfade kannst du weiterhin unter
+   **Aufnahmepfad manuell (Alternative)** angeben.
+
+**Nachrichtentyp** bietet „Ja/Nein-Frage“, „Information“, „Warnung“ und „Fehler“.
+**Nach Aufnahme** bietet „Nichts tun“, „Standby“, „Tiefschlaf“ und „Automatisch“.
+Die bisherigen YAML-Zahlenwerte 0–3 bleiben gültig. Ohne Angabe gilt beim
+Nachrichtentyp weiterhin Information, beim Anlegen eines Timers automatisch;
+beim Bearbeiten bleibt der vorhandene Wert erhalten. Eine Ja/Nein-Antwort wird
+weiterhin nicht an HA zurückgemeldet.
+
+Die Auswahllisten sind für alle eingerichteten Receiver gemeinsam; Einträge
+tragen deshalb den Receiver-Namen. Die Auswahl muss zu **Receiver** passen,
+sonst wird die Aktion vor dem Schreiben abgelehnt. Wähle jeweils nur eine
+Methode: **Sender auswählen** oder **Senderreferenz manuell (Alternative)**,
+beziehungsweise Ordnerauswahl oder manueller Pfad. Unbenutzte optionale Felder
+weglassen. Die Senderauswahl für den Timer löst keinen Senderwechsel aus.
+
+Mit **Listen aktualisieren** werden die Daten neu abgefragt; lade anschließend
+die Aktionsseite neu. Bei Verbindungsfehlern können die Listen leer sein. Die
+Ordnerliste bestätigt nicht, dass das Laufwerk aktuell eingehängt oder beschreibbar
+ist. Gespeicherte Auswahlen behalten ihre Sender-/Pfadkennung, auch wenn später
+ein anderes Bouquet gewählt wird; der Receiver muss das Ziel weiterhin unterstützen.
+
+Bestehende YAML-Aufrufe mit `service_reference` bzw. `old_service_reference`,
+`directory`, ISO-Zeiten mit UTC-Offset oder Unixsekunden bleiben gültig. Im
+YAML-Modus einer Auswahl erscheinen `channel` und `directory_selection` mit
+einer gespeicherten Gerätebindung. Übernimm diese Werte aus der Oberfläche;
+für einen anderen Receiver wähle die Einträge erneut aus.
+
+#### Timer bearbeiten, Wochenserien und Konflikte
+
+Unter **Entwicklerwerkzeuge → Aktionen** bietet **Timer hinzufügen** jetzt auch
+Wochentage, Aufnahmeordner, Tags, deaktivierten Zustand und Aufnahmeart an.
+Ohne Wochentage entsteht ein Einzeltermin; mehrere Tage ergeben eine Wochenserie
+zur angegebenen Uhrzeit in der Zeitzone des Receivers. Beginn und Ende müssen den
+ersten gewünschten Termin einschließlich Datum bezeichnen. Liegt das Ende nach
+Mitternacht, verwende den Folgetag. ISO-Zeiten brauchen den korrekten UTC-Offset,
+zum Beispiel `+02:00` im Sommer und `+01:00` im Winter. Wiederholungen und
+Zeitumstellungen führt der Receiver aus.
+
+```yaml
+action: enigma2_connect.timer_add
+data:
+  device_id: DEINE_GERAETE_ID
+  service_reference: "1:0:19:283D:3FB:1:C00000:0:0:0:"
+  name: "E2C Test 3 Serie"
+  begin: "2026-09-21T18:00:00+02:00"
+  end: "2026-09-21T18:02:00+02:00"
+  weekdays: [mon, fri]
+  tags: [E2C, Test]
+  disabled: true
+  afterevent: 0
+```
+
+Passe Datum, Sender und Gerät an. `directory` ist ein absoluter Receiverpfad;
+leer bedeutet Standardordner. Verwende nur vorhandene, beschreibbare Ordner.
+`recording_type` kann `normal`, `descrambled` (entschlüsselt mit ECM) oder
+`scrambled` sein; Unterstützung und Entschlüsselung hängen vom Receiver ab.
+`justplay: true` legt einen Umschalttimer an. `afterevent` bedeutet 0: nichts,
+1: Standby, 2: herunterfahren, 3: automatisch. Tags bestehen jeweils aus einem
+Wort. Eine leere Liste löscht Tags bzw. Wiederholungen ausdrücklich.
+
+**Timer bearbeiten** ändert nur angegebene Felder auf demselben Sender. Lies die
+bisherige Kennung in OpenWebif unter `/api/timerlist` ab: `serviceref`, `begin`,
+`end`. Diese Werte gehören nach `old_service_reference`, `old_begin`, `old_end`.
+Nach einer Zeitänderung brauchst du für weitere Aktionen die neue Kennung.
+
+```yaml
+action: enigma2_connect.timer_edit
+data:
+  device_id: DEINE_GERAETE_ID
+  old_service_reference: "1:0:19:283D:3FB:1:C00000:0:0:0:"
+  old_begin: 1790006400
+  old_end: 1790006520
+  scope: series
+  end: "2026-09-21T18:05:00+02:00"
+  name: "E2C Test 3 geändert"
+```
+
+Die alten Zahlen sind Platzhalter: Übernimm die tatsächlich gespeicherten Werte.
+Für Einzeltermine wähle `scope: single`, für bestehende oder neu entstehende
+Serien `scope: series` (**Gesamte Serie**). Eine einzelne Folge einer Serie kann
+hier nicht geändert werden. Lass unveränderte Felder ganz weg; eine leere
+Zeichenkette oder Liste ist eine Änderung. Nicht angegebene Optionen werden
+frisch gelesen und erhalten, einschließlich vorhandener VPS-/Nachlaufoptionen.
+Unvollständige oder mehrdeutige Timerdaten werden vor dem Schreiben abgelehnt.
+Die optionale Antwort enthält `action: timer_edit` und die nachgelesene Kennung
+unter `timer`. Ohne Antwortvariable funktioniert die Aktion ebenfalls.
+
+**Bei Konflikten:** Die Aktion schlägt mit Sender, Titel und Zeitraum der vom
+Receiver gemeldeten Konflikte fehl. Beim Bearbeiten kann der Receiver Werte
+trotzdem schon geändert haben. Prüfe deshalb die aktuelle OpenWebif-Liste;
+es gibt kein automatisches Zurücksetzen und keine eigene Tunerprognose.
+Bei unklarer Antwort wird nicht erneut geschrieben. Für dieselbe alte Kennung
+bleibt die Bearbeitung bis zum Neuladen der Integration gesperrt. Prüfe vor einem
+Neuladen und weiteren Versuch den tatsächlichen Zustand. Wenn der Receiver eine
+Serie zeitlich weiterschiebt oder Optionen abweichend speichert, wird dies als
+nicht eindeutig bestätigte Änderung gemeldet.
+
+Für Automationen wird bei einer gültigen Konfliktliste das Ereignis
+`enigma2_connect_timer_conflict` ausgelöst. Es enthält `config_entry_id`, `action`,
+`timer_state` und `conflicts`. Jeder Konflikt enthält `service_reference`, `name`,
+`service_name`, `begin`, `end` (Unixsekunden). Nicht gelieferte Namen sind `null`.
+`timer_state` beschreibt beim Bearbeiten den nachgelesenen Vergleich der
+unterstützten Optionen des betroffenen Timers: `unchanged`, `changed` oder
+`unknown`. Es ist keine Garantie für andere Timer oder spätere Änderungen.
+Andere Ablehnungen ohne verwertbare Konfliktliste bleiben normale Aktionsfehler.
+
+Unter **Entwicklerwerkzeuge → Ereignisse** kannst du auf dieses Ereignis hören.
+Die dort angezeigte `config_entry_id` gehört in eine Automation, um den Receiver
+zu unterscheiden:
+
+```yaml
+alias: Receiver-Timerkonflikt melden
+triggers:
+  - trigger: event
+    event_type: enigma2_connect_timer_conflict
+    event_data:
+      config_entry_id: DEINE_KONFIGURATIONSEINTRAGS_ID
+actions:
+  - action: persistent_notification.create
+    data:
+      title: Timerkonflikt
+      message: >-
+        {{ trigger.event.data.conflicts | count }} Konflikte gemeldet.
+        Bitte die Timerliste in OpenWebif prüfen.
+```
+
+#### Abschnitt 3 auf dem Receiver prüfen
+
+Teststand **1.3.0-dev.6**. Prüfe auf Octagon und Vu+ getrennt. Aktualisiere die
+Integration und starte Home Assistant neu. Notiere Receiver, Image, OpenWebif-
+und Integrationsversion. Verwende ausschließlich eigens angelegte Testtimer.
+
+1. **Neue Auswahlfelder:** Lade die Aktionsseite nach dem Integrationsupdate neu.
+   Lege den folgenden Testtimer über Sendername, Datum/Uhrzeit-Auswahl und
+   angebotenen Aufnahmeordner an. Prüfe Sender, lokale Uhrzeiten und Pfad in
+   OpenWebif. Prüfe bei beiden Receivern die Zuordnung; ein Eintrag des anderen
+   Receivers muss abgelehnt werden. Kontrolliere zusätzlich einen bisherigen
+   YAML-Aufruf mit manueller Referenz und explizitem Zeitoffset. Sende eine
+   Nachricht mit **Nachrichtentyp: Information** und prüfe die Darstellung.
+   Wähle am deaktivierten Testtimer **Nach Aufnahme: Nichts tun** und prüfe
+   in OpenWebif, dass der Wert übernommen wurde.
+2. **Einzeltermin:** Lege einen deaktivierten Aufnahme-Testtimer für einen
+   zukünftigen Termin mit zwei Minuten Dauer und `afterevent: 0` an. Setze Name,
+   Beschreibung, zwei Tags und einen bekannten Aufnahmeordner. Lies seine
+   gespeicherte Kennung ab. Ändere mit **Timer bearbeiten**, `scope: single`, nur
+   Ende (+3 Minuten) und Name. Erwartet: neue Werte stimmen, Beschreibung,
+   Tags, Ordner, Deaktivierung und übrige Aufnahmeoptionen bleiben erhalten;
+   Antwort und HA-Kalender passen zur aktualisierten Liste. Deaktivierte Timer
+   erscheinen im HA-Kalender gegebenenfalls nicht.
+3. **Wochenserie:** Lege die obige deaktivierte Serie mit künftigem Datum an.
+   Erwartet: Montag/Freitag (`repeated: 17`). Ändere sie mit `scope: series` auf
+   Dienstag/Donnerstag (`weekdays: [tue, thu]`, `repeated: 10`) und passe den
+   ersten Termin auf einen gewählten Wochentag an. Ein unpassender Tag kann vom
+   Receiver verschoben und deshalb als unbestätigt gemeldet werden. Prüfe Zeiten
+   und unveränderte Optionen. Ein Versuch mit
+   `scope: single` muss ohne Schreibzugriff abgelehnt werden.
+4. **Mitternacht:** Ändere einen separaten Testtimer auf 23:55 bis 00:05 des
+   Folgetags. Erwartet: zehn Minuten Dauer. Falls du Zeitumstellungen zusätzlich
+   prüfst, verwende passende Offsets und kontrolliere die Receiver-Zeitzone;
+   stelle dafür nicht die Systemuhr um.
+5. **Veraltete Kennung:** Verwende nach einer Zeitänderung nochmals die alte
+   Kennung. Erwartet: verständlicher Fehler und kein weiterer geänderter Timer.
+6. **Konflikt:** Höre auf `enigma2_connect_timer_conflict`. Falls du mit deinen
+   Tunern einen Konflikt gezielt erzeugen kannst, lege sich überschneidende,
+   aktivierte Testtimer auf ausreichend vielen unterschiedlichen Transpondern
+   an, außerhalb produktiver Aufnahmen. Prüfe Konflikt beim Anlegen und beim
+   Verschieben eines Testtimers. Erwartet: Fehler mit Details und Ereignis für
+   den richtigen Receiver. Vergleiche danach die tatsächlichen Timerwerte;
+   berichte ausdrücklich, ob sie unverändert oder geändert sind. Lässt sich
+   kein Konflikt herstellen, notiere „nicht geprüft“.
+7. **Aufräumen:** Lösche die Testtimer anhand ihrer aktuellen Kennung. Prüfe,
+   dass der jeweils andere Receiver unverändert blieb. Keine produktiven Timer
+   für Konfliktversuche oder Löschtests verwenden.
+
+Rückmeldung je Receiver: Einzeltermin/Optionserhalt, Wochenserie, Mitternacht,
+veraltete Kennung, Konflikt beim Anlegen/Bearbeiten, Werte nach Ablehnung,
+Konfliktereignis und weitere Auffälligkeiten. Erst danach folgt die beidseitige
+Abnahme und der Abschnittscommit.
 
 #### Aktuelle Sendung sofort aufnehmen
 

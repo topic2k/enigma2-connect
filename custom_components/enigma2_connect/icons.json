@@ -189,6 +189,9 @@
   "services": {
     "record_now": {
       "service": "mdi:record-rec"
+    },
+    "timer_edit": {
+      "service": "mdi:timer-edit-outline"
     }
   }
 }
