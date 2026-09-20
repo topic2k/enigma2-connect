@@ -2,6 +2,18 @@
 
 # Verification summary
 
+## Release 1.3.0
+
+Publication was explicitly requested on **2026-09-20**.
+Revision `19e38b38b7991019ed34cd7355dfb36772e36fac`, merged through PR #12,
+also passes [Tests](https://github.com/topic2k/enigma2-connect/actions/runs/35536141715)
+and [Hassfest/HACS](https://github.com/topic2k/enigma2-connect/actions/runs/35536141893)
+on `main`. Release preparation changes only the changelogs and verification
+summaries; version, source code, dependencies and quality criteria stay unchanged.
+The receiver/HA evidence and pending hardware checks documented below remain
+unchanged. Checks for the actual release commit must also succeed before
+tagging and publication.
+
 ## Preparation for merging into main – 1.3.0
 
 On **2026-09-20**, refreshed remote branches, tags and releases: latest stable

@@ -17,7 +17,7 @@
 
 ## 1.3.0
 
-Unreleased. Target for the requested EPG, timer and
+Released on 2026-09-20. Includes the requested EPG, timer and
 recording extensions. Instant recording and timer editing are implemented;
 EPG search and cards have passed joint acceptance; library management has also passed joint acceptance.
 

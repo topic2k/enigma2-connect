@@ -17,7 +17,7 @@
 
 ## 1.3.0
 
-Unveröffentlicht. Zielversion für die beauftragten EPG-,
+Veröffentlicht am 20.09.2026. Enthält die beauftragten EPG-,
 Timer- und Aufnahmeerweiterungen. Sofortaufnahme und Timerbearbeitung sind
 umgesetzt; EPG-Suche und Karten sind gemeinsam abgenommen. Bibliotheksverwaltung ist ebenfalls gemeinsam abgenommen.
 

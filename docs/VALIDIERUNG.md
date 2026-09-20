@@ -2,6 +2,18 @@
 
 # Prüfübersicht
 
+## Release 1.3.0
+
+Die Veröffentlichung wurde am **20.09.2026** ausdrücklich beauftragt.
+Der nach PR #12 übernommene Stand `19e38b38b7991019ed34cd7355dfb36772e36fac`
+besteht auch auf `main` die [Tests](https://github.com/topic2k/enigma2-connect/actions/runs/35536141715)
+und [Hassfest/HACS](https://github.com/topic2k/enigma2-connect/actions/runs/35536141893).
+Die Release-Vorbereitung ändert ausschließlich Changelog und Prüfübersichten;
+Versionsnummer, Quellcode, Abhängigkeiten und Qualitätskriterien bleiben gleich.
+Die unten dokumentierten Receiver-/HA-Nachweise und offenen Hardwareprüfungen
+bleiben unverändert. Vor Tag und Veröffentlichung müssen auch die Prüfungen
+für den tatsächlichen Release-Commit erfolgreich sein.
+
 ## Vorbereitung der Übernahme nach main – 1.3.0
 
 Am **20.09.2026** den aktuellen Remote-Stand einschließlich Tags und Releases
