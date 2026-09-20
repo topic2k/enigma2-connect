@@ -12,6 +12,7 @@ from homeassistant.util import dt as dt_util
 
 from custom_components.enigma2_connect import async_unload_entry
 from custom_components.enigma2_connect.api import (
+    CommandRejectedError,
     ConnectionError,
     PowerCommandUnconfirmed,
     ProtocolError,
@@ -258,3 +259,20 @@ async def test_receiver_without_reported_mac_keeps_persistent_identity(hass, ent
     assert len(devices) == 1
     assert devices[0].identifiers == {("enigma2_connect", entry.unique_id)}
     assert not devices[0].connections
+
+
+async def test_structured_rejection_keeps_translated_ha_error(hass, entry, receiver, caplog):
+    await setup(hass, entry)
+    rejection = CommandRejectedError(
+        {"result": False, "message": "private-token", "conflicts": [{"name": "Private title"}]}
+    )
+    receiver[2].side_effect = rejection
+    with pytest.raises(HomeAssistantError) as caught:
+        await entry.runtime_data.perform(
+            entry.runtime_data.client.command, "timeradd", refresh=False
+        )
+    assert caught.value.translation_key == "request_failed"
+    assert caught.value.__cause__ is rejection
+    assert "private-token" not in str(caught.value)
+    assert "Private title" not in caplog.text
+    assert "private-token" not in caplog.text

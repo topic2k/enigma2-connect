@@ -4,6 +4,7 @@
 
 ## Inhaltsverzeichnis
 
+- [1.3.0-dev.1](#130-dev1)
 - [1.2.0](#120)
 - [1.1.3](#113)
 - [1.1.2](#112)
@@ -12,6 +13,22 @@
 - [1.0.2](#102)
 - [1.0.1](#101)
 - [1.0.0](#100)
+
+## 1.3.0-dev.1
+
+Unveröffentlichte Entwicklerversion. Zielversion für die beauftragten EPG-,
+Timer- und Aufnahmeerweiterungen; diese Benutzerfunktionen sind noch nicht verfügbar.
+
+- Umsetzungsplan für die Feature-Ideen 1–5 einschließlich abschnittsweiser,
+  beidseitiger Fertigbestätigung vor Commits zweisprachig dokumentiert.
+- API-Grundlage begonnen: strukturierte Befehlsantworten und intern zugängliche
+  Ablehnungsdetails erhalten. Bestehende Befehle liefern weiterhin `None`;
+  Ausnahmetexte enthalten keine rohen Receiver-Nachrichten.
+- Abschnitt 1a durch Nutzerprüfung auf Octagon SF8008 4K Supreme mit OpenATV
+  7.6.0.20260831 und OpenWebif 2.4.0 bestätigt: Nachrichten, Timer anlegen,
+  aktivieren/deaktivieren und löschen sowie erwartete Ablehnung beim erneuten
+  Löschen und anschließende Weiterbenutzung bestanden. Praxisnachweis und
+  beidseitigen Abschnittsabschluss dokumentiert.
 
 ## 1.2.0
 

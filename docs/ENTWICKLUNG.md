@@ -22,6 +22,7 @@ die [README](../README.md) bleibt der kurze Einstieg für Anwender.
 - [Dokumentation und Änderungen](#dokumentation-und-änderungen)
 - [Identität und Datenverarbeitung](#identität-und-datenverarbeitung)
 - [Validierung von Aktionen](#validierung-von-aktionen)
+- [Umsetzungsplan: Aufnahme-Workflows](#umsetzungsplan-aufnahme-workflows)
 - [Vorgemerkte Ideen](#vorgemerkte-ideen)
 - [Dateibestand und lokale Archive](#dateibestand-und-lokale-archive)
 
@@ -924,10 +925,93 @@ Ziffern und OK. Service-Referenzen lassen sich in OpenWebif ermitteln,
 Bouquetreferenzen über `/api/bouquets`. Die aktuelle Optionsoberfläche bietet
 eine feste Namensauswahl; frühere gespeicherte eigene Referenzen bleiben erhalten.
 
+## Umsetzungsplan: Aufnahme-Workflows
+
+Auftrag vom **19.09.2026**: die Ideen 1–5 als nächste Funktionserweiterung
+umsetzen. Basis ist der frisch abgerufene `origin/main`-Commit `1afa705`
+(Version 1.2.0), Arbeitsbranch `feature/recording-workflows`, Worktree
+`V:\enigma2-connect-worktrees\recording-workflows`. Für diesen Auftrag gilt
+ausdrücklich `main` als Ausgangsbasis statt der allgemeinen `develop`-Regel.
+Ziel ist **1.3.0-dev.1**, da der gesamte geplante Umfang neue,
+rückwärtskompatible Funktionen enthält. Vor einem späteren PR ist die
+Versionsbasis erneut mit Remote, Tags und veröffentlichten Releases abzugleichen.
+
+**Commit-Regel dieses Auftrags:** Erst wenn Nutzer und Codex einen Abschnitt
+beide ausdrücklich als fertig bestätigt haben, wird dieser auf dem Arbeitsbranch
+committet. Lokale Tests oder ein fertiger Entwurf ersetzen die Nutzerbestätigung
+nicht. Bestätigungen und Commit-Zuordnung werden hier fortgeschrieben.
+
+### Abschnitte und Abnahme
+
+1. **Gemeinsame Grundlage.** OpenWebif-Antworten je Testreceiver/Image prüfen,
+   strukturierte Befehlsantworten und Konfliktdaten erhalten, anschließend
+   typisierte EPG-/Timer-/Aufnahmemodelle und die HA-Antwortverarbeitung ergänzen.
+   Bestehende Aktionen und Serialisierung erhalten. Vor neuen Schreibaktionen
+   Wiederholungsschutz bei verlorenen Antworten und Zustandsabgleich festlegen.
+   Abnahme: Transport-, Fehler-, Parallelitäts- und Abbruchtests; bekannte und
+   nicht unterstützte Antwortformate ausdrücklich unterscheiden.
+2. **Sofortaufnahme (Idee 4).** Aktion und Button für die aktuelle EPG-Sendung,
+   klarer Fehler ohne geeignetes EPG, kein stiller Wechsel zu langer Aufnahme.
+   Timer, Kalender und Aufnahmestatus nach Erfolg aktualisieren. Abnahme:
+   Aufnahmegrenzen, laufende Aufnahme, Mehrfachbetätigung und Fehlerfälle.
+3. **Timerbearbeitung und Konflikte (Ideen 2/3).** Anlegen und Bearbeiten um
+   Wochentage, Ordner, Tags und Aufnahmeoptionen erweitern. Alte Timerkennung von
+   neuen Werten trennen. Receiver-Konflikte mit Sender, Titel und Zeitraum für
+   Anzeige und Automationen bereitstellen. Abnahme: Wochenserien, Mitternacht,
+   Sommer-/Winterzeit, Erhalt vorhandener Timer bei Ablehnung; keine Behauptung
+   unabhängiger Konfliktvorhersage. Einzeltermin und gesamte Serie unterscheiden.
+4. **EPG-Suche (Idee 1).** Bedarfsabhängige Titelsuche, ähnliche Sendungen und
+   Wiederholungstermine, begrenzte Treffer mit Zeiten und Beschreibung. Aufnahme
+   über Ereigniskennung und Senderreferenz. HA-Aktionen mit Antwortdaten und eine
+   Such-/Aufnahmeansicht in der optionalen Dashboard-Karte. Abnahme: Suche bis
+   Kalender, veraltete Treffer, fehlendes EPG, vorhandene Timer und Konflikte.
+5. **Aufnahmebibliothek (Idee 5).** Zuerst Tags/Filter, verfügbare Dateigröße und
+   gespeicherten Wiedergabefortschritt ergänzen; fehlende Daten bleiben unbekannt.
+   Danach Umbenennen, Verschieben und Löschen über Aktionen und Verwaltungsansicht.
+   Receiver und Zielordner eindeutig prüfen, Löschen in der Oberfläche bestätigen,
+   Papierkorbverhalten je Image klären. Katalog, Medienkennungen, Vorschaubilder
+   und vorhandene Streaming-Sitzungen berücksichtigen. Abnahme mit eigens
+   angelegten Testaufnahmen, einschließlich laufender Aufnahmen und Zielkonflikten.
+
+Jeder Abschnitt erhält passende lokale Tests, DE/EN-Dokumentation und einen
+aktualisierten Changelog. Bestehende Qualitäts-/Coverage-Grenzen bleiben erhalten.
+Mehrere Receiver, nicht unterstützte Funktionen, Abbruch und Wiederverbindung
+gehören zu den betroffenen Querschnittsprüfungen. Echte Receiver-/HA-Nachweise
+bleiben von Simulationen getrennt. Vor Übernahme nach `main`: aktuelle CI,
+Qualitätsabgleich und ausdrückliche Nutzerfreigabe; Release nur auf Anweisung.
+
+### Stand und nächster Schritt
+
+- **1a – Plan und strukturierte API-Antworten:** beidseitig abgeschlossen am
+  **20.09.2026**, Version **1.3.0-dev.1**. Codex bestätigt die lokale Prüfung;
+  der Nutzer bestätigt alle Praxisschritte auf dem Octagon SF8008 4K Supreme
+  (siehe [Prüfübersicht](VALIDIERUNG.md)). Zugeordneter Abschlusscommit auf
+  `feature/recording-workflows`: `feat: preserve structured receiver command responses`.
+- **1b – übrige Grundlage:** offen; Datenmodelle, HA-Antworten,
+  Wiederholungsschutz/Zustandsabgleich und Receiver-Formatprüfung fehlen noch.
+- **2–5:** geplant, nicht begonnen. Es gibt noch keine neuen Benutzeraktionen.
+
+`OpenWebifClient.command_result()` liefert die strukturierte erfolgreiche
+Antwort unter derselben Sperre wie `command()`. Bestehendes `command()` liefert
+weiterhin `None`. Ablehnungen über `result=false` bzw. bei Befehlen `state=false`
+erzeugen `CommandRejectedError`, weiterhin ein `ProtocolError`, mit internem
+`response`-Attribut. Ausnahmetext und `repr` enthalten keine Receiver-Nachricht.
+Rohe Antworten können private Metadaten enthalten: nicht protokollieren oder
+vollständig an HA weiterreichen; spätere Modelle projizieren nur benötigte Felder.
+Der Coordinator verwendet vorerst weiterhin die bestehende übersetzte
+Fehlermeldung; Konfliktdetails sind noch nicht in der Oberfläche verfügbar.
+
+Schnittstellenbeleg: [OpenWebif-Timermodell](https://github.com/oe-alliance/OpenWebif/blob/main/plugin/controllers/models/timers.py),
+am 19.09.2026 gelesen. Konfliktantworten enthalten `result=false` und eine
+`conflicts`-Liste. Diese Recherche ersetzt keine Receiver-Prüfung; es wurde kein
+Upstream-Implementierungscode übernommen.
+
 ## Vorgemerkte Ideen
 
-Diese Ideen sind unverbindlich; Prioritäten sind eine Einschätzung, keine Zusage
-für die nächste Version. Bereits vorhandene Teilfunktionen sind unten benannt.
+Die Ideen **1–5** sind seit 19.09.2026 zur Umsetzung beauftragt; Reihenfolge,
+Abnahme und Fortschritt stehen im [Umsetzungsplan](#umsetzungsplan-aufnahme-workflows).
+Die übrigen Ideen bleiben unverbindlich. Bereits vorhandene Teilfunktionen sind
+unten benannt.
 
 ### Erweiterungen aus der OpenWebif-Recherche
 
@@ -954,9 +1038,9 @@ und Rückgabeformate vor einer Umsetzung je OpenWebif-Version und Image prüfen.
 | 12 | Optional | Text an Eingabefelder senden | Suchbegriffe direkt eingeben, statt einzelne Fernbedienungstasten zu senden. `remotecontrol` besitzt einen `text`-Parameter; das aktive Eingabefeld am Receiver bleibt entscheidend. [Controller][ideas-controller] |
 | 13 | Größeres Projekt | Live-TV und Aufnahmen auf anderen Geräten abspielen | Erste Ausbaustufe als optionale [HLS-Wiedergabe](#externe-wiedergabe) umgesetzt; VOD-Spulen für geeignete TS-Aufnahmen ist umgesetzt. Die konkrete Browser-/Cast-Abnahme bleibt offen. OpenWebif bietet Stream-/Playlist-Endpunkte einschließlich eines HLS-Einstiegs. Codec-Unterstützung, Authentifizierung und gegebenenfalls Transcoding separat lösen; ein API-Endpunkt belegt keine funktionierende Wiedergabe auf jedem Zielgerät. [Streaming-Endpunkte][ideas-controller] |
 
-Als mögliche erste Ausbaustufe bietet sich **Sofortaufnahme → Timerbearbeitung
-mit Konfliktdetails → EPG-Suche mit Aufnahmeaktion** an. Das ist eine vorgeschlagene
-Reihenfolge, kein Umsetzungsauftrag.
+Der beauftragte Umsetzungsplan folgt nach der gemeinsamen Grundlage der
+Reihenfolge **Sofortaufnahme → Timerbearbeitung mit Konfliktdetails → EPG-Suche
+mit Aufnahmeaktion → Aufnahmebibliothek**.
 
 [ideas-api]: https://github.com/oe-alliance/OpenWebif/wiki/OpenWebif-API-documentation
 [ideas-timers]: https://github.com/oe-alliance/OpenWebif/blob/main/plugin/controllers/models/timers.py

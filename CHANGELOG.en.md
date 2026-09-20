@@ -4,6 +4,7 @@
 
 ## Contents
 
+- [1.3.0-dev.1](#130-dev1)
 - [1.2.0](#120)
 - [1.1.3](#113)
 - [1.1.2](#112)
@@ -12,6 +13,22 @@
 - [1.0.2](#102)
 - [1.0.1](#101)
 - [1.0.0](#100)
+
+## 1.3.0-dev.1
+
+Unreleased development version. Target for the requested EPG, timer and
+recording extensions; these user-facing features are not available yet.
+
+- Documented the implementation plan for feature ideas 1–5 in both languages,
+  including confirmation by both parties before committing each finished section.
+- Started the API foundation: retain structured command responses and internal
+  rejection details. Existing commands still return `None`; exception messages
+  exclude raw receiver messages.
+- Section 1a confirmed through user testing on Octagon SF8008 4K Supreme with
+  OpenATV 7.6.0.20260831 and OpenWebif 2.4.0: messages, timer creation,
+  enabling/disabling and deletion, expected rejection of repeated deletion and
+  subsequent operation passed. Recorded practical evidence and completion by
+  both parties.
 
 ## 1.2.0
 

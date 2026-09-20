@@ -22,6 +22,7 @@ and everyday use, see the [user guide](USER_GUIDE.en.md). The
 - [Documentation and changes](#documentation-and-changes)
 - [Identity and data handling](#identity-and-data-handling)
 - [Action validation](#action-validation)
+- [Implementation plan: recording workflows](#implementation-plan-recording-workflows)
 - [Recorded ideas](#recorded-ideas)
 - [Files and local archives](#files-and-local-archives)
 
@@ -868,10 +869,91 @@ service references from OpenWebif; `/api/bouquets` supplies bouquet references.
 The current options interface uses a fixed name dropdown and retains previously
 saved custom references.
 
+## Implementation plan: recording workflows
+
+Request dated **2026-09-19**: implement ideas 1–5 as the next feature expansion.
+Base: freshly fetched `origin/main` commit `1afa705` (version 1.2.0), branch
+`feature/recording-workflows`, worktree
+`V:\enigma2-connect-worktrees\recording-workflows`. This request explicitly
+selects `main` instead of the general `develop` branch rule. Target version:
+**1.3.0-dev.1**, reflecting the complete planned backward-compatible feature
+scope. Recheck remote branches, tags and published releases before a later PR.
+
+**Commit rule for this request:** Commit a section to the working branch only
+after both the user and Codex explicitly confirm it is finished. Local test
+success or a completed draft does not replace user confirmation. Record
+confirmations and the corresponding commits here as work progresses.
+
+### Sections and acceptance
+
+1. **Shared foundation.** Check OpenWebif responses for each test receiver/image,
+   preserve structured command results and conflict details, then add typed
+   EPG/timer/recording models and HA response handling. Preserve existing actions
+   and serialization. Before adding mutations, define replay protection for lost
+   responses and state reconciliation. Acceptance: transport, error, concurrency
+   and cancellation tests; distinguish known and unsupported response formats.
+2. **Instant recording (idea 4).** Action and button for the current EPG event,
+   explicit failure without suitable EPG, no silent long-recording fallback.
+   Refresh timers, calendar and recording state after success. Acceptance:
+   recording boundaries, ongoing recordings, repeated requests and failures.
+3. **Timer editing and conflicts (ideas 2/3).** Extend creation and editing with
+   weekdays, directory, tags and recording options. Separate original timer
+   identity from new values. Expose receiver conflicts with channel, title and
+   time range for display and automations. Acceptance: weekly recurrence,
+   midnight, daylight-saving transitions and preserving existing timers on
+   rejection; no claim of independent conflict prediction. Distinguish individual
+   calendar occurrences from the complete series.
+4. **EPG search (idea 1).** On-demand title search, similar events and repeats,
+   bounded results with times and descriptions. Record using event ID and service
+   reference. HA actions with response data and a search/recording view in the
+   optional dashboard card. Acceptance: search through calendar update, stale
+   results, missing EPG, existing timers and conflicts.
+5. **Recording library (idea 5).** First add tags/filters, available file size
+   and saved playback progress; missing values remain unknown. Then add rename,
+   move and delete actions and a management view. Validate receiver ownership
+   and destination directories, confirm deletion in the UI and verify image-
+   specific trash behaviour. Account for catalog, media identifiers, thumbnails
+   and existing streaming sessions. Acceptance uses dedicated test recordings,
+   including ongoing recordings and destination conflicts.
+
+Each section receives targeted local tests, DE/EN documentation and an updated
+changelog. Preserve existing quality/coverage thresholds. Multiple receivers,
+unsupported functions, cancellation and reconnection are relevant cross-cutting
+checks. Separate real receiver/HA evidence from simulations. Before merging into
+`main`: current CI, quality comparison and explicit user approval; release only
+on instruction.
+
+### Status and next step
+
+- **1a – plan and structured API responses:** completed by both parties on
+  **2026-09-20**, version **1.3.0-dev.1**. Codex confirms the local checks;
+  the user confirms all practical steps on the Octagon SF8008 4K Supreme
+  (see [verification summary](VALIDATION.en.md)). Corresponding completion commit
+  on `feature/recording-workflows`: `feat: preserve structured receiver command responses`.
+- **1b – remaining foundation:** pending; data models, HA responses, replay
+  protection/state reconciliation and receiver format checks remain outstanding.
+- **2–5:** planned, not started. No new user-facing actions are available yet.
+
+`OpenWebifClient.command_result()` returns structured success data under the same
+lock as `command()`. Existing `command()` still returns `None`. Rejections through
+`result=false`, or `state=false` for commands, raise `CommandRejectedError`, still
+a `ProtocolError`, with an internal `response` attribute. Exception text and
+`repr` exclude receiver messages. Raw responses may contain private metadata:
+do not log or forward them wholesale to HA; later models will project only the
+required fields. The coordinator still uses its existing translated failure
+message; conflict details are not available in the UI yet.
+
+Interface evidence: [OpenWebif timer model](https://github.com/oe-alliance/OpenWebif/blob/main/plugin/controllers/models/timers.py),
+read on 2026-09-19. Conflict replies contain `result=false` and a `conflicts`
+list. This research does not replace receiver testing; no upstream implementation
+code was copied.
+
 ## Recorded ideas
 
-These ideas are tentative; priorities are an assessment, not a commitment for
-the next version. Existing parts of the proposed features are identified below.
+Ideas **1–5** were requested for implementation on 2026-09-19; order, acceptance
+and progress are tracked in the [implementation plan](#implementation-plan-recording-workflows).
+The remaining ideas are tentative. Existing parts of the proposed features are
+identified below.
 
 ### Extensions from the OpenWebif research
 
@@ -898,9 +980,9 @@ support and response formats for each OpenWebif version and image before impleme
 | 12 | Optional | Send text to input fields | Enter search terms directly instead of sending individual remote keys. `remotecontrol` accepts a `text` parameter; the active receiver input field determines where it goes. [Controller][ideas-controller] |
 | 13 | Larger project | Play live TV and recordings on other devices | First stage implemented as optional [HLS playback](#external-playback); VOD seeking for suitable TS recordings is implemented; specific browser/Cast acceptance remains outstanding. OpenWebif provides stream/playlist endpoints including an HLS entry point. Address codec support, authentication and possibly transcoding separately; an API endpoint does not establish playback compatibility with every target device. [Streaming endpoints][ideas-controller] |
 
-A possible first phase is **instant recording → timer editing with conflict
-details → EPG search with a recording action**. This is a suggested order, not
-an implementation request.
+After the shared foundation, the requested implementation follows this order:
+**instant recording → timer editing with conflict details → EPG search with a
+recording action → recording library**.
 
 [ideas-api]: https://github.com/oe-alliance/OpenWebif/wiki/OpenWebif-API-documentation
 [ideas-timers]: https://github.com/oe-alliance/OpenWebif/blob/main/plugin/controllers/models/timers.py

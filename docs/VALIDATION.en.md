@@ -2,6 +2,53 @@
 
 # Verification summary
 
+## Recording workflows: 1.3.0-dev.1, section 1a
+
+Status **2026-09-19**, base `origin/main` at `1afa705`. Plan in the
+[developer guide](DEVELOPMENT.en.md#implementation-plan-recording-workflows).
+Structured API results and internal rejection details implemented. Targeted
+checks with Python **3.14.7**, Home Assistant **2026.9.1** and
+`pytest-homeassistant-custom-component 0.13.364`: **88 tests passed**, no
+failures or skips. Scope: `test_api.py`, `test_integration.py`,
+`test_regressions.py`, `test_silver_controls.py`. The changed `api.py` module
+reaches **96.35% combined statement/branch coverage**; this is not a new
+coverage measurement for the complete integration. Transport and receivers are
+simulated; HA regression tests use the real framework. Checked success/rejection
+responses, legacy return contract, shared command lock, cancellation/transport
+errors and translated HA errors without raw metadata in messages or logs.
+
+Ruff, formatting, strict mypy for the integration and syntax checks for the three
+changed Python files passed. `uv lock --offline` and `uv lock --check --offline`
+passed; only the local project version changed in the lockfile. Version locations
+and local documentation link targets checked. Run directly against the worktree;
+JUnit and API coverage reports are stored under
+`V:\enigma2-connect\.work\recording-workflows-checks`.
+**Practical evidence from the user's report on 2026-09-20:** Octagon SF8008
+4K Supreme, OpenATV **7.6.0.20260831 (2026-08-30)**, OpenWebif **2.4.0**, tested
+version **1.3.0-dev.1**. Screen message, timer creation, disabling/enabling and
+deletion all **passed**. Deleting the removed test timer again produced the
+expected German error: “Die Receiver-Anfrage ist fehlgeschlagen oder wurde
+abgelehnt.” The subsequent screen message also worked; no other issues reported.
+This test was performed by the user through Home Assistant with a real receiver,
+separate from the simulations above. The user's installed HA version was not provided.
+
+This confirms existing controls, visible rejection and continued operation on
+this device/image. Internal structured responses, concurrency and cancellation
+remain covered by automated tests only. No new receiver actions or current CI
+evidence for this state. Acceptance does not extend to other devices, images or sections.
+
+Affected quality criteria: `action-exceptions`, `parallel-updates`, `test-coverage`,
+`strict-typing`. Preserve existing translated HA errors and serialization;
+do not lower test thresholds. Response details are internal and must not be
+included wholesale in logs or diagnostics. The remaining foundation and feature
+sections 2–5 are pending. Section **1a** is complete for both parties following
+the previous Codex confirmation and the user's fully successful test report on
+2026-09-20. This evidence completes the same section and retains its tested
+version **1.3.0-dev.1**; runtime code and tests are unchanged from the successful
+local run. Recheck documentation links, version consistency and `git diff --check`
+at completion; no reason to repeat the complete test run.
+Earlier evidence below remains limited to its documented states.
+
 ## Release 1.2.0
 
 Explicit publication instruction received on **2026-09-16**. Release preparation

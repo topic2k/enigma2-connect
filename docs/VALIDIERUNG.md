@@ -2,6 +2,57 @@
 
 # Prüfübersicht
 
+## Aufnahme-Workflows: 1.3.0-dev.1, Abschnitt 1a
+
+Stand **19.09.2026**, Basis `origin/main` auf `1afa705`. Plan in der
+[Entwicklerdokumentation](ENTWICKLUNG.md#umsetzungsplan-aufnahme-workflows).
+Strukturierte API-Ergebnisse und interne Ablehnungsdetails implementiert.
+Gezielte Prüfung mit Python **3.14.7**, Home Assistant **2026.9.1** und
+`pytest-homeassistant-custom-component 0.13.364`: **88 Tests bestanden**,
+keine Fehler oder übersprungenen Tests. Umfang: `test_api.py`,
+`test_integration.py`, `test_regressions.py`, `test_silver_controls.py`.
+Das geänderte Modul `api.py` erreicht **96,35 % kombinierte Anweisungs-/
+Zweigabdeckung**; dies ist keine neue Abdeckungsmessung der gesamten Integration.
+Transport und Receiver sind simuliert, die HA-Regressionstests verwenden das
+echte Framework. Geprüft: erfolgreiche/abgelehnte Rückgaben, alter Rückgabevertrag,
+gemeinsame Befehlssperre, Abbruch/Transportfehler und übersetzte HA-Fehler ohne
+rohe Metadaten in Fehlermeldungen oder Logs.
+
+Ruff, Formatierung, strenge mypy-Prüfung der Integration und Syntaxprüfung der
+drei geänderten Python-Dateien bestanden. `uv lock --offline` sowie
+`uv lock --check --offline` bestanden; ausschließlich die lokale Projektversion
+änderte sich in der Lockdatei. Versionsstellen und lokale Dokumentationslinkziele
+geprüft. Lokaler Lauf gegen den Worktree; JUnit- und API-Coverage-Bericht liegen
+unter `V:\enigma2-connect\.work\recording-workflows-checks`.
+**Praxisnachweis aus Nutzerbericht vom 20.09.2026:** Octagon SF8008 4K Supreme,
+OpenATV **7.6.0.20260831 (2026-08-30)**, OpenWebif **2.4.0**, Teststand
+**1.3.0-dev.1**. Bildschirmnachricht, Timer anlegen, deaktivieren/aktivieren
+und löschen jeweils **OK**. Erneutes Löschen des entfernten Testtimers meldete
+wie erwartet: „Die Receiver-Anfrage ist fehlgeschlagen oder wurde abgelehnt.“
+Die anschließend gesendete Bildschirmnachricht funktionierte ebenfalls;
+keine weiteren Auffälligkeiten gemeldet. Dies ist ein vom Nutzer durchgeführter
+Test über Home Assistant mit einem echten Receiver, getrennt von den Simulationen
+oben. Die HA-Version der Nutzerinstallation wurde nicht mitgeteilt.
+
+Der Nachweis bestätigt die bestehenden Bedienabläufe, die sichtbare Ablehnung
+und die Weiterbenutzung danach auf diesem Gerät/Image. Interne strukturierte
+Antwortdaten, Parallelität und Abbruch sind weiterhin nur automatisiert geprüft.
+Keine neuen Receiver-Aktionen oder aktuelle CI für diesen Arbeitsstand.
+Die Abnahme erweitert sich nicht auf andere Receiver, Images oder Abschnitte.
+
+Betroffene Qualitätskriterien: `action-exceptions`, `parallel-updates`,
+`test-coverage`, `strict-typing`. Bestehende übersetzte HA-Fehler und Serialisierung
+bleiben erhalten; Testgrenzen werden nicht abgesenkt. Rückgabedetails sind intern
+und dürfen nicht vollständig in Logs oder Diagnosen gelangen. Die übrige
+Grundlage und Feature-Abschnitte 2–5 sind offen. Abschnitt **1a** ist mit der
+vorherigen Codex-Bestätigung und der vollständigen OK-Rückmeldung des Nutzers
+am 20.09.2026 beidseitig abgeschlossen. Die Praxisdokumentation vervollständigt
+denselben Abschnitt und behält dessen geprüfte Version **1.3.0-dev.1** bei;
+Laufzeitcode und Tests bleiben gegenüber dem erfolgreichen lokalen Lauf unverändert.
+Dokumentationslinks, Versionskonsistenz und `git diff --check` beim Abschluss
+erneut prüfen; kein Anlass für einen erneuten vollständigen Testlauf.
+Frühere Nachweise unten gelten nur für ihre Stände.
+
 ## Veröffentlichung 1.2.0
 
 Am **16.09.2026** ausdrücklich zur Veröffentlichung beauftragt. Die Release-Pflege

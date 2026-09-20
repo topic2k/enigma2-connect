@@ -33,6 +33,18 @@ class ProtocolError(ReceiverError):
     """Malformed reply or rejected command."""
 
 
+class CommandRejectedError(ProtocolError):
+    """A rejected request with structured details for explicit caller handling.
+
+    Keep receiver text out of the exception message and repr. The response may
+    contain private metadata and must not be logged or forwarded wholesale.
+    """
+
+    def __init__(self, response: JsonObject) -> None:
+        super().__init__("Receiver rejected the request")
+        self.response = response
+
+
 class PowerCommandUnconfirmed(ReceiverError):
     """Power transition may have started before its response was received."""
 
@@ -127,7 +139,7 @@ class OpenWebifClient:
                 if not isinstance(data, dict):
                     raise ProtocolError("Expected a JSON object")
                 if "result" in data and boolean(data["result"]) is False:
-                    raise ProtocolError("Receiver rejected the request")
+                    raise CommandRejectedError(data)
                 return data
         except (TimeoutError, aiohttp.ClientError) as err:
             # URLs and receiver response text may contain secrets: do not expose them.
@@ -149,10 +161,16 @@ class OpenWebifClient:
         return await self.request(f"/api/{endpoint}", params or None)
 
     async def command(self, endpoint: str, **params: Any) -> None:
+        """Run a command without returning response data, preserving existing callers."""
+        await self.command_result(endpoint, **params)
+
+    async def command_result(self, endpoint: str, **params: Any) -> JsonObject:
+        """Run a serialized command and retain its structured success response."""
         async with self.command_lock:
             data = await self.get(endpoint, **params)
             if "state" in data and boolean(data["state"]) is False:
-                raise ProtocolError("Receiver rejected the command")
+                raise CommandRejectedError(data)
+            return data
 
     async def keys(self, codes: list[int], delay: float = 0.3, hold: bool = False) -> None:
         if not codes or len(codes) > 500 or any(not 0 <= code <= 0x2FF for code in codes):
