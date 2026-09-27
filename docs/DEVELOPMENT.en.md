@@ -1187,19 +1187,19 @@ Interface: [OpenWebif audio API](https://github.com/oe-alliance/OpenWebif/wiki/O
 
 ## Recorded ideas
 
-### Timeshift – idea 8 (2.0.0-dev.2)
+Ideas **1–5 and 13** are implemented, as are ideas **6, 7 and 8**.
+The order and acceptance of the recording workflows are documented in the
+[implementation plan](#implementation-plan-recording-workflows).
+The remaining ideas are tentative. Implementation and practical acceptance
+are tracked separately; remaining verification limits are identified below.
+
+### Timeshift – idea 8 (2.0.0-dev.3)
 
 Plan and implementation: optional `tsstate` reads in existing fast polling, a dedicated snapshot value and binary sensor; device-scoped `timeshift_start`/`timeshift_stop` actions under the shared command lock. Check current standby and timeshift state, skip writes for an already reached target, and read status again after `tsstart`/`tsstop`. Missing confirmation is a translated error; refresh also follows failures. Both write endpoints use HTTP replay protection. No pause inference, extra timer or dependencies.
 
 Interface: [OpenWebif 2.4.0 controller](https://github.com/oe-alliance/OpenWebif/blob/2.4.0/plugin/controllers/web.py), existing source copy inspected on 2026-09-27. `state` acknowledges the call and `timeshiftEnabled` reports status; both fields are validated. Stop suppresses the save prompt. The restoration condition for the previously disabled setting is questionable in the inspected controller; future save prompts cannot be guaranteed unchanged. Image-specific practical acceptance remains necessary. Independent implementation, no GPL code copied.
 
 The sensor is unavailable in standby/without support, rather than falsely off. Authentication failures retain reauth handling. External remote controls do not share the command lock; confirmation is a snapshot. Simulated evidence and outstanding receiver/HA UI checks are listed in [Validation](VALIDATION.en.md).
-
-
-Ideas **1–5** were requested for implementation on 2026-09-19; order, acceptance
-and progress are tracked in the [implementation plan](#implementation-plan-recording-workflows).
-Ideas 7 and 8 are also implemented. The remaining ideas are tentative. Existing parts of the proposed features are
-identified below.
 
 ### Section 3: Timer editing and conflicts
 
@@ -1303,13 +1303,13 @@ source code; this does not establish that their additional functionality has
 been tested on the two test receivers or in a real HA installation. Check
 support and response formats for each OpenWebif version and image before implementation.
 
-| Nr. | Priority | Idea | Benefit, interface and limitations |
+| Nr. | Status / priority | Idea | Benefit, interface and limitations |
 | --- | --- | --- | --- |
-| 1 | High | Search EPG and record results directly | Find programmes by title, search repeat broadcasts and record results without entering times manually. Uses `epgsearch`, `epgsimilar`, `timeraddbyeventid`. Current/next programme display already exists; search and recording a result would be added. [EPG API][ideas-api] |
-| 2 | High | Edit timers and create weekly schedules | Extend existing timers and set weekdays, recording folders and tags. Creation, deletion, enabling/disabling and read-only calendar recurrences already exist. Extend through `timerchange` and `repeated`; distinguish individual calendar occurrences from the entire receiver timer. [Timer implementation][ideas-timers] |
-| 3 | High | Expose recording conflict details | Display conflicting programmes and times and make them available to automations. OpenWebif returns structured `conflicts` when creating/editing timers. This would extend current error handling, not establish a separate conflict prediction API. [Timer implementation][ideas-timers] |
-| 4 | High | Dedicated instant recording action | Dashboard button or voice action to record the current programme through `recordnow`. Event mode requires EPG; the alternative mode called “infinite” is limited to ten hours in the examined code. [Timer implementation][ideas-timers] |
-| 5 | High | Extend the recording library | Recording folders and the HA media source now exist. Further additions: tags/filters, metadata such as file size and previous playback progress, plus renaming, moving and deleting. OpenWebif offers `movielist`, `fullmovielist` and management actions. Account for image-specific deletion/trash behaviour. [Recording management][ideas-movies] |
+| 1 | Implemented | Search EPG and record results directly | Find programmes by title, search repeat broadcasts and record results without entering times manually. Uses `epgsearch`, `epgsimilar`, `timeraddbyeventid`. EPG search, similar programmes and recording a result are available. [EPG API][ideas-api] |
+| 2 | Implemented | Edit timers and create weekly schedules | Extend existing timers and set weekdays, recording folders and tags. Creation, deletion, enabling/disabling and read-only calendar recurrences already exist. Editing and weekly schedules are implemented through `timerchange` and `repeated`; distinguish individual calendar occurrences from the entire receiver timer. [Timer implementation][ideas-timers] |
+| 3 | Implemented | Expose recording conflict details | Display conflicting programmes and times and make them available to automations. OpenWebif returns structured `conflicts` when creating/editing timers. Conflict details are available in error handling; this does not establish a separate conflict prediction API. [Timer implementation][ideas-timers] |
+| 4 | Implemented | Dedicated instant recording action | An action and dashboard button to record the current programme are implemented through `recordnow`. Event mode requires EPG; the alternative mode called “infinite” is limited to ten hours in the examined code. [Timer implementation][ideas-timers] |
+| 5 | Implemented | Extend the recording library | Recording folders, the HA media source, tags/filters, metadata such as file size and previous playback progress, plus renaming, moving and deleting are implemented. OpenWebif offers `movielist`, `fullmovielist` and management actions. Account for image-specific deletion/trash behaviour. [Recording management][ideas-movies] |
 | 6 | Implemented | Disk space and system diagnostics | Free space per mount and optional RAM/uptime sensors are available. `about` supplies the underlying information. Normalize units and poll slowly; reported free RAM includes buffers and cache in the examined code. [Information model][ideas-info] |
 | 7 | Implemented | Select audio tracks | Dynamic selection of tracks reported by the receiver using `getaudiotracks` and `selectaudiotrack`, with regular updates and validation before switching. [Details](#audio-track-selection) |
 | 8 | Implemented | Explicit timeshift controls and status | Start/stop actions and a timeshift-active indicator through `tsstart`, `tsstop`, `tsstate`. `timeshiftEnabled` does not reliably indicate pause; the examined stop path suppresses the save prompt. [Controller][ideas-controller] |
@@ -1317,9 +1317,9 @@ support and response formats for each OpenWebif version and image before impleme
 | 10 | Medium | Receiver sleep timer | “Standby in 30 minutes” with status display through the receiver's own `sleeptimer`. Available fields and behaviour vary by image. [Timer implementation][ideas-timers] |
 | 11 | Optional | Power on without waking the television | For radio or background automations: `supports_powerup_without_waking_tv` and `set_powerup_without_waking_tv` are documented. Check image support; this does not replace waking from deep standby. [Control API][ideas-api] |
 | 12 | Optional | Send text to input fields | Enter search terms directly instead of sending individual remote keys. `remotecontrol` accepts a `text` parameter; the active receiver input field determines where it goes. [Controller][ideas-controller] |
-| 13 | Larger project | Play live TV and recordings on other devices | First stage implemented as optional [HLS playback](#external-playback); VOD seeking for suitable TS recordings is implemented; specific browser/Cast acceptance remains outstanding. OpenWebif provides stream/playlist endpoints including an HLS entry point. Address codec support, authentication and possibly transcoding separately; an API endpoint does not establish playback compatibility with every target device. [Streaming endpoints][ideas-controller] |
+| 13 | Implemented | Play live TV and recordings on other devices | Optional [HLS playback](#external-playback) for live TV and recordings and VOD seeking for suitable TS recordings are implemented; specific browser/Cast acceptance remains outstanding. OpenWebif provides stream/playlist endpoints including an HLS entry point. Address codec support, authentication and possibly transcoding separately; an API endpoint does not establish playback compatibility with every target device. [Streaming endpoints][ideas-controller] |
 
-After the shared foundation, the requested implementation follows this order:
+After the shared foundation, implementation followed this order:
 **instant recording → timer editing with conflict details → EPG search with a
 recording action → recording library**.
 

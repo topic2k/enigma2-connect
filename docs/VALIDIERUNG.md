@@ -3,7 +3,9 @@
 # Prüfübersicht
 
 
-## Timeshift – 2.0.0-dev.2
+## Timeshift – 2.0.0-dev.3
+
+Die nachträglich übernommene Ideenstatus-Dokumentation auf develop hatte dev.2 bereits vergeben. Deshalb Versionsabgleich auf dev.3; der unten geprüfte Timeshift-Funktionscode bleibt unverändert.
 
 Am 27.09.2026 lokal mit Python 3.14.7 und dem vorhandenen Home-Assistant-Testframework geprüft. Receiverantworten sind simuliert; die Wiederholungssperre verwendet zusätzlich einen lokalen HTTP-Testserver. 106 Tests für Timeshift, Integration, Aktionsantworten/Transport, Geräte-Lebenszyklus, Aktionsbeschreibungen und lesende Abnahme bestanden (335,64 Sekunden). Separat acht Icon-/Schreibschutzprüfungen sowie ein zusätzlicher Test für verlorene Antwort nach tatsächlich geändertem Zustand bestanden. `timeshift.py`: 100 % Anweisungs- und Zweigabdeckung (36 Anweisungen, 10 Zweige).
 

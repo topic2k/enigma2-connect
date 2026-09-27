@@ -1268,19 +1268,19 @@ Schnittstelle: [OpenWebif Audio-API](https://github.com/oe-alliance/OpenWebif/wi
 
 ## Vorgemerkte Ideen
 
-### Timeshift – Idee 8 (2.0.0-dev.2)
+Die Ideen **1–5 und 13** sind umgesetzt, ebenso die Ideen **6, 7 und 8**.
+Reihenfolge und Abnahme der Aufnahme-Workflows sind im
+[Umsetzungsplan](#umsetzungsplan-aufnahme-workflows) dokumentiert.
+Die übrigen Ideen bleiben unverbindlich. Umsetzung und praktische Abnahme
+werden getrennt betrachtet; verbleibende Prüfgrenzen sind unten benannt.
+
+### Timeshift – Idee 8 (2.0.0-dev.3)
 
 Plan und Umsetzung: optionale `tsstate`-Abfrage im vorhandenen schnellen Polling, eigener Snapshot-Wert und binärer Sensor; gerätegebundene Aktionen `timeshift_start`/`timeshift_stop` unter der gemeinsamen Befehlssperre. Aktuellen Standby- und Timeshift-Zustand prüfen, bereits erreichte Zielzustände ohne Schreiben behandeln, nach `tsstart`/`tsstop` den Zustand erneut lesen. Fehlende Bestätigung bleibt ein übersetzter Fehler; anschließende Aktualisierung auch nach Fehlern. Beide Schreibendpunkte nutzen den HTTP-Wiederholungsschutz. Keine Pauseableitung, kein zusätzlicher Timer, keine Abhängigkeiten.
 
 Schnittstelle: [OpenWebif 2.4.0 Controller](https://github.com/oe-alliance/OpenWebif/blob/2.4.0/plugin/controllers/web.py), vorhandene Quellkopie am 27.09.2026 geprüft. `state` bestätigt den Aufruf, `timeshiftEnabled` den Status; beide Felder werden validiert. Stopp unterdrückt das Speichernachfragen. Die Wiederherstellungsbedingung für die vorher deaktivierte Einstellung ist im untersuchten Controller fragwürdig; keine Zusicherung, dass spätere Speicherrückfragen unverändert bleiben. Imageabhängige praktische Abnahme bleibt nötig. Unabhängige Implementierung, kein GPL-Code übernommen.
 
 Der Sensor ist bei Standby/fehlender Unterstützung unverfügbar, nicht fälschlich aus. Authentifizierungsfehler lösen wie bisher Reauth aus. Externe Fernbedienungen teilen die Befehlssperre nicht; Bestätigungen sind Momentaufnahmen. Details der simulierten Nachweise und offene Receiver-/HA-Oberflächenprüfung siehe [Prüfübersicht](VALIDIERUNG.md).
-
-
-Die Ideen **1–5** sind seit 19.09.2026 zur Umsetzung beauftragt; Reihenfolge,
-Abnahme und Fortschritt stehen im [Umsetzungsplan](#umsetzungsplan-aufnahme-workflows).
-Ideen 7 und 8 sind ebenfalls umgesetzt. Die übrigen Ideen bleiben unverbindlich. Bereits vorhandene Teilfunktionen sind
-unten benannt.
 
 ### Abschnitt 3: Timerbearbeitung und Konflikte
 
@@ -1393,13 +1393,13 @@ Quellcode untersucht; ihre zusätzliche Funktionalität ist damit nicht auf den
 beiden Testreceivern oder in einer echten HA-Installation geprüft. Unterstützung
 und Rückgabeformate vor einer Umsetzung je OpenWebif-Version und Image prüfen.
 
-| Nr. | Priorität | Idee | Nutzen, Schnittstelle und Grenzen |
+| Nr. | Status / Priorität | Idee | Nutzen, Schnittstelle und Grenzen |
 | --- | --- | --- | --- |
-| 1 | Hoch | EPG durchsuchen und direkt aufnehmen | Sendungen nach Titel finden, Wiederholungstermine suchen und Treffer ohne manuelle Zeitangaben aufnehmen. Grundlage: `epgsearch`, `epgsimilar`, `timeraddbyeventid`. Die laufende/nächste Sendung wird bereits angezeigt; ergänzt würden Suche und Aufnahme aus einem Treffer. [EPG-API][ideas-api] |
-| 2 | Hoch | Timer bearbeiten und Wochenserien anlegen | Vorhandene Timer verlängern, Wochentage, Aufnahmeordner und Tags festlegen. Anlegen, Löschen, Aktivieren/Deaktivieren und lesende Kalenderwiederholungen sind vorhanden. Ergänzung über `timerchange` und `repeated`; einzelne Kalenderinstanzen nicht mit dem gesamten Receiver-Timer verwechseln. [Timerimplementierung][ideas-timers] |
-| 3 | Hoch | Aufnahmekonflikte gezielt auswerten | Kollidierende Sendungen mit Zeiten anzeigen und Automationen zugänglich machen. Beim Anlegen/Bearbeiten liefert OpenWebif strukturierte `conflicts`. Das wäre eine Erweiterung der bisherigen Fehlerauswertung, keine belegte separate Konfliktvorhersage. [Timerimplementierung][ideas-timers] |
-| 4 | Hoch | Sofortaufnahme als eigene Aktion | Dashboard-Button oder Sprachaktion „Aktuelle Sendung aufnehmen“ über `recordnow`. Der Ereignismodus benötigt EPG; der alternativ „unendlich“ genannte Modus ist im untersuchten Code auf zehn Stunden begrenzt. [Timerimplementierung][ideas-timers] |
-| 5 | Hoch | Aufnahmebibliothek erweitern | Aufnahmeordner und HA-Medienquelle sind inzwischen vorhanden. Weitere Ausbaustufen: Tags/Filter, zusätzliche Metadaten wie Dateigröße und bisheriger Wiedergabefortschritt sowie Umbenennen, Verschieben und Löschen. OpenWebif bietet `movielist`, `fullmovielist` und Verwaltungsaktionen. Lösch-/Papierkorbverhalten je Image berücksichtigen. [Aufnahmeverwaltung][ideas-movies] |
+| 1 | Umgesetzt | EPG durchsuchen und direkt aufnehmen | Sendungen nach Titel finden, Wiederholungstermine suchen und Treffer ohne manuelle Zeitangaben aufnehmen. Grundlage: `epgsearch`, `epgsimilar`, `timeraddbyeventid`. EPG-Suche, ähnliche Sendungen und Aufnahme aus einem Treffer sind verfügbar. [EPG-API][ideas-api] |
+| 2 | Umgesetzt | Timer bearbeiten und Wochenserien anlegen | Vorhandene Timer verlängern, Wochentage, Aufnahmeordner und Tags festlegen. Anlegen, Löschen, Aktivieren/Deaktivieren und lesende Kalenderwiederholungen sind vorhanden. Bearbeitung und Wochenserien sind über `timerchange` und `repeated` umgesetzt; einzelne Kalenderinstanzen nicht mit dem gesamten Receiver-Timer verwechseln. [Timerimplementierung][ideas-timers] |
+| 3 | Umgesetzt | Aufnahmekonflikte gezielt auswerten | Kollidierende Sendungen mit Zeiten anzeigen und Automationen zugänglich machen. Beim Anlegen/Bearbeiten liefert OpenWebif strukturierte `conflicts`. Die Konfliktdetails sind in der Fehlerauswertung verfügbar; eine separate Konfliktvorhersage ist damit nicht belegt. [Timerimplementierung][ideas-timers] |
+| 4 | Umgesetzt | Sofortaufnahme als eigene Aktion | Aktion und Dashboard-Button „Aktuelle Sendung aufnehmen“ sind über `recordnow` umgesetzt. Der Ereignismodus benötigt EPG; der alternativ „unendlich“ genannte Modus ist im untersuchten Code auf zehn Stunden begrenzt. [Timerimplementierung][ideas-timers] |
+| 5 | Umgesetzt | Aufnahmebibliothek erweitern | Aufnahmeordner, HA-Medienquelle, Tags/Filter, zusätzliche Metadaten wie Dateigröße und bisheriger Wiedergabefortschritt sowie Umbenennen, Verschieben und Löschen sind umgesetzt. OpenWebif bietet `movielist`, `fullmovielist` und Verwaltungsaktionen. Lösch-/Papierkorbverhalten je Image berücksichtigen. [Aufnahmeverwaltung][ideas-movies] |
 | 6 | Umgesetzt | Festplattenspeicher und Systemdiagnose | Freier Platz je Mountpunkt sowie optionale RAM- und Laufzeitsensoren sind vorhanden. `about` liefert die Grundlagen. Einheiten normalisieren und langsam abfragen; als frei gemeldeter RAM enthält im untersuchten Code auch Buffer und Cache. [Informationsmodell][ideas-info] |
 | 7 | Umgesetzt | Tonspur auswählen | Dynamische Auswahl der vom Receiver angebotenen Tonspuren über `getaudiotracks` und `selectaudiotrack`, einschließlich regelmäßiger Aktualisierung und Prüfung vor dem Umschalten. [Details](#tonspurauswahl) |
 | 8 | Umgesetzt | Timeshift gezielt steuern und anzeigen | Start-/Stopp-Aktionen und „Timeshift aktiv“ über `tsstart`, `tsstop`, `tsstate`. `timeshiftEnabled` ist kein verlässlicher Pausezustand; der untersuchte Stopp-Pfad unterdrückt die Speicherrückfrage. [Controller][ideas-controller] |
@@ -1407,9 +1407,9 @@ und Rückgabeformate vor einer Umsetzung je OpenWebif-Version und Image prüfen.
 | 10 | Mittel | Receiver-Sleeptimer | „In 30 Minuten Standby“ mit Statusanzeige über den geräteeigenen `sleeptimer`. Verfügbare Felder und Verhalten unterscheiden sich nach Image. [Timerimplementierung][ideas-timers] |
 | 11 | Optional | Einschalten ohne Mitwecken des Fernsehers | Für Radio oder Hintergrundautomationen: `supports_powerup_without_waking_tv` und `set_powerup_without_waking_tv` sind dokumentiert. Image-Unterstützung prüfen; die Funktion ersetzt kein Aufwecken aus Tiefschlaf. [Steuerungs-API][ideas-api] |
 | 12 | Optional | Text an Eingabefelder senden | Suchbegriffe direkt eingeben, statt einzelne Fernbedienungstasten zu senden. `remotecontrol` besitzt einen `text`-Parameter; das aktive Eingabefeld am Receiver bleibt entscheidend. [Controller][ideas-controller] |
-| 13 | Größeres Projekt | Live-TV und Aufnahmen auf anderen Geräten abspielen | Erste Ausbaustufe als optionale [HLS-Wiedergabe](#externe-wiedergabe) umgesetzt; VOD-Spulen für geeignete TS-Aufnahmen ist umgesetzt. Die konkrete Browser-/Cast-Abnahme bleibt offen. OpenWebif bietet Stream-/Playlist-Endpunkte einschließlich eines HLS-Einstiegs. Codec-Unterstützung, Authentifizierung und gegebenenfalls Transcoding separat lösen; ein API-Endpunkt belegt keine funktionierende Wiedergabe auf jedem Zielgerät. [Streaming-Endpunkte][ideas-controller] |
+| 13 | Umgesetzt | Live-TV und Aufnahmen auf anderen Geräten abspielen | Optionale [HLS-Wiedergabe](#externe-wiedergabe) für Live-TV und Aufnahmen sowie VOD-Spulen für geeignete TS-Aufnahmen sind umgesetzt. Die konkrete Browser-/Cast-Abnahme bleibt offen. OpenWebif bietet Stream-/Playlist-Endpunkte einschließlich eines HLS-Einstiegs. Codec-Unterstützung, Authentifizierung und gegebenenfalls Transcoding separat lösen; ein API-Endpunkt belegt keine funktionierende Wiedergabe auf jedem Zielgerät. [Streaming-Endpunkte][ideas-controller] |
 
-Der beauftragte Umsetzungsplan folgt nach der gemeinsamen Grundlage der
+Die Umsetzung erfolgte nach der gemeinsamen Grundlage in der
 Reihenfolge **Sofortaufnahme → Timerbearbeitung mit Konfliktdetails → EPG-Suche
 mit Aufnahmeaktion → Aufnahmebibliothek**.
 

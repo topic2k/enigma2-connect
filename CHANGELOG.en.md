@@ -4,7 +4,7 @@
 
 ## Contents
 
-- [2.0.0-dev.2](#200-dev2)
+- [2.0.0-dev.3](#200-dev3)
 - [1.3.0](#130)
 - [1.2.1](#121)
 - [1.2.0](#120)
@@ -16,11 +16,12 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 2.0.0-dev.2
+## 2.0.0-dev.3
 
 Unreleased development version.
 
 - Idea No. 8: device-scoped actions to start and stop timeshift and a regularly updated “Timeshift active” sensor. Preflight and confirmation share the command lock; lost responses never trigger automatic replay. Missing optional status data remains unavailable. Stop suppresses the save prompt; guides explain possible content loss and distinguish this status from playback pause.
+- Developer documentation: marked ideas 1–5 and 13 as implemented in both languages and updated their descriptions; remaining practical verification limits stay explicit.
 
 - **Breaking prerequisite:** OpenWebif **2.4.0 or later**. Support and retesting for 1.x end; older receiver installations need updating. The minimum matches the practically verified baseline of both receivers.
 - User confirmed audible speaker output; audio-track acceptance completed. The previous unreleased 1.4.0 target becomes 2.0.0 because of the changed prerequisites.

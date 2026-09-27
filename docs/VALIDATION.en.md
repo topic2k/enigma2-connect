@@ -4,7 +4,9 @@
 
 
 
-## Timeshift – 2.0.0-dev.2
+## Timeshift – 2.0.0-dev.3
+
+The subsequently incorporated idea-status documentation on develop had already assigned dev.2. Version reconciled to dev.3; the tested timeshift functional code below is unchanged.
 
 Locally checked on 2026-09-27 with Python 3.14.7 and the existing Home Assistant test framework. Receiver responses are simulated; replay protection additionally uses a local HTTP test server. 106 tests covering timeshift, integration, action responses/transport, device lifecycle, action descriptions and read-only acceptance passed (335.64 seconds). Eight separate icon/write-barrier checks and one additional test for a lost response after an actual state change also passed. `timeshift.py`: 100% statement and branch coverage (36 statements, 10 branches).
 

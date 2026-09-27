@@ -4,7 +4,7 @@
 
 ## Inhaltsverzeichnis
 
-- [2.0.0-dev.2](#200-dev2)
+- [2.0.0-dev.3](#200-dev3)
 - [1.3.0](#130)
 - [1.2.1](#121)
 - [1.2.0](#120)
@@ -16,11 +16,12 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 2.0.0-dev.2
+## 2.0.0-dev.3
 
 Unveröffentlichte Entwicklerversion.
 
 - Idee Nr. 8: gerätebezogene Aktionen zum Starten und Stoppen von Timeshift sowie ein regelmäßig aktualisierter Sensor „Timeshift aktiv“. Vorprüfung und Bestätigung unter Befehlssperre, keine automatische Wiederholung bei Antwortverlust. Fehlende optionale Statusdaten bleiben unverfügbar. Stopp unterdrückt die Speicherrückfrage; Anleitungen erläutern möglichen Inhaltsverlust und die Abgrenzung zum Pausezustand.
+- Entwicklerdokumentation: Ideen 1–5 und 13 in beiden Sprachfassungen als umgesetzt gekennzeichnet und ihre Beschreibungen aktualisiert; verbleibende praktische Prüfgrenzen bleiben ausgewiesen.
 
 - **Inkompatible Voraussetzung:** OpenWebif mindestens **2.4.0**. Unterstützung und erneute Prüfungen für 1.x entfallen; ältere Receiverinstallationen müssen aktualisiert werden. Die neue Mindestversion entspricht der praktisch geprüften Basis beider Receiver.
 - Nutzer bestätigt hörbare Lautsprecherausgabe; Tonspurabnahme abgeschlossen. Die bisherige unveröffentlichte Zielversion 1.4.0 wird wegen der geänderten Voraussetzungen zu 2.0.0.
