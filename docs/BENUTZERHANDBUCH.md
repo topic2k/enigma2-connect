@@ -696,6 +696,8 @@ aktualisieren und Home Assistant neu starten.
 
 Der Timer läuft auf dem Receiver auch ohne Home Assistant weiter. Er wird regelmäßig (standardmäßig alle 15 Sekunden) und nach Aktionen neu gelesen. Die Attribute `reported_minutes` und `action` zeigen ausschließlich gemeldete Werte: `standby` oder `shutdown` (Ausschalten/Deep Standby bei extern eingestelltem Timer). Gemeldete Minuten sind imageabhängig eine eingestellte oder verbleibende Dauer, kein verlässlicher Countdown. Fehlende Werte bleiben unbekannt; fehlende Statusunterstützung macht den Sensor unverfügbar.
 
+**Auf beiden Testreceivern mit OpenWebif 2.4.0 geprüft:** 30 Minuten werden bestätigt. Bei einer Minute läuft der Timer tatsächlich, der Receiver meldet jedoch `reported_minutes: 0`; HA zeigt deshalb „Sleeptimer-Änderung nicht bestätigt“. Nicht blind wiederholen. Nach Ablauf kann die normale Receiver-Rückfrage zunächst weiterlaufen, obwohl „Sleeptimer aktiv“ bereits aus ist. Der Sensor bestätigt den Timerzustand, nicht den erreichten Standby.
+
 Images können Dauer und Standby-Verhalten unterschiedlich umsetzen, Einstellungen dauerhaft speichern oder bestehende Powertimer verwenden. Bei einer Fehlermeldung kann der Timer bereits geändert sein: Prüfe den tatsächlichen Zustand am Receiver, bevor du erneut einstellst. Die Integration wiederholt Schreibbefehle nicht automatisch und umgeht keine Aufnahme-/Standby-Rückfragen des Images. Aktionen werden im Standby abgelehnt. Ein bereits inaktiver Timer wird beim Abbrechen nicht erneut geschrieben.
 
 ```yaml

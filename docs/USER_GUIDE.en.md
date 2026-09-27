@@ -643,6 +643,8 @@ library. Local simulations do not replace this hardware check.
 
 The timer runs on the receiver even without Home Assistant. Its status is read regularly (every 15 seconds by default) and after actions. Attributes `reported_minutes` and `action` contain only reported values: `standby` or `shutdown` (power off/deep standby for an externally configured timer). Depending on the image, reported minutes may be the configured or remaining duration, not a reliable countdown. Missing values stay unknown; missing status support makes the sensor unavailable.
 
+**Verified on both test receivers with OpenWebif 2.4.0:** 30 minutes is confirmed. A one-minute timer actually runs, but the receiver reports `reported_minutes: 0`, so HA displays “Sleep timer change was not confirmed”. Do not blindly repeat it. After expiry, the normal receiver prompt may still be running while “Sleep timer active” is already off. The sensor confirms timer state, not that standby has been reached.
+
 Images may handle durations and standby differently, persist settings or use existing power timers. After an error, the timer may already have changed: check the receiver before setting it again. The integration never automatically repeats writes and does not bypass the image's recording/standby prompts. Actions are rejected in standby. Cancelling an already inactive timer does not write again.
 
 ```yaml

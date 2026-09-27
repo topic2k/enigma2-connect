@@ -4,7 +4,7 @@
 
 ## Contents
 
-- [2.0.0-dev.9](#200-dev9)
+- [2.0.0-dev.10](#200-dev10)
 - [1.3.0](#130)
 - [1.2.1](#121)
 - [1.2.0](#120)
@@ -16,11 +16,13 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 2.0.0-dev.9
+## 2.0.0-dev.10
 
 Unreleased development version.
 
-- Idea no. 10: set the receiver sleep timer to standby in 1–999 minutes or cancel it; “Sleep timer active” sensor with reported minutes and target action. Preflight and fresh confirmation under the command lock, without automatic write retries. Image-specific deviations are reported as unconfirmed; no invented countdown. Actual receiver/HA acceptance remains pending.
+- Tested sleep timer dev.9 on both OpenWebif 2.4.0 receivers and in the installed HA UI. Setting 30 minutes, status display and cancellation confirmed; one minute actually starts, but the image reports `minutes=0`, so HA leaves it unconfirmed. Receiver expiry prompts observed. Complete CI passed. Dev.10 changes only documentation and version metadata; see verification summary for exact acceptance and limitations.
+
+- Idea no. 10: set the receiver sleep timer to standby in 1–999 minutes or cancel it; “Sleep timer active” sensor with reported minutes and target action. Preflight and fresh confirmation under the command lock, without automatic write retries. Image-specific deviations are reported as unconfirmed; no invented countdown. Actual receiver/HA testing with limitations documented in dev.10.
 
 - Practically checked idea no. 9 on both OpenWebif 2.4.0 receivers and in installed HA version dev.7: advancing position, pause, HA play/stop buttons, display and clearing attributes on return to live TV. Full CI passed. Confirmed limitation: `duration_sec` may describe the original programme rather than actual file length, making remaining time inaccurate accordingly. Test data removed and original states restored. Dev.8 changes documentation and version metadata only.
 

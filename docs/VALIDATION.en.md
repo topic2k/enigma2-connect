@@ -8,7 +8,23 @@ Checked on 2026-09-27 with Python 3.14.7 and the real Home Assistant test framew
 
 Quality review covers unambiguous device targeting, action registration, availability and recovery of optional status data, reauth, command locking, no automatic write retries, strict input, HA selectors, translations and read-only acceptance guard. One additional optional request in existing polling, no extra timer or runtime dependency. Existing quality criteria and coverage thresholds remain unchanged; offline lock update changes only the project version.
 
-**Pending:** actual setting/cancellation and expiry into standby on both receiver images, plus display/actions in the installed HA UI. Rounding, minute semantics, persistence and power-timer/recording conflicts depend on the image. Simulated status data do not establish successful real standby execution. Current complete CI for the eventual PR state remains required before main.
+The subsequent real test and its limitations are recorded below. Current complete CI for the eventual PR state remains required before main.
+
+### Practical test on 2026-09-27, documented in dev.10
+
+Tested implementation `ced94d63667e0877f56ec3b4fbb421b61f9ef130` (2.0.0-dev.9): [Tests](https://github.com/topic2k/enigma2-connect/actions/runs/36324995698) and [Hassfest/HACS](https://github.com/topic2k/enigma2-connect/actions/runs/36324995767) successful. 1079 backend tests, both frontend suites, Ruff and mypy passed; all 40 modules above 95% combined coverage. The 56 installed integration files match this commit (text comparison with normalized line endings). Codex did not install files or restart HA during this run.
+
+Tested directly and through the installed HA UI on Octagon SF8008 4K Supreme and Vu+ Solo² with OpenWebif 2.4.0:
+
+- Baseline: both awake, no recording or timeshift, no upcoming timers within the 15-minute preflight window; sleep timers off, target `shutdown`. Octagon already reported an active stream.
+- Used **Set sleep timer** for 30 minutes on each receiver. Both confirmed `enabled=true`, `minutes=30`, `action=standby`. HA sensors showed `on`, 30 minutes and standby. Device isolation verified: changing/cancelling one receiver left the other timer unchanged.
+- Used **Cancel sleep timer** on both. Receiver and HA confirmed `off`, minutes 0; channels and recording timer lists unchanged.
+- Set one minute through HA on each. Both timers actually ran, but both images returned `minutes=0` with decreasing `remaining` seconds. Dev.9 therefore explicitly reported **Sleep timer change was not confirmed**, without automatic retries. This is a verified limitation for short durations or durations not correctly reported by the image, not successful confirmation of arbitrary values from 1–999 minutes.
+- At expiry, both receivers showed their normal “standby or extend?” prompts with countdowns. Screenshots were read only; no remote confirmation was forced. Both entered standby automatically after the prompt timeout. The sleep timer sensor already reported `off` during the prompt; this does not establish that standby was reached. The default prompt extended the actual delay beyond the requested minute.
+- Requested 30 minutes again while each receiver was actually in standby: HA reported **Sleep timer unavailable. The receiver must be awake and provide valid status data.** No timer was activated.
+- Woke both and restored the original disabled `shutdown` target without activating a shutdown timer. Final direct comparison confirms original channel, power state, volume, mute, sleep timer state/target and unchanged recording timer lists and timeshift. HA finally shows both sleep timers off, minutes 0 and original target. Octagon continued reporting streaming at the check points; continuous external-stream picture/audio was not measured.
+
+Local evidence: `.work/sleep-hardware/` contains baselines, readbacks after HA actions, expiry/standby states, receiver images and `restored.json`; HA forms, attributes and errors were observed in this session. Normal setting to 30 minutes, cancellation, status display, actual expiry and standby rejection were checked on both devices. Short-duration confirmation and active-sensor interpretation remain explicitly limited. Other images, every individual value from 1–999, recording conflicts and persistence across receiver restarts were not accepted. Dev.10 changes documentation/version metadata only; reinstalling is unnecessary for these results.
 
 ## Playback position – 2.0.0-dev.7
 
