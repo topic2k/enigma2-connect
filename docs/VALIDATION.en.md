@@ -2,6 +2,14 @@
 
 # Verification summary
 
+## Release preparation 2.0.0 – 2026-09-27
+
+Remote branches, tags and published releases checked: latest stable version 1.3.0. The new OpenWebif 2.4.0 minimum requires 2.0.0. Runtime code is unchanged from develop `a3f55ac00528a53e68645361320e5e6c3a009998`: [Tests](https://github.com/topic2k/enigma2-connect/actions/runs/36330809746) and [Hassfest/HACS](https://github.com/topic2k/enigma2-connect/actions/runs/36330809804) passed; 1141 backend tests, both frontend suites and strict mypy for 41 modules passed, with all 41 modules above 95% combined statement/branch coverage.
+
+Quality checklist compared with main: no criteria, exemptions, CI checks or coverage thresholds relaxed. The feature-specific evidence below for audio tracks, timeshift, playback position, sleep timer, quiet power-up and text input applies to unchanged runtime code. Documented image/focus/Unicode limitations and unverified CEC suppression on Vu+ remain. Historically pending checks are not retrospectively marked as passed. This release preparation performs no new receiver or installed-HA acceptance tests.
+
+Version metadata including the offline lockfile synchronized to 2.0.0; dependencies unchanged. Before merge, test, hassfest and hacs must pass for the final PR revision; before tagging and publication they must also pass for the actual merged main commit. The requested changelog approval does not replace these checks.
+
 ## Text input – 2.0.0-dev.14
 
 Implemented on 2026-09-27: device-scoped `send_text`, 1–500 characters without control characters, preserved spaces/Unicode and shared command lock. The official OpenWebif 2.4.0 control model additionally calls `unquote`; pre-encoding once preserves literal percent sequences. A positive reply confirms issued character keys, not field contents.

@@ -4,7 +4,7 @@
 
 ## Contents
 
-- [2.0.0-dev.15](#200-dev15)
+- [2.0.0](#200)
 - [1.3.0](#130)
 - [1.2.1](#121)
 - [1.2.0](#120)
@@ -16,9 +16,9 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 2.0.0-dev.15
+## 2.0.0
 
-Unreleased development version.
+Approved for publication on 2026-09-27.
 
 - Idea 12 tested through the installed dev.14 HA UI on Octagon and Vu+ Solo² (OpenWebif 2.4.0): text including umlauts, spaces, `&`, `+`, `%20`, `?` and `#` visibly appended correctly, without automatic confirmation. Unsaved drafts discarded, standby restored and unchanged timer lists verified. Feature-revision CI passed. Dev.15 records acceptance without runtime changes.
 

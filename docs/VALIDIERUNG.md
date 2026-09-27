@@ -2,6 +2,14 @@
 
 # Prüfübersicht
 
+## Release-Vorbereitung 2.0.0 – 27.09.2026
+
+Remote-Stand, Tags und veröffentlichte Releases abgeglichen: letzte stabile Version 1.3.0. Die neue Mindestvoraussetzung OpenWebif 2.4.0 erfordert 2.0.0. Der Funktionscode entspricht unverändert develop `a3f55ac00528a53e68645361320e5e6c3a009998`: [Tests](https://github.com/topic2k/enigma2-connect/actions/runs/36330809746) und [Hassfest/HACS](https://github.com/topic2k/enigma2-connect/actions/runs/36330809804) erfolgreich; 1141 Backendtests, beide Frontendtestsuiten und striktes mypy für 41 Module bestanden, alle 41 Module über 95 % kombinierte Anweisungs-/Zweigabdeckung.
+
+Qualitätscheckliste mit main verglichen: keine Kriterien, Ausnahmen, CI-Prüfungen oder Abdeckungsgrenzen abgesenkt. Die nachfolgenden funktionsbezogenen Nachweise für Tonspur, Timeshift, Positionsdaten, Sleeptimer, Einschalten ohne TV und Texteingabe gelten für den unveränderten Funktionscode. Dokumentierte Image-/Fokus-/Unicode-Grenzen sowie die nicht belegte CEC-Unterdrückung auf Vu+ bleiben bestehen. Historisch offene Prüfungen werden nicht nachträglich als bestanden gewertet. Diese Release-Vorbereitung führt keine neue Receiver- oder installierte-HA-Abnahme durch.
+
+Versionsstellen einschließlich Offline-Lockdatei auf 2.0.0 synchronisiert; keine Abhängigkeiten geändert. Vor Merge müssen test, hassfest und hacs für den endgültigen PR-Stand erfolgreich sein; vor Tag und Veröffentlichung zusätzlich für den tatsächlich übernommenen main-Commit. Die beauftragte Freigabe der Changelogs ersetzt diese Prüfungen nicht.
+
 ## Texteingabe – 2.0.0-dev.14
 
 Implementiert am 27.09.2026: Geräteaktion `send_text`, 1–500 Zeichen ohne Steuerzeichen, unveränderte Leerzeichen/Unicode und gemeinsame Befehlssperre. Das offizielle OpenWebif-2.4.0-Steuermodell decodiert zusätzlich mit `unquote`; einmaliges Vorcodieren erhält literale Prozentsequenzen. Eine positive Antwort bestätigt nur ausgegebene Zeichentasten, keinen Feldinhalt.
