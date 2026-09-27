@@ -10,7 +10,20 @@ Am 27.09.2026: 82 Tests für Tonspuren, Integration, Bedienelemente, Übersetzun
 
 Ruff, mypy und Python-Syntaxprüfung bestanden. Lockdatei offline aktualisiert; ausschließlich lokale Projektversion geändert. Geprüfte Qualitätskriterien: bestehendes Polling, Entitätsidentität und Benennung, Verfügbarkeit, Fehlerübersetzung, Reauth und Dokumentation. Keine Qualitätsgrenzen oder Ausnahmen verändert. Vollständige CI für den neuen Commit bleibt separat erforderlich.
 
-Noch offen: Tonspurwechsel mit tatsächlicher Tonausgabe auf OpenWebif 1.4.4/2.4.0, Senderwechsel und Standby an beiden Testreceivern sowie Darstellung/Bedienung in der installierten HA-Oberfläche. Die simulierten Prüfungen ersetzen diese Abnahme nicht.
+### Praktische Abnahme am 27.09.2026
+
+Funktionsstand **1.4.0-dev.1**, Commit `7d2b2b307b445b08a94c1c4954f76b90e1038cb5`: [Tests](https://github.com/topic2k/enigma2-connect/actions/runs/36316230752) und [Hassfest/HACS](https://github.com/topic2k/enigma2-connect/actions/runs/36316230820) erfolgreich. **933 Backend-Tests**, beide Frontendtestsuiten, Ruff und striktes Mypy bestanden; Config Flow 100 % Anweisungs-/Zweigabdeckung, alle 38 Produktionsmodule über 95 % kombinierte Abdeckung. Keine Prüfgrenzen abgesenkt.
+
+- Beide echten Receiver (Octagon SF8008 4K Supreme und Vu+ Solo²) melden **OpenWebif 2.4.0**. Der historische Vu+-Stand 1.4.4 ist hier nicht mehr vorhanden und wurde nicht erneut geprüft.
+- Alle angebotenen Spuren auf dem Ausgangssender und einem anderen Sender ausgewählt und die aktive Spur zurückgelesen. Senderwechsel mit vier Tonspuren sowie Abweisung einer veralteten Sender-/Spurauswahl bestanden.
+- Nach Nutzerinstallation zeigt die reale HA-Oberfläche **1.4.0-dev.1**, zwei Geräte und 140 Entitäten. Tonspur ist an beiden Geräten vorhanden. Am Octagon „Klare Sprache“, am Vu+ „mit Audiodeskription“ über die HA-Auswahl geschaltet und unabhängig direkt am Receiver bestätigt. Die Vu+-Bedienung verändert die Octagon-Auswahl nicht.
+- Ein echter Sendungswechsel änderte während der Prüfung die Beschreibungen (unter anderem Dolby Digital 2.0 → 5.1); HA aktualisierte diese ohne Neuladen. Einspurliste, Vier-Spur-Liste und Auswahl im Detaildialog visuell geprüft.
+- Beide Geräte über **Receiver-Steuerung** in normalen Standby geschaltet: Tonspur nicht verfügbar. Nach Einschalten wieder verfügbar. Der direkte API-Versuch einer Tonspurauswahl im Standby wird abgewiesen. Der erste direkte Prüflauf erwartete dafür eine speziellere Ausnahme; tatsächlich lehnt OpenWebif bereits `getaudiotracks` ab. Deshalb wurde dieser Fall anschließend über reale HA-Verfügbarkeit und Wiederkehr geprüft, nicht als fehlgeschlagener Schreibschutz gewertet.
+- Ausgangssender, ursprünglicher Tonspurindex und eingeschalteter Zustand anschließend wiederhergestellt; Timerlisten unverändert. Auch die ursprüngliche Tonspur des zwischenzeitlich getesteten Senders wurde wiederhergestellt. Bei einem Sendungswechsel kann sich deren Beschreibung trotz gleichem Index ändern. Keine Aufnahmen angelegt, verschoben oder gelöscht.
+
+Lokale Nachweise unter `.work/audio-hardware/`: `preflight.json`, `live.json`, `ui-*-*.json` und `ci-tests.log`; Browserbeobachtungen in dieser Sitzung. Version **1.4.0-dev.2** ergänzt ausschließlich diese Nachweise, Changelogs und Versionsmetadaten; Funktionscode identisch zum geprüften dev.1-Stand.
+
+**Weiterhin nicht belegt:** hörbare Ausgabe an TV/Lautsprechern (vom Agenten nicht wahrnehmbar; Nutzerbestätigung angefragt) und erneute Hardwareabnahme auf OpenWebif 1.4.4. Die bestätigte aktive API-Spur ist kein Hörnachweis.
 
 ## Release 1.3.0
 

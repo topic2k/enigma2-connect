@@ -4,7 +4,7 @@
 
 ## Inhaltsverzeichnis
 
-- [1.4.0-dev.1](#140-dev1)
+- [1.4.0-dev.2](#140-dev2)
 - [1.3.0](#130)
 - [1.2.1](#121)
 - [1.2.0](#120)
@@ -16,9 +16,11 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 1.4.0-dev.1
+## 1.4.0-dev.2
 
 Unveröffentlichte Entwicklerversion.
+
+- Praktische Tonspurabnahme auf beiden Receivern mit OpenWebif 2.4.0 und in der installierten HA-Oberfläche dokumentiert; vollständige CI erfolgreich. Keine Änderung am Funktionscode.
 
 - Idee Nr. 7: dynamische Tonspurauswahl mit regelmäßiger Aktualisierung, Prüfung vor dem Umschalten und Bestätigung durch erneutes Lesen. Fehlende oder ungültige Tonspuren machen nur diese Auswahl nicht verfügbar.
 

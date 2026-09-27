@@ -11,7 +11,20 @@ On 2026-09-27: 82 tests passed for audio tracks, integration, controls, translat
 
 Ruff, mypy and Python syntax checks passed. Lockfile updated offline; only the local project version changed. Reviewed quality criteria: existing polling, entity identity and naming, availability, translated errors, reauth and documentation. No quality thresholds or exemptions changed. Full CI for the new commit remains separately required.
 
-Still pending: audio-track switching with actual audio output on OpenWebif 1.4.4/2.4.0, channel changes and standby on both test receivers, and display/control in the installed HA UI. Simulated tests do not replace this acceptance.
+### Practical acceptance on 2026-09-27
+
+Functional build **1.4.0-dev.1**, commit `7d2b2b307b445b08a94c1c4954f76b90e1038cb5`: [Tests](https://github.com/topic2k/enigma2-connect/actions/runs/36316230752) and [Hassfest/HACS](https://github.com/topic2k/enigma2-connect/actions/runs/36316230820) passed. **933 backend tests**, both frontend suites, Ruff and strict Mypy passed; config flow has 100% statement/branch coverage and all 38 production modules exceed 95% combined coverage. No thresholds reduced.
+
+- Both actual receivers (Octagon SF8008 4K Supreme and Vu+ Solo²) report **OpenWebif 2.4.0**. The historical Vu+ 1.4.4 installation is no longer available here and was not retested.
+- Selected every offered track on the original and another service, then reread the active track. Channel changes with four tracks and rejection of a stale service/track selection passed.
+- After user installation, the actual HA UI shows **1.4.0-dev.1**, two devices and 140 entities. Audio track appears on both devices. Selected “Klare Sprache” on the Octagon and “mit Audiodeskription” on the Vu+ through HA and independently confirmed them directly on each receiver. Vu+ controls do not alter the Octagon selection.
+- A real programme change altered descriptions during the test (including Dolby Digital 2.0 → 5.1); HA updated them without reloading. Single-track and four-track lists and the detail dialog were visually checked.
+- Put both devices into normal standby through **Receiver control**: audio selection unavailable, then available again after wakeup. A direct attempt to select audio in standby is rejected. The first direct test expected a more specific exception; OpenWebif actually rejects `getaudiotracks` already. This case was then checked through actual HA availability and recovery instead of treating it as failed write protection.
+- Restored original service, audio-track index and awake state afterwards; timer lists unchanged. Also restored the original track on the intermediate test service. A programme change may alter descriptions despite the same index. No recordings created, moved or deleted.
+
+Local evidence in `.work/audio-hardware/`: `preflight.json`, `live.json`, `ui-*-*.json` and `ci-tests.log`; browser observations in this session. Version **1.4.0-dev.2** changes only evidence, changelogs and version metadata; functional code is identical to the tested dev.1 build.
+
+**Still unverified:** audible TV/speaker output (not perceptible to the agent; user confirmation requested) and renewed hardware acceptance on OpenWebif 1.4.4. A confirmed active API track is not evidence of audible output.
 
 ## Release 1.3.0
 

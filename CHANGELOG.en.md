@@ -4,7 +4,7 @@
 
 ## Contents
 
-- [1.4.0-dev.1](#140-dev1)
+- [1.4.0-dev.2](#140-dev2)
 - [1.3.0](#130)
 - [1.2.1](#121)
 - [1.2.0](#120)
@@ -16,9 +16,11 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 1.4.0-dev.1
+## 1.4.0-dev.2
 
 Unreleased development version.
+
+- Recorded practical audio-track acceptance on both receivers with OpenWebif 2.4.0 and in the installed HA UI; full CI passed. No functional code changes.
 
 - Idea no. 7: dynamic audio-track selection with regular updates, validation before switching and confirmation by rereading. Missing or invalid tracks make only this selection unavailable.
 
