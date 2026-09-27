@@ -19,7 +19,7 @@
 
 ## 2.0.1
 
-Unreleased.
+Approved for publication on 2026-09-27.
 
 - Fixed an intermittent ordering failure in the timer-conflict test: collect events in the HA event loop instead of the thread pool. Existing checks for count, action names and order remain unchanged; no runtime changes.
 

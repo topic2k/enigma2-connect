@@ -19,7 +19,7 @@
 
 ## 2.0.1
 
-Unveröffentlicht.
+Freigabe zur Veröffentlichung am 27.09.2026.
 
 - Sporadischen Reihenfolgefehler im Timer-Konflikttest behoben: Ereignisse im HA-Eventloop sammeln statt über den Threadpool. Bestehende Prüfung von Anzahl, Aktionsnamen und Reihenfolge bleibt unverändert; keine Laufzeitänderung.
 
