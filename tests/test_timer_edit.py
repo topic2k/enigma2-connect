@@ -7,6 +7,7 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 import voluptuous as vol
+from homeassistant.core import callback
 from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers import device_registry as dr
 
@@ -547,7 +548,13 @@ async def test_conflict_events_only_for_timer_actions_and_correct_action_names(
 ):
     await setup(hass, entry)
     events = []
-    unsub = hass.bus.async_listen(f"{DOMAIN}_timer_conflict", events.append)
+
+    @callback
+    def collect_event(event):
+        # Keep collection in the event loop; executor completion order can vary.
+        events.append(event)
+
+    unsub = hass.bus.async_listen(f"{DOMAIN}_timer_conflict", collect_event)
     fail = AsyncMock(side_effect=CommandRejectedError({"conflicts": [ROW]}))
     with pytest.raises(HomeAssistantError) as caught:
         await entry.runtime_data.perform(fail, "message")

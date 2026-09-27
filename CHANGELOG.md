@@ -4,6 +4,7 @@
 
 ## Inhaltsverzeichnis
 
+- [2.0.1-dev.1](#201-dev1)
 - [2.0.0](#200)
 - [1.3.0](#130)
 - [1.2.1](#121)
@@ -15,6 +16,12 @@
 - [1.0.2](#102)
 - [1.0.1](#101)
 - [1.0.0](#100)
+
+## 2.0.1-dev.1
+
+Unveröffentlichte Entwicklerversion.
+
+- Sporadischen Reihenfolgefehler im Timer-Konflikttest behoben: Ereignisse im HA-Eventloop sammeln statt über den Threadpool. Bestehende Prüfung von Anzahl, Aktionsnamen und Reihenfolge bleibt unverändert; keine Laufzeitänderung.
 
 ## 2.0.0
 
