@@ -634,6 +634,26 @@ library. Local simulations do not replace this hardware check.
 
 ## Messages and automations
 
+### Set and cancel the sleep timer
+
+1. Turn on the receiver. Open **Developer tools → Actions**.
+2. Choose **Enigma2 Connect: Set sleep timer**, the **Receiver** and **Minutes** (1–999), for example 30.
+3. Run the action. It replaces an existing sleep timer and selects **standby** as its target.
+4. On the device page, **Sleep timer active** shows the reported state. To disable it, choose **Cancel sleep timer** for the same receiver.
+
+The timer runs on the receiver even without Home Assistant. Its status is read regularly (every 15 seconds by default) and after actions. Attributes `reported_minutes` and `action` contain only reported values: `standby` or `shutdown` (power off/deep standby for an externally configured timer). Depending on the image, reported minutes may be the configured or remaining duration, not a reliable countdown. Missing values stay unknown; missing status support makes the sensor unavailable.
+
+Images may handle durations and standby differently, persist settings or use existing power timers. After an error, the timer may already have changed: check the receiver before setting it again. The integration never automatically repeats writes and does not bypass the image's recording/standby prompts. Actions are rejected in standby. Cancelling an already inactive timer does not write again.
+
+```yaml
+action: enigma2_connect.sleep_timer_set
+data:
+  device_id: YOUR_RECEIVER_DEVICE_ID
+  minutes: 30
+```
+
+To cancel, use `enigma2_connect.sleep_timer_cancel` with the same `device_id` and without `minutes`. **Sleep timer active** can be used as a standard HA state condition.
+
 ### Start and stop timeshift
 
 1. Turn on the receiver and select a TV channel suitable for timeshift. Configure timeshift and suitable storage on the receiver first.

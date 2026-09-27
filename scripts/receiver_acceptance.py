@@ -21,6 +21,7 @@ READS = {
     "/api/signal": set(),
     "/api/getaudiotracks": set(),
     "/api/tsstate": set(),
+    "/api/sleeptimer": set(),
     "/api/bouquets": {"stype"},
     "/api/getservices": {"sRef"},
     "/api/timerlist": set(),

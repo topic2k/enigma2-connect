@@ -15,6 +15,7 @@ from .conftest import DATA
         ("/api/vol", {"set": "mute"}),
         ("/api/timerdelete", {}),
         ("/api/tsstart", {}),
+        ("/api/sleeptimer", {"cmd": "set", "enabled": "False"}),
         ("/api/tsstop", {}),
         ("/api/statusinfo", {"unexpected": "value"}),
         ("/grab", {}),

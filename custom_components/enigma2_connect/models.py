@@ -260,6 +260,13 @@ class AudioTrack:
 
 
 @dataclass(frozen=True)
+class SleepTimer:
+    enabled: bool
+    minutes: int | None
+    action: str | None
+
+
+@dataclass(frozen=True)
 class Snapshot:
     # All entities consume the same poll result. For optional lists, None means
     # unavailable; an empty list means the receiver reported no entries.
@@ -277,3 +284,4 @@ class Snapshot:
     system: SystemDiagnostics = field(default_factory=SystemDiagnostics)
     audio_tracks: tuple[AudioTrack, ...] | None = None
     timeshift: bool | None = None
+    sleep_timer: SleepTimer | None = None

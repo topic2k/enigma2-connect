@@ -302,6 +302,9 @@
       },
       "timeshift": {
         "name": "Timeshift active"
+      },
+      "sleep_timer": {
+        "name": "Sleep timer active"
       }
     },
     "camera": {
@@ -623,6 +626,15 @@
     },
     "timeshift_warning_restore_failed": {
       "message": "Restoration of the previously enabled timeshift save warning could not be confirmed. Check the receiver timeshift settings; the timeshift action may already have taken effect."
+    },
+    "sleep_timer_invalid": {
+      "message": "Duration must be a whole number from 1 to 999 minutes."
+    },
+    "sleep_timer_unavailable": {
+      "message": "Sleep timer unavailable. The receiver must be awake and provide valid status data."
+    },
+    "sleep_timer_unconfirmed": {
+      "message": "Sleep timer change was not confirmed. Check the actual receiver state before setting it again."
     }
   },
   "services": {
@@ -1047,6 +1059,30 @@
         "device_id": {
           "name": "Receiver",
           "description": "Receiver to control."
+        }
+      }
+    },
+    "sleep_timer_set": {
+      "name": "Set sleep timer",
+      "description": "Puts the receiver in standby after the specified duration. Replaces the existing sleep timer.",
+      "fields": {
+        "device_id": {
+          "name": "Receiver",
+          "description": "Receiver"
+        },
+        "minutes": {
+          "name": "Minutes",
+          "description": "Duration until standby (1–999 minutes)."
+        }
+      }
+    },
+    "sleep_timer_cancel": {
+      "name": "Cancel sleep timer",
+      "description": "Disables the receiver sleep timer.",
+      "fields": {
+        "device_id": {
+          "name": "Receiver",
+          "description": "Receiver"
         }
       }
     }

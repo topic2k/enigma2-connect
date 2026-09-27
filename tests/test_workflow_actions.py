@@ -32,7 +32,7 @@ REFERENCE = "1:0:19:283D:3FB:1:C00000:0:0:0:"
 
 
 @pytest.mark.parametrize(
-    "endpoint", sorted(TIMER_COMMANDS | {"selectaudiotrack", "tsstart", "tsstop"})
+    "endpoint", sorted(TIMER_COMMANDS | {"selectaudiotrack", "tsstart", "tsstop", "sleeptimer"})
 )
 async def test_real_http_lost_timer_response_is_sent_once(aiohttp_server, socket_enabled, endpoint):
     """Warm a keep-alive connection: aiohttp would otherwise replay the GET."""
@@ -53,7 +53,9 @@ async def test_real_http_lost_timer_response_is_sent_once(aiohttp_server, socket
         client = OpenWebifClient(session, server.host, server.port)
         await client.get("statusinfo")
         with pytest.raises(CommandUnconfirmed):
-            await client.command_result(endpoint)
+            await client.command_result(
+                endpoint, **({"cmd": "set"} if endpoint == "sleeptimer" else {})
+            )
         assert writes == 1
         assert not client.command_lock.locked()
         assert await client.get("statusinfo") == {"result": True}

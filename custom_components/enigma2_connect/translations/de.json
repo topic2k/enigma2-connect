@@ -302,6 +302,9 @@
       },
       "timeshift": {
         "name": "Timeshift aktiv"
+      },
+      "sleep_timer": {
+        "name": "Sleeptimer aktiv"
       }
     },
     "camera": {
@@ -623,6 +626,15 @@
     },
     "timeshift_warning_restore_failed": {
       "message": "Die vorher aktive Timeshift-Speicherrückfrage konnte nicht bestätigt wiederhergestellt werden. Prüfe die Timeshift-Einstellungen am Receiver; die Timeshift-Aktion kann bereits ausgeführt worden sein."
+    },
+    "sleep_timer_invalid": {
+      "message": "Die Dauer muss eine ganze Zahl von 1 bis 999 Minuten sein."
+    },
+    "sleep_timer_unavailable": {
+      "message": "Sleeptimer nicht verfügbar. Receiver muss eingeschaltet sein und gültige Statusdaten liefern."
+    },
+    "sleep_timer_unconfirmed": {
+      "message": "Sleeptimer-Änderung nicht bestätigt. Tatsächlichen Zustand am Receiver prüfen, bevor du erneut einstellst."
     }
   },
   "services": {
@@ -1047,6 +1059,30 @@
         "device_id": {
           "name": "Receiver",
           "description": "Zu steuernder Receiver."
+        }
+      }
+    },
+    "sleep_timer_set": {
+      "name": "Sleeptimer einstellen",
+      "description": "Versetzt den Receiver nach der angegebenen Dauer in Standby. Ersetzt den bisherigen Sleeptimer.",
+      "fields": {
+        "device_id": {
+          "name": "Receiver",
+          "description": "Receiver"
+        },
+        "minutes": {
+          "name": "Minuten",
+          "description": "Dauer bis Standby (1–999 Minuten)."
+        }
+      }
+    },
+    "sleep_timer_cancel": {
+      "name": "Sleeptimer abbrechen",
+      "description": "Deaktiviert den geräteeigenen Sleeptimer.",
+      "fields": {
+        "device_id": {
+          "name": "Receiver",
+          "description": "Receiver"
         }
       }
     }

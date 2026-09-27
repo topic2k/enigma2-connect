@@ -687,6 +687,26 @@ aktualisieren und Home Assistant neu starten.
 
 ## Nachrichten und Automationen
 
+### Sleeptimer einstellen und abbrechen
+
+1. Schalte den Receiver ein. Öffne **Entwicklerwerkzeuge → Aktionen**.
+2. Wähle **Enigma2 Connect: Sleeptimer einstellen**, den **Receiver** und die **Minuten** (1–999), zum Beispiel 30.
+3. Führe die Aktion aus. Sie ersetzt einen vorhandenen Sleeptimer und wählt **Standby** als Ziel.
+4. Unter dem Gerät zeigt **Sleeptimer aktiv** den gemeldeten Zustand. Zum Deaktivieren wähle **Sleeptimer abbrechen** für denselben Receiver.
+
+Der Timer läuft auf dem Receiver auch ohne Home Assistant weiter. Er wird regelmäßig (standardmäßig alle 15 Sekunden) und nach Aktionen neu gelesen. Die Attribute `reported_minutes` und `action` zeigen ausschließlich gemeldete Werte: `standby` oder `shutdown` (Ausschalten/Deep Standby bei extern eingestelltem Timer). Gemeldete Minuten sind imageabhängig eine eingestellte oder verbleibende Dauer, kein verlässlicher Countdown. Fehlende Werte bleiben unbekannt; fehlende Statusunterstützung macht den Sensor unverfügbar.
+
+Images können Dauer und Standby-Verhalten unterschiedlich umsetzen, Einstellungen dauerhaft speichern oder bestehende Powertimer verwenden. Bei einer Fehlermeldung kann der Timer bereits geändert sein: Prüfe den tatsächlichen Zustand am Receiver, bevor du erneut einstellst. Die Integration wiederholt Schreibbefehle nicht automatisch und umgeht keine Aufnahme-/Standby-Rückfragen des Images. Aktionen werden im Standby abgelehnt. Ein bereits inaktiver Timer wird beim Abbrechen nicht erneut geschrieben.
+
+```yaml
+action: enigma2_connect.sleep_timer_set
+data:
+  device_id: DEINE_RECEIVER_GERAETE_ID
+  minutes: 30
+```
+
+Zum Abbrechen `enigma2_connect.sleep_timer_cancel` mit derselben `device_id` und ohne `minutes` verwenden. **Sleeptimer aktiv** kann als normale HA-Zustandsbedingung genutzt werden.
+
 ### Timeshift starten und stoppen
 
 1. Schalte den Receiver ein und wähle einen für Timeshift geeigneten Fernsehsender. Timeshift und ein geeigneter Speicher müssen am Receiver eingerichtet sein.

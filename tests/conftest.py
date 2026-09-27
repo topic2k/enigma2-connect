@@ -40,6 +40,7 @@ RESPONSES = {
         "isRecording": "false",
         "isStreaming": "true",
     },
+    "sleeptimer": {"enabled": False, "minutes": 0, "action": "standby"},
     "tsstate": {"state": True, "timeshiftEnabled": False},
     "getcurrent": {"now": {"title": "News"}, "next": {"title": "Next news"}},
     "getaudiotracks": {"result": True, "tracklist": []},

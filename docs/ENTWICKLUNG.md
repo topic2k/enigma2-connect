@@ -1268,11 +1268,19 @@ Schnittstelle: [OpenWebif Audio-API](https://github.com/oe-alliance/OpenWebif/wi
 
 ## Vorgemerkte Ideen
 
-Die Ideen **1–5 und 13** sind umgesetzt, ebenso die Ideen **6, 7, 8 und 9**.
+Die Ideen **1–5 und 13** sind umgesetzt, ebenso die Ideen **6, 7, 8, 9 und 10**.
 Reihenfolge und Abnahme der Aufnahme-Workflows sind im
 [Umsetzungsplan](#umsetzungsplan-aufnahme-workflows) dokumentiert.
 Die übrigen Ideen bleiben unverbindlich. Umsetzung und praktische Abnahme
 werden getrennt betrachtet; verbleibende Prüfgrenzen sind unten benannt.
+
+### Receiver-Sleeptimer – Idee 10 (2.0.0-dev.9)
+
+Plan und Umsetzung: optionale `sleeptimer`-Leseabfrage im vorhandenen Polling (auch in Standby), gemeinsames typisiertes Modell und binärer Sensor mit `reported_minutes`/`action`. Keine neue Plattform oder Laufzeitabhängigkeit. Aktionen `sleep_timer_set` (1–999 ganze Minuten, Ziel Standby) und `sleep_timer_cancel` nutzen die vorhandene eindeutige Gerätebindung. Unter Befehlssperre Einschaltzustand und frischen Timer lesen, einmal schreiben (`cmd=set`, `enabled=True/False`, `time`, `action`), anschließend separat nachlesen. Abbrechen erhält die gemeldete Zielaktion; ohne bekannte Aktion wird ein aktiver Timer nicht geändert. Inaktives Abbrechen schreibt nicht, erneutes Einstellen startet bewusst neu.
+
+Bestätigung erfordert passenden Aktivzustand sowie beim Einstellen genau die angeforderten Minuten und Standby. Rundung, abweichende Aktion, verlorene Antwort oder fehlendes Nachlesen bleiben unbestätigt; anschließender Poll zeigt den tatsächlich gemeldeten Zustand. Authentifizierungsfehler lösen Reauth aus. Transport und Middleware verhindern automatische Wiederholung nur für schreibende `sleeptimer`-Aufrufe; lesende Aufrufe bleiben lesend. Die lesende Receiver-Abnahme erlaubt ausschließlich parameterlose Sleeptimer-Abfragen.
+
+Schnittstellen anhand der vorhandenen Kopien des offiziellen OpenWebif-2.4.0-Controllers und Timermodells am 27.09.2026 geprüft. Je Image unterscheiden sich Bestätigungen, Minutenbedeutung und Konfigurations-/Powertimer-Nebenwirkungen. `remaining` wird bewusst nicht als vereinheitlichte Restzeit projiziert. Statusbeobachtung ist keine Garantie der späteren Standby-Ausführung; externe Bedienung ist nicht atomar gesperrt. Eigenständige Implementierung, kein GPL-Code übernommen. Simulierte Tests und offene praktische Abnahme siehe Prüfübersicht.
 
 ### Wiedergabeposition – Idee 9 (2.0.0-dev.7)
 
@@ -1416,7 +1424,7 @@ und Rückgabeformate vor einer Umsetzung je OpenWebif-Version und Image prüfen.
 | 7 | Umgesetzt | Tonspur auswählen | Dynamische Auswahl der vom Receiver angebotenen Tonspuren über `getaudiotracks` und `selectaudiotrack`, einschließlich regelmäßiger Aktualisierung und Prüfung vor dem Umschalten. [Details](#tonspurauswahl) |
 | 8 | Umgesetzt | Timeshift gezielt steuern und anzeigen | Start-/Stopp-Aktionen und „Timeshift aktiv“ über `tsstart`, `tsstop`, `tsstate`. `timeshiftEnabled` ist kein verlässlicher Pausezustand; der untersuchte Stopp-Pfad unterdrückt die Speicherrückfrage. [Controller][ideas-controller] |
 | 9 | Umgesetzt | Wiedergabeposition bei Aufnahmen | Fortschritt und Restzeit im Medienplayer anzeigen. Neuere OpenWebif-Builds liefern im bereits abgefragten `getcurrent` für bestimmte lokale Aufnahmen eine Position in Sekunden; im offiziellen 2.4.0-Tag fehlt sie noch. Diese allein erlaubt keine sichere Pauseerkennung. [Controller][ideas-controller] |
-| 10 | Mittel | Receiver-Sleeptimer | „In 30 Minuten Standby“ mit Statusanzeige über den geräteeigenen `sleeptimer`. Verfügbare Felder und Verhalten unterscheiden sich nach Image. [Timerimplementierung][ideas-timers] |
+| 10 | Umgesetzt (Praxisabnahme offen) | Receiver-Sleeptimer | „In 30 Minuten Standby“ mit Statusanzeige über den geräteeigenen `sleeptimer`. Verfügbare Felder und Verhalten unterscheiden sich nach Image. [Timerimplementierung][ideas-timers] |
 | 11 | Optional | Einschalten ohne Mitwecken des Fernsehers | Für Radio oder Hintergrundautomationen: `supports_powerup_without_waking_tv` und `set_powerup_without_waking_tv` sind dokumentiert. Image-Unterstützung prüfen; die Funktion ersetzt kein Aufwecken aus Tiefschlaf. [Steuerungs-API][ideas-api] |
 | 12 | Optional | Text an Eingabefelder senden | Suchbegriffe direkt eingeben, statt einzelne Fernbedienungstasten zu senden. `remotecontrol` besitzt einen `text`-Parameter; das aktive Eingabefeld am Receiver bleibt entscheidend. [Controller][ideas-controller] |
 | 13 | Umgesetzt | Live-TV und Aufnahmen auf anderen Geräten abspielen | Optionale [HLS-Wiedergabe](#externe-wiedergabe) für Live-TV und Aufnahmen sowie VOD-Spulen für geeignete TS-Aufnahmen sind umgesetzt. Die konkrete Browser-/Cast-Abnahme bleibt offen. OpenWebif bietet Stream-/Playlist-Endpunkte einschließlich eines HLS-Einstiegs. Codec-Unterstützung, Authentifizierung und gegebenenfalls Transcoding separat lösen; ein API-Endpunkt belegt keine funktionierende Wiedergabe auf jedem Zielgerät. [Streaming-Endpunkte][ideas-controller] |

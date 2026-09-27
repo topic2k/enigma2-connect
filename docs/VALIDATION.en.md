@@ -2,6 +2,14 @@
 
 # Verification summary
 
+## Receiver sleep timer – 2.0.0-dev.9
+
+Checked on 2026-09-27 with Python 3.14.7 and the real Home Assistant test framework using simulated receiver replies. Initial focused run: 116 tests for sleep timer, API, timeshift and read-only receiver acceptance passed. Final run: another 60 tests for sleep timer boundaries, serialization, HA selectors, translations, icons and real local HTTP connections passed. `sleep_timer.py` reaches 100% statement and branch coverage (46 statements, 20 branches). Another 38 integration/lifecycle tests passed; the initially outdated expected action list was extended with both new actions and that test subsequently reran successfully. Ruff, formatting, syntax and strict mypy (40 modules) passed. Source review used the existing official OpenWebif 2.4.0 source copies; no real receivers were contacted.
+
+Quality review covers unambiguous device targeting, action registration, availability and recovery of optional status data, reauth, command locking, no automatic write retries, strict input, HA selectors, translations and read-only acceptance guard. One additional optional request in existing polling, no extra timer or runtime dependency. Existing quality criteria and coverage thresholds remain unchanged; offline lock update changes only the project version.
+
+**Pending:** actual setting/cancellation and expiry into standby on both receiver images, plus display/actions in the installed HA UI. Rounding, minute semantics, persistence and power-timer/recording conflicts depend on the image. Simulated status data do not establish successful real standby execution. Current complete CI for the eventual PR state remains required before main.
+
 ## Playback position – 2.0.0-dev.7
 
 Idea no. 9 uses only the existing `getcurrent` poll. Source review on 2026-09-27: the official OpenWebif 2.4.0 tag lacks `now.position`; the current upstream controller includes it. Support is not guaranteed for all 2.4.0 builds. The HA frontend needs a timestamp to calculate progress and extrapolates in PLAYING state; with no reliable pause detection, this remains an estimate between polls. Remaining-time attribute is only a sampled value.

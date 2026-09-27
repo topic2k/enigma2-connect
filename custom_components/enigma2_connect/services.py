@@ -114,6 +114,9 @@ def register_services(hass: HomeAssistant) -> None:
             return await coordinator.perform(
                 coordinator.recording_library.list, refresh=False, **params
             )
+        if service in ("sleep_timer_set", "sleep_timer_cancel"):
+            await coordinator.async_set_sleep_timer(params.get("minutes"))
+            return None
         if service in ("timeshift_start", "timeshift_stop"):
             await coordinator.async_set_timeshift(service == "timeshift_start")
             return None
@@ -232,6 +235,11 @@ def register_services(hass: HomeAssistant) -> None:
         },
         "epg_similar": event,
         "record_event": event,
+        "sleep_timer_set": {
+            **base,
+            vol.Required("minutes"): vol.All(int, vol.Range(min=1, max=999)),
+        },
+        "sleep_timer_cancel": base,
         "timeshift_start": base,
         "timeshift_stop": base,
         "record_now": base,

@@ -2,6 +2,14 @@
 
 # Prüfübersicht
 
+## Receiver-Sleeptimer – 2.0.0-dev.9
+
+Am 27.09.2026 mit Python 3.14.7 und dem echten Home-Assistant-Testframework bei simulierten Receiverantworten geprüft. Erster gezielter Lauf: 116 Tests für Sleeptimer, API, Timeshift und lesende Receiver-Abnahme bestanden. Abschlusslauf: weitere 60 Tests für Sleeptimer-Grenzwerte, Serialisierung, HA-Selektoren, Übersetzungen, Icons und reale lokale HTTP-Verbindungen bestanden. `sleep_timer.py` erreicht 100 % Anweisungs- und Zweigabdeckung (46 Anweisungen, 20 Zweige). Zusätzlich 38 Integrations-/Lebenszyklustests bestanden; der zunächst veraltete Sollbestand der Aktionsregistrierung wurde um beide neuen Aktionen ergänzt und der betroffene Test anschließend erfolgreich wiederholt. Ruff, Format-, Syntax- und striktes mypy (40 Module) bestanden. Die Quellenprüfung verwendet die vorhandenen offiziellen OpenWebif-2.4.0-Quellkopien; kein Kontakt zu realen Receivern.
+
+Qualitätsabgleich: eindeutige Gerätebindung, Aktionsregistrierung, Verfügbarkeit und Wiederherstellung optionaler Statusdaten, Reauth, Befehlssperre, keine automatische Schreibwiederholung, strikte Eingaben, HA-Selektoren, Übersetzungen und lesende Abnahmesperre. Eine zusätzliche optionale Abfrage im vorhandenen Polling, kein weiterer Timer und keine Laufzeitabhängigkeit. Bestehende Qualitätskriterien und Abdeckungsgrenzen unverändert; Offline-Lockänderung ausschließlich Projektversion.
+
+**Offen:** tatsächliches Einstellen/Abbrechen und Ablauf bis Standby auf beiden Receiver-Images sowie Anzeige und Aktionen in der installierten HA-Oberfläche. Insbesondere Rundung, Minutenbedeutung, Persistenz und Powertimer-/Aufnahmekonflikte sind imageabhängig. Keine Aussage über reale erfolgreiche Standby-Ausführung aus simulierten Statusdaten ableiten. Vor main bleibt aktuelle vollständige CI für den jeweiligen PR-Stand erforderlich.
+
 ## Wiedergabeposition – 2.0.0-dev.7
 
 Idee Nr. 9 verwendet ausschließlich die bestehende `getcurrent`-Abfrage. Quellenprüfung am 27.09.2026: Im offiziellen OpenWebif-2.4.0-Tag fehlt `now.position`, im aktuellen Upstream-Controller ist es vorhanden. Keine Zusicherung für alle 2.4.0-Builds. Das HA-Frontend benötigt zur Fortschrittsberechnung einen Zeitstempel und extrapoliert bei PLAYING; wegen fehlender Pauseerkennung bleibt dies zwischen Abfragen eine Schätzung. Restzeitattribut nur als abgefragte Momentaufnahme.

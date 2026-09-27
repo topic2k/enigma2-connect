@@ -1187,11 +1187,19 @@ Interface: [OpenWebif audio API](https://github.com/oe-alliance/OpenWebif/wiki/O
 
 ## Recorded ideas
 
-Ideas **1–5 and 13** are implemented, as are ideas **6, 7, 8 and 9**.
+Ideas **1–5 and 13** are implemented, as are ideas **6, 7, 8, 9 and 10**.
 The order and acceptance of the recording workflows are documented in the
 [implementation plan](#implementation-plan-recording-workflows).
 The remaining ideas are tentative. Implementation and practical acceptance
 are tracked separately; remaining verification limits are identified below.
+
+### Receiver sleep timer – idea 10 (2.0.0-dev.9)
+
+Plan and implementation: optional parameterless `sleeptimer` read in existing polling (including standby), shared typed model and binary sensor with `reported_minutes`/`action`. No new platform or runtime dependency. `sleep_timer_set` (1–999 whole minutes, standby target) and `sleep_timer_cancel` reuse unambiguous device targeting. Under the command lock, read power state and current timer, write once (`cmd=set`, `enabled=True/False`, `time`, `action`), then read back separately. Cancellation preserves the reported target; an active timer with an unknown action cannot be cancelled. Inactive cancellation does not write; setting again deliberately restarts the timer.
+
+Confirmation requires matching enabled state and, when setting, exactly the requested minutes and standby action. Rounding, another action, lost response or failed readback remain unconfirmed; a subsequent poll displays the actual reported state. Authentication errors trigger reauth. Transport and middleware suppress automatic retries only for sleep timer writes. Read-only receiver acceptance permits only parameterless sleep timer requests.
+
+Reviewed existing copies of the official OpenWebif 2.4.0 controller and timer model on 2026-09-27. Acknowledgements, minute semantics and configuration/power-timer side effects vary by image. `remaining` is deliberately not projected as a uniform countdown. Observed state does not guarantee eventual standby; external controls are not atomically locked. Independent implementation without copied GPL code. See verification summary for simulated tests and pending practical acceptance.
 
 ### Playback position – idea 9 (2.0.0-dev.7)
 
@@ -1326,7 +1334,7 @@ support and response formats for each OpenWebif version and image before impleme
 | 7 | Implemented | Select audio tracks | Dynamic selection of tracks reported by the receiver using `getaudiotracks` and `selectaudiotrack`, with regular updates and validation before switching. [Details](#audio-track-selection) |
 | 8 | Implemented | Explicit timeshift controls and status | Start/stop actions and a timeshift-active indicator through `tsstart`, `tsstop`, `tsstate`. `timeshiftEnabled` does not reliably indicate pause; the examined stop path suppresses the save prompt. [Controller][ideas-controller] |
 | 9 | Implemented | Playback position for recordings | Display progress and remaining time in the media player. Newer OpenWebif builds return a position in seconds in the already queried `getcurrent` for certain local recordings; the official 2.4.0 tag lacks it. This alone does not reliably establish pause state. [Controller][ideas-controller] |
-| 10 | Medium | Receiver sleep timer | “Standby in 30 minutes” with status display through the receiver's own `sleeptimer`. Available fields and behaviour vary by image. [Timer implementation][ideas-timers] |
+| 10 | Implemented (practical acceptance pending) | Receiver sleep timer | “Standby in 30 minutes” with status display through the receiver's own `sleeptimer`. Available fields and behaviour vary by image. [Timer implementation][ideas-timers] |
 | 11 | Optional | Power on without waking the television | For radio or background automations: `supports_powerup_without_waking_tv` and `set_powerup_without_waking_tv` are documented. Check image support; this does not replace waking from deep standby. [Control API][ideas-api] |
 | 12 | Optional | Send text to input fields | Enter search terms directly instead of sending individual remote keys. `remotecontrol` accepts a `text` parameter; the active receiver input field determines where it goes. [Controller][ideas-controller] |
 | 13 | Implemented | Play live TV and recordings on other devices | Optional [HLS playback](#external-playback) for live TV and recordings and VOD seeking for suitable TS recordings are implemented; specific browser/Cast acceptance remains outstanding. OpenWebif provides stream/playlist endpoints including an HLS entry point. Address codec support, authentication and possibly transcoding separately; an API endpoint does not establish playback compatibility with every target device. [Streaming endpoints][ideas-controller] |

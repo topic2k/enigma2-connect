@@ -4,7 +4,7 @@
 
 ## Inhaltsverzeichnis
 
-- [2.0.0-dev.8](#200-dev8)
+- [2.0.0-dev.9](#200-dev9)
 - [1.3.0](#130)
 - [1.2.1](#121)
 - [1.2.0](#120)
@@ -16,9 +16,11 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 2.0.0-dev.8
+## 2.0.0-dev.9
 
 Unveröffentlichte Entwicklerversion.
+
+- Idee Nr. 10: geräteeigenen Sleeptimer auf Standby in 1–999 Minuten einstellen oder abbrechen; Sensor „Sleeptimer aktiv“ mit gemeldeten Minuten und Zielaktion. Vorprüfung und frische Bestätigung unter Befehlssperre, keine automatische Schreibwiederholung. Imageabhängige Abweichungen werden als unbestätigt gemeldet; keine erfundene Restzeit. Receiver-/HA-Praxisabnahme noch offen.
 
 - Idee Nr. 9 auf beiden Receivern mit OpenWebif 2.4.0 und in der installierten HA-Version dev.7 praktisch geprüft: Positionsfortschritt, Pause, HA-Wiedergabe-/Stopptasten, Anzeige und Entfernen der Attribute nach Rückkehr zu Live-TV. Vollständige CI bestanden. Bestätigte Grenze: `duration_sec` kann die ursprüngliche Sendungsdauer statt der tatsächlichen Dateilänge liefern; Restzeit ist dann entsprechend ungenau. Testdaten entfernt und Ausgangszustände wiederhergestellt. Dev.8 ergänzt ausschließlich Dokumentation und Versionsmetadaten.
 

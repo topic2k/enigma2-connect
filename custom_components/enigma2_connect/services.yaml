@@ -340,3 +340,23 @@ timeshift_stop:
     device_id:
       required: true
       selector: *id001
+sleep_timer_set:
+  fields:
+    device_id:
+      required: true
+      selector: *id001
+    minutes:
+      required: true
+      example: 30
+      selector:
+        number:
+          min: 1
+          max: 999
+          step: 1
+          mode: box
+          unit_of_measurement: min
+sleep_timer_cancel:
+  fields:
+    device_id:
+      required: true
+      selector: *id001

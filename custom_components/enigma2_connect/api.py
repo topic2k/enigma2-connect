@@ -80,7 +80,9 @@ async def power_command_middleware(
     Install on the session so Home Assistant's own middleware remains active.
     Raising our own exception inside the handler prevents aiohttp's GET retry.
     """
-    timer_command = request.url.path.removeprefix("/api/") in WRITE_COMMANDS
+    timer_command = request.url.path.removeprefix("/api/") in WRITE_COMMANDS or (
+        request.url.path == "/api/sleeptimer" and request.url.query.get("cmd", "get") != "get"
+    )
     power_command = request.url.path == "/api/powerstate" and request.url.query.get("newstate") in (
         "1",
         "2",
@@ -161,7 +163,9 @@ class OpenWebifClient:
         image: bool = False,
         post: bool = False,
     ) -> JsonObject | bytes:
-        timer_command = path.removeprefix("/api/") in WRITE_COMMANDS
+        timer_command = path.removeprefix("/api/") in WRITE_COMMANDS or (
+            path == "/api/sleeptimer" and (params or {}).get("cmd", "get") != "get"
+        )
         disruptive_power = path == "/api/powerstate" and str((params or {}).get("newstate")) in (
             "1",
             "2",
