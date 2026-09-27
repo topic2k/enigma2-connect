@@ -105,7 +105,8 @@
           "stream_port": "Live TV streaming port",
           "stream_https": "HTTPS for live TV streaming",
           "stream_mode": "Stream processing",
-          "stream_limit": "Maximum simultaneous streams"
+          "stream_limit": "Maximum simultaneous streams",
+          "restore_timeshift_warning": "Restore timeshift save warning"
         },
         "data_description": {
           "recording_image_sources": "Select multiple sources, or clear all to disable thumbnails. Priority: custom URL, TMDB, OMDb, snapshot. Only selected Internet sources receive the recording title.",
@@ -118,7 +119,8 @@
           "stream_port": "Receiver streaming port, usually 8001. Recordings still use the OpenWebif port.",
           "stream_https": "Enable only if the streaming port supports HTTPS. Uses the saved certificate verification and credentials.",
           "stream_mode": "Automatic uses suitable receiver output and copies compatible video and audio. Compatibility always converts to 720p/H.264 and AAC.",
-          "stream_limit": "Per receiver; default 5, 0 = unlimited. Viewers of the same live channel share a stream. Each recording playback counts separately. Stopped streams are released after two minutes without requests."
+          "stream_limit": "Per receiver; default 5, 0 = unlimited. Viewers of the same live channel share a stream. Each recording playback counts separately. Stopped streams are released after two minutes without requests.",
+          "restore_timeshift_warning": "After timeshift start/stop, re-enable the receiver save warning only if it was enabled before the action. Previously disabled warnings stay off. Default: off. Does not save the timeshift buffer."
         }
       },
       "init": {
@@ -242,6 +244,9 @@
       },
       "select_channel": {
         "name": "Channel selection"
+      },
+      "select_audio_track": {
+        "name": "Audio track"
       }
     },
     "sensor": {
@@ -294,6 +299,12 @@
       },
       "connection": {
         "name": "Connection"
+      },
+      "timeshift": {
+        "name": "Timeshift active"
+      },
+      "sleep_timer": {
+        "name": "Sleep timer active"
       }
     },
     "camera": {
@@ -470,7 +481,7 @@
       "message": "Check start and end. Date/time selection uses the Home Assistant timezone. For ambiguous or nonexistent clock-change times, use YAML with an explicit UTC offset. End must follow start."
     },
     "power_unconfirmed": {
-      "message": "No complete response to the power command was received. The receiver may already be restarting or shutting down. Check its state before sending another command."
+      "message": "No complete response to the wake, restart or shutdown command was received. The receiver may already have changed state. Check it before sending another command."
     },
     "request_failed": {
       "message": "The receiver request failed or was rejected."
@@ -597,6 +608,42 @@
     },
     "recording_activity_unknown": {
       "message": "An active recording or playback cannot be reliably matched to a file. Check receiver state."
+    },
+    "audio_track_changed": {
+      "message": "The service or audio tracks have changed. Please check the current selection again."
+    },
+    "audio_track_unconfirmed": {
+      "message": "The selected audio track could not be confirmed. Please check the current state."
+    },
+    "timeshift_unavailable": {
+      "message": "Timeshift is unavailable in the current receiver state."
+    },
+    "timeshift_unconfirmed": {
+      "message": "The timeshift change was not confirmed. Check the receiver before repeating the action."
+    },
+    "timeshift_warning_unavailable": {
+      "message": "The timeshift save warning could not be read reliably. Timeshift was not changed."
+    },
+    "timeshift_warning_restore_failed": {
+      "message": "Restoration of the previously enabled timeshift save warning could not be confirmed. Check the receiver timeshift settings; the timeshift action may already have taken effect."
+    },
+    "sleep_timer_invalid": {
+      "message": "Duration must be a whole number from 1 to 999 minutes."
+    },
+    "sleep_timer_unavailable": {
+      "message": "Sleep timer unavailable. The receiver must be awake and provide valid status data."
+    },
+    "sleep_timer_unconfirmed": {
+      "message": "Sleep timer change was not confirmed. Check the actual receiver state before setting it again."
+    },
+    "quiet_powerup_unavailable": {
+      "message": "Standby or image support for power on without TV could not be confirmed. No wake command was sent."
+    },
+    "quiet_powerup_unconfirmed": {
+      "message": "Power on without TV was not confirmed. Check the receiver before repeating: one-shot HDMI-CEC suppression may already be armed or the receiver may already be awake."
+    },
+    "text_unconfirmed": {
+      "message": "Text input was not clearly confirmed. Check the receiver input field before retrying; the text may already have arrived."
     }
   },
   "services": {
@@ -1001,6 +1048,74 @@
         "device_id": {
           "name": "Receiver",
           "description": "Receiver"
+        }
+      }
+    },
+    "timeshift_start": {
+      "name": "Start timeshift",
+      "description": "Starts timeshift on the selected receiver.",
+      "fields": {
+        "device_id": {
+          "name": "Receiver",
+          "description": "Receiver to control."
+        }
+      }
+    },
+    "timeshift_stop": {
+      "name": "Stop timeshift",
+      "description": "Stops timeshift without asking to save. Unsaved content may be lost.",
+      "fields": {
+        "device_id": {
+          "name": "Receiver",
+          "description": "Receiver to control."
+        }
+      }
+    },
+    "sleep_timer_set": {
+      "name": "Set sleep timer",
+      "description": "Puts the receiver in standby after the specified duration. Replaces the existing sleep timer.",
+      "fields": {
+        "device_id": {
+          "name": "Receiver",
+          "description": "Receiver"
+        },
+        "minutes": {
+          "name": "Minutes",
+          "description": "Duration until standby (1–999 minutes)."
+        }
+      }
+    },
+    "sleep_timer_cancel": {
+      "name": "Cancel sleep timer",
+      "description": "Disables the receiver sleep timer.",
+      "fields": {
+        "device_id": {
+          "name": "Receiver",
+          "description": "Receiver"
+        }
+      }
+    },
+    "powerup_without_tv": {
+      "name": "Power on without TV",
+      "description": "Wakes the receiver from standby without waking the TV via HDMI-CEC. Requires image support; cannot wake from deep standby.",
+      "fields": {
+        "device_id": {
+          "name": "Receiver",
+          "description": "Receiver"
+        }
+      }
+    },
+    "send_text": {
+      "name": "Send text",
+      "description": "Sends text to the active receiver input field. Open the field first; does not press Enter. 1–500 characters without control characters.",
+      "fields": {
+        "device_id": {
+          "name": "Receiver",
+          "description": "Receiver"
+        },
+        "text": {
+          "name": "Text",
+          "description": "Text including any desired spaces."
         }
       }
     }

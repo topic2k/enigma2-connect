@@ -4,6 +4,7 @@
 
 ## Inhaltsverzeichnis
 
+- [2.0.0](#200)
 - [1.3.0](#130)
 - [1.2.1](#121)
 - [1.2.0](#120)
@@ -14,6 +15,44 @@
 - [1.0.2](#102)
 - [1.0.1](#101)
 - [1.0.0](#100)
+
+## 2.0.0
+
+Freigabe zur Veröffentlichung am 27.09.2026.
+
+- Idee Nr. 12 mit installierter dev.14 über die HA-Oberfläche an Octagon und Vu+ Solo² (OpenWebif 2.4.0) praktisch geprüft: Text einschließlich Umlauten, Leerzeichen, `&`, `+`, `%20`, `?` und `#` sichtbar korrekt angehängt, kein automatisches Bestätigen. Ungespeicherte Entwürfe verworfen, Standby und unveränderte Timerlisten nachgeprüft. CI des Funktionsstands erfolgreich. Dev.15 dokumentiert die Abnahme ohne Laufzeitänderung.
+
+- Idee Nr. 12: Geräteaktion „Text senden“ für das aktive Receiver-Eingabefeld, mit unverändertem Text, Befehlssperre, geprüfter API-Bestätigung und Schutz vor automatischer Doppelübertragung. DE/EN-Anleitung und simulierte Tests; Receiver-/HA-Praxisprüfung offen.
+
+- Idee Nr. 11 über die installierte HA-Oberfläche am Octagon geprüft: Aktion und Geräteauswahl sichtbar, Einschalten erfolgreich, Samsung-TV-Zustand vor/nachher `off`, Ausgangsstandby wiederhergestellt. Vu+-Grenze dokumentiert: normales TV-Mitwecken ist dort laut Nutzer deaktiviert, daher kein belastbarer Vergleich für die Unterdrückung. Dev.13 ändert nur Dokumentation und Versionsmetadaten.
+
+- Idee Nr. 11 am Octagon SF8008 4K Supreme mit OpenWebif 2.4.0 praktisch geprüft: Receiver ohne Fernseher eingeschaltet, TV blieb laut Nutzerbeobachtung aus; erneuter Aufruf bei eingeschaltetem Receiver ohne Schreibzugriff. Ausgangsstandby wiederhergestellt. Vollständige CI für dev.11 erfolgreich. Dev.12 dokumentiert die Abnahme; Vu+ und installierte HA-Aktion bleiben offen.
+
+- Idee Nr. 11: Aktion „Einschalten ohne Fernseher“ mit frischer Standby-/Image-Prüfung, einmaliger HDMI-CEC-Unterdrückung und bestätigtem Einschalten. Keine normale Einschalt-Ausweichaktion und keine automatische Schreibwiederholung; Grenzen bei Antwortverlust, Tiefschlaf und TV-Zustand dokumentiert. Receiver-/HA-Praxisprüfung offen.
+
+- Sleeptimer dev.9 auf beiden OpenWebif-2.4.0-Receivern und in der installierten HA-Oberfläche geprüft. 30 Minuten einstellen, Statusanzeige und Abbrechen bestätigt; eine Minute startet tatsächlich, wird jedoch vom Image mit `minutes=0` zurückgemeldet und bleibt deshalb in HA unbestätigt. Receiver-Rückfragen beim Ablauf beobachtet. Vollständige CI bestanden. Dev.10 aktualisiert nur Dokumentation und Versionsmetadaten; genaue Abnahme und Grenzen siehe Prüfübersicht.
+
+- Idee Nr. 10: geräteeigenen Sleeptimer auf Standby in 1–999 Minuten einstellen oder abbrechen; Sensor „Sleeptimer aktiv“ mit gemeldeten Minuten und Zielaktion. Vorprüfung und frische Bestätigung unter Befehlssperre, keine automatische Schreibwiederholung. Imageabhängige Abweichungen werden als unbestätigt gemeldet; keine erfundene Restzeit. Receiver-/HA-Praxisprüfung mit Einschränkungen in dev.10 dokumentiert.
+
+- Idee Nr. 9 auf beiden Receivern mit OpenWebif 2.4.0 und in der installierten HA-Version dev.7 praktisch geprüft: Positionsfortschritt, Pause, HA-Wiedergabe-/Stopptasten, Anzeige und Entfernen der Attribute nach Rückkehr zu Live-TV. Vollständige CI bestanden. Bestätigte Grenze: `duration_sec` kann die ursprüngliche Sendungsdauer statt der tatsächlichen Dateilänge liefern; Restzeit ist dann entsprechend ungenau. Testdaten entfernt und Ausgangszustände wiederhergestellt. Dev.8 ergänzt ausschließlich Dokumentation und Versionsmetadaten.
+
+- Idee Nr. 9: aktuelle Position und gemeldete Dauer lokaler Aufnahmen im Medienplayer, dazu Restzeit als Attribut `media_remaining` in Sekunden. Nur tatsächlich gelieferte, derselben Aufnahme zugeordnete Positionsdaten verwenden; keine Pauseableitung. HA kann zwischen den Abfragen geschätzten Fortschritt anzeigen. Der offizielle OpenWebif-2.4.0-Tag liefert das optionale Positionsfeld noch nicht.
+
+- Sichtprüfung der neuen Timeshift-Option in installierter HA-Version dev.5 für beide Receiver abgeschlossen; CI-Nachweise ergänzt. Nur Dokumentation und Versionsmetadaten geändert.
+
+- Neue Receiveroption „Timeshift-Speicherrückfrage wiederherstellen“ (standardmäßig aus). Liest den bisherigen Zustand vor Start/Stopp und stellt eine zuvor aktive Rückfrage anschließend wieder her, auch nach unbestätigtem Timeshift-Befehl. Kein Einschalten zuvor deaktivierter Rückfragen; Fehler werden angezeigt. Der aktuelle Testpuffer wird dadurch nicht gespeichert.
+
+- Timeshift auf beiden OpenWebif-2.4.0-Receivern direkt und über die installierte HA-Oberfläche geprüft; vollständige CI bestanden. Bestätigte OpenWebif-Nebenwirkung dokumentiert: Stopp deaktiviert die Speicherrückfrage. Im Prüflauf alle Ausgangseinstellungen wiederhergestellt; keine Änderung des Funktionscodes.
+
+- Idee Nr. 8: gerätebezogene Aktionen zum Starten und Stoppen von Timeshift sowie ein regelmäßig aktualisierter Sensor „Timeshift aktiv“. Vorprüfung und Bestätigung unter Befehlssperre, keine automatische Wiederholung bei Antwortverlust. Fehlende optionale Statusdaten bleiben unverfügbar. Stopp unterdrückt die Speicherrückfrage; Anleitungen erläutern möglichen Inhaltsverlust und die Abgrenzung zum Pausezustand.
+- Entwicklerdokumentation: Ideen 1–5 und 13 in beiden Sprachfassungen als umgesetzt gekennzeichnet und ihre Beschreibungen aktualisiert; verbleibende praktische Prüfgrenzen bleiben ausgewiesen.
+
+- **Inkompatible Voraussetzung:** OpenWebif mindestens **2.4.0**. Unterstützung und erneute Prüfungen für 1.x entfallen; ältere Receiverinstallationen müssen aktualisiert werden. Die neue Mindestversion entspricht der praktisch geprüften Basis beider Receiver.
+- Nutzer bestätigt hörbare Lautsprecherausgabe; Tonspurabnahme abgeschlossen. Die bisherige unveröffentlichte Zielversion 1.4.0 wird wegen der geänderten Voraussetzungen zu 2.0.0.
+
+- Praktische Tonspurabnahme auf beiden Receivern mit OpenWebif 2.4.0 und in der installierten HA-Oberfläche dokumentiert; vollständige CI erfolgreich. Keine Änderung am Funktionscode.
+
+- Idee Nr. 7: dynamische Tonspurauswahl mit regelmäßiger Aktualisierung, Prüfung vor dem Umschalten und Bestätigung durch erneutes Lesen. Fehlende oder ungültige Tonspuren machen nur diese Auswahl nicht verfügbar.
 
 ## 1.3.0
 

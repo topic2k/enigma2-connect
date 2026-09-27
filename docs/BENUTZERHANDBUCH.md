@@ -28,7 +28,8 @@ und TS-Aufnahmen auf HLS-fähigen Browsern und Mediengeräten.
 ## Installieren und einrichten
 
 Du brauchst Home Assistant **2026.9 oder neuer** und einen Enigma2-Receiver mit
-aktiviertem OpenWebif. OpenWebif ist die Weboberfläche deines Receivers. Öffne
+aktiviertem **OpenWebif ab Version 2.4.0**. Ältere Versionen werden nicht mehr
+unterstützt. OpenWebif ist die Weboberfläche deines Receivers. Öffne
 sie zuerst im Browser und prüfe, ob du dort den Receiver bedienen kannst.
 Home Assistant muss diese Adresse ebenfalls erreichen können.
 
@@ -100,17 +101,12 @@ die Geräteidentität fehlt oder abweicht.
 
 ### Unterstützte Geräte
 
-Voraussetzung ist die OpenWebif-JSON-API. Markenname oder Enigma2 allein sind kein
-Kompatibilitätsnachweis. Diese Übersicht beschreibt vorhandene Prüfungen vom
-13.09.2026 am damaligen Stand 0.1.0. Zusätzlich bestand die aktuelle lesende
-Abnahme am Octagon: Einrichtung, Entitäten, Aktualisierung, Screenshot und Picon.
-Ergänzend wurden Aufnahmebilder, begrenzte Bedienaktionen und die Adressübernahme
-nach einem tatsächlichen DHCP-Wechsel geprüft:
+Voraussetzung ist die OpenWebif-JSON-API ab **2.4.0**. Markenname oder Enigma2 allein sind kein Kompatibilitätsnachweis. Die Übersicht unterscheidet bisherige Funktionsnachweise von der aktuellen Tonspurabnahme am 27.09.2026. Historische Prüfungen mit OpenWebif 1.x stehen weiterhin in der Prüfübersicht, begründen aber keine aktuelle Unterstützung.
 
 | Receiver / OpenWebif | Belegter Umfang und Grenze |
 | --- | --- |
-| Octagon SF8008 4K Supreme / 2.4.0 | Live-TV/Radio, Aufnahmen, Picons/Bildschirmfoto, Fernbedienung, Nachrichten, Timer, Standby und Neustart wurden geprüft. |
-| Vu+ Solo² / 1.4.4 | Einrichtung ohne Anmeldung, getrennte Gerätezuordnung, Kataloge, Fernbedienung, Nachrichten und Timer wurden geprüft. Ohne DVB-Eingangssignal keine zweite Bild-/Tonabnahme. |
+| Octagon SF8008 4K Supreme / 2.4.0 | Live-TV/Radio, Aufnahmen, Picons/Bildschirmfoto, Fernbedienung, Nachrichten, Timer, Standby und Neustart wurden geprüft. Tonspurauswahl einschließlich HA-Oberfläche zusätzlich am 27.09.2026 geprüft. |
+| Vu+ Solo² / 2.4.0 | Tonspurauswahl, Senderwechsel, getrennte Gerätebedienung und Standby einschließlich HA-Oberfläche am 27.09.2026 geprüft. Frühere 1.x-Prüfungen anderer Funktionen sind historische Nachweise. |
 | Andere Enigma2-Receiver / Images | Können mit passender OpenWebif-API funktionieren; noch kein konkreter Hardware-Nachweis. Optionale Daten können fehlen. |
 | Receiver ohne OpenWebif-JSON-API | Nicht unterstützt; eine HTML-Weboberfläche allein reicht nicht aus. |
 
@@ -129,6 +125,7 @@ Home Assistant nennt diese einzelnen Elemente „Entitäten“.
 | --- | --- |
 | Medienplayer | ein- und ausschalten, Lautstärke ändern, stummschalten und Wiedergabe steuern |
 | Bouquet und Senderauswahl | eine Sendergruppe und anschließend einen Sender auswählen |
+| Tonspur | eine vom Receiver angebotene Sprache oder Audiodeskription auswählen |
 | Receiver-Steuerung | normalen Standby schalten und die Fernbedienungskarte verwenden |
 | Bildschirmnachricht | Text auf dem Fernseher anzeigen |
 | Sender und Sendungsinformationen | die aktuelle und nächste Sendung ansehen |
@@ -155,12 +152,39 @@ Stop nicht ein; die [Fernbedienungskarte](#fernbedienung-im-dashboard) bietet
 zusätzliche Tasten. Weitere einzelne Tasten lassen sich bei Bedarf als
 standardmäßig deaktivierte Button-Entitäten in den Entitätseinstellungen aktivieren.
 
+Bei einer auf dem Receiver abgespielten lokalen Aufnahme zeigt der Medienplayer
+die aktuelle Position und die gemeldete Dauer, sofern der OpenWebif-Build diese
+Daten liefert. Öffne den Medienplayer im Dashboard; die Darstellung des Fortschritts
+hängt von der verwendeten Karte ab. Die Restzeit steht zusätzlich in den
+Entitätsattributen als `media_remaining` in Sekunden. Aktualisierung im eingestellten
+Abfrageintervall (standardmäßig 15 Sekunden). HA-Karten können zwischen Abfragen
+geschätzten Fortschritt anzeigen, auch während einer Pause; die nächste Abfrage
+korrigiert die Position. Das Attribut `media_remaining` bleibt eine Momentaufnahme.
+Die Dauer stammt aus Aufnahmemetadaten und kann von der Dateilänge abweichen;
+überschreitet die Position diese Dauer, bleibt die Restzeit null.
+Auf beiden Testreceivern praktisch bestätigt: Auch eine 45-Sekunden-Aufnahme kann
+die Dauer der ursprünglichen Sendung melden. Die angezeigte Restzeit ist dann
+keine verlässliche Restlaufzeit der Datei.
+Der offizielle OpenWebif-2.4.0-Tag liefert noch keine Position; dort und bei fehlenden
+Daten bleibt diese Anzeige leer. Live-TV, Timeshift und gespeicherter Sehfortschritt
+der Bibliothek werden dafür nicht verwendet. Daraus entstehen keine Pauseerkennung
+und keine neue Spulfunktion.
+
 Signalqualität, SNR und gemeldete Bitfehlerrate sind optionale Diagnosen und bei
 neuen Entitäten zunächst deaktiviert. Öffne **Einstellungen → Geräte & Dienste →
 Entitäten**, zeige deaktivierte Entitäten an und aktiviere den gewünschten Sensor.
 Vorhandene Aktivierungsentscheidungen bleiben bei Updates erhalten. Der Receiver
 bietet außerdem Zustandsanzeigen für Standby, Aufnahme, Streaming und Verbindung;
 Verbindung und **Listen aktualisieren** gehören zu den Diagnosen.
+
+### Tonspur auswählen
+
+1. Öffne unter **Einstellungen → Geräte & Dienste → Enigma2 Connect** deinen Receiver.
+2. Öffne **Tonspur** und wähle die gewünschte Spur aus. Die Nummer unterscheidet auch gleich benannte Spuren; Beschreibung und Sprachen stammen vom Receiver.
+3. Nach einem Senderwechsel aktualisiert sich die Liste beim nächsten Abruf (standardmäßig nach höchstens etwa 15 Sekunden). Bei einer Meldung über geänderte Spuren die aktuelle Liste erneut öffnen.
+
+Die Auswahl steuert den Ton am Receiver. Sie legt keine Tonspur für externe HA-Streams fest. Originalton und Audiodeskription stehen nur zur Wahl, wenn der Sender beziehungsweise die Aufnahme sie bereitstellt und der Receiver sie meldet. Im Standby, ohne Tonspuren oder bei fehlender Schnittstellenunterstützung ist die Auswahl nicht verfügbar. Bei unbestätigtem Umschalten den tatsächlichen Zustand prüfen; es erfolgt keine automatische Wiederholung.
+
 
 ### Speicherplatz und Systemdiagnose
 
@@ -506,6 +530,7 @@ die Namen deiner Sendergruppen. **—** bedeutet: keine eigene Gruppe festlegen.
 | Einstellung | Standard und Bedeutung |
 | --- | --- |
 | Aufnahmen in der Medien-Kachel (gilt für alle Receiver) | Getrennt nach Receiver; alternativ zusammenfassen. Diese Auswahl wird für alle Receiver gespeichert. |
+| Timeshift-Speicherrückfrage wiederherstellen | Standard: aus; gilt nur für diesen Receiver. Nach Start/Stopp eine zuvor aktive Speicherrückfrage wieder einschalten. Keine Speicherung des aktuellen Puffers. |
 | Abfrageintervall (Sekunden) | 15 Sekunden; 5–300 Sekunden möglich. Kleinere Werte aktualisieren den Zustand häufiger. |
 | Wiedergabe auf anderen Geräten | Aus; HLS über Home Assistant mit mehreren gleichzeitigen Streams. |
 | Maximale gleichzeitige Streams | 5 pro Receiver; positive ganze Zahl, 0 = unbegrenzt. Derselbe Live-Sender wird gemeinsam genutzt; Aufnahmen starten separat. |
@@ -661,6 +686,91 @@ auf dev.12 oder neuer
 aktualisieren und Home Assistant neu starten.
 
 ## Nachrichten und Automationen
+
+### Text an ein Eingabefeld senden
+
+1. Öffne am eingeschalteten Receiver das gewünschte Texteingabefeld, etwa eine Suche, und setze den Fokus hinein.
+2. Wähle unter **Entwicklerwerkzeuge → Aktionen** die Aktion **Enigma2 Connect: Text senden**.
+3. Wähle den **Receiver**, trage **Text** ein und führe die Aktion aus.
+4. Prüfe den Text am Receiver. Bestätige oder korrigiere ihn dort bei Bedarf.
+
+1–500 Zeichen ohne Steuerzeichen sind erlaubt. Leerzeichen und Sonderzeichen werden unverändert übertragen. Die Aktion öffnet kein Eingabefeld, löscht keinen vorhandenen Inhalt und sendet keine Eingabetaste. Das aktive Feld und das Receiver-Image bestimmen die Wirkung und unterstützten Zeichen. Eine positive API-Antwort bestätigt keinen sichtbaren Feldinhalt. Bei unklarer Antwort wird nicht automatisch wiederholt; prüfe vor erneutem Senden das Feld, um doppelten Text zu vermeiden. Keine zusätzliche regelmäßige Abfrage.
+
+```yaml
+action: enigma2_connect.send_text
+data:
+  device_id: DEINE_RECEIVER_GERAETE_ID
+  text: "News & weather"
+```
+
+
+### Einschalten ohne Fernseher
+
+1. Den Receiver in normalem Standby lassen; OpenWebif muss erreichbar sein.
+2. Unter **Entwicklerwerkzeuge → Aktionen** die Aktion **Enigma2 Connect: Einschalten ohne Fernseher** wählen.
+3. Den **Receiver** auswählen und die Aktion ausführen. Für Radio anschließend den gewünschten Sender wählen.
+
+Das Receiver-Image muss die einmalige Unterdrückung des HDMI-CEC-Einschaltbefehls unterstützen. Die Aktion prüft dies vor jedem Einschalten. Ist der Receiver bereits eingeschaltet, passiert nichts. Die normalen Einschaltaktionen bleiben unverändert. Tiefschlaf wird nicht unterstützt; ein bereits eingeschalteter Fernseher wird nicht ausgeschaltet. Andere HDMI-CEC-Geräte können den Fernseher weiterhin einschalten.
+
+Bei einer Fehlermeldung zuerst Receiver und Fernseher prüfen, bevor die Aktion wiederholt wird. Nach einem Antwortverlust kann die Unterdrückung bereits für das nächste Einschalten gesetzt sein. Eine bestätigte Receiverantwort beweist nicht den tatsächlichen Zustand des Fernsehers.
+
+```yaml
+action: enigma2_connect.powerup_without_tv
+data:
+  device_id: DEINE_RECEIVER_GERAETE_ID
+```
+
+### Sleeptimer einstellen und abbrechen
+
+1. Schalte den Receiver ein. Öffne **Entwicklerwerkzeuge → Aktionen**.
+2. Wähle **Enigma2 Connect: Sleeptimer einstellen**, den **Receiver** und die **Minuten** (1–999), zum Beispiel 30.
+3. Führe die Aktion aus. Sie ersetzt einen vorhandenen Sleeptimer und wählt **Standby** als Ziel.
+4. Unter dem Gerät zeigt **Sleeptimer aktiv** den gemeldeten Zustand. Zum Deaktivieren wähle **Sleeptimer abbrechen** für denselben Receiver.
+
+Der Timer läuft auf dem Receiver auch ohne Home Assistant weiter. Er wird regelmäßig (standardmäßig alle 15 Sekunden) und nach Aktionen neu gelesen. Die Attribute `reported_minutes` und `action` zeigen ausschließlich gemeldete Werte: `standby` oder `shutdown` (Ausschalten/Deep Standby bei extern eingestelltem Timer). Gemeldete Minuten sind imageabhängig eine eingestellte oder verbleibende Dauer, kein verlässlicher Countdown. Fehlende Werte bleiben unbekannt; fehlende Statusunterstützung macht den Sensor unverfügbar.
+
+**Auf beiden Testreceivern mit OpenWebif 2.4.0 geprüft:** 30 Minuten werden bestätigt. Bei einer Minute läuft der Timer tatsächlich, der Receiver meldet jedoch `reported_minutes: 0`; HA zeigt deshalb „Sleeptimer-Änderung nicht bestätigt“. Nicht blind wiederholen. Nach Ablauf kann die normale Receiver-Rückfrage zunächst weiterlaufen, obwohl „Sleeptimer aktiv“ bereits aus ist. Der Sensor bestätigt den Timerzustand, nicht den erreichten Standby.
+
+Images können Dauer und Standby-Verhalten unterschiedlich umsetzen, Einstellungen dauerhaft speichern oder bestehende Powertimer verwenden. Bei einer Fehlermeldung kann der Timer bereits geändert sein: Prüfe den tatsächlichen Zustand am Receiver, bevor du erneut einstellst. Die Integration wiederholt Schreibbefehle nicht automatisch und umgeht keine Aufnahme-/Standby-Rückfragen des Images. Aktionen werden im Standby abgelehnt. Ein bereits inaktiver Timer wird beim Abbrechen nicht erneut geschrieben.
+
+```yaml
+action: enigma2_connect.sleep_timer_set
+data:
+  device_id: DEINE_RECEIVER_GERAETE_ID
+  minutes: 30
+```
+
+Zum Abbrechen `enigma2_connect.sleep_timer_cancel` mit derselben `device_id` und ohne `minutes` verwenden. **Sleeptimer aktiv** kann als normale HA-Zustandsbedingung genutzt werden.
+
+### Timeshift starten und stoppen
+
+1. Schalte den Receiver ein und wähle einen für Timeshift geeigneten Fernsehsender. Timeshift und ein geeigneter Speicher müssen am Receiver eingerichtet sein.
+2. Öffne **Entwicklerwerkzeuge → Aktionen**, wähle **Enigma2 Connect: Timeshift starten** und den gewünschten **Receiver**.
+3. Führe die Aktion aus. **Timeshift aktiv** auf der Geräteseite zeigt den vom Receiver gemeldeten Zustand. Er wird im eingestellten Abfrageintervall (standardmäßig 15 Sekunden) und nach den Aktionen aktualisiert.
+4. Zum Beenden verwende **Timeshift stoppen** für denselben Receiver.
+
+**Stoppen erfolgt ohne Speicherrückfrage. Nicht gespeicherte Timeshift-Inhalte können verloren gehen.** Wenn du Inhalte behalten möchtest, speichere sie vorher über die Receiveroberfläche. Die Integration bietet keine Timeshift-Speicheraktion. Bei der Prüfung mit OpenWebif 2.4.0 auf Octagon und Vu+ deaktivierte der Stopp außerdem die Einstellung **Warnung anzeigen, wenn Timeshift gestoppt wird**. Du kannst sie manuell in den Timeshift-Einstellungen des Receivers wieder einschalten oder die optionale Wiederherstellung aktivieren:
+
+1. Öffne **Einstellungen → Geräte & Dienste → Enigma2 Connect**.
+2. Wähle beim gewünschten Receiver **Konfigurieren → Receiver-Einstellungen**.
+3. Aktiviere **Timeshift-Speicherrückfrage wiederherstellen** und speichere.
+
+Die Option ist standardmäßig aus. Sie liest die Rückfrage vor jeder tatsächlich schreibenden Start-/Stopp-Aktion. War sie an, wird sie danach bei Bedarf wieder aktiviert und überprüft; war sie vorher aus, wird sie nicht eingeschaltet. Dies gilt auch bei einer unbestätigten Timeshift-Antwort. Bereits erreichte Timeshift-Zielzustände benötigen keinen Eingriff. Eine vor Aktivierung der Option bereits ausgeschaltete Rückfrage musst du einmal am Receiver einschalten, wenn du sie künftig erhalten möchtest.
+
+Kann die Rückfrage vorab nicht eindeutig gelesen werden, wird Timeshift nicht geändert. Schlägt die Wiederherstellung fehl, meldet HA einen Fehler; Timeshift kann dann bereits gestartet oder gestoppt sein. Prüfe in diesem Fall die Rückfrage am Receiver. Bei abruptem HA-/Receiver-Ausfall kann keine Wiederherstellung garantiert werden. Die Option betrifft spätere Rückfragen und erhält oder speichert nicht den gerade gestoppten Puffer.
+
+„Timeshift aktiv“ bedeutet nicht „Wiedergabe pausiert“. Starten garantiert keine Pause; die Anzeige des Medienplayers wird daraus nicht geändert. Im Standby oder bei fehlender/ungültiger Timeshift-Antwort ist der Sensor nicht verfügbar. Der übrige Receiver bleibt bei einem rein optionalen Timeshift-Fehler bedienbar. Bei einer unbestätigten Aktion prüfe zuerst den Receiver, bevor du sie wiederholst. Bereits aktives Timeshift wird nicht erneut gestartet, bereits inaktives nicht nochmals gestoppt.
+
+Für einen Automationsschritt ersetze `DEINE_GERAETE_ID` durch die Geräte-ID des Receivers:
+
+```yaml
+action: enigma2_connect.timeshift_start
+data:
+  device_id: DEINE_GERAETE_ID
+```
+
+Zum Stoppen lautet die Aktion `enigma2_connect.timeshift_stop`; die Gerätewahl bleibt gleich. In Automationen kannst du den binären Sensor **Timeshift aktiv** als normale HA-Zustandsbedingung verwenden.
+
 
 Eine Bildschirmnachricht kannst du zunächst unter **Entwicklerwerkzeuge →
 Aktionen** ausprobieren: Wähle **Benachrichtigungen: Nachricht senden**

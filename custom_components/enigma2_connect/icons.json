@@ -47,6 +47,12 @@
       },
       "streaming": {
         "default": "mdi:cast-connected"
+      },
+      "timeshift": {
+        "default": "mdi:timer-outline"
+      },
+      "sleep_timer": {
+        "default": "mdi:timer-outline"
       }
     },
     "button": {
@@ -225,6 +231,18 @@
     },
     "recording_destinations": {
       "service": "mdi:folder-outline"
+    },
+    "timeshift_start": {
+      "service": "mdi:play-circle-outline"
+    },
+    "timeshift_stop": {
+      "service": "mdi:stop-circle-outline"
+    },
+    "sleep_timer_set": {
+      "service": "mdi:timer-outline"
+    },
+    "sleep_timer_cancel": {
+      "service": "mdi:timer-off-outline"
     }
   }
 }

@@ -8,7 +8,7 @@ rules:
     comment: __init__.async_setup registers services before any entry is loaded.
   appropriate-polling:
     status: done
-    comment: Coordinator polls state every 15 s by default, lists every 120 s and channels every 300 s. EPG search, similar queries and recording-library reads run only on demand.
+    comment: Coordinator polls state, optional audio tracks, sleep timer and timeshift every 15 s by default, lists every 120 s and channels every 300 s. EPG search, similar queries and recording-library reads run only on demand. Optional timeshift warning preservation reads configuration only during an actual start/stop action. Recording playback position reuses getcurrent without additional polling. Quiet power-up checks support and standby only on explicit action, with serialized writes and no automatic replay.
   brands:
     status: done
     comment: Eight shipped brand PNGs follow HA 2026.3 custom-integration support; tested through HA's local brands API without CDN access. Core branding remains part of a separate admission.
@@ -23,7 +23,7 @@ rules:
     comment: 100 percent statement and branch coverage; tests/test_config_flow.py covers recovery and identity. CI enforces both.
   dependency-transparency:
     status: done
-    comment: No additional Python runtime packages in manifest requirements; the Apache-2.0 API client is included. Optional external playback requires FFmpeg with libx264/AAC, documented in both user guides.
+    comment: Text input uses the shared transport/command lock and adds no polling. No additional Python runtime packages in manifest requirements; the Apache-2.0 API client is included. Optional external playback requires FFmpeg with libx264/AAC, documented in both user guides.
   docs-actions:
     status: done
     comment: User guides describe actions and examples in the messages and automations chapter.
@@ -66,7 +66,7 @@ rules:
   # Silver
   action-exceptions:
     status: done
-    comment: Services validate targets; coordinator.perform translates failures, including uncertain timer outcomes without automatic replay. Optional timer responses preserve exceptions. The refresh button waits for its own fetch and reports failure.
+    comment: Services validate targets; coordinator.perform translates failures, including uncertain timer outcomes without automatic replay. Optional timer responses preserve exceptions. Timeshift warning restoration failures have dedicated translated errors; lost configuration POST replies are read back without replay. The refresh button waits for its own fetch and reports failure.
   config-entry-unloading:
     status: done
     comment: Platforms unload; async_close cancels recording-image jobs and external HLS processes/relays/files. Lifecycle tests cover unload and HA stop.
@@ -78,7 +78,7 @@ rules:
     comment: Both user guides describe all six connection fields, defaults and reconfiguration/authentication behavior.
   entity-unavailable:
     status: done
-    comment: CoordinatorEntity handles offline receivers; missing optional values are unknown, calendar needs timers. The connectivity diagnostic stays available. Both guides explain this.
+    comment: CoordinatorEntity handles offline receivers; missing optional values are unknown, timeshift is unavailable without valid data or in standby, calendar needs timers. The connectivity diagnostic stays available. Both guides explain this.
   integration-owner:
     status: done
     comment: Manifest identifies @topic2k as the maintainer.

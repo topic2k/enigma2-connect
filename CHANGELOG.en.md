@@ -4,6 +4,7 @@
 
 ## Contents
 
+- [2.0.0](#200)
 - [1.3.0](#130)
 - [1.2.1](#121)
 - [1.2.0](#120)
@@ -14,6 +15,44 @@
 - [1.0.2](#102)
 - [1.0.1](#101)
 - [1.0.0](#100)
+
+## 2.0.0
+
+Approved for publication on 2026-09-27.
+
+- Idea 12 tested through the installed dev.14 HA UI on Octagon and Vu+ Solo² (OpenWebif 2.4.0): text including umlauts, spaces, `&`, `+`, `%20`, `?` and `#` visibly appended correctly, without automatic confirmation. Unsaved drafts discarded, standby restored and unchanged timer lists verified. Feature-revision CI passed. Dev.15 records acceptance without runtime changes.
+
+- Idea 12: device-scoped Send text action for the active receiver input field, preserving text, serializing commands, checking API acknowledgement and preventing automatic duplicate transmission. DE/EN instructions and simulated tests; receiver/installed-HA acceptance remains open.
+
+- Idea no. 11 verified through the installed HA UI on Octagon: action and device selector visible, wake successful, Samsung TV state `off` before/after, original standby restored. Vu+ limitation documented: normal TV wake is disabled according to the user, preventing a meaningful suppression comparison. Dev.13 changes only documentation and version metadata.
+
+- Idea no. 11 verified on Octagon SF8008 4K Supreme with OpenWebif 2.4.0: receiver woke without the TV, which stayed off according to the user; calling again while awake performed no writes. Original standby restored. Full CI for dev.11 passed. Dev.12 documents acceptance; Vu+ and the installed HA action remain pending.
+
+- Idea no. 11: “Power on without TV” action with fresh standby/image checks, one-shot HDMI-CEC suppression and confirmed wake. No ordinary-wake fallback or automatic write replay; response-loss, deep-standby and TV-state limitations documented. Receiver/HA acceptance pending.
+
+- Tested sleep timer dev.9 on both OpenWebif 2.4.0 receivers and in the installed HA UI. Setting 30 minutes, status display and cancellation confirmed; one minute actually starts, but the image reports `minutes=0`, so HA leaves it unconfirmed. Receiver expiry prompts observed. Complete CI passed. Dev.10 changes only documentation and version metadata; see verification summary for exact acceptance and limitations.
+
+- Idea no. 10: set the receiver sleep timer to standby in 1–999 minutes or cancel it; “Sleep timer active” sensor with reported minutes and target action. Preflight and fresh confirmation under the command lock, without automatic write retries. Image-specific deviations are reported as unconfirmed; no invented countdown. Actual receiver/HA testing with limitations documented in dev.10.
+
+- Practically checked idea no. 9 on both OpenWebif 2.4.0 receivers and in installed HA version dev.7: advancing position, pause, HA play/stop buttons, display and clearing attributes on return to live TV. Full CI passed. Confirmed limitation: `duration_sec` may describe the original programme rather than actual file length, making remaining time inaccurate accordingly. Test data removed and original states restored. Dev.8 changes documentation and version metadata only.
+
+- Idea no. 9: current position and reported duration of local recordings in the media player, plus remaining seconds in `media_remaining`. Only use reported position data tied to the same recording; no pause inference. HA may show estimated progress between polls. The official OpenWebif 2.4.0 tag does not yet provide the optional position field.
+
+- Completed visual verification of the new timeshift option in installed HA version dev.5 for both receivers; added CI evidence. Only documentation and version metadata changed.
+
+- New per-receiver “Restore timeshift save warning” option (off by default). Reads the previous setting before start/stop and restores a previously enabled warning afterwards, including after an unconfirmed timeshift command. Does not enable previously disabled warnings; failures are reported. This does not save the current buffer.
+
+- Tested timeshift on both OpenWebif 2.4.0 receivers directly and through the installed HA UI; full CI passed. Documented a confirmed OpenWebif side effect: stop disables the save warning. All baseline settings restored during testing; no functional code changes.
+
+- Idea No. 8: device-scoped actions to start and stop timeshift and a regularly updated “Timeshift active” sensor. Preflight and confirmation share the command lock; lost responses never trigger automatic replay. Missing optional status data remains unavailable. Stop suppresses the save prompt; guides explain possible content loss and distinguish this status from playback pause.
+- Developer documentation: marked ideas 1–5 and 13 as implemented in both languages and updated their descriptions; remaining practical verification limits stay explicit.
+
+- **Breaking prerequisite:** OpenWebif **2.4.0 or later**. Support and retesting for 1.x end; older receiver installations need updating. The minimum matches the practically verified baseline of both receivers.
+- User confirmed audible speaker output; audio-track acceptance completed. The previous unreleased 1.4.0 target becomes 2.0.0 because of the changed prerequisites.
+
+- Recorded practical audio-track acceptance on both receivers with OpenWebif 2.4.0 and in the installed HA UI; full CI passed. No functional code changes.
+
+- Idea no. 7: dynamic audio-track selection with regular updates, validation before switching and confirmation by rereading. Missing or invalid tracks make only this selection unavailable.
 
 ## 1.3.0
 

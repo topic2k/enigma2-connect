@@ -6,6 +6,7 @@ from __future__ import annotations
 import asyncio
 from base64 import b64encode
 from typing import Any, Literal, overload
+from urllib.parse import quote
 
 import aiohttp
 from yarl import URL
@@ -59,11 +60,19 @@ TIMER_COMMANDS = frozenset(
 
 
 RECORDING_COMMANDS = frozenset({"movieinfo", "moviemove", "moviedelete"})
-WRITE_COMMANDS = TIMER_COMMANDS | RECORDING_COMMANDS
+WRITE_COMMANDS = (
+    TIMER_COMMANDS
+    | RECORDING_COMMANDS
+    | {"selectaudiotrack", "tsstart", "tsstop", "saveconfig", "set_powerup_without_waking_tv"}
+)
 
 
 class CommandUnconfirmed(ConnectionError):
     """A write command may have taken effect without a usable acknowledgement."""
+
+
+class TextCommandUnconfirmed(CommandUnconfirmed):
+    """Text may have reached the active input field."""
 
 
 class PowerCommandUnconfirmed(ReceiverError):
@@ -78,11 +87,16 @@ async def power_command_middleware(
     Install on the session so Home Assistant's own middleware remains active.
     Raising our own exception inside the handler prevents aiohttp's GET retry.
     """
-    timer_command = request.url.path.removeprefix("/api/") in WRITE_COMMANDS
+    timer_command = request.url.path.removeprefix("/api/") in WRITE_COMMANDS or (
+        request.url.path == "/api/sleeptimer" and request.url.query.get("cmd", "get") != "get"
+    )
+    text_command = request.url.path == "/api/remotecontrol" and "text" in request.url.query
+    timer_command = timer_command or text_command
     power_command = request.url.path == "/api/powerstate" and request.url.query.get("newstate") in (
         "1",
         "2",
         "3",
+        "4",
     )
     if not timer_command and not power_command:
         return await handler(request)
@@ -91,6 +105,8 @@ async def power_command_middleware(
     except (aiohttp.ClientConnectorError, aiohttp.ConnectionTimeoutError) as err:
         raise ConnectionError("Cannot connect to receiver") from err
     except (aiohttp.ClientConnectionError, TimeoutError) as err:
+        if text_command:
+            raise TextCommandUnconfirmed("Text command response was not received") from err
         if timer_command:
             raise CommandUnconfirmed("Write command response was not received") from err
         raise PowerCommandUnconfirmed("Power command response was not received") from err
@@ -133,27 +149,47 @@ class OpenWebifClient:
 
     @overload
     async def request(
-        self, path: str, params: dict[str, Any] | None = None, *, image: Literal[False] = False
+        self,
+        path: str,
+        params: dict[str, Any] | None = None,
+        *,
+        image: Literal[False] = False,
+        post: bool = False,
     ) -> JsonObject: ...
 
     @overload
     async def request(
-        self, path: str, params: dict[str, Any] | None = None, *, image: Literal[True]
+        self,
+        path: str,
+        params: dict[str, Any] | None = None,
+        *,
+        image: Literal[True],
+        post: bool = False,
     ) -> bytes: ...
 
     async def request(
-        self, path: str, params: dict[str, Any] | None = None, *, image: bool = False
+        self,
+        path: str,
+        params: dict[str, Any] | None = None,
+        *,
+        image: bool = False,
+        post: bool = False,
     ) -> JsonObject | bytes:
-        timer_command = path.removeprefix("/api/") in WRITE_COMMANDS
+        timer_command = path.removeprefix("/api/") in WRITE_COMMANDS or (
+            path == "/api/sleeptimer" and (params or {}).get("cmd", "get") != "get"
+        )
         disruptive_power = path == "/api/powerstate" and str((params or {}).get("newstate")) in (
             "1",
             "2",
             "3",
+            "4",
         )
         try:
-            async with self.session.get(
+            send = self.session.post if post else self.session.get
+            async with send(
                 self.base_url.with_path(path),
-                params=params,
+                params=None if post else params,
+                data=params if post else None,
                 headers=self.headers,
                 ssl=self.verify_ssl,
                 timeout=self.timeout,
@@ -173,6 +209,16 @@ class OpenWebifClient:
                     return content
                 # Accept JSON even when the receiver reports a different MIME type.
                 data = await response.json(content_type=None)
+                # These two OpenWebif endpoints return bare JSON booleans.
+                if (
+                    path
+                    in (
+                        "/api/supports_powerup_without_waking_tv",
+                        "/api/set_powerup_without_waking_tv",
+                    )
+                    and type(data) is bool
+                ):
+                    data = {"result": data}
                 # OpenWebif returns a bare array only for this read endpoint.
                 if path == "/api/epgsimilar" and isinstance(data, list):
                     data = {"events": data}
@@ -208,6 +254,10 @@ class OpenWebifClient:
     async def get(self, endpoint: str, **params: Any) -> JsonObject:
         return await self.request(f"/api/{endpoint}", params or None)
 
+    async def post(self, endpoint: str, **params: Any) -> JsonObject:
+        """Submit a form once; callers serialize writes and verify their result."""
+        return await self.request(f"/api/{endpoint}", params or None, post=True)
+
     async def command(self, endpoint: str, **params: Any) -> None:
         """Run a command without returning response data, preserving existing callers."""
         await self.command_result(endpoint, **params)
@@ -217,6 +267,27 @@ class OpenWebifClient:
         async with self.command_lock:
             data = await self.get(endpoint, **params)
             return command_response(endpoint, data)
+
+    async def send_text(self, text: str) -> None:
+        """Send literal text once; acknowledgement cannot prove field contents."""
+        if (
+            not isinstance(text, str)
+            or not 1 <= len(text) <= 500
+            or any(ord(char) < 32 or 127 <= ord(char) <= 159 for char in text)
+        ):
+            raise ValueError("Expected 1–500 characters without control characters")
+        async with self.command_lock:
+            try:
+                # OpenWebif applies unquote again after parsing the query string.
+                data = await self.get("remotecontrol", text=quote(text, safe=""))
+                command_response("remotecontrol", data)
+                flags = [boolean(data[key]) for key in ("result", "state") if key in data]
+                if not flags or any(flag is not True for flag in flags):
+                    raise TextCommandUnconfirmed("Text command acknowledgement missing")
+            except (ConnectionError, ProtocolError) as err:
+                if isinstance(err, CommandRejectedError):
+                    raise
+                raise TextCommandUnconfirmed("Text command was not confirmed") from err
 
     async def keys(self, codes: list[int], delay: float = 0.3, hold: bool = False) -> None:
         if not codes or len(codes) > 500 or any(not 0 <= code <= 0x2FF for code in codes):

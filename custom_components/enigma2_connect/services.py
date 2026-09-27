@@ -114,6 +114,18 @@ def register_services(hass: HomeAssistant) -> None:
             return await coordinator.perform(
                 coordinator.recording_library.list, refresh=False, **params
             )
+        if service == "send_text":
+            await coordinator.perform(coordinator.client.send_text, params["text"], refresh=False)
+            return None
+        if service == "powerup_without_tv":
+            await coordinator.async_powerup_without_tv()
+            return None
+        if service in ("sleep_timer_set", "sleep_timer_cancel"):
+            await coordinator.async_set_sleep_timer(params.get("minutes"))
+            return None
+        if service in ("timeshift_start", "timeshift_stop"):
+            await coordinator.async_set_timeshift(service == "timeshift_start")
+            return None
         if service == "record_now":
             result = await coordinator.async_record_now()
             return result if call.return_response else None
@@ -229,6 +241,20 @@ def register_services(hass: HomeAssistant) -> None:
         },
         "epg_similar": event,
         "record_event": event,
+        "sleep_timer_set": {
+            **base,
+            vol.Required("minutes"): vol.All(int, vol.Range(min=1, max=999)),
+        },
+        "sleep_timer_cancel": base,
+        "send_text": {
+            **base,
+            vol.Required("text"): vol.All(
+                str, vol.Length(min=1, max=500), vol.Match(r"^[^\x00-\x1f\x7f-\x9f]+\Z")
+            ),
+        },
+        "powerup_without_tv": base,
+        "timeshift_start": base,
+        "timeshift_stop": base,
         "record_now": base,
         "reboot": base,
         "restart_gui": base,

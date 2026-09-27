@@ -26,7 +26,7 @@ async def async_setup_entry(
 ) -> None:
     async_add_entities(
         EnigmaBinarySensor(entry.runtime_data, key)
-        for key in ("standby", "recording", "streaming", "connection")
+        for key in ("standby", "recording", "streaming", "connection", "timeshift", "sleep_timer")
     )
 
 
@@ -40,13 +40,28 @@ class EnigmaBinarySensor(EnigmaEntity, BinarySensorEntity):
 
     @property
     def available(self) -> bool:
+        if self.key == "sleep_timer":
+            return super().available and self.coordinator.data.sleep_timer is not None
+        if self.key == "timeshift":
+            return super().available and self.coordinator.data.timeshift is not None
         # Keep connectivity visible as off when polling fails, rather than unavailable.
         return True if self.key == "connection" else super().available
 
     @property
     def is_on(self) -> bool | None:
+        if self.key == "sleep_timer":
+            timer = self.coordinator.data.sleep_timer
+            return timer.enabled if timer else None
+        if self.key == "timeshift":
+            return self.coordinator.data.timeshift
         return (
             self.coordinator.last_update_success
             if self.key == "connection"
             else getattr(self.coordinator.data.state, self.key)
         )
+
+    @property
+    def extra_state_attributes(self) -> dict[str, str | int | None] | None:
+        if self.key != "sleep_timer" or (timer := self.coordinator.data.sleep_timer) is None:
+            return None
+        return {"reported_minutes": timer.minutes, "action": timer.action}

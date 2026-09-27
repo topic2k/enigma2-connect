@@ -6,6 +6,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from datetime import datetime
     from typing import Any
 
     from homeassistant.components.media_player.browse_media import BrowseMedia
@@ -124,17 +125,32 @@ class EnigmaMediaPlayer(EnigmaEntity, MediaPlayerEntity):
         )
 
     @property
+    def media_position(self) -> int | None:
+        return self.coordinator.data.state.media_position if self.available else None
+
+    @property
+    def media_duration(self) -> int | None:
+        return self.coordinator.data.state.media_duration if self.available else None
+
+    @property
+    def media_position_updated_at(self) -> datetime | None:
+        return self.coordinator.data.state.media_position_updated_at if self.available else None
+
+    @property
     def extra_state_attributes(self) -> dict[str, Any]:
         state = self.coordinator.data.state
         if state.standby:
             return {}
-        return {
+        attributes = {
             "programme_description": state.description,
             "programme_start": state.programme_start,
             "programme_end": state.programme_end,
             "recording_active": state.recording,
             "recording_playback": state.recording_playback,
         }
+        if self.media_position is not None and self.media_duration is not None:
+            attributes["media_remaining"] = max(0, self.media_duration - self.media_position)
+        return attributes
 
     @property
     def volume_level(self) -> float | None:

@@ -2,6 +2,175 @@
 
 # Verification summary
 
+## Release preparation 2.0.0 – 2026-09-27
+
+Remote branches, tags and published releases checked: latest stable version 1.3.0. The new OpenWebif 2.4.0 minimum requires 2.0.0. Runtime code is unchanged from develop `a3f55ac00528a53e68645361320e5e6c3a009998`: [Tests](https://github.com/topic2k/enigma2-connect/actions/runs/36330809746) and [Hassfest/HACS](https://github.com/topic2k/enigma2-connect/actions/runs/36330809804) passed; 1141 backend tests, both frontend suites and strict mypy for 41 modules passed, with all 41 modules above 95% combined statement/branch coverage.
+
+Quality checklist compared with main: no criteria, exemptions, CI checks or coverage thresholds relaxed. The feature-specific evidence below for audio tracks, timeshift, playback position, sleep timer, quiet power-up and text input applies to unchanged runtime code. Documented image/focus/Unicode limitations and unverified CEC suppression on Vu+ remain. Historically pending checks are not retrospectively marked as passed. This release preparation performs no new receiver or installed-HA acceptance tests.
+
+Version metadata including the offline lockfile synchronized to 2.0.0; dependencies unchanged. Before merge, test, hassfest and hacs must pass for the final PR revision; before tagging and publication they must also pass for the actual merged main commit. The requested changelog approval does not replace these checks.
+
+## Text input – 2.0.0-dev.14
+
+Implemented on 2026-09-27: device-scoped `send_text`, 1–500 characters without control characters, preserved spaces/Unicode and shared command lock. The official OpenWebif 2.4.0 control model additionally calls `unquote`; pre-encoding once preserves literal percent sequences. A positive reply confirms issued character keys, not field contents.
+
+Local checks use Python 3.14.7, the real HA test framework and simulated receivers. The final run passed 28 tests for text input, action registration and branding. Coverage includes device targeting, selectors, input boundaries, Unicode/URL characters, command locking, rejection, missing acknowledgement, reauth, lost responses and cancellation. A local HTTP server checks query decoding and exactly one write even on disconnection. The initial API/integration/action-selector regression run found only two outdated test expectations (action set and HA text-selector defaults), corrected and passed in the final run. Ruff, formatting, syntax checks, mypy (41 modules) and offline lock verification passed; the lockfile changes only the project version.
+
+Quality review: no extra polling, platform or runtime dependency; unambiguous receiver targeting, shared serialization, reauth and DE/EN descriptions preserved. Criteria and coverage thresholds unchanged. Real receiver/installed-HA acceptance remains open: input focus, visible text, image-specific character support and absent input fields. No real receiver was operated for this implementation. Current full CI for the PR revision remains required before main.
+
+
+
+### Receiver/HA acceptance on 2026-09-27, recorded in dev.15
+
+Installed version **2.0.0-dev.14** verified from its manifest; installed API code matches feature commit `b3feec80bb06a7bf8094ff6d1112037dc2be5edd`. [Tests](https://github.com/topic2k/enigma2-connect/actions/runs/36329614560) and [Hassfest/HACS](https://github.com/topic2k/enigma2-connect/actions/runs/36329614559) passed for this commit.
+
+**Octagon SF8008 4K Supreme and Vu+ Solo², both OpenWebif 2.4.0:** Initially both in standby, without active recordings, sleep timers or timer starts within 15 minutes. Opened a new unsaved timer draft on each receiver and focused its name using the virtual keyboard. Selected Send text and the corresponding device in the installed HA UI; sent exactly ` E2C Grüße & + %20? #` once per receiver. Both HA calls completed without errors. Receiver screenshots confirm visibly correct umlauts, spaces and special characters, particularly literal `%20`. Existing names were retained, text was appended, and keyboards stayed open without automatic confirmation.
+
+Discarded both keyboard edits and timer drafts without saving. Both receivers restored to standby; hashes of their complete timer lists match before/after. No test timers saved or existing recordings changed. The Octagon stream reported before the test remained present. Original standby and unchanged timer lists were verified; menu positions were not restored identically. Local evidence and screenshots: `.work/text-hardware/`.
+
+Octagon was woken using the installed HA power-on-without-TV action. Vu+ rejects the support query for that separate feature and was woken normally for text testing; this is not additional TV/CEC acceptance. Results cover the tested characters and virtual name fields on these two images, not arbitrary Unicode, field types or focus states. Response-loss and replay protection remain covered by simulated tests; no deliberate real-receiver connection interruption. Dev.15 updates only documentation and version metadata; no new installation is needed for the unchanged text feature.
+
+## Power on without TV – 2.0.0-dev.11
+
+Tested on 27 September 2026 with Python 3.14.7 and the real Home Assistant test framework using simulated receiver replies. 37 targeted tests passed: supported/missing/malformed image replies, already awake, unknown standby, authentication, cancellation, lost replies, missing acknowledgement, receiver targeting and concurrent wake requests. Three local HTTP scenarios exercise the complete sequence and connection loss during arming/waking without automatic replay. The first HTTP run failed because the local socket fixture was missing; after adding it, all 37 tests passed. `powerup.py`: 100% statement and branch coverage (33 statements, 10 branches). Seven additional action registration, translation catalog and branding checks passed.The additional API, integration, action selector and control regression run found only the outdated expected set of registered actions; it was updated and the affected test passed in the final run. Ruff, formatting, Python syntax and strict mypy (41 modules) passed; offline lock reconciliation changes only the project version.
+
+Quality review: unambiguous receiver selection, registration without configured devices, bilingual action/errors, existing reauth/refresh handling, serialization, no additional background reads and no runtime dependencies. Criteria and coverage thresholds unchanged. Interfaces checked against the official OpenWebif 2.4.0 controller and control model; no real receivers contacted.
+
+The subsequent Octagon acceptance is documented below. The HA acceptance and the configuration-related Vu+ test limitation are documented below. OpenWebif replies cannot confirm physical TV state; response loss can leave the one-shot suppression flag armed. External remotes do not share the command lock. Current full CI for the PR revision remains required before main.
+
+### Octagon hardware check on 27 September 2026, documented in dev.12
+
+Revision `d37d7b2487315052b00fa575665bf3f90b47936b` (2.0.0-dev.11) tested directly using the current integration client and `powerup_without_tv` against the Octagon SF8008 4K Supreme running OpenWebif 2.4.0. [Tests](https://github.com/topic2k/enigma2-connect/actions/runs/36326914395) and [Hassfest/HACS](https://github.com/topic2k/enigma2-connect/actions/runs/36326914441) for this commit completed successfully.
+
+Initial state: receiver in standby, TV off according to the user, no recording, sleep timer disabled, no active timer start within the next 15 minutes; a stream was already reported. The image confirmed support. Under the command lock, the function performed exactly a standby read, capability check, one arming request, one wake (`newstate=4`) and a fresh standby read. The receiver remained awake after three seconds. A second call while awake read only `powerstate`; no further arming or wake request.
+
+The user explicitly confirmed that the TV stayed off during the wake. Afterwards, the original normal standby state was restored and confirmed by a fresh receiver read. No settings or channels were changed.
+
+This directly tests the current function code against the receiver, not the action in the installed HA UI. The Vu+ was not contacted. Both acceptance checks were pending at that point; subsequent HA acceptance and the Vu+ limitation are documented below. Dev.12 changes only documentation and version metadata; local detailed reports under `.work/quiet-power-octagon/` are not shipped.
+
+### Installed HA action and Vu+ test limitation, documented in dev.13
+
+On 27 September 2026, the user confirmed installing dev.12. The authenticated HA UI was checked in the built-in Codex browser: **Tools → Actions → Power on without TV** displays the German name, description and receiver selector. Only **SF8008 4K Supreme** was selected. Beforehand, the user confirmed the TV was off and the HA TV entity reported `off`. Octagon reported standby, no recording, no sleep timer and no timer start within the next 15 minutes.
+
+Clicked **Perform action** once. The dialog returned from loading without an error; a subsequent direct receiver read confirmed `standby=false`. The Samsung TV entity remained `off` before and after the action. This adds HA state evidence to the earlier direct visual confirmation; no separate new physical TV confirmation is claimed. Normal standby was then restored and freshly confirmed. Codex performed no installation, HA restart or HDMI-CEC configuration changes.
+
+According to the user, normal Vu+ power-on is already configured not to wake the TV. A TV remaining off there would therefore not demonstrate the new suppression. No CEC configuration was changed and no Vu+ function test was performed; its image support remains untested. Actual suppression is demonstrated on Octagon, not claimed for both images.
+
+CI for dev.12 (`b56308ccd83bea055f7cc6eded27813965e6f1fd`): [Tests](https://github.com/topic2k/enigma2-connect/actions/runs/36327912750) and [Hassfest/HACS](https://github.com/topic2k/enigma2-connect/actions/runs/36327912778) passed. Dev.13 contains documentation and version metadata only; offline lock reconciliation, version consistency and diff checks. Quality criteria unchanged; current CI for the eventual PR revision remains required before main.
+
+## Receiver sleep timer – 2.0.0-dev.9
+
+Checked on 2026-09-27 with Python 3.14.7 and the real Home Assistant test framework using simulated receiver replies. Initial focused run: 116 tests for sleep timer, API, timeshift and read-only receiver acceptance passed. Final run: another 60 tests for sleep timer boundaries, serialization, HA selectors, translations, icons and real local HTTP connections passed. `sleep_timer.py` reaches 100% statement and branch coverage (46 statements, 20 branches). Another 38 integration/lifecycle tests passed; the initially outdated expected action list was extended with both new actions and that test subsequently reran successfully. Ruff, formatting, syntax and strict mypy (40 modules) passed. Source review used the existing official OpenWebif 2.4.0 source copies; no real receivers were contacted.
+
+Quality review covers unambiguous device targeting, action registration, availability and recovery of optional status data, reauth, command locking, no automatic write retries, strict input, HA selectors, translations and read-only acceptance guard. One additional optional request in existing polling, no extra timer or runtime dependency. Existing quality criteria and coverage thresholds remain unchanged; offline lock update changes only the project version.
+
+The subsequent real test and its limitations are recorded below. Current complete CI for the eventual PR state remains required before main.
+
+### Practical test on 2026-09-27, documented in dev.10
+
+Tested implementation `ced94d63667e0877f56ec3b4fbb421b61f9ef130` (2.0.0-dev.9): [Tests](https://github.com/topic2k/enigma2-connect/actions/runs/36324995698) and [Hassfest/HACS](https://github.com/topic2k/enigma2-connect/actions/runs/36324995767) successful. 1079 backend tests, both frontend suites, Ruff and mypy passed; all 40 modules above 95% combined coverage. The 56 installed integration files match this commit (text comparison with normalized line endings). Codex did not install files or restart HA during this run.
+
+Tested directly and through the installed HA UI on Octagon SF8008 4K Supreme and Vu+ Solo² with OpenWebif 2.4.0:
+
+- Baseline: both awake, no recording or timeshift, no upcoming timers within the 15-minute preflight window; sleep timers off, target `shutdown`. Octagon already reported an active stream.
+- Used **Set sleep timer** for 30 minutes on each receiver. Both confirmed `enabled=true`, `minutes=30`, `action=standby`. HA sensors showed `on`, 30 minutes and standby. Device isolation verified: changing/cancelling one receiver left the other timer unchanged.
+- Used **Cancel sleep timer** on both. Receiver and HA confirmed `off`, minutes 0; channels and recording timer lists unchanged.
+- Set one minute through HA on each. Both timers actually ran, but both images returned `minutes=0` with decreasing `remaining` seconds. Dev.9 therefore explicitly reported **Sleep timer change was not confirmed**, without automatic retries. This is a verified limitation for short durations or durations not correctly reported by the image, not successful confirmation of arbitrary values from 1–999 minutes.
+- At expiry, both receivers showed their normal “standby or extend?” prompts with countdowns. Screenshots were read only; no remote confirmation was forced. Both entered standby automatically after the prompt timeout. The sleep timer sensor already reported `off` during the prompt; this does not establish that standby was reached. The default prompt extended the actual delay beyond the requested minute.
+- Requested 30 minutes again while each receiver was actually in standby: HA reported **Sleep timer unavailable. The receiver must be awake and provide valid status data.** No timer was activated.
+- Woke both and restored the original disabled `shutdown` target without activating a shutdown timer. Final direct comparison confirms original channel, power state, volume, mute, sleep timer state/target and unchanged recording timer lists and timeshift. HA finally shows both sleep timers off, minutes 0 and original target. Octagon continued reporting streaming at the check points; continuous external-stream picture/audio was not measured.
+
+Local evidence: `.work/sleep-hardware/` contains baselines, readbacks after HA actions, expiry/standby states, receiver images and `restored.json`; HA forms, attributes and errors were observed in this session. Normal setting to 30 minutes, cancellation, status display, actual expiry and standby rejection were checked on both devices. Short-duration confirmation and active-sensor interpretation remain explicitly limited. Other images, every individual value from 1–999, recording conflicts and persistence across receiver restarts were not accepted. Dev.10 changes documentation/version metadata only; reinstalling is unnecessary for these results.
+
+## Playback position – 2.0.0-dev.7
+
+Idea no. 9 uses only the existing `getcurrent` poll. Source review on 2026-09-27: the official OpenWebif 2.4.0 tag lacks `now.position`; the current upstream controller includes it. Support is not guaranteed for all 2.4.0 builds. The HA frontend needs a timestamp to calculate progress and extrapolates in PLAYING state; with no reliable pause detection, this remains an estimate between polls. Remaining-time attribute is only a sampled value.
+
+Additional run covering parsing, media artwork, controls and integration: 112 tests passed (383.94 seconds). Separately rechecked with the final timestamp integration: 37 focused tests of the final implementation passed (Python 3.14.7, real HA test framework, simulated receivers). Covered valid/invalid position and duration, special characters in references, different recordings, live TV, unsupported responses, unchanged position, forward/backward jumps, UTC timestamps, end, optional failures, offline state and standby. Ruff, formatting, strict mypy (39 modules) and syntax checks passed.
+
+Quality review covers existing polling, device binding, availability, shared models, typing and documentation. No additional polling, writes, dependencies or quality exceptions; existing CI coverage thresholds are unchanged. Offline lock update changes only the project version. Local tests use the real HA framework with simulated receiver responses. Actual receiver/HA checks subsequently performed on 2026-09-27; evidence and confirmed limitations are recorded below. Current complete CI for the eventual PR state remains required before main.
+
+### Practical acceptance on 2026-09-27, documented in dev.8
+
+Checked implementation `171cc4383e5c08ba5dcb547abfa6536b8d525ac8` (2.0.0-dev.7): [Tests](https://github.com/topic2k/enigma2-connect/actions/runs/36321850155) and [Hassfest/HACS](https://github.com/topic2k/enigma2-connect/actions/runs/36321850165) successful. 1035 backend tests, both frontend suites, Ruff and mypy passed; config flow at 100% statement/branch coverage, all 39 modules above 95% combined coverage. No thresholds changed.
+
+Installed directly at the user's explicit request using the existing HA configuration share. All installed integration files matched the known dev.5 commit; the five changed files were backed up locally and replaced with checked dev.7 files. All 55 tracked integration files were then verified byte for byte. Restarted HA through its UI; version dev.7, two devices and 142 entities were visible afterwards. No HA configuration or integration options changed. Local backup: `.work/position-hardware/ha-dev5-backup/`.
+
+Created one uniquely marked 45-second test recording of the current channel on each Octagon SF8008 4K Supreme and Vu+ Solo² (both report OWIF 2.4.0). Preflight found no recording, timeshift, streams or imminent timers. Played only these test files. Both installed builds provide `now.position` despite its absence from the official 2.4.0 tag. Positions advanced while playing and held after pause: repeated Octagon trial 3 → 6 → 6 → 6 seconds, Vu+ 3 → 6 → 6 → 6 seconds. References matched across responses and the parser preserved the values.
+
+Visually checked both media-player dialogs in installed HA: progress bar and separate play/pause buttons displayed. Position, duration, UTC timestamp and remaining-time attributes present, `assumed_state: true`, no SEEK. During actual pause the state remains `playing` as expected: HA briefly extrapolates, then the next poll corrects it. Subsequently operated play and pause through HA on both receivers; after pausing again, directly read positions were 21 and 17 seconds respectively. Stop through each HA dialog ended recording playback and removed the progress bar. After restoring live TV, the four position/duration/timestamp/remaining attributes were absent in HA as well.
+
+**Confirmed limitation, not an accuracy acceptance:** For the 45-second files, `getcurrent` reported original programme durations of **9285 seconds** (Octagon) and **900 seconds** (Vu+). HA accordingly showed 2:34:45 and 15:00 and calculated remaining time from those values. Position is real, but duration and remaining time do not reliably represent file length or time left in the file. This previously documented metadata limitation remains; these results are not evidence of exact file remaining time.
+
+Restored original channels, power states, volume and mute (Vu+ was initially muted). Removed only the uniquely identified test timers and recordings, without `force`; did not empty image-managed trash. Both reports confirm original timer fields and recording identities/sizes unchanged, no own entries remaining in the active catalog, timeshift off and position values cleared. Local technical evidence: `.work/position-hardware/start-0.json`, `start-1.json`, `quick-*.json`, `cleanup-0.json`, `cleanup-1.json`. Raw data and credentials are not published. Dev.8 changes no functional code; dev.7 remains the installed, practically checked version.
+
+## Timeshift save warning – 2.0.0-dev.5
+
+New per-receiver optional restoration, disabled by default. Locally checked on 2026-09-27 with Python 3.14.7 and the real HA test framework using simulated receiver responses: 140 tests for timeshift, options, API and config flow passed. Expanded `timeshift.py`: 100% statement/branch coverage (83 statements, 26 branches). After the transport typing correction, 46 additional focused GET/POST tests passed; a real local HTTP server verifies form data and no POST replay after response loss.
+
+Covers: default and saved option, per-receiver option forwarding, previously enabled/disabled warning, already reached timeshift target, disabled option without configuration requests, malformed/ambiguous configuration, both supported setting names, preflight failures without writing, restoration after rejection/response loss/task cancellation, failed restoration, reauth and readback instead of retry after a lost POST response. All workflow reads/writes remain under the shared command lock.
+
+Ruff, strict mypy (39 modules) and syntax checks passed; offline lock regeneration changes only the local project version. Affected quality criteria (options, configuration scope, translated errors/reauth, serialization, transport, documentation) reviewed without new exceptions or lower thresholds. Full CI for the new commit remains required before main.
+
+After user installation on 2026-09-27, the actual HA UI shows version **2.0.0-dev.5**, two devices and 142 entities. Under **Configure → Receiver settings** for Octagon and Vu+, the switch and German explanation are correctly present; both switches are off. Octagon layout additionally checked in a screenshot. Dialogs closed without saving. The pending visual check is complete; saving the option and start/stop with the option enabled in the installed HA UI were not performed in this check. Option persistence is covered by the HA test framework and restoration by the direct receiver checks.
+
+Functional commit `1f9f372028245af222a5d9834a8c4c0fd6d74d17`: [Tests](https://github.com/topic2k/enigma2-connect/actions/runs/36320488124) and [Hassfest/HACS](https://github.com/topic2k/enigma2-connect/actions/runs/36320488080) passed. 998 backend tests passed, config flow 100% statement/branch coverage, all 39 modules above 95% combined coverage. **2.0.0-dev.6** adds only this evidence and version metadata; functional code unchanged.
+
+Hardware-tested on Octagon SF8008 4K Supreme and Vu+ Solo² with OpenWebif 2.4.0: start and stop on each receiver with the save warning initially enabled and initially disabled. Both trials passed: timeshift state read back each time; enabled warnings restored, disabled warnings left off. Finally timeshift off on both and original warnings on; channel, power state and timer lists unchanged. The Octagon stream remained active according to receiver status. This test invokes the new integration workflow directly, not the installed HA UI. Local evidence: `.work/timeshift-warning-hardware/live-0.json` and `live-1.json`.
+
+## Timeshift – 2.0.0-dev.3
+
+The subsequently incorporated idea-status documentation on develop had already assigned dev.2. Version reconciled to dev.3; the tested timeshift functional code below is unchanged.
+
+Locally checked on 2026-09-27 with Python 3.14.7 and the existing Home Assistant test framework. Receiver responses are simulated; replay protection additionally uses a local HTTP test server. 106 tests covering timeshift, integration, action responses/transport, device lifecycle, action descriptions and read-only acceptance passed (335.64 seconds). Eight separate icon/write-barrier checks and one additional test for a lost response after an actual state change also passed. `timeshift.py`: 100% statement and branch coverage (36 statements, 10 branches).
+
+Verified: start/stop with readback, already reached targets without another write, standby, missing/invalid API data, recovery, device targeting, reauth, rejection, unconfirmed success, response loss, cancellation and command-lock release. Timeshift status does not change the media player to paused. Optional timeshift failures leave the other receiver controls available. Read-only acceptance permits only `tsstate`, never `tsstart`/`tsstop`.
+
+Ruff, strict mypy (39 integration modules), Python syntax and diff checks passed. Offline lock regeneration changes only the local package version. Affected quality criteria reviewed: polling, device/entity identity, availability, action errors and translations, reauth, transport retries and documentation. No thresholds or exemptions changed. Full CI for the new commit remains required before main.
+
+### Practical timeshift checks on 2026-09-27
+
+Tested functional build **2.0.0-dev.3**, commit `d9854a5f1a40fab9892370ae089ea06f5f7fa422`: [Tests](https://github.com/topic2k/enigma2-connect/actions/runs/36318850064) and [Hassfest/HACS](https://github.com/topic2k/enigma2-connect/actions/runs/36318849917) passed. 962 backend tests and both frontend suites passed; config flow has 100% statement/branch coverage and all 39 production modules exceed 95% combined coverage.
+
+- Octagon SF8008 4K Supreme and Vu+ Solo², both on OpenWebif 2.4.0, initially had inactive timeshift and recording. Both configure `/media/hdd/timeshift/` with automatic start disabled. Only newly created test buffers were used; no channel or standby changes. The existing Octagon stream stayed active according to receiver status; uninterrupted external stream picture/audio was not measured.
+- Direct integration workflow: start and stop confirmed through `tsstate` on both receivers. Starting again while active and stopping again while inactive sent no additional write (exactly one `tsstart` and one `tsstop` per receiver).
+- Installed HA UI shows version 2.0.0-dev.3, two devices and 142 entities. Both actions, German descriptions and device selectors checked. Start and stop executed for each receiver through **Tools → Actions**; “Off → On → Off” transitions checked in the entity view and the active state independently read from the receiver. Octagon entity detail dialog and on/off history also inspected. The other receiver remained off in each case.
+- **Confirmed OpenWebif side effect:** `tsstop` changed `config.timeshift.check` from `true` to `false` on both receivers. Stop did not wait for a save prompt. The test helper restored the original setting after each direct or HA test and verified it by rereading. This is not an automatic protection provided by the integration; the limitation remains in normal use and is explicitly described in both user guides.
+- Final state: timeshift off on both, save warning enabled again, original channel and power state preserved, timer lists unchanged. No recording management, saved test buffers or other configuration changes.
+
+Local evidence: `.work/timeshift-hardware/` contains preflight, saved timeshift settings, `direct-0.json`/`direct-1.json`, `ha-start-*.json`, `restore-*.json`, `final-*.json` and `ci-tests.log`; actual HA UI observations are in this session. The described start/stop and UI checks are complete, including evidence of the limitation. This does not establish acceptance for other images, permanent automatic timeshift, physical audio output or full/missing timeshift storage.
+
+Version **2.0.0-dev.4** only adds evidence, guidance and version metadata. Tested functional code is unchanged.
+
+## Supported baseline – 2.0.0-dev.1
+
+On 2026-09-27 the user selected **OpenWebif 2.4.0 or later** and confirmed audible speaker output. Audio-track acceptance below is therefore complete; retesting 1.4.4 is explicitly no longer planned. Earlier 1.x evidence remains historical. The developer guide records the 2.0.0/2.4.0 source comparison and rationale.
+
+New target 2.0.0-dev.1 documents the breaking support change. Functional code and tests are identical to `3b7761b`, whose [Tests](https://github.com/topic2k/enigma2-connect/actions/runs/36317060835) and [Hassfest/HACS](https://github.com/topic2k/enigma2-connect/actions/runs/36317060749) passed. Targeted checks passed for version consistency, offline lockfile, language versions and diff; this documentation change does not require controlling the receivers again.
+
+## Audio-track selection – 1.4.0-dev.1
+
+New dynamic selection for idea 7. Checked locally with Python 3.14.7 in the existing HA test framework using simulated receiver replies: parsing, duplicate descriptions, active track, device entity, standby, unsupported API, recovery, authentication errors, stale selections, service changes during reads, rejection and unconfirmed commands. The transport test checks response loss without automatic replay using a local HTTP test server.
+
+On 2026-09-27: 82 tests passed for audio tracks, integration, controls, translations and read-only acceptance. Extended audio-track, API, action HTTP, snapshot failure and regression run: 138 passed; one logging test was initially affected by `--log-level=ERROR` and then passed unchanged with the normal logging level. New module `audio_tracks.py`: 100% statement and branch coverage.
+
+Ruff, mypy and Python syntax checks passed. Lockfile updated offline; only the local project version changed. Reviewed quality criteria: existing polling, entity identity and naming, availability, translated errors, reauth and documentation. No quality thresholds or exemptions changed. Full CI for the new commit remains separately required.
+
+### Practical acceptance on 2026-09-27
+
+Functional build **1.4.0-dev.1**, commit `7d2b2b307b445b08a94c1c4954f76b90e1038cb5`: [Tests](https://github.com/topic2k/enigma2-connect/actions/runs/36316230752) and [Hassfest/HACS](https://github.com/topic2k/enigma2-connect/actions/runs/36316230820) passed. **933 backend tests**, both frontend suites, Ruff and strict Mypy passed; config flow has 100% statement/branch coverage and all 38 production modules exceed 95% combined coverage. No thresholds reduced.
+
+- Both actual receivers (Octagon SF8008 4K Supreme and Vu+ Solo²) report **OpenWebif 2.4.0**. The historical Vu+ 1.4.4 installation is no longer available here and was not retested.
+- Selected every offered track on the original and another service, then reread the active track. Channel changes with four tracks and rejection of a stale service/track selection passed.
+- After user installation, the actual HA UI shows **1.4.0-dev.1**, two devices and 140 entities. Audio track appears on both devices. Selected “Klare Sprache” on the Octagon and “mit Audiodeskription” on the Vu+ through HA and independently confirmed them directly on each receiver. Vu+ controls do not alter the Octagon selection.
+- A real programme change altered descriptions during the test (including Dolby Digital 2.0 → 5.1); HA updated them without reloading. Single-track and four-track lists and the detail dialog were visually checked.
+- Put both devices into normal standby through **Receiver control**: audio selection unavailable, then available again after wakeup. A direct attempt to select audio in standby is rejected. The first direct test expected a more specific exception; OpenWebif actually rejects `getaudiotracks` already. This case was then checked through actual HA availability and recovery instead of treating it as failed write protection.
+- Restored original service, audio-track index and awake state afterwards; timer lists unchanged. Also restored the original track on the intermediate test service. A programme change may alter descriptions despite the same index. No recordings created, moved or deleted.
+
+Local evidence in `.work/audio-hardware/`: `preflight.json`, `live.json`, `ui-*-*.json` and `ci-tests.log`; browser observations in this session. Version **1.4.0-dev.2** changes only evidence, changelogs and version metadata; functional code is identical to the tested dev.1 build.
+
+**User acceptance on 2026-09-27:** The user confirmed audible speaker output. This is user listening evidence, not an audio measurement by the agent. At the user's explicit request, OpenWebif 1.4.4 will not be retested; OpenWebif 1.x is no longer supported. Historical 1.x results remain evidence for those earlier builds. Audio-track acceptance on the current 2.x test baseline is complete.
+
 ## Release 1.3.0
 
 Publication was explicitly requested on **2026-09-20**.

@@ -105,7 +105,8 @@
           "stream_port": "Live-TV-Streamingport",
           "stream_https": "HTTPS für Live-TV-Streaming",
           "stream_mode": "Stream-Verarbeitung",
-          "stream_limit": "Maximale gleichzeitige Streams"
+          "stream_limit": "Maximale gleichzeitige Streams",
+          "restore_timeshift_warning": "Timeshift-Speicherrückfrage wiederherstellen"
         },
         "data_description": {
           "recording_image_sources": "Mehrfachauswahl. Keine Auswahl deaktiviert Vorschaubilder. Reihenfolge: eigene URL, TMDB, OMDb, Snapshot. Nur ausgewählte Internetquellen erhalten den Aufnahmetitel.",
@@ -118,7 +119,8 @@
           "stream_port": "Streamingport des Receivers, normalerweise 8001. Der OpenWebif-Port für Aufnahmen bleibt unverändert.",
           "stream_https": "Nur aktivieren, wenn der Streamingport HTTPS unterstützt. Verwendet die gespeicherte Zertifikatsprüfung und Anmeldung.",
           "stream_mode": "Automatisch nutzt geeignete Receiver-Ausgaben und übernimmt passende Bild- und Tonspuren. Kompatibilität wandelt immer in 720p/H.264 und AAC um.",
-          "stream_limit": "Pro Receiver; Standard 5, 0 = unbegrenzt. Zuschauer desselben Live-Senders teilen einen Stream. Jede Aufnahme-Wiedergabe zählt separat. Gestoppte Streams werden nach zwei Minuten ohne Abruf freigegeben."
+          "stream_limit": "Pro Receiver; Standard 5, 0 = unbegrenzt. Zuschauer desselben Live-Senders teilen einen Stream. Jede Aufnahme-Wiedergabe zählt separat. Gestoppte Streams werden nach zwei Minuten ohne Abruf freigegeben.",
+          "restore_timeshift_warning": "Nach Timeshift-Start/Stopp eine zuvor aktive Speicherrückfrage am Receiver wieder einschalten. Zuvor deaktivierte Rückfragen bleiben aus. Standard: aus. Speichert keinen Timeshift-Puffer."
         }
       },
       "init": {
@@ -242,6 +244,9 @@
       },
       "select_channel": {
         "name": "Senderauswahl"
+      },
+      "select_audio_track": {
+        "name": "Tonspur"
       }
     },
     "sensor": {
@@ -294,6 +299,12 @@
       },
       "connection": {
         "name": "Verbindung"
+      },
+      "timeshift": {
+        "name": "Timeshift aktiv"
+      },
+      "sleep_timer": {
+        "name": "Sleeptimer aktiv"
       }
     },
     "camera": {
@@ -470,7 +481,7 @@
       "message": "Prüfe Beginn und Ende. Die Auswahl verwendet die Home-Assistant-Zeitzone. Bei mehrdeutigen oder nicht existierenden Uhrzeiten während der Zeitumstellung nutze YAML mit explizitem UTC-Offset. Das Ende muss nach dem Beginn liegen."
     },
     "power_unconfirmed": {
-      "message": "Keine vollständige Antwort auf den Power-Befehl erhalten. Der Receiver startet möglicherweise bereits neu oder fährt herunter. Prüfe seinen Zustand, bevor du erneut einen Befehl sendest."
+      "message": "Die Antwort auf den Einschalt-, Neustart- oder Ausschaltbefehl wurde nicht vollständig empfangen. Der Receiver kann seinen Zustand bereits geändert haben. Prüfe ihn vor einem erneuten Befehl."
     },
     "request_failed": {
       "message": "Die Receiver-Anfrage ist fehlgeschlagen oder wurde abgelehnt."
@@ -597,6 +608,42 @@
     },
     "recording_activity_unknown": {
       "message": "Eine aktive Aufnahme oder Wiedergabe lässt sich keiner Datei sicher zuordnen. Prüfe den Receiverstatus."
+    },
+    "audio_track_changed": {
+      "message": "Sender oder Tonspuren haben sich geändert. Bitte die aktuelle Auswahl erneut prüfen."
+    },
+    "audio_track_unconfirmed": {
+      "message": "Die gewählte Tonspur konnte nicht bestätigt werden. Bitte den aktuellen Zustand prüfen."
+    },
+    "timeshift_unavailable": {
+      "message": "Timeshift ist im aktuellen Receiverzustand nicht verfügbar."
+    },
+    "timeshift_unconfirmed": {
+      "message": "Die Timeshift-Änderung wurde nicht bestätigt. Prüfe den Receiver, bevor du die Aktion erneut ausführst."
+    },
+    "timeshift_warning_unavailable": {
+      "message": "Die Timeshift-Speicherrückfrage konnte nicht zuverlässig gelesen werden. Timeshift wurde nicht geändert."
+    },
+    "timeshift_warning_restore_failed": {
+      "message": "Die vorher aktive Timeshift-Speicherrückfrage konnte nicht bestätigt wiederhergestellt werden. Prüfe die Timeshift-Einstellungen am Receiver; die Timeshift-Aktion kann bereits ausgeführt worden sein."
+    },
+    "sleep_timer_invalid": {
+      "message": "Die Dauer muss eine ganze Zahl von 1 bis 999 Minuten sein."
+    },
+    "sleep_timer_unavailable": {
+      "message": "Sleeptimer nicht verfügbar. Receiver muss eingeschaltet sein und gültige Statusdaten liefern."
+    },
+    "sleep_timer_unconfirmed": {
+      "message": "Sleeptimer-Änderung nicht bestätigt. Tatsächlichen Zustand am Receiver prüfen, bevor du erneut einstellst."
+    },
+    "quiet_powerup_unavailable": {
+      "message": "Standby oder Image-Unterstützung für Einschalten ohne Fernseher konnte nicht bestätigt werden. Es wurde kein Einschaltbefehl gesendet."
+    },
+    "quiet_powerup_unconfirmed": {
+      "message": "Einschalten ohne Fernseher wurde nicht bestätigt. Receiver vor einer Wiederholung prüfen: Die einmalige HDMI-CEC-Unterdrückung kann bereits gesetzt oder der Receiver eingeschaltet sein."
+    },
+    "text_unconfirmed": {
+      "message": "Die Texteingabe wurde nicht eindeutig bestätigt. Prüfe das Eingabefeld am Receiver vor einer Wiederholung; Text könnte bereits angekommen sein."
     }
   },
   "services": {
@@ -1001,6 +1048,74 @@
         "device_id": {
           "name": "Receiver",
           "description": "Receiver"
+        }
+      }
+    },
+    "timeshift_start": {
+      "name": "Timeshift starten",
+      "description": "Startet Timeshift auf dem gewählten Receiver.",
+      "fields": {
+        "device_id": {
+          "name": "Receiver",
+          "description": "Zu steuernder Receiver."
+        }
+      }
+    },
+    "timeshift_stop": {
+      "name": "Timeshift stoppen",
+      "description": "Stoppt Timeshift ohne Speicherrückfrage. Nicht gespeicherte Inhalte können verloren gehen.",
+      "fields": {
+        "device_id": {
+          "name": "Receiver",
+          "description": "Zu steuernder Receiver."
+        }
+      }
+    },
+    "sleep_timer_set": {
+      "name": "Sleeptimer einstellen",
+      "description": "Versetzt den Receiver nach der angegebenen Dauer in Standby. Ersetzt den bisherigen Sleeptimer.",
+      "fields": {
+        "device_id": {
+          "name": "Receiver",
+          "description": "Receiver"
+        },
+        "minutes": {
+          "name": "Minuten",
+          "description": "Dauer bis Standby (1–999 Minuten)."
+        }
+      }
+    },
+    "sleep_timer_cancel": {
+      "name": "Sleeptimer abbrechen",
+      "description": "Deaktiviert den geräteeigenen Sleeptimer.",
+      "fields": {
+        "device_id": {
+          "name": "Receiver",
+          "description": "Receiver"
+        }
+      }
+    },
+    "powerup_without_tv": {
+      "name": "Einschalten ohne Fernseher",
+      "description": "Schaltet den Receiver aus Standby ein, ohne den Fernseher über HDMI-CEC mitzuwecken. Benötigt Image-Unterstützung; kein Aufwecken aus Tiefschlaf.",
+      "fields": {
+        "device_id": {
+          "name": "Receiver",
+          "description": "Receiver"
+        }
+      }
+    },
+    "send_text": {
+      "name": "Text senden",
+      "description": "Sendet Text an das aktive Receiver-Eingabefeld. Feld vorher öffnen; sendet keine Eingabetaste. 1–500 Zeichen ohne Steuerzeichen.",
+      "fields": {
+        "device_id": {
+          "name": "Receiver",
+          "description": "Receiver"
+        },
+        "text": {
+          "name": "Text",
+          "description": "Text einschließlich gewünschter Leerzeichen."
         }
       }
     }

@@ -24,6 +24,7 @@ die [README](../README.md) bleibt der kurze Einstieg für Anwender.
 - [Validierung von Aktionen](#validierung-von-aktionen)
 - [Umsetzungsplan: Aufnahme-Workflows](#umsetzungsplan-aufnahme-workflows)
 - [Festplattenspeicher und Systemdiagnose](#festplattenspeicher-und-systemdiagnose)
+- [Tonspurauswahl](#tonspurauswahl)
 - [Vorgemerkte Ideen](#vorgemerkte-ideen)
 - [Dateibestand und lokale Archive](#dateibestand-und-lokale-archive)
 
@@ -63,6 +64,11 @@ Enigma2 Connect ist eine eigenständige Home-Assistant-Custom-Integration für
 Enigma2-Receiver mit OpenWebif-JSON-API. Die Domain und das Komponentenpaket heißen
 `enigma2_connect`, Repository und Python-Projekt `enigma2-connect`.
 Ziel sind Home Assistant **ab 2026.9** und Python **ab 3.14.2**.
+
+**OpenWebif mindestens 2.4.0** ist ab der Zielversion 2.0.0 die unterstützte Receiverbasis. Nutzerentscheidung vom 27.09.2026 nach Abnahme beider Testreceiver mit 2.4.0. OpenWebif 1.x wird nicht weiter unterstützt oder erneut geprüft; alte Berichte bleiben historische Nachweise. Der Wegfall der bisherigen 1.x-Unterstützung ist eine inkompatible Änderung und begründet den Major-Sprung der Integration. Dies ist eine dokumentierte Supportgrenze; der bestehende Config Flow prüft weiterhin Identität und API-Antworten, keine Versionszeichenkette.
+
+Der Quellvergleich der offiziellen Tags [2.0.0](https://github.com/oe-alliance/OpenWebif/blob/2.0.0/plugin/controllers/models/audiotrack.py) und [2.4.0](https://github.com/oe-alliance/OpenWebif/blob/2.4.0/plugin/controllers/models/audiotrack.py) zeigt dasselbe Tonspurformat (`index`, `description`, `active`, `result`) und dieselbe Indexauswahl. Auch Controller, Aufnahme-, Timer- und Informationsmodell wurden verglichen. 2.4.0 ist die durch Praxisprüfungen belegte Supportbasis, nicht die behauptete Erstversion der Audio-API. Die Quellenprüfung allein belegt keine vollständige Abnahme älterer 2.x-Versionen. Keine Änderung des Laufzeitcodes oder zusätzliche Versionserkennung.
+
 Für die Entwicklung wird Linux beziehungsweise WSL verwendet; Node.js führt die
 Tests der optionalen Dashboardkarte aus.
 
@@ -1250,12 +1256,53 @@ aus. Statische Geräteidentität bleibt bei Diagnosefehlern erhalten.
 Nicht von `hdd` gelieferte Netzwerk-Mounts werden nicht aus Aufnahmeordnern
 abgeleitet. Hardwareprüfung einschließlich möglichem HDD-Aufwecken bleibt offen.
 
+## Tonspurauswahl
+
+Idee Nr. 7, Ziel 1.4.0-dev.1: dynamische Select-Entität, optionale Abfrage im vorhandenen Polling, Prüfung vor dem Umschalten, Rücklesen sowie DE/EN-Dokumentation und simulierte Fehlerfalltests.
+
+`getaudiotracks` wird bei aktiver Wiedergabe im regulären Intervall gelesen. Der Snapshot enthält validierte Indizes, Beschreibungen und Aktivstatus; ungültige Listen werden vollständig verworfen. Optionen enthalten den um eins erhöhten Index und die Receiverbeschreibung. Leere Listen/Standby sind nicht verfügbar; Authentifizierungsfehler behalten Reauth bei.
+
+`selectaudiotrack?id=...` nutzt den unveränderten nullbasierten API-Index. Datensperre und Befehlssperre serialisieren die Vorprüfung gegen eigene Polls und Befehle. Vor dem Schreiben werden Sender, Standby und Spuridentität erneut geprüft, danach aktive Spur und Sender zurückgelesen. Keine optimistische Anzeige, kein automatisches Wiederholen bei Antwortverlust. Externe Bedienung kann weiterhin zwischen Abfragen eingreifen; die API bietet keine atomare Bindung an einen Sender. Keine zusätzliche Laufzeitabhängigkeit und keine Änderung externer Stream-Tonspuren.
+
+Schnittstelle: [OpenWebif Audio-API](https://github.com/oe-alliance/OpenWebif/wiki/OpenWebif-API-documentation#getaudiotracks). Eigenständige Implementierung, kein Upstream-Code übernommen. Hardware- und HA-Oberflächenabnahme siehe Prüfübersicht.
+
 ## Vorgemerkte Ideen
 
-Die Ideen **1–5** sind seit 19.09.2026 zur Umsetzung beauftragt; Reihenfolge,
-Abnahme und Fortschritt stehen im [Umsetzungsplan](#umsetzungsplan-aufnahme-workflows).
-Die übrigen Ideen bleiben unverbindlich. Bereits vorhandene Teilfunktionen sind
-unten benannt.
+Die Ideen **1–13** sind umgesetzt; praktische Abnahmen und Einschränkungen bleiben separat dokumentiert.
+Reihenfolge und Abnahme der Aufnahme-Workflows sind im
+[Umsetzungsplan](#umsetzungsplan-aufnahme-workflows) dokumentiert.
+Die übrigen Ideen bleiben unverbindlich. Umsetzung und praktische Abnahme
+werden getrennt betrachtet; verbleibende Prüfgrenzen sind unten benannt.
+
+### Receiver-Sleeptimer – Idee 10 (2.0.0-dev.9)
+
+Praxisprüfung vom 27.09.2026, dokumentiert in dev.10: Beide installierten 2.4.0-Images bestätigen 30 Minuten, melden beim tatsächlich laufenden Ein-Minuten-Timer jedoch `minutes=0` und sinkendes `remaining` in Sekunden. Die strikte Bestätigung bleibt deshalb unbestätigt; kein automatisches Wiederholen und keine gelockerte Prüfung. Beim Ablauf wird `enabled=false`, bevor die Standby-Rückfrage abgelaufen ist. Vollständige Nachweise und Prüfgrenzen siehe [Prüfübersicht](VALIDIERUNG.md).
+
+Plan und Umsetzung: optionale `sleeptimer`-Leseabfrage im vorhandenen Polling (auch in Standby), gemeinsames typisiertes Modell und binärer Sensor mit `reported_minutes`/`action`. Keine neue Plattform oder Laufzeitabhängigkeit. Aktionen `sleep_timer_set` (1–999 ganze Minuten, Ziel Standby) und `sleep_timer_cancel` nutzen die vorhandene eindeutige Gerätebindung. Unter Befehlssperre Einschaltzustand und frischen Timer lesen, einmal schreiben (`cmd=set`, `enabled=True/False`, `time`, `action`), anschließend separat nachlesen. Abbrechen erhält die gemeldete Zielaktion; ohne bekannte Aktion wird ein aktiver Timer nicht geändert. Inaktives Abbrechen schreibt nicht, erneutes Einstellen startet bewusst neu.
+
+Bestätigung erfordert passenden Aktivzustand sowie beim Einstellen genau die angeforderten Minuten und Standby. Rundung, abweichende Aktion, verlorene Antwort oder fehlendes Nachlesen bleiben unbestätigt; anschließender Poll zeigt den tatsächlich gemeldeten Zustand. Authentifizierungsfehler lösen Reauth aus. Transport und Middleware verhindern automatische Wiederholung nur für schreibende `sleeptimer`-Aufrufe; lesende Aufrufe bleiben lesend. Die lesende Receiver-Abnahme erlaubt ausschließlich parameterlose Sleeptimer-Abfragen.
+
+Schnittstellen anhand der vorhandenen Kopien des offiziellen OpenWebif-2.4.0-Controllers und Timermodells am 27.09.2026 geprüft. Je Image unterscheiden sich Bestätigungen, Minutenbedeutung und Konfigurations-/Powertimer-Nebenwirkungen. `remaining` wird bewusst nicht als vereinheitlichte Restzeit projiziert. Statusbeobachtung ist keine Garantie der späteren Standby-Ausführung; externe Bedienung ist nicht atomar gesperrt. Eigenständige Implementierung, kein GPL-Code übernommen. Simulierte Tests sowie praktische Abnahme mit Einschränkungen siehe Prüfübersicht.
+
+### Wiedergabeposition – Idee 9 (2.0.0-dev.7)
+
+Plan und Umsetzung: `getcurrent.now.position` und `duration_sec` streng als ganzzahlige Sekunden auswerten; Position ab null, Dauer größer null. Nur lokale `1:0:0:0:0:0:0:0:0:0:/`-Referenzen verwenden, `info.ref` und `now.sref` mit der passend URL-codierten rohen `statusinfo`-Referenz vergleichen. Keine HTML-Decodierung oder doppelte URL-Decodierung bei diesem Identitätsvergleich. Gemischte Antworten verwerfen; Standby, Ausfall und fehlende Position löschen die Anzeige. Ungültige Dauer lässt die Position bestehen. Keine zusätzlichen Abfragen, Dienste, Abhängigkeiten oder SEEK-Freigabe.
+
+HA erhält `media_position`, `media_duration` und bei gültigem Wertepaar `media_remaining = max(0, duration - position)`. `media_position_updated_at` erhält direkt nach dem Lesen einen UTC-Zeitstempel, auch bei unveränderter Position. Das HA-Frontend benötigt ihn zur Fortschrittsanzeige und extrapoliert im angenommenen Zustand PLAYING zwischen den Abfragen, auch bei tatsächlicher Pause; die nächste Abfrage korrigiert den Wert. `media_remaining` bleibt dagegen eine Momentaufnahme. Unveränderte Position bedeutet nicht Pause; vorhandene Play/Pause-Tasten und `assumed_state` bleiben erhalten. `duration_sec` stammt im Controller aus dem Movie-Event und ist keine garantierte Dateilänge; eine darüber hinausgehende Position wird nicht abgeschnitten. Weder EPG-Zeiten noch `remaining` oder `lastseen` dienen als Positionsersatz.
+
+Quellenvergleich vom 27.09.2026: Der [offizielle 2.4.0-Controller](https://github.com/oe-alliance/OpenWebif/blob/2.4.0/plugin/controllers/web.py) enthält noch kein `now.position`; der [aktuelle Controller](https://github.com/oe-alliance/OpenWebif/blob/main/plugin/controllers/web.py) liefert es nach erfolgreicher Seek-Positionsabfrage. Die Mindestversion allein garantiert diese optionale Fähigkeit deshalb nicht. Referenzformat mit dem [Servicemodell](https://github.com/oe-alliance/OpenWebif/blob/2.4.0/plugin/controllers/models/services.py) verglichen. Eigenständige Implementierung gegen die Schnittstelle, kein GPL-Code übernommen. Receiver-/HA-Abnahme am 27.09.2026 mit dev.7 auf beiden Testreceivern abgeschlossen: Die installierten OWIF-2.4.0-Builds liefern Positionen; die Sendungsdauer statt Dateilänge wurde bei beiden praktisch bestätigt. Nachweise und Grenzen siehe [Prüfübersicht](VALIDIERUNG.md).
+
+### Speicherrückfrage wiederherstellen (dev.5)
+
+Plan und Umsetzung: pro Receiver `restore_timeshift_warning` (Vorgabe `false`) in den Optionsdialog aufnehmen; vor einem echten Timeshift-Schreibzugriff unter derselben Befehlssperre `/api/config/Timeshift` lesen. Genau einen gültigen Eintrag für `config.timeshift.check` oder `config.usage.check_timeshift` akzeptieren, fehlende/mehrdeutige Daten vor dem Eingriff ablehnen. Bei zuvor aktivierter Rückfrage im `finally` nachlesen, nur bei Bedarf einmal per formularcodiertem POST `/api/saveconfig` mit `value=true` wieder einschalten und bestätigen. Andere Einstellungen bleiben unberührt. POST-Antwortverlust erlaubt nur lesende Bestätigung, keine Wiederholung. Ursprüngliche Timeshift-Fehler bleiben nach erfolgreicher Wiederherstellung erhalten; Wiederherstellungsfehler werden separat gemeldet, Authentifizierungsfehler lösen Reauth aus. Regulärer Taskabbruch durchläuft den Wiederherstellungsversuch; abrupter Prozess-/Receiverabbruch und externe gleichzeitige Änderungen sind nicht atomar absicherbar. Keine zusätzliche periodische Konfigurationsabfrage, keine persistente Merkvariable. Ausgeschaltete Option und bereits erreichter Timeshift-Zustand erzeugen keine Konfigurationszugriffe.
+
+### Timeshift – Idee 8 (2.0.0-dev.3)
+
+Plan und Umsetzung: optionale `tsstate`-Abfrage im vorhandenen schnellen Polling, eigener Snapshot-Wert und binärer Sensor; gerätegebundene Aktionen `timeshift_start`/`timeshift_stop` unter der gemeinsamen Befehlssperre. Aktuellen Standby- und Timeshift-Zustand prüfen, bereits erreichte Zielzustände ohne Schreiben behandeln, nach `tsstart`/`tsstop` den Zustand erneut lesen. Fehlende Bestätigung bleibt ein übersetzter Fehler; anschließende Aktualisierung auch nach Fehlern. Beide Schreibendpunkte nutzen den HTTP-Wiederholungsschutz. Keine Pauseableitung, kein zusätzlicher Timer, keine Abhängigkeiten.
+
+Schnittstelle: [OpenWebif 2.4.0 Controller](https://github.com/oe-alliance/OpenWebif/blob/2.4.0/plugin/controllers/web.py), vorhandene Quellkopie am 27.09.2026 geprüft. `state` bestätigt den Aufruf, `timeshiftEnabled` den Status; beide Felder werden validiert. Stopp unterdrückt das Speichernachfragen. Die Wiederherstellungsbedingung für die vorher deaktivierte Einstellung ist im untersuchten Controller fragwürdig; keine Zusicherung, dass spätere Speicherrückfragen unverändert bleiben. Auf beiden Testreceivern mit 2.4.0 praktisch bestätigt: `tsstop` deaktiviert `config.timeshift.check` dauerhaft. Im Prüflauf danach über `saveconfig` wiederhergestellt; ab dev.5 kann die neue Receiveroption eine zuvor aktive Rückfrage automatisch wiederherstellen. Start/Stopp und installierte HA-Oberfläche geprüft; Nachweise und Grenzen siehe Prüfübersicht. Unabhängige Implementierung, kein GPL-Code übernommen.
+
+Der Sensor ist bei Standby/fehlender Unterstützung unverfügbar, nicht fälschlich aus. Authentifizierungsfehler lösen wie bisher Reauth aus. Externe Fernbedienungen teilen die Befehlssperre nicht; Bestätigungen sind Momentaufnahmen. Simulierte und reale Receiver-/HA-Oberflächennachweise siehe [Prüfübersicht](VALIDIERUNG.md).
 
 ### Abschnitt 3: Timerbearbeitung und Konflikte
 
@@ -1368,23 +1415,23 @@ Quellcode untersucht; ihre zusätzliche Funktionalität ist damit nicht auf den
 beiden Testreceivern oder in einer echten HA-Installation geprüft. Unterstützung
 und Rückgabeformate vor einer Umsetzung je OpenWebif-Version und Image prüfen.
 
-| Nr. | Priorität | Idee | Nutzen, Schnittstelle und Grenzen |
+| Nr. | Status / Priorität | Idee | Nutzen, Schnittstelle und Grenzen |
 | --- | --- | --- | --- |
-| 1 | Hoch | EPG durchsuchen und direkt aufnehmen | Sendungen nach Titel finden, Wiederholungstermine suchen und Treffer ohne manuelle Zeitangaben aufnehmen. Grundlage: `epgsearch`, `epgsimilar`, `timeraddbyeventid`. Die laufende/nächste Sendung wird bereits angezeigt; ergänzt würden Suche und Aufnahme aus einem Treffer. [EPG-API][ideas-api] |
-| 2 | Hoch | Timer bearbeiten und Wochenserien anlegen | Vorhandene Timer verlängern, Wochentage, Aufnahmeordner und Tags festlegen. Anlegen, Löschen, Aktivieren/Deaktivieren und lesende Kalenderwiederholungen sind vorhanden. Ergänzung über `timerchange` und `repeated`; einzelne Kalenderinstanzen nicht mit dem gesamten Receiver-Timer verwechseln. [Timerimplementierung][ideas-timers] |
-| 3 | Hoch | Aufnahmekonflikte gezielt auswerten | Kollidierende Sendungen mit Zeiten anzeigen und Automationen zugänglich machen. Beim Anlegen/Bearbeiten liefert OpenWebif strukturierte `conflicts`. Das wäre eine Erweiterung der bisherigen Fehlerauswertung, keine belegte separate Konfliktvorhersage. [Timerimplementierung][ideas-timers] |
-| 4 | Hoch | Sofortaufnahme als eigene Aktion | Dashboard-Button oder Sprachaktion „Aktuelle Sendung aufnehmen“ über `recordnow`. Der Ereignismodus benötigt EPG; der alternativ „unendlich“ genannte Modus ist im untersuchten Code auf zehn Stunden begrenzt. [Timerimplementierung][ideas-timers] |
-| 5 | Hoch | Aufnahmebibliothek erweitern | Aufnahmeordner und HA-Medienquelle sind inzwischen vorhanden. Weitere Ausbaustufen: Tags/Filter, zusätzliche Metadaten wie Dateigröße und bisheriger Wiedergabefortschritt sowie Umbenennen, Verschieben und Löschen. OpenWebif bietet `movielist`, `fullmovielist` und Verwaltungsaktionen. Lösch-/Papierkorbverhalten je Image berücksichtigen. [Aufnahmeverwaltung][ideas-movies] |
+| 1 | Umgesetzt | EPG durchsuchen und direkt aufnehmen | Sendungen nach Titel finden, Wiederholungstermine suchen und Treffer ohne manuelle Zeitangaben aufnehmen. Grundlage: `epgsearch`, `epgsimilar`, `timeraddbyeventid`. EPG-Suche, ähnliche Sendungen und Aufnahme aus einem Treffer sind verfügbar. [EPG-API][ideas-api] |
+| 2 | Umgesetzt | Timer bearbeiten und Wochenserien anlegen | Vorhandene Timer verlängern, Wochentage, Aufnahmeordner und Tags festlegen. Anlegen, Löschen, Aktivieren/Deaktivieren und lesende Kalenderwiederholungen sind vorhanden. Bearbeitung und Wochenserien sind über `timerchange` und `repeated` umgesetzt; einzelne Kalenderinstanzen nicht mit dem gesamten Receiver-Timer verwechseln. [Timerimplementierung][ideas-timers] |
+| 3 | Umgesetzt | Aufnahmekonflikte gezielt auswerten | Kollidierende Sendungen mit Zeiten anzeigen und Automationen zugänglich machen. Beim Anlegen/Bearbeiten liefert OpenWebif strukturierte `conflicts`. Die Konfliktdetails sind in der Fehlerauswertung verfügbar; eine separate Konfliktvorhersage ist damit nicht belegt. [Timerimplementierung][ideas-timers] |
+| 4 | Umgesetzt | Sofortaufnahme als eigene Aktion | Aktion und Dashboard-Button „Aktuelle Sendung aufnehmen“ sind über `recordnow` umgesetzt. Der Ereignismodus benötigt EPG; der alternativ „unendlich“ genannte Modus ist im untersuchten Code auf zehn Stunden begrenzt. [Timerimplementierung][ideas-timers] |
+| 5 | Umgesetzt | Aufnahmebibliothek erweitern | Aufnahmeordner, HA-Medienquelle, Tags/Filter, zusätzliche Metadaten wie Dateigröße und bisheriger Wiedergabefortschritt sowie Umbenennen, Verschieben und Löschen sind umgesetzt. OpenWebif bietet `movielist`, `fullmovielist` und Verwaltungsaktionen. Lösch-/Papierkorbverhalten je Image berücksichtigen. [Aufnahmeverwaltung][ideas-movies] |
 | 6 | Umgesetzt | Festplattenspeicher und Systemdiagnose | Freier Platz je Mountpunkt sowie optionale RAM- und Laufzeitsensoren sind vorhanden. `about` liefert die Grundlagen. Einheiten normalisieren und langsam abfragen; als frei gemeldeter RAM enthält im untersuchten Code auch Buffer und Cache. [Informationsmodell][ideas-info] |
-| 7 | Mittel | Tonspur auswählen | Originalton, alternative Sprache oder Audiodeskription per dynamischer `select`-Entität wählen. Grundlage: `getaudiotracks` und `selectaudiotrack`; Auswahl nach Senderwechsel aktualisieren. [Audio-API][ideas-api] |
-| 8 | Mittel | Timeshift gezielt steuern und anzeigen | Start-/Stopp-Aktionen und „Timeshift aktiv“ über `tsstart`, `tsstop`, `tsstate`. `timeshiftEnabled` ist kein verlässlicher Pausezustand; der untersuchte Stopp-Pfad unterdrückt die Speicherrückfrage. [Controller][ideas-controller] |
-| 9 | Mittel | Wiedergabeposition bei Aufnahmen | Fortschritt und Restzeit im Medienplayer anzeigen. Das bereits abgefragte `getcurrent` liefert für bestimmte lokale Aufnahmen eine Position in Sekunden. Diese allein erlaubt keine sichere Pauseerkennung. [Controller][ideas-controller] |
-| 10 | Mittel | Receiver-Sleeptimer | „In 30 Minuten Standby“ mit Statusanzeige über den geräteeigenen `sleeptimer`. Verfügbare Felder und Verhalten unterscheiden sich nach Image. [Timerimplementierung][ideas-timers] |
-| 11 | Optional | Einschalten ohne Mitwecken des Fernsehers | Für Radio oder Hintergrundautomationen: `supports_powerup_without_waking_tv` und `set_powerup_without_waking_tv` sind dokumentiert. Image-Unterstützung prüfen; die Funktion ersetzt kein Aufwecken aus Tiefschlaf. [Steuerungs-API][ideas-api] |
-| 12 | Optional | Text an Eingabefelder senden | Suchbegriffe direkt eingeben, statt einzelne Fernbedienungstasten zu senden. `remotecontrol` besitzt einen `text`-Parameter; das aktive Eingabefeld am Receiver bleibt entscheidend. [Controller][ideas-controller] |
-| 13 | Größeres Projekt | Live-TV und Aufnahmen auf anderen Geräten abspielen | Erste Ausbaustufe als optionale [HLS-Wiedergabe](#externe-wiedergabe) umgesetzt; VOD-Spulen für geeignete TS-Aufnahmen ist umgesetzt. Die konkrete Browser-/Cast-Abnahme bleibt offen. OpenWebif bietet Stream-/Playlist-Endpunkte einschließlich eines HLS-Einstiegs. Codec-Unterstützung, Authentifizierung und gegebenenfalls Transcoding separat lösen; ein API-Endpunkt belegt keine funktionierende Wiedergabe auf jedem Zielgerät. [Streaming-Endpunkte][ideas-controller] |
+| 7 | Umgesetzt | Tonspur auswählen | Dynamische Auswahl der vom Receiver angebotenen Tonspuren über `getaudiotracks` und `selectaudiotrack`, einschließlich regelmäßiger Aktualisierung und Prüfung vor dem Umschalten. [Details](#tonspurauswahl) |
+| 8 | Umgesetzt | Timeshift gezielt steuern und anzeigen | Start-/Stopp-Aktionen und „Timeshift aktiv“ über `tsstart`, `tsstop`, `tsstate`. `timeshiftEnabled` ist kein verlässlicher Pausezustand; der untersuchte Stopp-Pfad unterdrückt die Speicherrückfrage. [Controller][ideas-controller] |
+| 9 | Umgesetzt | Wiedergabeposition bei Aufnahmen | Fortschritt und Restzeit im Medienplayer anzeigen. Neuere OpenWebif-Builds liefern im bereits abgefragten `getcurrent` für bestimmte lokale Aufnahmen eine Position in Sekunden; im offiziellen 2.4.0-Tag fehlt sie noch. Diese allein erlaubt keine sichere Pauseerkennung. [Controller][ideas-controller] |
+| 10 | Umgesetzt; Praxisprüfung mit Einschränkungen | Receiver-Sleeptimer | „In 30 Minuten Standby“ mit Statusanzeige über den geräteeigenen `sleeptimer`. Verfügbare Felder und Verhalten unterscheiden sich nach Image. [Timerimplementierung][ideas-timers] |
+| 11 | Umgesetzt; Octagon abgenommen | Einschalten ohne Mitwecken des Fernsehers | Geräteaktion `powerup_without_tv` prüft Standby und Image-Unterstützung, setzt einmalige HDMI-CEC-Unterdrückung und schaltet erst nach Bestätigung ein. Kein Tiefschlaf-Aufwecken. Octagon einschließlich Nutzerbeobachtung „TV bleibt aus“ geprüft; Installierte HA-Aktion ebenfalls geprüft; Vu+-CEC-Nachweis bei deaktiviertem TV-Mitwecken nicht aussagekräftig. [API][ideas-api] |
+| 12 | Umgesetzt; beide Receiver/HA abgenommen | Text an Eingabefelder senden | Suchbegriffe direkt eingeben, statt einzelne Fernbedienungstasten zu senden. `remotecontrol` besitzt einen `text`-Parameter; das aktive Eingabefeld am Receiver bleibt entscheidend. [Controller][ideas-controller] |
+| 13 | Umgesetzt | Live-TV und Aufnahmen auf anderen Geräten abspielen | Optionale [HLS-Wiedergabe](#externe-wiedergabe) für Live-TV und Aufnahmen sowie VOD-Spulen für geeignete TS-Aufnahmen sind umgesetzt. Die konkrete Browser-/Cast-Abnahme bleibt offen. OpenWebif bietet Stream-/Playlist-Endpunkte einschließlich eines HLS-Einstiegs. Codec-Unterstützung, Authentifizierung und gegebenenfalls Transcoding separat lösen; ein API-Endpunkt belegt keine funktionierende Wiedergabe auf jedem Zielgerät. [Streaming-Endpunkte][ideas-controller] |
 
-Der beauftragte Umsetzungsplan folgt nach der gemeinsamen Grundlage der
+Die Umsetzung erfolgte nach der gemeinsamen Grundlage in der
 Reihenfolge **Sofortaufnahme → Timerbearbeitung mit Konfliktdetails → EPG-Suche
 mit Aufnahmeaktion → Aufnahmebibliothek**.
 
@@ -1665,3 +1712,18 @@ Qualitätsnachweise vor main bleiben offen; siehe Prüfübersicht. Abschlusscomm
 Schnittstellen geprüft anhand des [OpenWebif-Controllers](https://github.com/oe-alliance/OpenWebif/blob/main/plugin/controllers/web.py)
 und [Aufnahmemodells](https://github.com/oe-alliance/OpenWebif/blob/main/plugin/controllers/models/movies.py).
 Unabhängige Implementierung; kein GPL-Code übernommen.
+
+### Idee 11: Einschalten ohne Fernseher
+
+Plan und Umsetzung: Geräteaktion unter gemeinsamer Befehlssperre; frisches `powerstate.instandby`, Unterstützungsprüfung, bestätigtes Setzen und einmaliges `powerstate?newstate=4`, danach frische Standby-Abfrage. Bereits eingeschaltete Receiver erhalten keine Unterdrückungsmarkierung. Nur die beiden speziellen Endpunkte dürfen nackte JSON-Booleans liefern; der Transport normalisiert diese auf `result`. Fehlende oder abgelehnte Bestätigungen stoppen die Folge. Keine automatische Wiederholung des Setzens oder Einschaltens (auch reguläres `newstate=4` ist jetzt vor transparentem GET-Replay geschützt). Nach einem unklaren Schreibausgang kann die einmalige Markierung bestehen bleiben; kein erfundenes Rücksetzen und keine Aussage über den TV-Zustand. Authentifizierungsfehler nutzen Reauth. Keine zusätzlichen Pollingabfragen oder Laufzeitabhängigkeiten. Externe Fernbedienungen teilen die HA-Befehlssperre nicht; parallele Zustandsänderungen außerhalb von HA lassen sich nicht ausschließen. Simulierte Fehler-/Erfolgstests und HA-Aktionsprüfung; Image-/CEC-Abnahme am Octagon am 27.09.2026 erfolgreich; installierte HA-Aktion mit dev.12 ebenfalls geprüft. Vu+ weckt laut Nutzer den TV ohnehin nicht; keine belastbare Vergleichsprüfung, Image-Unterstützung ungeprüft. Siehe Prüfübersicht.
+
+Schnittstellenquelle: [OpenWebif 2.4.0 web.py](https://github.com/oe-alliance/OpenWebif/blob/2.4.0/plugin/controllers/web.py), [JSON-Controller](https://github.com/oe-alliance/OpenWebif/blob/2.4.0/plugin/controllers/base.py). Unabhängig implementiert; kein GPL-Code übernommen.
+
+
+### Idee 12: Texteingabe (dev.14)
+
+Plan und Umsetzung: Geräteaktion `send_text` mit 1–500 Zeichen ohne Steuerzeichen; Leerzeichen und Unicode unverändert übergeben. `remotecontrol?text=…` ohne `command`/`type`, unter gemeinsamer Befehlssperre. API-Bestätigung streng prüfen; Textzugriffe in der HTTP-Middleware vor transparentem GET-Replay schützen. Authentifizierungsfehler nutzen Reauth, unklare Antworten eine eigene übersetzte Meldung. Keine Feld-/Fokuserkennung, kein Enter, keine zusätzliche Abfrage oder Abhängigkeit. Vorhandene Tastaturbefehle bleiben unverändert. Controller anhand der lokalen offiziellen 2.4.0-Quellkopie geprüft; unabhängige Implementierung ohne GPL-Codeübernahme. Simulierte Tests ersetzen keine Prüfung des sichtbaren Receiverfeldes.
+
+Das offizielle 2.4.0-[Steuermodell](https://github.com/oe-alliance/OpenWebif/blob/2.4.0/plugin/controllers/models/control.py) decodiert den Text zusätzlich mit `unquote`; einmaliges Vorcodieren erhält deshalb insbesondere literale `%20`-Folgen. `result=true` bedeutet ausgegebene Zeichentasten, nicht bestätigten Feldinhalt. Texte können in Receiver-/HTTP-Protokollen erscheinen.
+
+Praxisabnahme am 27.09.2026 mit installierter dev.14 über die HA-Aktion auf Octagon und Vu+ Solo² abgeschlossen: vorhandenen Text erhalten, Umlaute/Leerzeichen und URL-Sonderzeichen einschließlich literalem `%20` korrekt angehängt, keine automatische Feldbestätigung. Ungespeicherte Entwürfe verworfen, Timerlisten unverändert und Ausgangsstandby wiederhergestellt. Keine Aussage über beliebige Unicode-Zeichen, andere Feldtypen oder Images. Einzelheiten in der [Prüfübersicht](VALIDIERUNG.md).

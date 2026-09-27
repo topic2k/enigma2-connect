@@ -19,6 +19,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed, HomeAssistantError
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from homeassistant.util import dt as dt_util
 
 from .action_choices import recording_directories
 from .api import (
@@ -28,19 +29,29 @@ from .api import (
     OpenWebifClient,
     PowerCommandUnconfirmed,
     ReceiverError,
+    TextCommandUnconfirmed,
 )
+from .audio_tracks import AudioTrackError, parse_tracks, select_track
 from .channel_media import CONF_CHANNEL_BOUQUET, CONF_SHOW_CHANNELS
 from .const import CATALOG_INTERVAL, DIAGNOSTICS_INTERVAL, DOMAIN, SLOW_INTERVAL
 from .epg import EpgError, EpgWorkflow
 from .instant_recording import InstantRecording, InstantRecordingError
 from .media_stream import MediaStream
-from .models import JsonObject, ReceiverState, Snapshot, services
+from .models import AudioTrack, JsonObject, ReceiverState, Snapshot, services
+from .powerup import QuietPowerupError, powerup_without_tv
 from .recording_images import RecordingImages
 from .recording_library import RecordingLibrary, RecordingLibraryError
 from .recording_management import RecordingManagementError, RecordingManager
+from .sleep_timer import SleepTimerError, parse_sleep_timer, set_sleep_timer
 from .system_diagnostics import SystemDiagnostics
 from .timer_conflicts import conflicts, summary
 from .timer_edit import TimerEditError, TimerEditor, TimerEditRejected
+from .timeshift import (
+    CONF_RESTORE_TIMESHIFT_WARNING,
+    TimeshiftError,
+    parse_timeshift,
+    set_timeshift,
+)
 from .workflow_models import TimerIdentity
 
 _LOGGER = logging.getLogger(__name__)
@@ -135,6 +146,21 @@ class EnigmaCoordinator(DataUpdateCoordinator[Snapshot]):
                     signal = await self.optional("signal")
                     current = await self.optional("getcurrent")
                 state = ReceiverState.parse(raw, current)
+                if state.media_position is not None:
+                    state = replace(state, media_position_updated_at=dt_util.utcnow())
+                sleep_timer = parse_sleep_timer(await self.optional("sleeptimer"))
+                if sleep_timer is None:
+                    self.optional_errors.add("sleeptimer")
+                timeshift = None
+                if not state.standby:
+                    timeshift = parse_timeshift(await self.optional("tsstate"))
+                    if timeshift is None:
+                        self.optional_errors.add("tsstate")
+                audio_tracks = None
+                if not state.standby and state.reference:
+                    audio_tracks = parse_tracks(await self.optional("getaudiotracks"))
+                    if audio_tracks is None:
+                        self.optional_errors.add("getaudiotracks")
                 previous = self.data if self.data else Snapshot(state, system=self._initial_system)
                 system = previous.system
                 if monotonic() >= self._diagnostics_due:
@@ -222,6 +248,9 @@ class EnigmaCoordinator(DataUpdateCoordinator[Snapshot]):
                     media_channels,
                     directories,
                     system,
+                    audio_tracks,
+                    timeshift,
+                    sleep_timer,
                 )
                 if catalog_refreshed:
                     self.recording_images.async_catalog_updated(snapshot)
@@ -255,6 +284,10 @@ class EnigmaCoordinator(DataUpdateCoordinator[Snapshot]):
                 translation_domain=DOMAIN, translation_key="power_unconfirmed"
             ) from err
         except (
+            TimeshiftError,
+            SleepTimerError,
+            QuietPowerupError,
+            AudioTrackError,
             InstantRecordingError,
             TimerEditError,
             EpgError,
@@ -262,6 +295,10 @@ class EnigmaCoordinator(DataUpdateCoordinator[Snapshot]):
             RecordingManagementError,
         ) as err:
             raise HomeAssistantError(translation_domain=DOMAIN, translation_key=err.reason) from err
+        except TextCommandUnconfirmed as err:
+            raise HomeAssistantError(
+                translation_domain=DOMAIN, translation_key="text_unconfirmed"
+            ) from err
         except CommandUnconfirmed as err:
             raise HomeAssistantError(
                 translation_domain=DOMAIN, translation_key="timer_unconfirmed"
@@ -298,6 +335,31 @@ class EnigmaCoordinator(DataUpdateCoordinator[Snapshot]):
         if refresh:
             await self.async_request_refresh()
         return result
+
+    async def async_powerup_without_tv(self) -> None:
+        try:
+            await self.perform(powerup_without_tv, self.client, refresh=False)
+        finally:
+            await self.async_request_refresh()
+
+    async def async_set_sleep_timer(self, minutes: int | None = None) -> None:
+        try:
+            await self.perform(set_sleep_timer, self.client, minutes, refresh=False)
+        finally:
+            await self.async_request_refresh()
+
+    async def async_set_timeshift(self, enabled: bool) -> None:
+        try:
+            await self.perform(
+                set_timeshift,
+                self.client,
+                enabled,
+                refresh=False,
+                restore_save_warning=self.entry.options.get(CONF_RESTORE_TIMESHIFT_WARNING, False),
+            )
+        finally:
+            # An unsuccessful acknowledgement can still follow a changed receiver.
+            await self.async_request_refresh()
 
     async def async_manage_recording(self, **params: Any) -> JsonObject:
         # Hold stream admission while validating and dispatching a mutation.
@@ -348,6 +410,16 @@ class EnigmaCoordinator(DataUpdateCoordinator[Snapshot]):
         self.invalidate_lists()
         await self.async_request_refresh()
         return result
+
+    async def select_audio_track(self, reference: str | None, track: AudioTrack) -> None:
+        async def change() -> None:
+            async with self.data_lock:
+                await select_track(self.client, reference, track)
+
+        try:
+            await self.perform(change, refresh=False)
+        finally:
+            await self.async_request_refresh()
 
     async def select_bouquet(self, reference: str) -> None:
         async def change() -> None:
