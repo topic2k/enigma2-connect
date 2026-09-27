@@ -2,6 +2,17 @@
 
 # Verification summary
 
+
+## Audio-track selection – 1.4.0-dev.1
+
+New dynamic selection for idea 7. Checked locally with Python 3.14.7 in the existing HA test framework using simulated receiver replies: parsing, duplicate descriptions, active track, device entity, standby, unsupported API, recovery, authentication errors, stale selections, service changes during reads, rejection and unconfirmed commands. The transport test checks response loss without automatic replay using a local HTTP test server.
+
+On 2026-09-27: 82 tests passed for audio tracks, integration, controls, translations and read-only acceptance. Extended audio-track, API, action HTTP, snapshot failure and regression run: 138 passed; one logging test was initially affected by `--log-level=ERROR` and then passed unchanged with the normal logging level. New module `audio_tracks.py`: 100% statement and branch coverage.
+
+Ruff, mypy and Python syntax checks passed. Lockfile updated offline; only the local project version changed. Reviewed quality criteria: existing polling, entity identity and naming, availability, translated errors, reauth and documentation. No quality thresholds or exemptions changed. Full CI for the new commit remains separately required.
+
+Still pending: audio-track switching with actual audio output on OpenWebif 1.4.4/2.4.0, channel changes and standby on both test receivers, and display/control in the installed HA UI. Simulated tests do not replace this acceptance.
+
 ## Release 1.3.0
 
 Publication was explicitly requested on **2026-09-20**.

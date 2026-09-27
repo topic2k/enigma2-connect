@@ -31,7 +31,7 @@ from .test_integration import setup
 REFERENCE = "1:0:19:283D:3FB:1:C00000:0:0:0:"
 
 
-@pytest.mark.parametrize("endpoint", sorted(TIMER_COMMANDS))
+@pytest.mark.parametrize("endpoint", sorted(TIMER_COMMANDS | {"selectaudiotrack"}))
 async def test_real_http_lost_timer_response_is_sent_once(aiohttp_server, socket_enabled, endpoint):
     """Warm a keep-alive connection: aiohttp would otherwise replay the GET."""
     writes = 0

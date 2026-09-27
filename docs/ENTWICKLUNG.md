@@ -24,6 +24,7 @@ die [README](../README.md) bleibt der kurze Einstieg für Anwender.
 - [Validierung von Aktionen](#validierung-von-aktionen)
 - [Umsetzungsplan: Aufnahme-Workflows](#umsetzungsplan-aufnahme-workflows)
 - [Festplattenspeicher und Systemdiagnose](#festplattenspeicher-und-systemdiagnose)
+- [Tonspurauswahl](#tonspurauswahl)
 - [Vorgemerkte Ideen](#vorgemerkte-ideen)
 - [Dateibestand und lokale Archive](#dateibestand-und-lokale-archive)
 
@@ -1250,11 +1251,21 @@ aus. Statische Geräteidentität bleibt bei Diagnosefehlern erhalten.
 Nicht von `hdd` gelieferte Netzwerk-Mounts werden nicht aus Aufnahmeordnern
 abgeleitet. Hardwareprüfung einschließlich möglichem HDD-Aufwecken bleibt offen.
 
+## Tonspurauswahl
+
+Idee Nr. 7, Ziel 1.4.0-dev.1: dynamische Select-Entität, optionale Abfrage im vorhandenen Polling, Prüfung vor dem Umschalten, Rücklesen sowie DE/EN-Dokumentation und simulierte Fehlerfalltests.
+
+`getaudiotracks` wird bei aktiver Wiedergabe im regulären Intervall gelesen. Der Snapshot enthält validierte Indizes, Beschreibungen und Aktivstatus; ungültige Listen werden vollständig verworfen. Optionen enthalten den um eins erhöhten Index und die Receiverbeschreibung. Leere Listen/Standby sind nicht verfügbar; Authentifizierungsfehler behalten Reauth bei.
+
+`selectaudiotrack?id=...` nutzt den unveränderten nullbasierten API-Index. Datensperre und Befehlssperre serialisieren die Vorprüfung gegen eigene Polls und Befehle. Vor dem Schreiben werden Sender, Standby und Spuridentität erneut geprüft, danach aktive Spur und Sender zurückgelesen. Keine optimistische Anzeige, kein automatisches Wiederholen bei Antwortverlust. Externe Bedienung kann weiterhin zwischen Abfragen eingreifen; die API bietet keine atomare Bindung an einen Sender. Keine zusätzliche Laufzeitabhängigkeit und keine Änderung externer Stream-Tonspuren.
+
+Schnittstelle: [OpenWebif Audio-API](https://github.com/oe-alliance/OpenWebif/wiki/OpenWebif-API-documentation#getaudiotracks). Eigenständige Implementierung, kein Upstream-Code übernommen. Hardware- und HA-Oberflächenabnahme siehe Prüfübersicht.
+
 ## Vorgemerkte Ideen
 
 Die Ideen **1–5** sind seit 19.09.2026 zur Umsetzung beauftragt; Reihenfolge,
 Abnahme und Fortschritt stehen im [Umsetzungsplan](#umsetzungsplan-aufnahme-workflows).
-Die übrigen Ideen bleiben unverbindlich. Bereits vorhandene Teilfunktionen sind
+Idee 7 ist ebenfalls umgesetzt. Die übrigen Ideen bleiben unverbindlich. Bereits vorhandene Teilfunktionen sind
 unten benannt.
 
 ### Abschnitt 3: Timerbearbeitung und Konflikte
@@ -1376,7 +1387,7 @@ und Rückgabeformate vor einer Umsetzung je OpenWebif-Version und Image prüfen.
 | 4 | Hoch | Sofortaufnahme als eigene Aktion | Dashboard-Button oder Sprachaktion „Aktuelle Sendung aufnehmen“ über `recordnow`. Der Ereignismodus benötigt EPG; der alternativ „unendlich“ genannte Modus ist im untersuchten Code auf zehn Stunden begrenzt. [Timerimplementierung][ideas-timers] |
 | 5 | Hoch | Aufnahmebibliothek erweitern | Aufnahmeordner und HA-Medienquelle sind inzwischen vorhanden. Weitere Ausbaustufen: Tags/Filter, zusätzliche Metadaten wie Dateigröße und bisheriger Wiedergabefortschritt sowie Umbenennen, Verschieben und Löschen. OpenWebif bietet `movielist`, `fullmovielist` und Verwaltungsaktionen. Lösch-/Papierkorbverhalten je Image berücksichtigen. [Aufnahmeverwaltung][ideas-movies] |
 | 6 | Umgesetzt | Festplattenspeicher und Systemdiagnose | Freier Platz je Mountpunkt sowie optionale RAM- und Laufzeitsensoren sind vorhanden. `about` liefert die Grundlagen. Einheiten normalisieren und langsam abfragen; als frei gemeldeter RAM enthält im untersuchten Code auch Buffer und Cache. [Informationsmodell][ideas-info] |
-| 7 | Mittel | Tonspur auswählen | Originalton, alternative Sprache oder Audiodeskription per dynamischer `select`-Entität wählen. Grundlage: `getaudiotracks` und `selectaudiotrack`; Auswahl nach Senderwechsel aktualisieren. [Audio-API][ideas-api] |
+| 7 | Umgesetzt | Tonspur auswählen | Dynamische Auswahl der vom Receiver angebotenen Tonspuren über `getaudiotracks` und `selectaudiotrack`, einschließlich regelmäßiger Aktualisierung und Prüfung vor dem Umschalten. [Details](#tonspurauswahl) |
 | 8 | Mittel | Timeshift gezielt steuern und anzeigen | Start-/Stopp-Aktionen und „Timeshift aktiv“ über `tsstart`, `tsstop`, `tsstate`. `timeshiftEnabled` ist kein verlässlicher Pausezustand; der untersuchte Stopp-Pfad unterdrückt die Speicherrückfrage. [Controller][ideas-controller] |
 | 9 | Mittel | Wiedergabeposition bei Aufnahmen | Fortschritt und Restzeit im Medienplayer anzeigen. Das bereits abgefragte `getcurrent` liefert für bestimmte lokale Aufnahmen eine Position in Sekunden. Diese allein erlaubt keine sichere Pauseerkennung. [Controller][ideas-controller] |
 | 10 | Mittel | Receiver-Sleeptimer | „In 30 Minuten Standby“ mit Statusanzeige über den geräteeigenen `sleeptimer`. Verfügbare Felder und Verhalten unterscheiden sich nach Image. [Timerimplementierung][ideas-timers] |

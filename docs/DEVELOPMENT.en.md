@@ -24,6 +24,7 @@ and everyday use, see the [user guide](USER_GUIDE.en.md). The
 - [Action validation](#action-validation)
 - [Implementation plan: recording workflows](#implementation-plan-recording-workflows)
 - [Disk space and system diagnostics](#disk-space-and-system-diagnostics)
+- [Audio-track selection](#audio-track-selection)
 - [Recorded ideas](#recorded-ideas)
 - [Files and local archives](#files-and-local-archives)
 
@@ -1169,11 +1170,21 @@ Static device identity survives diagnostics failures. Network mounts absent
 from `hdd` are not inferred from recording folders. Hardware validation, including
 possible disk wakeups, remains outstanding.
 
+## Audio-track selection
+
+Idea no. 7, target 1.4.0-dev.1: dynamic select entity, optional reads within existing polling, validation before switching, readback, DE/EN documentation and simulated failure tests.
+
+`getaudiotracks` is read during active playback at the regular interval. The snapshot contains validated indices, descriptions and active flags; invalid lists are discarded entirely. Options include the index plus one and the receiver description. Empty lists/standby are unavailable; authentication failures retain reauth.
+
+`selectaudiotrack?id=...` uses the unchanged zero-based API index. Data and command locks serialize validation against our polls and commands. Service, standby and track identity are checked before writing; the active track and service are reread afterwards. No optimistic state or automatic replay after response loss. External controls may still intervene between requests; the API cannot atomically bind a selection to a service. No new runtime dependency or changes to external stream audio tracks.
+
+Interface: [OpenWebif audio API](https://github.com/oe-alliance/OpenWebif/wiki/OpenWebif-API-documentation#getaudiotracks). Independent implementation without copied upstream code. Hardware and HA UI acceptance: see validation overview.
+
 ## Recorded ideas
 
 Ideas **1–5** were requested for implementation on 2026-09-19; order, acceptance
 and progress are tracked in the [implementation plan](#implementation-plan-recording-workflows).
-The remaining ideas are tentative. Existing parts of the proposed features are
+Idea 7 is also implemented. The remaining ideas are tentative. Existing parts of the proposed features are
 identified below.
 
 ### Section 3: Timer editing and conflicts
@@ -1286,7 +1297,7 @@ support and response formats for each OpenWebif version and image before impleme
 | 4 | High | Dedicated instant recording action | Dashboard button or voice action to record the current programme through `recordnow`. Event mode requires EPG; the alternative mode called “infinite” is limited to ten hours in the examined code. [Timer implementation][ideas-timers] |
 | 5 | High | Extend the recording library | Recording folders and the HA media source now exist. Further additions: tags/filters, metadata such as file size and previous playback progress, plus renaming, moving and deleting. OpenWebif offers `movielist`, `fullmovielist` and management actions. Account for image-specific deletion/trash behaviour. [Recording management][ideas-movies] |
 | 6 | Implemented | Disk space and system diagnostics | Free space per mount and optional RAM/uptime sensors are available. `about` supplies the underlying information. Normalize units and poll slowly; reported free RAM includes buffers and cache in the examined code. [Information model][ideas-info] |
-| 7 | Medium | Select audio tracks | Select original audio, another language or audio description through a dynamic `select` entity. Uses `getaudiotracks` and `selectaudiotrack`; refresh choices after channel changes. [Audio API][ideas-api] |
+| 7 | Implemented | Select audio tracks | Dynamic selection of tracks reported by the receiver using `getaudiotracks` and `selectaudiotrack`, with regular updates and validation before switching. [Details](#audio-track-selection) |
 | 8 | Medium | Explicit timeshift controls and status | Start/stop actions and a timeshift-active indicator through `tsstart`, `tsstop`, `tsstate`. `timeshiftEnabled` does not reliably indicate pause; the examined stop path suppresses the save prompt. [Controller][ideas-controller] |
 | 9 | Medium | Playback position for recordings | Display progress and remaining time in the media player. The already queried `getcurrent` returns a position in seconds for certain local recordings. This alone does not reliably establish pause state. [Controller][ideas-controller] |
 | 10 | Medium | Receiver sleep timer | “Standby in 30 minutes” with status display through the receiver's own `sleeptimer`. Available fields and behaviour vary by image. [Timer implementation][ideas-timers] |

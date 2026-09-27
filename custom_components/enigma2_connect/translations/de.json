@@ -242,6 +242,9 @@
       },
       "select_channel": {
         "name": "Senderauswahl"
+      },
+      "select_audio_track": {
+        "name": "Tonspur"
       }
     },
     "sensor": {
@@ -597,6 +600,12 @@
     },
     "recording_activity_unknown": {
       "message": "Eine aktive Aufnahme oder Wiedergabe lässt sich keiner Datei sicher zuordnen. Prüfe den Receiverstatus."
+    },
+    "audio_track_changed": {
+      "message": "Sender oder Tonspuren haben sich geändert. Bitte die aktuelle Auswahl erneut prüfen."
+    },
+    "audio_track_unconfirmed": {
+      "message": "Die gewählte Tonspur konnte nicht bestätigt werden. Bitte den aktuellen Zustand prüfen."
     }
   },
   "services": {

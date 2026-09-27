@@ -26,7 +26,10 @@ async def async_setup_entry(
     entry: EnigmaConfigEntry,
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
-    async_add_entities([EnigmaSelect(entry.runtime_data, kind) for kind in ("bouquet", "channel")])
+    async_add_entities(
+        [EnigmaSelect(entry.runtime_data, kind) for kind in ("bouquet", "channel")]
+        + [EnigmaAudioSelect(entry.runtime_data)]
+    )
 
 
 class EnigmaSelect(EnigmaEntity, SelectEntity):
@@ -67,3 +70,38 @@ class EnigmaSelect(EnigmaEntity, SelectEntity):
             await self.coordinator.select_bouquet(reference)
         else:
             await self.coordinator.perform(self.coordinator.client.command, "zap", sRef=reference)
+
+
+class EnigmaAudioSelect(EnigmaEntity, SelectEntity):
+    def __init__(self, coordinator: EnigmaCoordinator) -> None:
+        super().__init__(coordinator, "select_audio_track")
+
+    @property
+    def available(self) -> bool:
+        return (
+            super().available
+            and not self.coordinator.data.state.standby
+            and bool(self.coordinator.data.audio_tracks)
+        )
+
+    @property
+    def options(self) -> list[str]:
+        return [track.option for track in self.coordinator.data.audio_tracks or ()]
+
+    @property
+    def current_option(self) -> str | None:
+        return next(
+            (track.option for track in self.coordinator.data.audio_tracks or () if track.active),
+            None,
+        )
+
+    async def async_select_option(self, option: str) -> None:
+        track = next(
+            (track for track in self.coordinator.data.audio_tracks or () if track.option == option),
+            None,
+        )
+        if not self.available or track is None:
+            raise ServiceValidationError(
+                translation_domain=DOMAIN, translation_key="unknown_selection"
+            )
+        await self.coordinator.select_audio_track(self.coordinator.data.state.reference, track)

@@ -242,6 +242,9 @@
       },
       "select_channel": {
         "name": "Channel selection"
+      },
+      "select_audio_track": {
+        "name": "Audio track"
       }
     },
     "sensor": {
@@ -597,6 +600,12 @@
     },
     "recording_activity_unknown": {
       "message": "An active recording or playback cannot be reliably matched to a file. Check receiver state."
+    },
+    "audio_track_changed": {
+      "message": "The service or audio tracks have changed. Please check the current selection again."
+    },
+    "audio_track_unconfirmed": {
+      "message": "The selected audio track could not be confirmed. Please check the current state."
     }
   },
   "services": {

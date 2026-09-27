@@ -29,12 +29,13 @@ from .api import (
     PowerCommandUnconfirmed,
     ReceiverError,
 )
+from .audio_tracks import AudioTrackError, parse_tracks, select_track
 from .channel_media import CONF_CHANNEL_BOUQUET, CONF_SHOW_CHANNELS
 from .const import CATALOG_INTERVAL, DIAGNOSTICS_INTERVAL, DOMAIN, SLOW_INTERVAL
 from .epg import EpgError, EpgWorkflow
 from .instant_recording import InstantRecording, InstantRecordingError
 from .media_stream import MediaStream
-from .models import JsonObject, ReceiverState, Snapshot, services
+from .models import AudioTrack, JsonObject, ReceiverState, Snapshot, services
 from .recording_images import RecordingImages
 from .recording_library import RecordingLibrary, RecordingLibraryError
 from .recording_management import RecordingManagementError, RecordingManager
@@ -135,6 +136,11 @@ class EnigmaCoordinator(DataUpdateCoordinator[Snapshot]):
                     signal = await self.optional("signal")
                     current = await self.optional("getcurrent")
                 state = ReceiverState.parse(raw, current)
+                audio_tracks = None
+                if not state.standby and state.reference:
+                    audio_tracks = parse_tracks(await self.optional("getaudiotracks"))
+                    if audio_tracks is None:
+                        self.optional_errors.add("getaudiotracks")
                 previous = self.data if self.data else Snapshot(state, system=self._initial_system)
                 system = previous.system
                 if monotonic() >= self._diagnostics_due:
@@ -222,6 +228,7 @@ class EnigmaCoordinator(DataUpdateCoordinator[Snapshot]):
                     media_channels,
                     directories,
                     system,
+                    audio_tracks,
                 )
                 if catalog_refreshed:
                     self.recording_images.async_catalog_updated(snapshot)
@@ -255,6 +262,7 @@ class EnigmaCoordinator(DataUpdateCoordinator[Snapshot]):
                 translation_domain=DOMAIN, translation_key="power_unconfirmed"
             ) from err
         except (
+            AudioTrackError,
             InstantRecordingError,
             TimerEditError,
             EpgError,
@@ -348,6 +356,16 @@ class EnigmaCoordinator(DataUpdateCoordinator[Snapshot]):
         self.invalidate_lists()
         await self.async_request_refresh()
         return result
+
+    async def select_audio_track(self, reference: str | None, track: AudioTrack) -> None:
+        async def change() -> None:
+            async with self.data_lock:
+                await select_track(self.client, reference, track)
+
+        try:
+            await self.perform(change, refresh=False)
+        finally:
+            await self.async_request_refresh()
 
     async def select_bouquet(self, reference: str) -> None:
         async def change() -> None:

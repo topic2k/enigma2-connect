@@ -59,7 +59,7 @@ TIMER_COMMANDS = frozenset(
 
 
 RECORDING_COMMANDS = frozenset({"movieinfo", "moviemove", "moviedelete"})
-WRITE_COMMANDS = TIMER_COMMANDS | RECORDING_COMMANDS
+WRITE_COMMANDS = TIMER_COMMANDS | RECORDING_COMMANDS | {"selectaudiotrack"}
 
 
 class CommandUnconfirmed(ConnectionError):

@@ -207,6 +207,17 @@ def picon_candidates(
 
 
 @dataclass(frozen=True)
+class AudioTrack:
+    index: int
+    description: str
+    active: bool
+
+    @property
+    def option(self) -> str:
+        return f"{self.index + 1}: {self.description}"
+
+
+@dataclass(frozen=True)
 class Snapshot:
     # All entities consume the same poll result. For optional lists, None means
     # unavailable; an empty list means the receiver reported no entries.
@@ -222,3 +233,4 @@ class Snapshot:
     media_channels: dict[str, Service] | None = None
     recording_directories: tuple[str, ...] = ()
     system: SystemDiagnostics = field(default_factory=SystemDiagnostics)
+    audio_tracks: tuple[AudioTrack, ...] | None = None

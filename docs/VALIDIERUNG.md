@@ -2,6 +2,16 @@
 
 # Prüfübersicht
 
+## Tonspurauswahl – 1.4.0-dev.1
+
+Neue dynamische Auswahl für Idee 7. Lokal unter Python 3.14.7 im vorhandenen HA-Testframework mit simulierten Receiverantworten geprüft: Parser, doppelte Beschreibungen, aktive Spur, Geräteentität, Standby, fehlende API-Unterstützung, Wiederherstellung, Authentifizierungsfehler, veraltete Auswahl, Senderwechsel während Abfragen, Ablehnung und unbestätigte Befehle. Transporttest prüft Antwortverlust ohne automatische Wiederholung über einen lokalen HTTP-Testserver.
+
+Am 27.09.2026: 82 Tests für Tonspuren, Integration, Bedienelemente, Übersetzungen und lesende Abnahme bestanden. Erweiterter Lauf für Tonspuren, API, Aktions-HTTP, Snapshotfehler und Regressionen: 138 bestanden; ein Log-Test zunächst durch `--log-level=ERROR` beeinflusst und anschließend unverändert mit normalem Log-Level bestanden. Neues Modul `audio_tracks.py`: 100 % Anweisungs- und Zweigabdeckung.
+
+Ruff, mypy und Python-Syntaxprüfung bestanden. Lockdatei offline aktualisiert; ausschließlich lokale Projektversion geändert. Geprüfte Qualitätskriterien: bestehendes Polling, Entitätsidentität und Benennung, Verfügbarkeit, Fehlerübersetzung, Reauth und Dokumentation. Keine Qualitätsgrenzen oder Ausnahmen verändert. Vollständige CI für den neuen Commit bleibt separat erforderlich.
+
+Noch offen: Tonspurwechsel mit tatsächlicher Tonausgabe auf OpenWebif 1.4.4/2.4.0, Senderwechsel und Standby an beiden Testreceivern sowie Darstellung/Bedienung in der installierten HA-Oberfläche. Die simulierten Prüfungen ersetzen diese Abnahme nicht.
+
 ## Release 1.3.0
 
 Die Veröffentlichung wurde am **20.09.2026** ausdrücklich beauftragt.

@@ -41,6 +41,7 @@ RESPONSES = {
         "isStreaming": "true",
     },
     "getcurrent": {"now": {"title": "News"}, "next": {"title": "Next news"}},
+    "getaudiotracks": {"result": True, "tracklist": []},
     "signal": {"snr": 80, "snr_db": "12.5", "ber": 0},
     "bouquets": {"bouquets": [[BOUQUET, "Favorites"]]},
     "getservices": {"services": [{"servicereference": REFERENCE, "servicename": "Channel"}]},

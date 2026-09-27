@@ -4,6 +4,7 @@
 
 ## Contents
 
+- [1.4.0-dev.1](#140-dev1)
 - [1.3.0](#130)
 - [1.2.1](#121)
 - [1.2.0](#120)
@@ -14,6 +15,12 @@
 - [1.0.2](#102)
 - [1.0.1](#101)
 - [1.0.0](#100)
+
+## 1.4.0-dev.1
+
+Unreleased development version.
+
+- Idea no. 7: dynamic audio-track selection with regular updates, validation before switching and confirmation by rereading. Missing or invalid tracks make only this selection unavailable.
 
 ## 1.3.0
 

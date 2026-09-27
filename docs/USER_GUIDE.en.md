@@ -122,6 +122,7 @@ individual items “entities”.
 | --- | --- |
 | Media player | turn power on/off, adjust volume, mute and control playback |
 | Bouquet and channel selection | choose a channel group, then a channel |
+| Audio track | select a language or audio description offered by the receiver |
 | Receiver control | switch normal standby and use the remote card |
 | Screen message | display text on the TV |
 | Channel and programme information | view the current and next programme |
@@ -152,6 +153,15 @@ Entities**, show disabled entities and enable the sensor you need. Existing
 enable/disable choices are preserved on upgrades. Receiver states also cover
 standby, recording, streaming and connectivity; connectivity and **Refresh lists**
 are diagnostics.
+
+### Select an audio track
+
+1. Open your receiver under **Settings → Devices & services → Enigma2 Connect**.
+2. Open **Audio track** and select a track. The number distinguishes tracks with identical names; descriptions and languages come from the receiver.
+3. After changing channels, the list updates on the next poll (normally within about 15 seconds). If tracks have changed, reopen the current list.
+
+The selection controls audio on the receiver. It does not select a track for external HA streams. Original audio and audio description are offered only when provided by the channel or recording and reported by the receiver. The selection is unavailable in standby, without tracks or if the endpoint is unsupported. If switching cannot be confirmed, check the actual state; commands are not automatically repeated.
+
 
 ### Disk space and system diagnostics
 

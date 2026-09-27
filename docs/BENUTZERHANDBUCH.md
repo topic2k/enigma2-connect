@@ -129,6 +129,7 @@ Home Assistant nennt diese einzelnen Elemente „Entitäten“.
 | --- | --- |
 | Medienplayer | ein- und ausschalten, Lautstärke ändern, stummschalten und Wiedergabe steuern |
 | Bouquet und Senderauswahl | eine Sendergruppe und anschließend einen Sender auswählen |
+| Tonspur | eine vom Receiver angebotene Sprache oder Audiodeskription auswählen |
 | Receiver-Steuerung | normalen Standby schalten und die Fernbedienungskarte verwenden |
 | Bildschirmnachricht | Text auf dem Fernseher anzeigen |
 | Sender und Sendungsinformationen | die aktuelle und nächste Sendung ansehen |
@@ -161,6 +162,15 @@ Entitäten**, zeige deaktivierte Entitäten an und aktiviere den gewünschten Se
 Vorhandene Aktivierungsentscheidungen bleiben bei Updates erhalten. Der Receiver
 bietet außerdem Zustandsanzeigen für Standby, Aufnahme, Streaming und Verbindung;
 Verbindung und **Listen aktualisieren** gehören zu den Diagnosen.
+
+### Tonspur auswählen
+
+1. Öffne unter **Einstellungen → Geräte & Dienste → Enigma2 Connect** deinen Receiver.
+2. Öffne **Tonspur** und wähle die gewünschte Spur aus. Die Nummer unterscheidet auch gleich benannte Spuren; Beschreibung und Sprachen stammen vom Receiver.
+3. Nach einem Senderwechsel aktualisiert sich die Liste beim nächsten Abruf (standardmäßig nach höchstens etwa 15 Sekunden). Bei einer Meldung über geänderte Spuren die aktuelle Liste erneut öffnen.
+
+Die Auswahl steuert den Ton am Receiver. Sie legt keine Tonspur für externe HA-Streams fest. Originalton und Audiodeskription stehen nur zur Wahl, wenn der Sender beziehungsweise die Aufnahme sie bereitstellt und der Receiver sie meldet. Im Standby, ohne Tonspuren oder bei fehlender Schnittstellenunterstützung ist die Auswahl nicht verfügbar. Bei unbestätigtem Umschalten den tatsächlichen Zustand prüfen; es erfolgt keine automatische Wiederholung.
+
 
 ### Speicherplatz und Systemdiagnose
 

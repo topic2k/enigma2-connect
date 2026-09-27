@@ -19,6 +19,7 @@ READS = {
     "/api/statusinfo": set(),
     "/api/getcurrent": set(),
     "/api/signal": set(),
+    "/api/getaudiotracks": set(),
     "/api/bouquets": {"stype"},
     "/api/getservices": {"sRef"},
     "/api/timerlist": set(),
