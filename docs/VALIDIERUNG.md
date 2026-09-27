@@ -8,7 +8,7 @@ Am 27.09.2026 mit Python 3.14.7 und echtem Home-Assistant-Testframework bei simu
 
 Qualitätsabgleich: eindeutige Receiverwahl, Registrierung ohne eingerichtetes Gerät, zweisprachige Aktion und Fehlermeldungen, bestehende Reauth-/Refresh-Behandlung, Serialisierung, keine zusätzlichen Hintergrundabfragen und keine neuen Laufzeitabhängigkeiten. Kriterien und Abdeckungsgrenzen unverändert. Schnittstellen anhand des offiziellen OpenWebif-2.4.0-Controllers und Kontrollmodells geprüft; keine Verbindung zu realen Receivern.
 
-Die anschließende Octagon-Abnahme steht unten. Offen bleiben die praktische Unterstützung und HDMI-CEC-Wirkung am Vu+ sowie die Aktion in der installierten HA-Oberfläche. TV-Zustand lässt sich aus OpenWebif-Antworten nicht bestätigen; bei Antwortverlust kann die einmalige Unterdrückungsmarkierung bestehen bleiben. Externe Fernbedienungen teilen die Befehlssperre nicht. Vor main aktuelle vollständige CI für den PR-Stand erforderlich.
+Die anschließende Octagon-Abnahme steht unten. HA-Abnahme und die konfigurationsbedingte Vu+-Prüfgrenze sind unten ergänzt. TV-Zustand lässt sich aus OpenWebif-Antworten nicht bestätigen; bei Antwortverlust kann die einmalige Unterdrückungsmarkierung bestehen bleiben. Externe Fernbedienungen teilen die Befehlssperre nicht. Vor main aktuelle vollständige CI für den PR-Stand erforderlich.
 
 ### Octagon-Praxisprüfung vom 27.09.2026, dokumentiert in dev.12
 
@@ -18,7 +18,17 @@ Ausgangszustand: Receiver im Standby, Fernseher laut Nutzer ausgeschaltet, keine
 
 Der Nutzer bestätigte ausdrücklich: Der Fernseher blieb während des Einschaltens ausgeschaltet. Nach der Beobachtung wurde der vorherige normale Standby wiederhergestellt und durch eine frische Receiverabfrage bestätigt. Keine Einstellungen oder Sender geändert.
 
-Dies ist eine direkte Receiverprüfung des aktuellen Funktionscodes, keine Prüfung der Aktion in der installierten HA-Oberfläche. Vu+ wurde nicht kontaktiert. Diese beiden Abnahmen bleiben offen. Dev.12 ändert nur Dokumentation und Versionsmetadaten; lokale Detailberichte unter `.work/quiet-power-octagon/` sind nicht Teil der Veröffentlichung.
+Dies ist eine direkte Receiverprüfung des aktuellen Funktionscodes, keine Prüfung der Aktion in der installierten HA-Oberfläche. Vu+ wurde nicht kontaktiert. Zum damaligen Abschluss blieben diese beiden Abnahmen offen; die spätere HA-Prüfung und Vu+-Einschränkung stehen unten. Dev.12 ändert nur Dokumentation und Versionsmetadaten; lokale Detailberichte unter `.work/quiet-power-octagon/` sind nicht Teil der Veröffentlichung.
+
+### Installierte HA-Aktion und Vu+-Prüfgrenze, dokumentiert in dev.13
+
+Am 27.09.2026 bestätigte der Nutzer die Installation von dev.12. Im integrierten Codex-Browser wurde die angemeldete HA-Oberfläche geprüft: **Werkzeuge → Aktionen → Einschalten ohne Fernseher** zeigt deutschen Namen, Beschreibung und Receiver-Selektor. Ziel war ausschließlich **SF8008 4K Supreme**. Vorher bestätigte der Nutzer den ausgeschalteten Fernseher; die HA-TV-Entität zeigte `off`. Der Octagon meldete Standby, keine Aufnahme, keinen Sleeptimer und keinen Timerstart innerhalb der nächsten 15 Minuten.
+
+**Aktion ausführen** einmal betätigt. Der Dialog kehrte ohne Fehlermeldung aus dem Ladezustand zurück; die anschließende direkte Receiverabfrage bestätigte `standby=false`. Die Samsung-TV-Entität zeigte vor und nach der Aktion weiterhin `off`. Dies ist zusätzlich zur vorherigen direkten Sichtbestätigung ein HA-Zustandsnachweis; keine separate erneute physische TV-Bestätigung behauptet. Danach normalen Standby wiederhergestellt und frisch bestätigt. Keine Installation, kein HA-Neustart und keine Änderung der HDMI-CEC-Konfiguration durch Codex.
+
+Vu+ schaltet den Fernseher laut Nutzer bereits bei normalem Einschalten nicht mit ein. Ein dort ausgeschalteter TV würde deshalb keine Wirkung der neuen Unterdrückung belegen. Es wurde keine CEC-Konfiguration geändert und kein Vu+-Funktionstest durchgeführt; dessen Image-Unterstützung bleibt ungeprüft. Die tatsächliche Unterdrückung ist am Octagon belegt, nicht für beide Images pauschal bestätigt.
+
+CI für dev.12 (`b56308ccd83bea055f7cc6eded27813965e6f1fd`): [Tests](https://github.com/topic2k/enigma2-connect/actions/runs/36327912750) und [Hassfest/HACS](https://github.com/topic2k/enigma2-connect/actions/runs/36327912778) erfolgreich. Dev.13 enthält ausschließlich Dokumentation und Versionsmetadaten; Offline-Lockabgleich, Versionskonsistenz und Diffprüfung. Keine Absenkung der Qualitätskriterien; vor main bleibt aktuelle CI für den jeweiligen PR-Stand erforderlich.
 
 ## Receiver-Sleeptimer – 2.0.0-dev.9
 

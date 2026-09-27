@@ -4,7 +4,7 @@
 
 ## Contents
 
-- [2.0.0-dev.12](#200-dev12)
+- [2.0.0-dev.13](#200-dev13)
 - [1.3.0](#130)
 - [1.2.1](#121)
 - [1.2.0](#120)
@@ -16,9 +16,11 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 2.0.0-dev.12
+## 2.0.0-dev.13
 
 Unreleased development version.
+
+- Idea no. 11 verified through the installed HA UI on Octagon: action and device selector visible, wake successful, Samsung TV state `off` before/after, original standby restored. Vu+ limitation documented: normal TV wake is disabled according to the user, preventing a meaningful suppression comparison. Dev.13 changes only documentation and version metadata.
 
 - Idea no. 11 verified on Octagon SF8008 4K Supreme with OpenWebif 2.4.0: receiver woke without the TV, which stayed off according to the user; calling again while awake performed no writes. Original standby restored. Full CI for dev.11 passed. Dev.12 documents acceptance; Vu+ and the installed HA action remain pending.
 

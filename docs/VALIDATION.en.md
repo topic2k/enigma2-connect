@@ -8,7 +8,7 @@ Tested on 27 September 2026 with Python 3.14.7 and the real Home Assistant test 
 
 Quality review: unambiguous receiver selection, registration without configured devices, bilingual action/errors, existing reauth/refresh handling, serialization, no additional background reads and no runtime dependencies. Criteria and coverage thresholds unchanged. Interfaces checked against the official OpenWebif 2.4.0 controller and control model; no real receivers contacted.
 
-The subsequent Octagon acceptance is documented below. Pending: verify image support and HDMI-CEC behaviour on Vu+, plus the action in the installed HA UI. OpenWebif replies cannot confirm physical TV state; response loss can leave the one-shot suppression flag armed. External remotes do not share the command lock. Current full CI for the PR revision remains required before main.
+The subsequent Octagon acceptance is documented below. The HA acceptance and the configuration-related Vu+ test limitation are documented below. OpenWebif replies cannot confirm physical TV state; response loss can leave the one-shot suppression flag armed. External remotes do not share the command lock. Current full CI for the PR revision remains required before main.
 
 ### Octagon hardware check on 27 September 2026, documented in dev.12
 
@@ -18,7 +18,17 @@ Initial state: receiver in standby, TV off according to the user, no recording, 
 
 The user explicitly confirmed that the TV stayed off during the wake. Afterwards, the original normal standby state was restored and confirmed by a fresh receiver read. No settings or channels were changed.
 
-This directly tests the current function code against the receiver, not the action in the installed HA UI. The Vu+ was not contacted. Both acceptance checks remain pending. Dev.12 changes only documentation and version metadata; local detailed reports under `.work/quiet-power-octagon/` are not shipped.
+This directly tests the current function code against the receiver, not the action in the installed HA UI. The Vu+ was not contacted. Both acceptance checks were pending at that point; subsequent HA acceptance and the Vu+ limitation are documented below. Dev.12 changes only documentation and version metadata; local detailed reports under `.work/quiet-power-octagon/` are not shipped.
+
+### Installed HA action and Vu+ test limitation, documented in dev.13
+
+On 27 September 2026, the user confirmed installing dev.12. The authenticated HA UI was checked in the built-in Codex browser: **Tools → Actions → Power on without TV** displays the German name, description and receiver selector. Only **SF8008 4K Supreme** was selected. Beforehand, the user confirmed the TV was off and the HA TV entity reported `off`. Octagon reported standby, no recording, no sleep timer and no timer start within the next 15 minutes.
+
+Clicked **Perform action** once. The dialog returned from loading without an error; a subsequent direct receiver read confirmed `standby=false`. The Samsung TV entity remained `off` before and after the action. This adds HA state evidence to the earlier direct visual confirmation; no separate new physical TV confirmation is claimed. Normal standby was then restored and freshly confirmed. Codex performed no installation, HA restart or HDMI-CEC configuration changes.
+
+According to the user, normal Vu+ power-on is already configured not to wake the TV. A TV remaining off there would therefore not demonstrate the new suppression. No CEC configuration was changed and no Vu+ function test was performed; its image support remains untested. Actual suppression is demonstrated on Octagon, not claimed for both images.
+
+CI for dev.12 (`b56308ccd83bea055f7cc6eded27813965e6f1fd`): [Tests](https://github.com/topic2k/enigma2-connect/actions/runs/36327912750) and [Hassfest/HACS](https://github.com/topic2k/enigma2-connect/actions/runs/36327912778) passed. Dev.13 contains documentation and version metadata only; offline lock reconciliation, version consistency and diff checks. Quality criteria unchanged; current CI for the eventual PR revision remains required before main.
 
 ## Receiver sleep timer – 2.0.0-dev.9
 

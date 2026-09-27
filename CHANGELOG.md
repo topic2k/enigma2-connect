@@ -4,7 +4,7 @@
 
 ## Inhaltsverzeichnis
 
-- [2.0.0-dev.12](#200-dev12)
+- [2.0.0-dev.13](#200-dev13)
 - [1.3.0](#130)
 - [1.2.1](#121)
 - [1.2.0](#120)
@@ -16,9 +16,11 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 2.0.0-dev.12
+## 2.0.0-dev.13
 
 Unveröffentlichte Entwicklerversion.
+
+- Idee Nr. 11 über die installierte HA-Oberfläche am Octagon geprüft: Aktion und Geräteauswahl sichtbar, Einschalten erfolgreich, Samsung-TV-Zustand vor/nachher `off`, Ausgangsstandby wiederhergestellt. Vu+-Grenze dokumentiert: normales TV-Mitwecken ist dort laut Nutzer deaktiviert, daher kein belastbarer Vergleich für die Unterdrückung. Dev.13 ändert nur Dokumentation und Versionsmetadaten.
 
 - Idee Nr. 11 am Octagon SF8008 4K Supreme mit OpenWebif 2.4.0 praktisch geprüft: Receiver ohne Fernseher eingeschaltet, TV blieb laut Nutzerbeobachtung aus; erneuter Aufruf bei eingeschaltetem Receiver ohne Schreibzugriff. Ausgangsstandby wiederhergestellt. Vollständige CI für dev.11 erfolgreich. Dev.12 dokumentiert die Abnahme; Vu+ und installierte HA-Aktion bleiben offen.
 
