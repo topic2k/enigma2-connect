@@ -2,6 +2,16 @@
 
 # Verification summary
 
+## Text input – 2.0.0-dev.14
+
+Implemented on 2026-09-27: device-scoped `send_text`, 1–500 characters without control characters, preserved spaces/Unicode and shared command lock. The official OpenWebif 2.4.0 control model additionally calls `unquote`; pre-encoding once preserves literal percent sequences. A positive reply confirms issued character keys, not field contents.
+
+Local checks use Python 3.14.7, the real HA test framework and simulated receivers. The final run passed 28 tests for text input, action registration and branding. Coverage includes device targeting, selectors, input boundaries, Unicode/URL characters, command locking, rejection, missing acknowledgement, reauth, lost responses and cancellation. A local HTTP server checks query decoding and exactly one write even on disconnection. The initial API/integration/action-selector regression run found only two outdated test expectations (action set and HA text-selector defaults), corrected and passed in the final run. Ruff, formatting, syntax checks, mypy (41 modules) and offline lock verification passed; the lockfile changes only the project version.
+
+Quality review: no extra polling, platform or runtime dependency; unambiguous receiver targeting, shared serialization, reauth and DE/EN descriptions preserved. Criteria and coverage thresholds unchanged. Real receiver/installed-HA acceptance remains open: input focus, visible text, image-specific character support and absent input fields. No real receiver was operated for this implementation. Current full CI for the PR revision remains required before main.
+
+
+
 ## Power on without TV – 2.0.0-dev.11
 
 Tested on 27 September 2026 with Python 3.14.7 and the real Home Assistant test framework using simulated receiver replies. 37 targeted tests passed: supported/missing/malformed image replies, already awake, unknown standby, authentication, cancellation, lost replies, missing acknowledgement, receiver targeting and concurrent wake requests. Three local HTTP scenarios exercise the complete sequence and connection loss during arming/waking without automatic replay. The first HTTP run failed because the local socket fixture was missing; after adding it, all 37 tests passed. `powerup.py`: 100% statement and branch coverage (33 statements, 10 branches). Seven additional action registration, translation catalog and branding checks passed.The additional API, integration, action selector and control regression run found only the outdated expected set of registered actions; it was updated and the affected test passed in the final run. Ruff, formatting, Python syntax and strict mypy (41 modules) passed; offline lock reconciliation changes only the project version.

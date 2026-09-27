@@ -10,6 +10,15 @@ restart_gui:
     device_id:
       required: true
       selector: *id001
+send_text:
+  fields:
+    device_id:
+      required: true
+      selector: *id001
+    text:
+      required: true
+      selector:
+        text: {}
 powerup_without_tv:
   fields:
     device_id:

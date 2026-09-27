@@ -634,6 +634,23 @@ library. Local simulations do not replace this hardware check.
 
 ## Messages and automations
 
+### Send text to an input field
+
+1. On the awake receiver, open the desired text field, such as a search, and focus it.
+2. In **Developer tools → Actions**, select **Enigma2 Connect: Send text**.
+3. Select the **Receiver**, enter **Text**, and run the action.
+4. Check the text on the receiver and confirm or correct it there as needed.
+
+Accepts 1–500 characters without control characters. Spaces and special characters are sent unchanged. The action does not open a field, clear existing contents or press Enter. The active field and receiver image determine the effect and supported characters. A positive API response does not confirm visible field contents. An uncertain response is never automatically retried; check the field before sending again to avoid duplicates. No additional polling.
+
+```yaml
+action: enigma2_connect.send_text
+data:
+  device_id: YOUR_RECEIVER_DEVICE_ID
+  text: "News & weather"
+```
+
+
 ### Power on without TV
 
 1. Leave the receiver in normal standby; OpenWebif must remain reachable.

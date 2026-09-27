@@ -687,6 +687,23 @@ aktualisieren und Home Assistant neu starten.
 
 ## Nachrichten und Automationen
 
+### Text an ein Eingabefeld senden
+
+1. Öffne am eingeschalteten Receiver das gewünschte Texteingabefeld, etwa eine Suche, und setze den Fokus hinein.
+2. Wähle unter **Entwicklerwerkzeuge → Aktionen** die Aktion **Enigma2 Connect: Text senden**.
+3. Wähle den **Receiver**, trage **Text** ein und führe die Aktion aus.
+4. Prüfe den Text am Receiver. Bestätige oder korrigiere ihn dort bei Bedarf.
+
+1–500 Zeichen ohne Steuerzeichen sind erlaubt. Leerzeichen und Sonderzeichen werden unverändert übertragen. Die Aktion öffnet kein Eingabefeld, löscht keinen vorhandenen Inhalt und sendet keine Eingabetaste. Das aktive Feld und das Receiver-Image bestimmen die Wirkung und unterstützten Zeichen. Eine positive API-Antwort bestätigt keinen sichtbaren Feldinhalt. Bei unklarer Antwort wird nicht automatisch wiederholt; prüfe vor erneutem Senden das Feld, um doppelten Text zu vermeiden. Keine zusätzliche regelmäßige Abfrage.
+
+```yaml
+action: enigma2_connect.send_text
+data:
+  device_id: DEINE_RECEIVER_GERAETE_ID
+  text: "News & weather"
+```
+
+
 ### Einschalten ohne Fernseher
 
 1. Den Receiver in normalem Standby lassen; OpenWebif muss erreichbar sein.

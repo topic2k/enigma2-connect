@@ -2,6 +2,16 @@
 
 # Prüfübersicht
 
+## Texteingabe – 2.0.0-dev.14
+
+Implementiert am 27.09.2026: Geräteaktion `send_text`, 1–500 Zeichen ohne Steuerzeichen, unveränderte Leerzeichen/Unicode und gemeinsame Befehlssperre. Das offizielle OpenWebif-2.4.0-Steuermodell decodiert zusätzlich mit `unquote`; einmaliges Vorcodieren erhält literale Prozentsequenzen. Eine positive Antwort bestätigt nur ausgegebene Zeichentasten, keinen Feldinhalt.
+
+Lokale Prüfungen verwenden Python 3.14.7, das echte HA-Testframework und simulierte Receiver. Der Abschlusslauf bestand alle 28 Tests für Texteingabe, Aktionsregistrierung und Branding. Geprüft werden Aktionsregistrierung, Gerätebindung, Selektoren, Eingabegrenzen, Unicode/URL-Zeichen, Befehlssperre, Ablehnung, fehlende Bestätigung, Reauth, Antwortverlust und Abbruch. Ein lokaler HTTP-Server prüft Query-Decodierung und genau einen Schreibaufruf auch bei Verbindungsabbruch. Der erste Regressionslauf für API, Integration und Aktionsselektoren fand zwei veraltete Test-Erwartungen (Aktionsmenge und HA-Textselektor-Standardwerte); diese wurden korrigiert und im Abschlusslauf erfolgreich geprüft. Ruff, Formatprüfung, Syntaxprüfung, mypy (41 Module) und Offline-Lockabgleich bestanden; die Lockdatei ändert nur die Projektversion.
+
+Qualitätsabgleich: keine zusätzliche Hintergrundabfrage, Plattform oder Laufzeitabhängigkeit; eindeutige Receiverbindung, gemeinsame Serialisierung, Reauth und DE/EN-Beschreibungen bleiben erhalten. Kriterien und Abdeckungsgrenzen unverändert. Receiver-/installierte-HA-Praxisprüfung offen: Eingabefokus, sichtbarer Text, imageabhängige Zeichenunterstützung und fehlende Eingabefelder prüfen. Kein realer Receiver wurde für diese Umsetzung bedient. Vor main aktuelle vollständige CI für den PR-Stand erforderlich.
+
+
+
 ## Einschalten ohne Fernseher – 2.0.0-dev.11
 
 Am 27.09.2026 mit Python 3.14.7 und echtem Home-Assistant-Testframework bei simulierten Receiverantworten geprüft. 37 gezielte Tests bestanden: unterstützte/fehlende/fehlerhafte Image-Antworten, bereits eingeschaltet, unbekannter Standby, Authentifizierung, Abbruch, Antwortverlust, fehlende Bestätigung, Gerätebindung und gleichzeitige Einschaltaufträge. Drei lokale HTTP-Szenarien prüfen die vollständige Folge und Verbindungsabbrüche beim Setzen/Einschalten ohne automatische Wiederholung. Der erste HTTP-Lauf scheiterte an der fehlenden lokalen Socket-Fixture; nach deren Ergänzung bestanden alle 37 Tests. `powerup.py`: 100 % Anweisungs- und Zweigabdeckung (33 Anweisungen, 10 Zweige). Zusätzlich sieben Prüfungen für Aktionsregistrierung, Übersetzungskataloge und Branding bestanden. Der weitere Regressionslauf für API, Integration, Aktionsselektoren und Steuerungen fand nur die veraltete Sollmenge registrierter Aktionen; sie wurde ergänzt und der betroffene Test im Abschlusslauf erfolgreich wiederholt. Ruff, Formatprüfung, Python-Syntax und striktes mypy (41 Module) bestanden; Offline-Lockabgleich ändert nur die Projektversion.

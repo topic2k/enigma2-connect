@@ -1187,7 +1187,7 @@ Interface: [OpenWebif audio API](https://github.com/oe-alliance/OpenWebif/wiki/O
 
 ## Recorded ideas
 
-Ideas **1–5 and 13** are implemented, as are ideas **6, 7, 8, 9 and 10**.
+Ideas **1–13** are implemented; practical acceptance and limitations remain documented separately.
 The order and acceptance of the recording workflows are documented in the
 [implementation plan](#implementation-plan-recording-workflows).
 The remaining ideas are tentative. Implementation and practical acceptance
@@ -1338,7 +1338,7 @@ support and response formats for each OpenWebif version and image before impleme
 | 9 | Implemented | Playback position for recordings | Display progress and remaining time in the media player. Newer OpenWebif builds return a position in seconds in the already queried `getcurrent` for certain local recordings; the official 2.4.0 tag lacks it. This alone does not reliably establish pause state. [Controller][ideas-controller] |
 | 10 | Implemented; practical test with limitations | Receiver sleep timer | “Standby in 30 minutes” with status display through the receiver's own `sleeptimer`. Available fields and behaviour vary by image. [Timer implementation][ideas-timers] |
 | 11 | Implemented; Octagon accepted | Power on without waking the television | Device action `powerup_without_tv` checks standby and image support, arms one-shot HDMI-CEC suppression and wakes only after acknowledgement. No deep-standby wake. Octagon verified including user observation that the TV stays off; Installed HA action also verified; Vu+ CEC evidence is inconclusive with normal TV wake disabled. [API][ideas-api] |
-| 12 | Optional | Send text to input fields | Enter search terms directly instead of sending individual remote keys. `remotecontrol` accepts a `text` parameter; the active receiver input field determines where it goes. [Controller][ideas-controller] |
+| 12 | Implemented; practical acceptance pending | Send text to input fields | Enter search terms directly instead of sending individual remote keys. `remotecontrol` accepts a `text` parameter; the active receiver input field determines where it goes. [Controller][ideas-controller] |
 | 13 | Implemented | Play live TV and recordings on other devices | Optional [HLS playback](#external-playback) for live TV and recordings and VOD seeking for suitable TS recordings are implemented; specific browser/Cast acceptance remains outstanding. OpenWebif provides stream/playlist endpoints including an HLS entry point. Address codec support, authentication and possibly transcoding separately; an API endpoint does not establish playback compatibility with every target device. [Streaming endpoints][ideas-controller] |
 
 After the shared foundation, implementation followed this order:
@@ -1620,3 +1620,10 @@ Independent implementation; no GPL code copied.
 Plan and implementation: device action holds the shared command lock across fresh `powerstate.instandby`, capability check, acknowledged arming, a single `powerstate?newstate=4`, and a fresh standby read. Already awake receivers are not armed. Only the two dedicated endpoints may return bare JSON booleans; transport normalizes these to `result`. Missing or rejected acknowledgements stop the sequence. Neither arming nor waking is automatically replayed (ordinary `newstate=4` is now also protected against transparent GET retries). An uncertain write may leave the one-shot flag armed; no invented reset and no claim about physical TV state. Authentication failures use reauth. No additional polling or runtime dependencies. External remote controls do not share the HA command lock; concurrent state changes outside HA cannot be excluded. Simulated success/failure tests and HA action checks; Octagon image/CEC acceptance passed on 27 September 2026; installed HA action also verified with dev.12. Vu+ already does not wake the TV according to the user; no meaningful comparison, image support untested. See verification summary.
 
 Interface source: [OpenWebif 2.4.0 web.py](https://github.com/oe-alliance/OpenWebif/blob/2.4.0/plugin/controllers/web.py), [JSON-Controller](https://github.com/oe-alliance/OpenWebif/blob/2.4.0/plugin/controllers/base.py). Independently implemented; no GPL code copied.
+
+
+### Idea 12: text input (dev.14)
+
+Plan and implementation: device-scoped `send_text` action accepting 1–500 characters without control characters, preserving spaces and Unicode. Calls `remotecontrol?text=…` without `command`/`type` under the shared command lock. Requires a positive API acknowledgement; HTTP middleware prevents transparent GET replay of text writes. Authentication errors trigger reauth; uncertain replies use a dedicated translated error. No field/focus detection, Enter key, extra polling or dependency. Existing key commands remain unchanged. Controller checked against the local official 2.4.0 source copy; independent implementation without copied GPL code. Simulated tests do not establish visible receiver field contents.
+
+The official 2.4.0 [control model](https://github.com/oe-alliance/OpenWebif/blob/2.4.0/plugin/controllers/models/control.py) additionally decodes text with `unquote`; pre-encoding once preserves literal `%20` sequences. `result=true` means character keys were issued, not that field contents were verified. Text may appear in receiver/HTTP logs.

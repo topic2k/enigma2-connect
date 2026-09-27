@@ -4,7 +4,7 @@
 
 ## Contents
 
-- [2.0.0-dev.13](#200-dev13)
+- [2.0.0-dev.14](#200-dev14)
 - [1.3.0](#130)
 - [1.2.1](#121)
 - [1.2.0](#120)
@@ -16,9 +16,11 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 2.0.0-dev.13
+## 2.0.0-dev.14
 
 Unreleased development version.
+
+- Idea 12: device-scoped Send text action for the active receiver input field, preserving text, serializing commands, checking API acknowledgement and preventing automatic duplicate transmission. DE/EN instructions and simulated tests; receiver/installed-HA acceptance remains open.
 
 - Idea no. 11 verified through the installed HA UI on Octagon: action and device selector visible, wake successful, Samsung TV state `off` before/after, original standby restored. Vu+ limitation documented: normal TV wake is disabled according to the user, preventing a meaningful suppression comparison. Dev.13 changes only documentation and version metadata.
 

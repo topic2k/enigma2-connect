@@ -641,6 +641,9 @@
     },
     "quiet_powerup_unconfirmed": {
       "message": "Power on without TV was not confirmed. Check the receiver before repeating: one-shot HDMI-CEC suppression may already be armed or the receiver may already be awake."
+    },
+    "text_unconfirmed": {
+      "message": "Text input was not clearly confirmed. Check the receiver input field before retrying; the text may already have arrived."
     }
   },
   "services": {
@@ -1099,6 +1102,20 @@
         "device_id": {
           "name": "Receiver",
           "description": "Receiver"
+        }
+      }
+    },
+    "send_text": {
+      "name": "Send text",
+      "description": "Sends text to the active receiver input field. Open the field first; does not press Enter. 1–500 characters without control characters.",
+      "fields": {
+        "device_id": {
+          "name": "Receiver",
+          "description": "Receiver"
+        },
+        "text": {
+          "name": "Text",
+          "description": "Text including any desired spaces."
         }
       }
     }

@@ -1268,7 +1268,7 @@ Schnittstelle: [OpenWebif Audio-API](https://github.com/oe-alliance/OpenWebif/wi
 
 ## Vorgemerkte Ideen
 
-Die Ideen **1–5 und 13** sind umgesetzt, ebenso die Ideen **6, 7, 8, 9 und 10**.
+Die Ideen **1–13** sind umgesetzt; praktische Abnahmen und Einschränkungen bleiben separat dokumentiert.
 Reihenfolge und Abnahme der Aufnahme-Workflows sind im
 [Umsetzungsplan](#umsetzungsplan-aufnahme-workflows) dokumentiert.
 Die übrigen Ideen bleiben unverbindlich. Umsetzung und praktische Abnahme
@@ -1428,7 +1428,7 @@ und Rückgabeformate vor einer Umsetzung je OpenWebif-Version und Image prüfen.
 | 9 | Umgesetzt | Wiedergabeposition bei Aufnahmen | Fortschritt und Restzeit im Medienplayer anzeigen. Neuere OpenWebif-Builds liefern im bereits abgefragten `getcurrent` für bestimmte lokale Aufnahmen eine Position in Sekunden; im offiziellen 2.4.0-Tag fehlt sie noch. Diese allein erlaubt keine sichere Pauseerkennung. [Controller][ideas-controller] |
 | 10 | Umgesetzt; Praxisprüfung mit Einschränkungen | Receiver-Sleeptimer | „In 30 Minuten Standby“ mit Statusanzeige über den geräteeigenen `sleeptimer`. Verfügbare Felder und Verhalten unterscheiden sich nach Image. [Timerimplementierung][ideas-timers] |
 | 11 | Umgesetzt; Octagon abgenommen | Einschalten ohne Mitwecken des Fernsehers | Geräteaktion `powerup_without_tv` prüft Standby und Image-Unterstützung, setzt einmalige HDMI-CEC-Unterdrückung und schaltet erst nach Bestätigung ein. Kein Tiefschlaf-Aufwecken. Octagon einschließlich Nutzerbeobachtung „TV bleibt aus“ geprüft; Installierte HA-Aktion ebenfalls geprüft; Vu+-CEC-Nachweis bei deaktiviertem TV-Mitwecken nicht aussagekräftig. [API][ideas-api] |
-| 12 | Optional | Text an Eingabefelder senden | Suchbegriffe direkt eingeben, statt einzelne Fernbedienungstasten zu senden. `remotecontrol` besitzt einen `text`-Parameter; das aktive Eingabefeld am Receiver bleibt entscheidend. [Controller][ideas-controller] |
+| 12 | Umgesetzt; Praxisprüfung offen | Text an Eingabefelder senden | Suchbegriffe direkt eingeben, statt einzelne Fernbedienungstasten zu senden. `remotecontrol` besitzt einen `text`-Parameter; das aktive Eingabefeld am Receiver bleibt entscheidend. [Controller][ideas-controller] |
 | 13 | Umgesetzt | Live-TV und Aufnahmen auf anderen Geräten abspielen | Optionale [HLS-Wiedergabe](#externe-wiedergabe) für Live-TV und Aufnahmen sowie VOD-Spulen für geeignete TS-Aufnahmen sind umgesetzt. Die konkrete Browser-/Cast-Abnahme bleibt offen. OpenWebif bietet Stream-/Playlist-Endpunkte einschließlich eines HLS-Einstiegs. Codec-Unterstützung, Authentifizierung und gegebenenfalls Transcoding separat lösen; ein API-Endpunkt belegt keine funktionierende Wiedergabe auf jedem Zielgerät. [Streaming-Endpunkte][ideas-controller] |
 
 Die Umsetzung erfolgte nach der gemeinsamen Grundlage in der
@@ -1718,3 +1718,10 @@ Unabhängige Implementierung; kein GPL-Code übernommen.
 Plan und Umsetzung: Geräteaktion unter gemeinsamer Befehlssperre; frisches `powerstate.instandby`, Unterstützungsprüfung, bestätigtes Setzen und einmaliges `powerstate?newstate=4`, danach frische Standby-Abfrage. Bereits eingeschaltete Receiver erhalten keine Unterdrückungsmarkierung. Nur die beiden speziellen Endpunkte dürfen nackte JSON-Booleans liefern; der Transport normalisiert diese auf `result`. Fehlende oder abgelehnte Bestätigungen stoppen die Folge. Keine automatische Wiederholung des Setzens oder Einschaltens (auch reguläres `newstate=4` ist jetzt vor transparentem GET-Replay geschützt). Nach einem unklaren Schreibausgang kann die einmalige Markierung bestehen bleiben; kein erfundenes Rücksetzen und keine Aussage über den TV-Zustand. Authentifizierungsfehler nutzen Reauth. Keine zusätzlichen Pollingabfragen oder Laufzeitabhängigkeiten. Externe Fernbedienungen teilen die HA-Befehlssperre nicht; parallele Zustandsänderungen außerhalb von HA lassen sich nicht ausschließen. Simulierte Fehler-/Erfolgstests und HA-Aktionsprüfung; Image-/CEC-Abnahme am Octagon am 27.09.2026 erfolgreich; installierte HA-Aktion mit dev.12 ebenfalls geprüft. Vu+ weckt laut Nutzer den TV ohnehin nicht; keine belastbare Vergleichsprüfung, Image-Unterstützung ungeprüft. Siehe Prüfübersicht.
 
 Schnittstellenquelle: [OpenWebif 2.4.0 web.py](https://github.com/oe-alliance/OpenWebif/blob/2.4.0/plugin/controllers/web.py), [JSON-Controller](https://github.com/oe-alliance/OpenWebif/blob/2.4.0/plugin/controllers/base.py). Unabhängig implementiert; kein GPL-Code übernommen.
+
+
+### Idee 12: Texteingabe (dev.14)
+
+Plan und Umsetzung: Geräteaktion `send_text` mit 1–500 Zeichen ohne Steuerzeichen; Leerzeichen und Unicode unverändert übergeben. `remotecontrol?text=…` ohne `command`/`type`, unter gemeinsamer Befehlssperre. API-Bestätigung streng prüfen; Textzugriffe in der HTTP-Middleware vor transparentem GET-Replay schützen. Authentifizierungsfehler nutzen Reauth, unklare Antworten eine eigene übersetzte Meldung. Keine Feld-/Fokuserkennung, kein Enter, keine zusätzliche Abfrage oder Abhängigkeit. Vorhandene Tastaturbefehle bleiben unverändert. Controller anhand der lokalen offiziellen 2.4.0-Quellkopie geprüft; unabhängige Implementierung ohne GPL-Codeübernahme. Simulierte Tests ersetzen keine Prüfung des sichtbaren Receiverfeldes.
+
+Das offizielle 2.4.0-[Steuermodell](https://github.com/oe-alliance/OpenWebif/blob/2.4.0/plugin/controllers/models/control.py) decodiert den Text zusätzlich mit `unquote`; einmaliges Vorcodieren erhält deshalb insbesondere literale `%20`-Folgen. `result=true` bedeutet ausgegebene Zeichentasten, nicht bestätigten Feldinhalt. Texte können in Receiver-/HTTP-Protokollen erscheinen.

@@ -641,6 +641,9 @@
     },
     "quiet_powerup_unconfirmed": {
       "message": "Einschalten ohne Fernseher wurde nicht bestätigt. Receiver vor einer Wiederholung prüfen: Die einmalige HDMI-CEC-Unterdrückung kann bereits gesetzt oder der Receiver eingeschaltet sein."
+    },
+    "text_unconfirmed": {
+      "message": "Die Texteingabe wurde nicht eindeutig bestätigt. Prüfe das Eingabefeld am Receiver vor einer Wiederholung; Text könnte bereits angekommen sein."
     }
   },
   "services": {
@@ -1099,6 +1102,20 @@
         "device_id": {
           "name": "Receiver",
           "description": "Receiver"
+        }
+      }
+    },
+    "send_text": {
+      "name": "Text senden",
+      "description": "Sendet Text an das aktive Receiver-Eingabefeld. Feld vorher öffnen; sendet keine Eingabetaste. 1–500 Zeichen ohne Steuerzeichen.",
+      "fields": {
+        "device_id": {
+          "name": "Receiver",
+          "description": "Receiver"
+        },
+        "text": {
+          "name": "Text",
+          "description": "Text einschließlich gewünschter Leerzeichen."
         }
       }
     }

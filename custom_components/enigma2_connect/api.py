@@ -6,6 +6,7 @@ from __future__ import annotations
 import asyncio
 from base64 import b64encode
 from typing import Any, Literal, overload
+from urllib.parse import quote
 
 import aiohttp
 from yarl import URL
@@ -70,6 +71,10 @@ class CommandUnconfirmed(ConnectionError):
     """A write command may have taken effect without a usable acknowledgement."""
 
 
+class TextCommandUnconfirmed(CommandUnconfirmed):
+    """Text may have reached the active input field."""
+
+
 class PowerCommandUnconfirmed(ReceiverError):
     """Power transition may have started before its response was received."""
 
@@ -85,6 +90,8 @@ async def power_command_middleware(
     timer_command = request.url.path.removeprefix("/api/") in WRITE_COMMANDS or (
         request.url.path == "/api/sleeptimer" and request.url.query.get("cmd", "get") != "get"
     )
+    text_command = request.url.path == "/api/remotecontrol" and "text" in request.url.query
+    timer_command = timer_command or text_command
     power_command = request.url.path == "/api/powerstate" and request.url.query.get("newstate") in (
         "1",
         "2",
@@ -98,6 +105,8 @@ async def power_command_middleware(
     except (aiohttp.ClientConnectorError, aiohttp.ConnectionTimeoutError) as err:
         raise ConnectionError("Cannot connect to receiver") from err
     except (aiohttp.ClientConnectionError, TimeoutError) as err:
+        if text_command:
+            raise TextCommandUnconfirmed("Text command response was not received") from err
         if timer_command:
             raise CommandUnconfirmed("Write command response was not received") from err
         raise PowerCommandUnconfirmed("Power command response was not received") from err
@@ -258,6 +267,27 @@ class OpenWebifClient:
         async with self.command_lock:
             data = await self.get(endpoint, **params)
             return command_response(endpoint, data)
+
+    async def send_text(self, text: str) -> None:
+        """Send literal text once; acknowledgement cannot prove field contents."""
+        if (
+            not isinstance(text, str)
+            or not 1 <= len(text) <= 500
+            or any(ord(char) < 32 or 127 <= ord(char) <= 159 for char in text)
+        ):
+            raise ValueError("Expected 1–500 characters without control characters")
+        async with self.command_lock:
+            try:
+                # OpenWebif applies unquote again after parsing the query string.
+                data = await self.get("remotecontrol", text=quote(text, safe=""))
+                command_response("remotecontrol", data)
+                flags = [boolean(data[key]) for key in ("result", "state") if key in data]
+                if not flags or any(flag is not True for flag in flags):
+                    raise TextCommandUnconfirmed("Text command acknowledgement missing")
+            except (ConnectionError, ProtocolError) as err:
+                if isinstance(err, CommandRejectedError):
+                    raise
+                raise TextCommandUnconfirmed("Text command was not confirmed") from err
 
     async def keys(self, codes: list[int], delay: float = 0.3, hold: bool = False) -> None:
         if not codes or len(codes) > 500 or any(not 0 <= code <= 0x2FF for code in codes):

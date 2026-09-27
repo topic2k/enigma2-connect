@@ -4,7 +4,7 @@
 
 ## Inhaltsverzeichnis
 
-- [2.0.0-dev.13](#200-dev13)
+- [2.0.0-dev.14](#200-dev14)
 - [1.3.0](#130)
 - [1.2.1](#121)
 - [1.2.0](#120)
@@ -16,9 +16,11 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 2.0.0-dev.13
+## 2.0.0-dev.14
 
 Unveröffentlichte Entwicklerversion.
+
+- Idee Nr. 12: Geräteaktion „Text senden“ für das aktive Receiver-Eingabefeld, mit unverändertem Text, Befehlssperre, geprüfter API-Bestätigung und Schutz vor automatischer Doppelübertragung. DE/EN-Anleitung und simulierte Tests; Receiver-/HA-Praxisprüfung offen.
 
 - Idee Nr. 11 über die installierte HA-Oberfläche am Octagon geprüft: Aktion und Geräteauswahl sichtbar, Einschalten erfolgreich, Samsung-TV-Zustand vor/nachher `off`, Ausgangsstandby wiederhergestellt. Vu+-Grenze dokumentiert: normales TV-Mitwecken ist dort laut Nutzer deaktiviert, daher kein belastbarer Vergleich für die Unterdrückung. Dev.13 ändert nur Dokumentation und Versionsmetadaten.
 

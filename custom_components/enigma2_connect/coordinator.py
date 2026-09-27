@@ -29,6 +29,7 @@ from .api import (
     OpenWebifClient,
     PowerCommandUnconfirmed,
     ReceiverError,
+    TextCommandUnconfirmed,
 )
 from .audio_tracks import AudioTrackError, parse_tracks, select_track
 from .channel_media import CONF_CHANNEL_BOUQUET, CONF_SHOW_CHANNELS
@@ -294,6 +295,10 @@ class EnigmaCoordinator(DataUpdateCoordinator[Snapshot]):
             RecordingManagementError,
         ) as err:
             raise HomeAssistantError(translation_domain=DOMAIN, translation_key=err.reason) from err
+        except TextCommandUnconfirmed as err:
+            raise HomeAssistantError(
+                translation_domain=DOMAIN, translation_key="text_unconfirmed"
+            ) from err
         except CommandUnconfirmed as err:
             raise HomeAssistantError(
                 translation_domain=DOMAIN, translation_key="timer_unconfirmed"

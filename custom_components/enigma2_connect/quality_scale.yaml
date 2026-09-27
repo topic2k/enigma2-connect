@@ -23,7 +23,7 @@ rules:
     comment: 100 percent statement and branch coverage; tests/test_config_flow.py covers recovery and identity. CI enforces both.
   dependency-transparency:
     status: done
-    comment: No additional Python runtime packages in manifest requirements; the Apache-2.0 API client is included. Optional external playback requires FFmpeg with libx264/AAC, documented in both user guides.
+    comment: Text input uses the shared transport/command lock and adds no polling. No additional Python runtime packages in manifest requirements; the Apache-2.0 API client is included. Optional external playback requires FFmpeg with libx264/AAC, documented in both user guides.
   docs-actions:
     status: done
     comment: User guides describe actions and examples in the messages and automations chapter.
