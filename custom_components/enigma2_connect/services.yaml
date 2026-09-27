@@ -330,3 +330,13 @@ recording_operation_status:
 recording_destinations:
   fields:
     device_id: *id002
+timeshift_start:
+  fields:
+    device_id:
+      required: true
+      selector: *id001
+timeshift_stop:
+  fields:
+    device_id:
+      required: true
+      selector: *id001

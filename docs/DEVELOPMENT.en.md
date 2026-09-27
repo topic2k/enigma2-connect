@@ -1187,9 +1187,18 @@ Interface: [OpenWebif audio API](https://github.com/oe-alliance/OpenWebif/wiki/O
 
 ## Recorded ideas
 
+### Timeshift – idea 8 (2.0.0-dev.2)
+
+Plan and implementation: optional `tsstate` reads in existing fast polling, a dedicated snapshot value and binary sensor; device-scoped `timeshift_start`/`timeshift_stop` actions under the shared command lock. Check current standby and timeshift state, skip writes for an already reached target, and read status again after `tsstart`/`tsstop`. Missing confirmation is a translated error; refresh also follows failures. Both write endpoints use HTTP replay protection. No pause inference, extra timer or dependencies.
+
+Interface: [OpenWebif 2.4.0 controller](https://github.com/oe-alliance/OpenWebif/blob/2.4.0/plugin/controllers/web.py), existing source copy inspected on 2026-09-27. `state` acknowledges the call and `timeshiftEnabled` reports status; both fields are validated. Stop suppresses the save prompt. The restoration condition for the previously disabled setting is questionable in the inspected controller; future save prompts cannot be guaranteed unchanged. Image-specific practical acceptance remains necessary. Independent implementation, no GPL code copied.
+
+The sensor is unavailable in standby/without support, rather than falsely off. Authentication failures retain reauth handling. External remote controls do not share the command lock; confirmation is a snapshot. Simulated evidence and outstanding receiver/HA UI checks are listed in [Validation](VALIDATION.en.md).
+
+
 Ideas **1–5** were requested for implementation on 2026-09-19; order, acceptance
 and progress are tracked in the [implementation plan](#implementation-plan-recording-workflows).
-Idea 7 is also implemented. The remaining ideas are tentative. Existing parts of the proposed features are
+Ideas 7 and 8 are also implemented. The remaining ideas are tentative. Existing parts of the proposed features are
 identified below.
 
 ### Section 3: Timer editing and conflicts
@@ -1303,7 +1312,7 @@ support and response formats for each OpenWebif version and image before impleme
 | 5 | High | Extend the recording library | Recording folders and the HA media source now exist. Further additions: tags/filters, metadata such as file size and previous playback progress, plus renaming, moving and deleting. OpenWebif offers `movielist`, `fullmovielist` and management actions. Account for image-specific deletion/trash behaviour. [Recording management][ideas-movies] |
 | 6 | Implemented | Disk space and system diagnostics | Free space per mount and optional RAM/uptime sensors are available. `about` supplies the underlying information. Normalize units and poll slowly; reported free RAM includes buffers and cache in the examined code. [Information model][ideas-info] |
 | 7 | Implemented | Select audio tracks | Dynamic selection of tracks reported by the receiver using `getaudiotracks` and `selectaudiotrack`, with regular updates and validation before switching. [Details](#audio-track-selection) |
-| 8 | Medium | Explicit timeshift controls and status | Start/stop actions and a timeshift-active indicator through `tsstart`, `tsstop`, `tsstate`. `timeshiftEnabled` does not reliably indicate pause; the examined stop path suppresses the save prompt. [Controller][ideas-controller] |
+| 8 | Implemented | Explicit timeshift controls and status | Start/stop actions and a timeshift-active indicator through `tsstart`, `tsstop`, `tsstate`. `timeshiftEnabled` does not reliably indicate pause; the examined stop path suppresses the save prompt. [Controller][ideas-controller] |
 | 9 | Medium | Playback position for recordings | Display progress and remaining time in the media player. The already queried `getcurrent` returns a position in seconds for certain local recordings. This alone does not reliably establish pause state. [Controller][ideas-controller] |
 | 10 | Medium | Receiver sleep timer | “Standby in 30 minutes” with status display through the receiver's own `sleeptimer`. Available fields and behaviour vary by image. [Timer implementation][ideas-timers] |
 | 11 | Optional | Power on without waking the television | For radio or background automations: `supports_powerup_without_waking_tv` and `set_powerup_without_waking_tv` are documented. Check image support; this does not replace waking from deep standby. [Control API][ideas-api] |

@@ -40,6 +40,7 @@ RESPONSES = {
         "isRecording": "false",
         "isStreaming": "true",
     },
+    "tsstate": {"state": True, "timeshiftEnabled": False},
     "getcurrent": {"now": {"title": "News"}, "next": {"title": "Next news"}},
     "getaudiotracks": {"result": True, "tracklist": []},
     "signal": {"snr": 80, "snr_db": "12.5", "ber": 0},

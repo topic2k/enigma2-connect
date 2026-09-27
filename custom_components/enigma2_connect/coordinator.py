@@ -42,6 +42,7 @@ from .recording_management import RecordingManagementError, RecordingManager
 from .system_diagnostics import SystemDiagnostics
 from .timer_conflicts import conflicts, summary
 from .timer_edit import TimerEditError, TimerEditor, TimerEditRejected
+from .timeshift import TimeshiftError, parse_timeshift, set_timeshift
 from .workflow_models import TimerIdentity
 
 _LOGGER = logging.getLogger(__name__)
@@ -136,6 +137,11 @@ class EnigmaCoordinator(DataUpdateCoordinator[Snapshot]):
                     signal = await self.optional("signal")
                     current = await self.optional("getcurrent")
                 state = ReceiverState.parse(raw, current)
+                timeshift = None
+                if not state.standby:
+                    timeshift = parse_timeshift(await self.optional("tsstate"))
+                    if timeshift is None:
+                        self.optional_errors.add("tsstate")
                 audio_tracks = None
                 if not state.standby and state.reference:
                     audio_tracks = parse_tracks(await self.optional("getaudiotracks"))
@@ -229,6 +235,7 @@ class EnigmaCoordinator(DataUpdateCoordinator[Snapshot]):
                     directories,
                     system,
                     audio_tracks,
+                    timeshift,
                 )
                 if catalog_refreshed:
                     self.recording_images.async_catalog_updated(snapshot)
@@ -262,6 +269,7 @@ class EnigmaCoordinator(DataUpdateCoordinator[Snapshot]):
                 translation_domain=DOMAIN, translation_key="power_unconfirmed"
             ) from err
         except (
+            TimeshiftError,
             AudioTrackError,
             InstantRecordingError,
             TimerEditError,
@@ -306,6 +314,13 @@ class EnigmaCoordinator(DataUpdateCoordinator[Snapshot]):
         if refresh:
             await self.async_request_refresh()
         return result
+
+    async def async_set_timeshift(self, enabled: bool) -> None:
+        try:
+            await self.perform(set_timeshift, self.client, enabled, refresh=False)
+        finally:
+            # An unsuccessful acknowledgement can still follow a changed receiver.
+            await self.async_request_refresh()
 
     async def async_manage_recording(self, **params: Any) -> JsonObject:
         # Hold stream admission while validating and dispatching a mutation.

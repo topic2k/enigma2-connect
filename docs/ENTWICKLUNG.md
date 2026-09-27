@@ -1268,9 +1268,18 @@ Schnittstelle: [OpenWebif Audio-API](https://github.com/oe-alliance/OpenWebif/wi
 
 ## Vorgemerkte Ideen
 
+### Timeshift – Idee 8 (2.0.0-dev.2)
+
+Plan und Umsetzung: optionale `tsstate`-Abfrage im vorhandenen schnellen Polling, eigener Snapshot-Wert und binärer Sensor; gerätegebundene Aktionen `timeshift_start`/`timeshift_stop` unter der gemeinsamen Befehlssperre. Aktuellen Standby- und Timeshift-Zustand prüfen, bereits erreichte Zielzustände ohne Schreiben behandeln, nach `tsstart`/`tsstop` den Zustand erneut lesen. Fehlende Bestätigung bleibt ein übersetzter Fehler; anschließende Aktualisierung auch nach Fehlern. Beide Schreibendpunkte nutzen den HTTP-Wiederholungsschutz. Keine Pauseableitung, kein zusätzlicher Timer, keine Abhängigkeiten.
+
+Schnittstelle: [OpenWebif 2.4.0 Controller](https://github.com/oe-alliance/OpenWebif/blob/2.4.0/plugin/controllers/web.py), vorhandene Quellkopie am 27.09.2026 geprüft. `state` bestätigt den Aufruf, `timeshiftEnabled` den Status; beide Felder werden validiert. Stopp unterdrückt das Speichernachfragen. Die Wiederherstellungsbedingung für die vorher deaktivierte Einstellung ist im untersuchten Controller fragwürdig; keine Zusicherung, dass spätere Speicherrückfragen unverändert bleiben. Imageabhängige praktische Abnahme bleibt nötig. Unabhängige Implementierung, kein GPL-Code übernommen.
+
+Der Sensor ist bei Standby/fehlender Unterstützung unverfügbar, nicht fälschlich aus. Authentifizierungsfehler lösen wie bisher Reauth aus. Externe Fernbedienungen teilen die Befehlssperre nicht; Bestätigungen sind Momentaufnahmen. Details der simulierten Nachweise und offene Receiver-/HA-Oberflächenprüfung siehe [Prüfübersicht](VALIDIERUNG.md).
+
+
 Die Ideen **1–5** sind seit 19.09.2026 zur Umsetzung beauftragt; Reihenfolge,
 Abnahme und Fortschritt stehen im [Umsetzungsplan](#umsetzungsplan-aufnahme-workflows).
-Idee 7 ist ebenfalls umgesetzt. Die übrigen Ideen bleiben unverbindlich. Bereits vorhandene Teilfunktionen sind
+Ideen 7 und 8 sind ebenfalls umgesetzt. Die übrigen Ideen bleiben unverbindlich. Bereits vorhandene Teilfunktionen sind
 unten benannt.
 
 ### Abschnitt 3: Timerbearbeitung und Konflikte
@@ -1393,7 +1402,7 @@ und Rückgabeformate vor einer Umsetzung je OpenWebif-Version und Image prüfen.
 | 5 | Hoch | Aufnahmebibliothek erweitern | Aufnahmeordner und HA-Medienquelle sind inzwischen vorhanden. Weitere Ausbaustufen: Tags/Filter, zusätzliche Metadaten wie Dateigröße und bisheriger Wiedergabefortschritt sowie Umbenennen, Verschieben und Löschen. OpenWebif bietet `movielist`, `fullmovielist` und Verwaltungsaktionen. Lösch-/Papierkorbverhalten je Image berücksichtigen. [Aufnahmeverwaltung][ideas-movies] |
 | 6 | Umgesetzt | Festplattenspeicher und Systemdiagnose | Freier Platz je Mountpunkt sowie optionale RAM- und Laufzeitsensoren sind vorhanden. `about` liefert die Grundlagen. Einheiten normalisieren und langsam abfragen; als frei gemeldeter RAM enthält im untersuchten Code auch Buffer und Cache. [Informationsmodell][ideas-info] |
 | 7 | Umgesetzt | Tonspur auswählen | Dynamische Auswahl der vom Receiver angebotenen Tonspuren über `getaudiotracks` und `selectaudiotrack`, einschließlich regelmäßiger Aktualisierung und Prüfung vor dem Umschalten. [Details](#tonspurauswahl) |
-| 8 | Mittel | Timeshift gezielt steuern und anzeigen | Start-/Stopp-Aktionen und „Timeshift aktiv“ über `tsstart`, `tsstop`, `tsstate`. `timeshiftEnabled` ist kein verlässlicher Pausezustand; der untersuchte Stopp-Pfad unterdrückt die Speicherrückfrage. [Controller][ideas-controller] |
+| 8 | Umgesetzt | Timeshift gezielt steuern und anzeigen | Start-/Stopp-Aktionen und „Timeshift aktiv“ über `tsstart`, `tsstop`, `tsstate`. `timeshiftEnabled` ist kein verlässlicher Pausezustand; der untersuchte Stopp-Pfad unterdrückt die Speicherrückfrage. [Controller][ideas-controller] |
 | 9 | Mittel | Wiedergabeposition bei Aufnahmen | Fortschritt und Restzeit im Medienplayer anzeigen. Das bereits abgefragte `getcurrent` liefert für bestimmte lokale Aufnahmen eine Position in Sekunden. Diese allein erlaubt keine sichere Pauseerkennung. [Controller][ideas-controller] |
 | 10 | Mittel | Receiver-Sleeptimer | „In 30 Minuten Standby“ mit Statusanzeige über den geräteeigenen `sleeptimer`. Verfügbare Felder und Verhalten unterscheiden sich nach Image. [Timerimplementierung][ideas-timers] |
 | 11 | Optional | Einschalten ohne Mitwecken des Fernsehers | Für Radio oder Hintergrundautomationen: `supports_powerup_without_waking_tv` und `set_powerup_without_waking_tv` sind dokumentiert. Image-Unterstützung prüfen; die Funktion ersetzt kein Aufwecken aus Tiefschlaf. [Steuerungs-API][ideas-api] |

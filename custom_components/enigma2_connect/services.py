@@ -114,6 +114,9 @@ def register_services(hass: HomeAssistant) -> None:
             return await coordinator.perform(
                 coordinator.recording_library.list, refresh=False, **params
             )
+        if service in ("timeshift_start", "timeshift_stop"):
+            await coordinator.async_set_timeshift(service == "timeshift_start")
+            return None
         if service == "record_now":
             result = await coordinator.async_record_now()
             return result if call.return_response else None
@@ -229,6 +232,8 @@ def register_services(hass: HomeAssistant) -> None:
         },
         "epg_similar": event,
         "record_event": event,
+        "timeshift_start": base,
+        "timeshift_stop": base,
         "record_now": base,
         "reboot": base,
         "restart_gui": base,

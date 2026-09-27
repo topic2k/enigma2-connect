@@ -234,3 +234,4 @@ class Snapshot:
     recording_directories: tuple[str, ...] = ()
     system: SystemDiagnostics = field(default_factory=SystemDiagnostics)
     audio_tracks: tuple[AudioTrack, ...] | None = None
+    timeshift: bool | None = None

@@ -14,6 +14,8 @@ from .conftest import DATA
         ("/api/powerstate", {"newstate": 1}),
         ("/api/vol", {"set": "mute"}),
         ("/api/timerdelete", {}),
+        ("/api/tsstart", {}),
+        ("/api/tsstop", {}),
         ("/api/statusinfo", {"unexpected": "value"}),
         ("/grab", {}),
     ],

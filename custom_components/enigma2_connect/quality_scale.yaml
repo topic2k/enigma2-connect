@@ -8,7 +8,7 @@ rules:
     comment: __init__.async_setup registers services before any entry is loaded.
   appropriate-polling:
     status: done
-    comment: Coordinator polls state and optional audio tracks every 15 s by default, lists every 120 s and channels every 300 s. EPG search, similar queries and recording-library reads run only on demand.
+    comment: Coordinator polls state, optional audio tracks and timeshift every 15 s by default, lists every 120 s and channels every 300 s. EPG search, similar queries and recording-library reads run only on demand.
   brands:
     status: done
     comment: Eight shipped brand PNGs follow HA 2026.3 custom-integration support; tested through HA's local brands API without CDN access. Core branding remains part of a separate admission.
@@ -78,7 +78,7 @@ rules:
     comment: Both user guides describe all six connection fields, defaults and reconfiguration/authentication behavior.
   entity-unavailable:
     status: done
-    comment: CoordinatorEntity handles offline receivers; missing optional values are unknown, calendar needs timers. The connectivity diagnostic stays available. Both guides explain this.
+    comment: CoordinatorEntity handles offline receivers; missing optional values are unknown, timeshift is unavailable without valid data or in standby, calendar needs timers. The connectivity diagnostic stays available. Both guides explain this.
   integration-owner:
     status: done
     comment: Manifest identifies @topic2k as the maintainer.

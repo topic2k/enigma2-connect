@@ -668,6 +668,28 @@ aktualisieren und Home Assistant neu starten.
 
 ## Nachrichten und Automationen
 
+### Timeshift starten und stoppen
+
+1. Schalte den Receiver ein und wähle einen für Timeshift geeigneten Fernsehsender. Timeshift und ein geeigneter Speicher müssen am Receiver eingerichtet sein.
+2. Öffne **Entwicklerwerkzeuge → Aktionen**, wähle **Enigma2 Connect: Timeshift starten** und den gewünschten **Receiver**.
+3. Führe die Aktion aus. **Timeshift aktiv** auf der Geräteseite zeigt den vom Receiver gemeldeten Zustand. Er wird im eingestellten Abfrageintervall (standardmäßig 15 Sekunden) und nach den Aktionen aktualisiert.
+4. Zum Beenden verwende **Timeshift stoppen** für denselben Receiver.
+
+**Stoppen erfolgt ohne Speicherrückfrage. Nicht gespeicherte Timeshift-Inhalte können verloren gehen.** Wenn du Inhalte behalten möchtest, speichere sie vorher über die Receiveroberfläche. Die Integration bietet keine Timeshift-Speicheraktion. Je nach Image kann der OpenWebif-Stopp auch die Einstellung für spätere Speicherrückfragen beeinflussen; kontrolliere sie bei Bedarf am Receiver.
+
+„Timeshift aktiv“ bedeutet nicht „Wiedergabe pausiert“. Starten garantiert keine Pause; die Anzeige des Medienplayers wird daraus nicht geändert. Im Standby oder bei fehlender/ungültiger Timeshift-Antwort ist der Sensor nicht verfügbar. Der übrige Receiver bleibt bei einem rein optionalen Timeshift-Fehler bedienbar. Bei einer unbestätigten Aktion prüfe zuerst den Receiver, bevor du sie wiederholst. Bereits aktives Timeshift wird nicht erneut gestartet, bereits inaktives nicht nochmals gestoppt.
+
+Für einen Automationsschritt ersetze `DEINE_GERAETE_ID` durch die Geräte-ID des Receivers:
+
+```yaml
+action: enigma2_connect.timeshift_start
+data:
+  device_id: DEINE_GERAETE_ID
+```
+
+Zum Stoppen lautet die Aktion `enigma2_connect.timeshift_stop`; die Gerätewahl bleibt gleich. In Automationen kannst du den binären Sensor **Timeshift aktiv** als normale HA-Zustandsbedingung verwenden.
+
+
 Eine Bildschirmnachricht kannst du zunächst unter **Entwicklerwerkzeuge →
 Aktionen** ausprobieren: Wähle **Benachrichtigungen: Nachricht senden**
 (`notify.send_message`), als Ziel **Bildschirmnachricht** deines Receivers und

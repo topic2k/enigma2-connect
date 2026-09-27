@@ -4,6 +4,16 @@
 
 
 
+## Timeshift – 2.0.0-dev.2
+
+Locally checked on 2026-09-27 with Python 3.14.7 and the existing Home Assistant test framework. Receiver responses are simulated; replay protection additionally uses a local HTTP test server. 106 tests covering timeshift, integration, action responses/transport, device lifecycle, action descriptions and read-only acceptance passed (335.64 seconds). Eight separate icon/write-barrier checks and one additional test for a lost response after an actual state change also passed. `timeshift.py`: 100% statement and branch coverage (36 statements, 10 branches).
+
+Verified: start/stop with readback, already reached targets without another write, standby, missing/invalid API data, recovery, device targeting, reauth, rejection, unconfirmed success, response loss, cancellation and command-lock release. Timeshift status does not change the media player to paused. Optional timeshift failures leave the other receiver controls available. Read-only acceptance permits only `tsstate`, never `tsstart`/`tsstop`.
+
+Ruff, strict mypy (39 integration modules), Python syntax and diff checks passed. Offline lock regeneration changes only the local package version. Affected quality criteria reviewed: polling, device/entity identity, availability, action errors and translations, reauth, transport retries and documentation. No thresholds or exemptions changed. Full CI for the new commit remains required before main.
+
+**Still pending:** practical start/stop acceptance on both OpenWebif 2.4.0 receivers and in the installed HA UI, including save-prompt behavior and image-specific timeshift storage. No real timeshift writes were performed for this implementation task; previous audio-track acceptance does not establish this new feature's behavior.
+
 ## Supported baseline – 2.0.0-dev.1
 
 On 2026-09-27 the user selected **OpenWebif 2.4.0 or later** and confirmed audible speaker output. Audio-track acceptance below is therefore complete; retesting 1.4.4 is explicitly no longer planned. Earlier 1.x evidence remains historical. The developer guide records the 2.0.0/2.4.0 source comparison and rationale.

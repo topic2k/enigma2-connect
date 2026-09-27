@@ -25,6 +25,7 @@
 
 Bediene deinen Enigma2-Receiver direkt in Home Assistant: Sender wechseln,
 Lautstärke regeln, Tonspuren auswählen, Aufnahmen auf dem Fernseher abspielen und Nachrichten anzeigen.
+Timeshift lässt sich starten, stoppen und als eigener Status anzeigen; Stoppen erfolgt ohne Speicherrückfrage.
 Mit **Aktuelle Sendung aufnehmen** startest du die Aufnahme der laufenden EPG-Sendung.
 Timer lassen sich bearbeiten und als Wochenserien planen; Aufnahmekonflikte
 werden mit den vom Receiver gelieferten Details angezeigt.
@@ -84,6 +85,7 @@ ergänzende Hinweise in [NOTICE](NOTICE).
 
 Control your Enigma2 receiver directly from Home Assistant: change channels,
 adjust the volume, select audio tracks, play recordings on your TV and display messages.
+Start and stop timeshift and see its status; stopping does not ask to save.
 Search the EPG, find similar programmes and schedule a result for recording.
 The optional remote card provides buttons and a search/record view.
 An additional recording library card filters by title, channel, tags, directory

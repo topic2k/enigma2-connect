@@ -20,6 +20,7 @@ READS = {
     "/api/getcurrent": set(),
     "/api/signal": set(),
     "/api/getaudiotracks": set(),
+    "/api/tsstate": set(),
     "/api/bouquets": {"stype"},
     "/api/getservices": {"sRef"},
     "/api/timerlist": set(),

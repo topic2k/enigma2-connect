@@ -3,6 +3,16 @@
 # Prüfübersicht
 
 
+## Timeshift – 2.0.0-dev.2
+
+Am 27.09.2026 lokal mit Python 3.14.7 und dem vorhandenen Home-Assistant-Testframework geprüft. Receiverantworten sind simuliert; die Wiederholungssperre verwendet zusätzlich einen lokalen HTTP-Testserver. 106 Tests für Timeshift, Integration, Aktionsantworten/Transport, Geräte-Lebenszyklus, Aktionsbeschreibungen und lesende Abnahme bestanden (335,64 Sekunden). Separat acht Icon-/Schreibschutzprüfungen sowie ein zusätzlicher Test für verlorene Antwort nach tatsächlich geändertem Zustand bestanden. `timeshift.py`: 100 % Anweisungs- und Zweigabdeckung (36 Anweisungen, 10 Zweige).
+
+Geprüft: Start/Stopp mit Nachlesen, bereits erreichter Zielzustand ohne erneutes Schreiben, Standby, fehlende/ungültige API-Daten, Wiederkehr, Gerätebindung, Reauth, Ablehnung, unbestätigter Erfolg, Antwortverlust, Abbruch und Freigabe der Befehlssperre. Der Status ändert den Medienplayer nicht in „pausiert“. Optionaler Timeshift-Ausfall lässt den restlichen Receiver verfügbar. Die lesende Abnahme erlaubt ausschließlich `tsstate`, nicht `tsstart`/`tsstop`.
+
+Ruff, striktes mypy (39 Integrationsmodule), Python-Syntaxprüfung und Diff-Prüfung bestanden. Offline-Lockaktualisierung verändert ausschließlich die lokale Paketversion. Betroffene Qualitätskriterien überprüft: Polling, Geräte-/Entitätsidentität, Verfügbarkeit, Aktionsfehler und Übersetzungen, Reauth, Transportwiederholungen und Dokumentation. Keine Schwellen oder Ausnahmen geändert. Vollständige CI für den neuen Commit bleibt vor main erforderlich.
+
+**Noch offen:** praktische Start-/Stopp-Abnahme auf beiden OpenWebif-2.4.0-Receivern und in der installierten HA-Oberfläche, einschließlich Verhalten der Speicherrückfrage und des imageabhängigen Timeshift-Speichers. Keine echten Timeshift-Schreibbefehle in diesem Implementierungsauftrag ausgeführt; frühere Tonspurabnahmen belegen diese neue Funktion nicht.
+
 ## Supportbasis – 2.0.0-dev.1
 
 Am 27.09.2026 legt der Nutzer **OpenWebif mindestens 2.4.0** fest und bestätigt die hörbare Lautsprecherausgabe. Damit ist die Tonspurabnahme unten abgeschlossen; ein erneuter Test mit 1.4.4 ist ausdrücklich nicht mehr vorgesehen. Die alten 1.x-Nachweise bleiben historisch erhalten. Quellvergleich der Tags 2.0.0/2.4.0 und Begründung stehen in der Entwicklerdokumentation.

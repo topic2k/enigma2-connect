@@ -297,6 +297,9 @@
       },
       "connection": {
         "name": "Verbindung"
+      },
+      "timeshift": {
+        "name": "Timeshift aktiv"
       }
     },
     "camera": {
@@ -606,6 +609,12 @@
     },
     "audio_track_unconfirmed": {
       "message": "Die gewählte Tonspur konnte nicht bestätigt werden. Bitte den aktuellen Zustand prüfen."
+    },
+    "timeshift_unavailable": {
+      "message": "Timeshift ist im aktuellen Receiverzustand nicht verfügbar."
+    },
+    "timeshift_unconfirmed": {
+      "message": "Die Timeshift-Änderung wurde nicht bestätigt. Prüfe den Receiver, bevor du die Aktion erneut ausführst."
     }
   },
   "services": {
@@ -1010,6 +1019,26 @@
         "device_id": {
           "name": "Receiver",
           "description": "Receiver"
+        }
+      }
+    },
+    "timeshift_start": {
+      "name": "Timeshift starten",
+      "description": "Startet Timeshift auf dem gewählten Receiver.",
+      "fields": {
+        "device_id": {
+          "name": "Receiver",
+          "description": "Zu steuernder Receiver."
+        }
+      }
+    },
+    "timeshift_stop": {
+      "name": "Timeshift stoppen",
+      "description": "Stoppt Timeshift ohne Speicherrückfrage. Nicht gespeicherte Inhalte können verloren gehen.",
+      "fields": {
+        "device_id": {
+          "name": "Receiver",
+          "description": "Zu steuernder Receiver."
         }
       }
     }
