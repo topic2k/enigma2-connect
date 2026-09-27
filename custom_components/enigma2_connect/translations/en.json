@@ -105,7 +105,8 @@
           "stream_port": "Live TV streaming port",
           "stream_https": "HTTPS for live TV streaming",
           "stream_mode": "Stream processing",
-          "stream_limit": "Maximum simultaneous streams"
+          "stream_limit": "Maximum simultaneous streams",
+          "restore_timeshift_warning": "Restore timeshift save warning"
         },
         "data_description": {
           "recording_image_sources": "Select multiple sources, or clear all to disable thumbnails. Priority: custom URL, TMDB, OMDb, snapshot. Only selected Internet sources receive the recording title.",
@@ -118,7 +119,8 @@
           "stream_port": "Receiver streaming port, usually 8001. Recordings still use the OpenWebif port.",
           "stream_https": "Enable only if the streaming port supports HTTPS. Uses the saved certificate verification and credentials.",
           "stream_mode": "Automatic uses suitable receiver output and copies compatible video and audio. Compatibility always converts to 720p/H.264 and AAC.",
-          "stream_limit": "Per receiver; default 5, 0 = unlimited. Viewers of the same live channel share a stream. Each recording playback counts separately. Stopped streams are released after two minutes without requests."
+          "stream_limit": "Per receiver; default 5, 0 = unlimited. Viewers of the same live channel share a stream. Each recording playback counts separately. Stopped streams are released after two minutes without requests.",
+          "restore_timeshift_warning": "After timeshift start/stop, re-enable the receiver save warning only if it was enabled before the action. Previously disabled warnings stay off. Default: off. Does not save the timeshift buffer."
         }
       },
       "init": {
@@ -615,6 +617,12 @@
     },
     "timeshift_unconfirmed": {
       "message": "The timeshift change was not confirmed. Check the receiver before repeating the action."
+    },
+    "timeshift_warning_unavailable": {
+      "message": "The timeshift save warning could not be read reliably. Timeshift was not changed."
+    },
+    "timeshift_warning_restore_failed": {
+      "message": "Restoration of the previously enabled timeshift save warning could not be confirmed. Check the receiver timeshift settings; the timeshift action may already have taken effect."
     }
   },
   "services": {

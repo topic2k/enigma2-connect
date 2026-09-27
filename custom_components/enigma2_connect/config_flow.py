@@ -50,6 +50,7 @@ from .recording_images import (
     IMAGE_SOURCES,
     validate_image_options,
 )
+from .timeshift import CONF_RESTORE_TIMESHIFT_WARNING
 
 
 def bouquet_selector(bouquets: dict[str, Service], selected: str) -> selector.SelectSelector:
@@ -313,6 +314,10 @@ class EnigmaOptions(config_entries.OptionsFlowWithReload):
                     vol.Required(
                         "scan_interval", default=options.get("scan_interval", DEFAULT_INTERVAL)
                     ): vol.All(int, vol.Range(min=5, max=300)),
+                    vol.Required(
+                        CONF_RESTORE_TIMESHIFT_WARNING,
+                        default=options.get(CONF_RESTORE_TIMESHIFT_WARNING, False),
+                    ): selector.BooleanSelector(),
                     vol.Required(
                         CONF_EXTERNAL_PLAYBACK, default=options.get(CONF_EXTERNAL_PLAYBACK, False)
                     ): selector.BooleanSelector(),

@@ -42,7 +42,12 @@ from .recording_management import RecordingManagementError, RecordingManager
 from .system_diagnostics import SystemDiagnostics
 from .timer_conflicts import conflicts, summary
 from .timer_edit import TimerEditError, TimerEditor, TimerEditRejected
-from .timeshift import TimeshiftError, parse_timeshift, set_timeshift
+from .timeshift import (
+    CONF_RESTORE_TIMESHIFT_WARNING,
+    TimeshiftError,
+    parse_timeshift,
+    set_timeshift,
+)
 from .workflow_models import TimerIdentity
 
 _LOGGER = logging.getLogger(__name__)
@@ -317,7 +322,13 @@ class EnigmaCoordinator(DataUpdateCoordinator[Snapshot]):
 
     async def async_set_timeshift(self, enabled: bool) -> None:
         try:
-            await self.perform(set_timeshift, self.client, enabled, refresh=False)
+            await self.perform(
+                set_timeshift,
+                self.client,
+                enabled,
+                refresh=False,
+                restore_save_warning=self.entry.options.get(CONF_RESTORE_TIMESHIFT_WARNING, False),
+            )
         finally:
             # An unsuccessful acknowledgement can still follow a changed receiver.
             await self.async_request_refresh()

@@ -2,6 +2,17 @@
 
 # Prüfübersicht
 
+## Timeshift-Speicherrückfrage – 2.0.0-dev.5
+
+Neue optionale Wiederherstellung pro Receiver, standardmäßig ausgeschaltet. Am 27.09.2026 lokal mit Python 3.14.7 und echtem HA-Testframework bei simulierten Receiverantworten geprüft: 140 Tests für Timeshift, Optionsdialog, API und Config Flow bestanden. Erweitertes Modul `timeshift.py`: 100 % Anweisungs-/Zweigabdeckung (83 Anweisungen, 26 Zweige). Nach der Transporttypkorrektur zusätzlich 46 gezielte GET-/POST-Tests bestanden; ein echter lokaler HTTP-Server bestätigt Formulardaten und fehlende POST-Wiederholung nach Antwortverlust.
+
+Abgedeckt: Vorgabewert und gespeicherte Option, Weitergabe der Receiveroption, zuvor aktive/inaktive Rückfrage, bereits erreichter Timeshift-Zustand, deaktivierte Option ohne Konfigurationszugriffe, ungültige/mehrdeutige Konfiguration, beide unterstützten Einstellungsnamen, Vorprüfungsfehler ohne Schreiben, Wiederherstellung nach Ablehnung/Antwortverlust/Taskabbruch, fehlgeschlagene Wiederherstellung, Reauth und Nachlesen statt Wiederholung bei verlorener POST-Antwort. Alle Lese-/Schreibzugriffe des Ablaufs bleiben unter der gemeinsamen Befehlssperre.
+
+Ruff, striktes mypy (39 Module) und Syntaxprüfung bestanden; Offline-Lockdatei ändert ausschließlich die lokale Projektversion. Betroffene Qualitätskriterien (Optionsdialog, Konfigurationsumfang, Fehlerübersetzung/Reauth, Serialisierung, Transport, Dokumentation) ohne neue Ausnahmen oder abgesenkte Grenzen geprüft. Vollständige CI für den neuen Commit bleibt vor main erforderlich.
+
+Die installierte HA-Oberfläche aus der dev.3-Abnahme enthält diese neue Option noch nicht. Der neue Optionsdialog ist im echten HA-Testframework geprüft; eine visuelle Prüfung nach Installation von dev.5 bleibt separat offen.
+
+Praktisch auf Octagon SF8008 4K Supreme und Vu+ Solo² mit OpenWebif 2.4.0 geprüft: Je Receiver Start und Stopp mit zuvor aktiver sowie zuvor inaktiver Speicherrückfrage. Beide Durchläufe bestanden: Timeshift-Zustand jeweils zurückgelesen; aktive Rückfrage wieder aktiv, inaktive weiterhin aus. Abschließend Timeshift auf beiden aus und ursprüngliche Rückfrage wieder an; Sender, Einschaltzustand und Timerlisten unverändert. Der Octagon-Stream blieb laut Receiverstatus aktiv. Diese Prüfung verwendet den neuen Integrationsworkflow direkt, nicht die installierte HA-Oberfläche. Lokale Nachweise: `.work/timeshift-warning-hardware/live-0.json` und `live-1.json`.
 
 ## Timeshift – 2.0.0-dev.3
 

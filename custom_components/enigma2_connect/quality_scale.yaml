@@ -8,7 +8,7 @@ rules:
     comment: __init__.async_setup registers services before any entry is loaded.
   appropriate-polling:
     status: done
-    comment: Coordinator polls state, optional audio tracks and timeshift every 15 s by default, lists every 120 s and channels every 300 s. EPG search, similar queries and recording-library reads run only on demand.
+    comment: Coordinator polls state, optional audio tracks and timeshift every 15 s by default, lists every 120 s and channels every 300 s. EPG search, similar queries and recording-library reads run only on demand. Optional timeshift warning preservation reads configuration only during an actual start/stop action.
   brands:
     status: done
     comment: Eight shipped brand PNGs follow HA 2026.3 custom-integration support; tested through HA's local brands API without CDN access. Core branding remains part of a separate admission.
@@ -66,7 +66,7 @@ rules:
   # Silver
   action-exceptions:
     status: done
-    comment: Services validate targets; coordinator.perform translates failures, including uncertain timer outcomes without automatic replay. Optional timer responses preserve exceptions. The refresh button waits for its own fetch and reports failure.
+    comment: Services validate targets; coordinator.perform translates failures, including uncertain timer outcomes without automatic replay. Optional timer responses preserve exceptions. Timeshift warning restoration failures have dedicated translated errors; lost configuration POST replies are read back without replay. The refresh button waits for its own fetch and reports failure.
   config-entry-unloading:
     status: done
     comment: Platforms unload; async_close cancels recording-image jobs and external HLS processes/relays/files. Lifecycle tests cover unload and HA stop.

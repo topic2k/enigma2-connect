@@ -958,7 +958,7 @@ wheels = [
 
 [[package]]
 name = "enigma2-connect"
-version = "2.0.0.dev4"
+version = "2.0.0.dev5"
 source = { virtual = "." }
 
 [package.dev-dependencies]

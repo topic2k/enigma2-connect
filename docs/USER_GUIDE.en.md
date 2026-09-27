@@ -376,6 +376,7 @@ group names. **—** means that no separate group is configured.
 | Setting | Default and meaning |
 | --- | --- |
 | Recordings in the media tile (applies to all receivers) | Separate receivers; optionally combine them. This choice is saved for all receivers. |
+| Restore timeshift save warning | Default: off; applies to this receiver only. Re-enables a previously enabled warning after start/stop. Does not save the current buffer. |
 | Polling interval (seconds) | 15 seconds; adjustable from 5 to 300 seconds. Smaller values refresh status more often. |
 | Playback on other devices | Off; HLS through Home Assistant with multiple simultaneous streams. |
 | Maximum simultaneous streams | 5 per receiver; positive integer, 0 = unlimited. The same live channel is shared; recordings start separately. |
@@ -625,7 +626,15 @@ library. Local simulations do not replace this hardware check.
 3. Run the action. **Timeshift active** on the device page shows the receiver-reported state. It updates at the configured polling interval (15 seconds by default) and after these actions.
 4. To finish, use **Stop timeshift** for the same receiver.
 
-**Stopping does not ask to save. Unsaved timeshift content may be lost.** Save anything you want to keep through the receiver interface first. The integration does not provide a timeshift save action. In testing with OpenWebif 2.4.0 on Octagon and Vu+, stopping also disabled the receiver setting **Show warning when timeshift is stopped**. If you want to keep that warning, enable it again in the receiver’s timeshift settings after stopping. The integration does not restore this setting automatically.
+**Stopping does not ask to save. Unsaved timeshift content may be lost.** Save anything you want to keep through the receiver interface first. The integration does not provide a timeshift save action. In testing with OpenWebif 2.4.0 on Octagon and Vu+, stopping also disabled the receiver setting **Show warning when timeshift is stopped**. You can re-enable it manually in the receiver’s timeshift settings or enable optional restoration:
+
+1. Open **Settings → Devices & services → Enigma2 Connect**.
+2. For the desired receiver, choose **Configure → Receiver settings**.
+3. Enable **Restore timeshift save warning** and save.
+
+The option defaults to off. Before each start/stop action that actually writes, it reads the warning setting. If previously on, it re-enables it if needed and verifies the result; previously disabled warnings are not enabled. This also applies after an unconfirmed timeshift response. Already reached timeshift targets need no intervention. If the warning was disabled before enabling this option, turn it on once on the receiver to preserve it in future.
+
+If the warning cannot be read unambiguously beforehand, timeshift is not changed. A restoration failure produces an HA error; timeshift may already have started or stopped. Check the receiver setting in that case. Restoration cannot be guaranteed after abrupt HA/receiver shutdown. The option preserves future warnings; it does not preserve or save the buffer being stopped.
 
 “Timeshift active” does not mean “playback paused”. Starting does not guarantee a pause; it does not change the media player's reported playback state. The sensor is unavailable in standby or with missing/invalid timeshift data. An optional timeshift failure leaves the other receiver controls available. Check the receiver before repeating an unconfirmed action. Already active timeshift is not started again, and inactive timeshift is not stopped again.
 

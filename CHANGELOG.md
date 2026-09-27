@@ -4,7 +4,7 @@
 
 ## Inhaltsverzeichnis
 
-- [2.0.0-dev.4](#200-dev4)
+- [2.0.0-dev.5](#200-dev5)
 - [1.3.0](#130)
 - [1.2.1](#121)
 - [1.2.0](#120)
@@ -16,9 +16,11 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 2.0.0-dev.4
+## 2.0.0-dev.5
 
 Unveröffentlichte Entwicklerversion.
+
+- Neue Receiveroption „Timeshift-Speicherrückfrage wiederherstellen“ (standardmäßig aus). Liest den bisherigen Zustand vor Start/Stopp und stellt eine zuvor aktive Rückfrage anschließend wieder her, auch nach unbestätigtem Timeshift-Befehl. Kein Einschalten zuvor deaktivierter Rückfragen; Fehler werden angezeigt. Der aktuelle Testpuffer wird dadurch nicht gespeichert.
 
 - Timeshift auf beiden OpenWebif-2.4.0-Receivern direkt und über die installierte HA-Oberfläche geprüft; vollständige CI bestanden. Bestätigte OpenWebif-Nebenwirkung dokumentiert: Stopp deaktiviert die Speicherrückfrage. Im Prüflauf alle Ausgangseinstellungen wiederhergestellt; keine Änderung des Funktionscodes.
 

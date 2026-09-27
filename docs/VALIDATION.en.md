@@ -4,6 +4,18 @@
 
 
 
+## Timeshift save warning – 2.0.0-dev.5
+
+New per-receiver optional restoration, disabled by default. Locally checked on 2026-09-27 with Python 3.14.7 and the real HA test framework using simulated receiver responses: 140 tests for timeshift, options, API and config flow passed. Expanded `timeshift.py`: 100% statement/branch coverage (83 statements, 26 branches). After the transport typing correction, 46 additional focused GET/POST tests passed; a real local HTTP server verifies form data and no POST replay after response loss.
+
+Covers: default and saved option, per-receiver option forwarding, previously enabled/disabled warning, already reached timeshift target, disabled option without configuration requests, malformed/ambiguous configuration, both supported setting names, preflight failures without writing, restoration after rejection/response loss/task cancellation, failed restoration, reauth and readback instead of retry after a lost POST response. All workflow reads/writes remain under the shared command lock.
+
+Ruff, strict mypy (39 modules) and syntax checks passed; offline lock regeneration changes only the local project version. Affected quality criteria (options, configuration scope, translated errors/reauth, serialization, transport, documentation) reviewed without new exceptions or lower thresholds. Full CI for the new commit remains required before main.
+
+The installed HA UI from dev.3 acceptance does not yet contain the new option. The options flow is tested in the real HA framework; visual verification after installing dev.5 remains separately pending.
+
+Hardware-tested on Octagon SF8008 4K Supreme and Vu+ Solo² with OpenWebif 2.4.0: start and stop on each receiver with the save warning initially enabled and initially disabled. Both trials passed: timeshift state read back each time; enabled warnings restored, disabled warnings left off. Finally timeshift off on both and original warnings on; channel, power state and timer lists unchanged. The Octagon stream remained active according to receiver status. This test invokes the new integration workflow directly, not the installed HA UI. Local evidence: `.work/timeshift-warning-hardware/live-0.json` and `live-1.json`.
+
 ## Timeshift – 2.0.0-dev.3
 
 The subsequently incorporated idea-status documentation on develop had already assigned dev.2. Version reconciled to dev.3; the tested timeshift functional code below is unchanged.

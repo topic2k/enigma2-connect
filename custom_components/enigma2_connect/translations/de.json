@@ -105,7 +105,8 @@
           "stream_port": "Live-TV-Streamingport",
           "stream_https": "HTTPS für Live-TV-Streaming",
           "stream_mode": "Stream-Verarbeitung",
-          "stream_limit": "Maximale gleichzeitige Streams"
+          "stream_limit": "Maximale gleichzeitige Streams",
+          "restore_timeshift_warning": "Timeshift-Speicherrückfrage wiederherstellen"
         },
         "data_description": {
           "recording_image_sources": "Mehrfachauswahl. Keine Auswahl deaktiviert Vorschaubilder. Reihenfolge: eigene URL, TMDB, OMDb, Snapshot. Nur ausgewählte Internetquellen erhalten den Aufnahmetitel.",
@@ -118,7 +119,8 @@
           "stream_port": "Streamingport des Receivers, normalerweise 8001. Der OpenWebif-Port für Aufnahmen bleibt unverändert.",
           "stream_https": "Nur aktivieren, wenn der Streamingport HTTPS unterstützt. Verwendet die gespeicherte Zertifikatsprüfung und Anmeldung.",
           "stream_mode": "Automatisch nutzt geeignete Receiver-Ausgaben und übernimmt passende Bild- und Tonspuren. Kompatibilität wandelt immer in 720p/H.264 und AAC um.",
-          "stream_limit": "Pro Receiver; Standard 5, 0 = unbegrenzt. Zuschauer desselben Live-Senders teilen einen Stream. Jede Aufnahme-Wiedergabe zählt separat. Gestoppte Streams werden nach zwei Minuten ohne Abruf freigegeben."
+          "stream_limit": "Pro Receiver; Standard 5, 0 = unbegrenzt. Zuschauer desselben Live-Senders teilen einen Stream. Jede Aufnahme-Wiedergabe zählt separat. Gestoppte Streams werden nach zwei Minuten ohne Abruf freigegeben.",
+          "restore_timeshift_warning": "Nach Timeshift-Start/Stopp eine zuvor aktive Speicherrückfrage am Receiver wieder einschalten. Zuvor deaktivierte Rückfragen bleiben aus. Standard: aus. Speichert keinen Timeshift-Puffer."
         }
       },
       "init": {
@@ -615,6 +617,12 @@
     },
     "timeshift_unconfirmed": {
       "message": "Die Timeshift-Änderung wurde nicht bestätigt. Prüfe den Receiver, bevor du die Aktion erneut ausführst."
+    },
+    "timeshift_warning_unavailable": {
+      "message": "Die Timeshift-Speicherrückfrage konnte nicht zuverlässig gelesen werden. Timeshift wurde nicht geändert."
+    },
+    "timeshift_warning_restore_failed": {
+      "message": "Die vorher aktive Timeshift-Speicherrückfrage konnte nicht bestätigt wiederhergestellt werden. Prüfe die Timeshift-Einstellungen am Receiver; die Timeshift-Aktion kann bereits ausgeführt worden sein."
     }
   },
   "services": {

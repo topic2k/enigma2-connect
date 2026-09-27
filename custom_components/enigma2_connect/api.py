@@ -59,7 +59,9 @@ TIMER_COMMANDS = frozenset(
 
 
 RECORDING_COMMANDS = frozenset({"movieinfo", "moviemove", "moviedelete"})
-WRITE_COMMANDS = TIMER_COMMANDS | RECORDING_COMMANDS | {"selectaudiotrack", "tsstart", "tsstop"}
+WRITE_COMMANDS = (
+    TIMER_COMMANDS | RECORDING_COMMANDS | {"selectaudiotrack", "tsstart", "tsstop", "saveconfig"}
+)
 
 
 class CommandUnconfirmed(ConnectionError):
@@ -133,16 +135,31 @@ class OpenWebifClient:
 
     @overload
     async def request(
-        self, path: str, params: dict[str, Any] | None = None, *, image: Literal[False] = False
+        self,
+        path: str,
+        params: dict[str, Any] | None = None,
+        *,
+        image: Literal[False] = False,
+        post: bool = False,
     ) -> JsonObject: ...
 
     @overload
     async def request(
-        self, path: str, params: dict[str, Any] | None = None, *, image: Literal[True]
+        self,
+        path: str,
+        params: dict[str, Any] | None = None,
+        *,
+        image: Literal[True],
+        post: bool = False,
     ) -> bytes: ...
 
     async def request(
-        self, path: str, params: dict[str, Any] | None = None, *, image: bool = False
+        self,
+        path: str,
+        params: dict[str, Any] | None = None,
+        *,
+        image: bool = False,
+        post: bool = False,
     ) -> JsonObject | bytes:
         timer_command = path.removeprefix("/api/") in WRITE_COMMANDS
         disruptive_power = path == "/api/powerstate" and str((params or {}).get("newstate")) in (
@@ -151,9 +168,11 @@ class OpenWebifClient:
             "3",
         )
         try:
-            async with self.session.get(
+            send = self.session.post if post else self.session.get
+            async with send(
                 self.base_url.with_path(path),
-                params=params,
+                params=None if post else params,
+                data=params if post else None,
                 headers=self.headers,
                 ssl=self.verify_ssl,
                 timeout=self.timeout,
@@ -207,6 +226,10 @@ class OpenWebifClient:
 
     async def get(self, endpoint: str, **params: Any) -> JsonObject:
         return await self.request(f"/api/{endpoint}", params or None)
+
+    async def post(self, endpoint: str, **params: Any) -> JsonObject:
+        """Submit a form once; callers serialize writes and verify their result."""
+        return await self.request(f"/api/{endpoint}", params or None, post=True)
 
     async def command(self, endpoint: str, **params: Any) -> None:
         """Run a command without returning response data, preserving existing callers."""

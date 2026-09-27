@@ -512,6 +512,7 @@ die Namen deiner Sendergruppen. **—** bedeutet: keine eigene Gruppe festlegen.
 | Einstellung | Standard und Bedeutung |
 | --- | --- |
 | Aufnahmen in der Medien-Kachel (gilt für alle Receiver) | Getrennt nach Receiver; alternativ zusammenfassen. Diese Auswahl wird für alle Receiver gespeichert. |
+| Timeshift-Speicherrückfrage wiederherstellen | Standard: aus; gilt nur für diesen Receiver. Nach Start/Stopp eine zuvor aktive Speicherrückfrage wieder einschalten. Keine Speicherung des aktuellen Puffers. |
 | Abfrageintervall (Sekunden) | 15 Sekunden; 5–300 Sekunden möglich. Kleinere Werte aktualisieren den Zustand häufiger. |
 | Wiedergabe auf anderen Geräten | Aus; HLS über Home Assistant mit mehreren gleichzeitigen Streams. |
 | Maximale gleichzeitige Streams | 5 pro Receiver; positive ganze Zahl, 0 = unbegrenzt. Derselbe Live-Sender wird gemeinsam genutzt; Aufnahmen starten separat. |
@@ -675,7 +676,15 @@ aktualisieren und Home Assistant neu starten.
 3. Führe die Aktion aus. **Timeshift aktiv** auf der Geräteseite zeigt den vom Receiver gemeldeten Zustand. Er wird im eingestellten Abfrageintervall (standardmäßig 15 Sekunden) und nach den Aktionen aktualisiert.
 4. Zum Beenden verwende **Timeshift stoppen** für denselben Receiver.
 
-**Stoppen erfolgt ohne Speicherrückfrage. Nicht gespeicherte Timeshift-Inhalte können verloren gehen.** Wenn du Inhalte behalten möchtest, speichere sie vorher über die Receiveroberfläche. Die Integration bietet keine Timeshift-Speicheraktion. Bei der Prüfung mit OpenWebif 2.4.0 auf Octagon und Vu+ deaktivierte der Stopp außerdem die Einstellung **Warnung anzeigen, wenn Timeshift gestoppt wird**. Wenn du diese Warnung weiter möchtest, aktiviere sie nach dem Stopp in den Timeshift-Einstellungen des Receivers wieder. Die Integration stellt diese Einstellung nicht automatisch zurück.
+**Stoppen erfolgt ohne Speicherrückfrage. Nicht gespeicherte Timeshift-Inhalte können verloren gehen.** Wenn du Inhalte behalten möchtest, speichere sie vorher über die Receiveroberfläche. Die Integration bietet keine Timeshift-Speicheraktion. Bei der Prüfung mit OpenWebif 2.4.0 auf Octagon und Vu+ deaktivierte der Stopp außerdem die Einstellung **Warnung anzeigen, wenn Timeshift gestoppt wird**. Du kannst sie manuell in den Timeshift-Einstellungen des Receivers wieder einschalten oder die optionale Wiederherstellung aktivieren:
+
+1. Öffne **Einstellungen → Geräte & Dienste → Enigma2 Connect**.
+2. Wähle beim gewünschten Receiver **Konfigurieren → Receiver-Einstellungen**.
+3. Aktiviere **Timeshift-Speicherrückfrage wiederherstellen** und speichere.
+
+Die Option ist standardmäßig aus. Sie liest die Rückfrage vor jeder tatsächlich schreibenden Start-/Stopp-Aktion. War sie an, wird sie danach bei Bedarf wieder aktiviert und überprüft; war sie vorher aus, wird sie nicht eingeschaltet. Dies gilt auch bei einer unbestätigten Timeshift-Antwort. Bereits erreichte Timeshift-Zielzustände benötigen keinen Eingriff. Eine vor Aktivierung der Option bereits ausgeschaltete Rückfrage musst du einmal am Receiver einschalten, wenn du sie künftig erhalten möchtest.
+
+Kann die Rückfrage vorab nicht eindeutig gelesen werden, wird Timeshift nicht geändert. Schlägt die Wiederherstellung fehl, meldet HA einen Fehler; Timeshift kann dann bereits gestartet oder gestoppt sein. Prüfe in diesem Fall die Rückfrage am Receiver. Bei abruptem HA-/Receiver-Ausfall kann keine Wiederherstellung garantiert werden. Die Option betrifft spätere Rückfragen und erhält oder speichert nicht den gerade gestoppten Puffer.
 
 „Timeshift aktiv“ bedeutet nicht „Wiedergabe pausiert“. Starten garantiert keine Pause; die Anzeige des Medienplayers wird daraus nicht geändert. Im Standby oder bei fehlender/ungültiger Timeshift-Antwort ist der Sensor nicht verfügbar. Der übrige Receiver bleibt bei einem rein optionalen Timeshift-Fehler bedienbar. Bei einer unbestätigten Aktion prüfe zuerst den Receiver, bevor du sie wiederholst. Bereits aktives Timeshift wird nicht erneut gestartet, bereits inaktives nicht nochmals gestoppt.
 

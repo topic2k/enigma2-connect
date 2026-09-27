@@ -4,7 +4,7 @@
 
 ## Contents
 
-- [2.0.0-dev.4](#200-dev4)
+- [2.0.0-dev.5](#200-dev5)
 - [1.3.0](#130)
 - [1.2.1](#121)
 - [1.2.0](#120)
@@ -16,9 +16,11 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 2.0.0-dev.4
+## 2.0.0-dev.5
 
 Unreleased development version.
+
+- New per-receiver “Restore timeshift save warning” option (off by default). Reads the previous setting before start/stop and restores a previously enabled warning afterwards, including after an unconfirmed timeshift command. Does not enable previously disabled warnings; failures are reported. This does not save the current buffer.
 
 - Tested timeshift on both OpenWebif 2.4.0 receivers directly and through the installed HA UI; full CI passed. Documented a confirmed OpenWebif side effect: stop disables the save warning. All baseline settings restored during testing; no functional code changes.
 
