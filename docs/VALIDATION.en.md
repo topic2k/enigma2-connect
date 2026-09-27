@@ -2,8 +2,6 @@
 
 # Verification summary
 
-
-
 ## Timeshift save warning – 2.0.0-dev.5
 
 New per-receiver optional restoration, disabled by default. Locally checked on 2026-09-27 with Python 3.14.7 and the real HA test framework using simulated receiver responses: 140 tests for timeshift, options, API and config flow passed. Expanded `timeshift.py`: 100% statement/branch coverage (83 statements, 26 branches). After the transport typing correction, 46 additional focused GET/POST tests passed; a real local HTTP server verifies form data and no POST replay after response loss.
@@ -12,7 +10,9 @@ Covers: default and saved option, per-receiver option forwarding, previously ena
 
 Ruff, strict mypy (39 modules) and syntax checks passed; offline lock regeneration changes only the local project version. Affected quality criteria (options, configuration scope, translated errors/reauth, serialization, transport, documentation) reviewed without new exceptions or lower thresholds. Full CI for the new commit remains required before main.
 
-The installed HA UI from dev.3 acceptance does not yet contain the new option. The options flow is tested in the real HA framework; visual verification after installing dev.5 remains separately pending.
+After user installation on 2026-09-27, the actual HA UI shows version **2.0.0-dev.5**, two devices and 142 entities. Under **Configure → Receiver settings** for Octagon and Vu+, the switch and German explanation are correctly present; both switches are off. Octagon layout additionally checked in a screenshot. Dialogs closed without saving. The pending visual check is complete; saving the option and start/stop with the option enabled in the installed HA UI were not performed in this check. Option persistence is covered by the HA test framework and restoration by the direct receiver checks.
+
+Functional commit `1f9f372028245af222a5d9834a8c4c0fd6d74d17`: [Tests](https://github.com/topic2k/enigma2-connect/actions/runs/36320488124) and [Hassfest/HACS](https://github.com/topic2k/enigma2-connect/actions/runs/36320488080) passed. 998 backend tests passed, config flow 100% statement/branch coverage, all 39 modules above 95% combined coverage. **2.0.0-dev.6** adds only this evidence and version metadata; functional code unchanged.
 
 Hardware-tested on Octagon SF8008 4K Supreme and Vu+ Solo² with OpenWebif 2.4.0: start and stop on each receiver with the save warning initially enabled and initially disabled. Both trials passed: timeshift state read back each time; enabled warnings restored, disabled warnings left off. Finally timeshift off on both and original warnings on; channel, power state and timer lists unchanged. The Octagon stream remained active according to receiver status. This test invokes the new integration workflow directly, not the installed HA UI. Local evidence: `.work/timeshift-warning-hardware/live-0.json` and `live-1.json`.
 

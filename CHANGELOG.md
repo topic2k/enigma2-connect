@@ -4,7 +4,7 @@
 
 ## Inhaltsverzeichnis
 
-- [2.0.0-dev.5](#200-dev5)
+- [2.0.0-dev.6](#200-dev6)
 - [1.3.0](#130)
 - [1.2.1](#121)
 - [1.2.0](#120)
@@ -16,9 +16,11 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 2.0.0-dev.5
+## 2.0.0-dev.6
 
 Unveröffentlichte Entwicklerversion.
+
+- Sichtprüfung der neuen Timeshift-Option in installierter HA-Version dev.5 für beide Receiver abgeschlossen; CI-Nachweise ergänzt. Nur Dokumentation und Versionsmetadaten geändert.
 
 - Neue Receiveroption „Timeshift-Speicherrückfrage wiederherstellen“ (standardmäßig aus). Liest den bisherigen Zustand vor Start/Stopp und stellt eine zuvor aktive Rückfrage anschließend wieder her, auch nach unbestätigtem Timeshift-Befehl. Kein Einschalten zuvor deaktivierter Rückfragen; Fehler werden angezeigt. Der aktuelle Testpuffer wird dadurch nicht gespeichert.
 

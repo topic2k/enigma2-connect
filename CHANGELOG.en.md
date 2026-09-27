@@ -4,7 +4,7 @@
 
 ## Contents
 
-- [2.0.0-dev.5](#200-dev5)
+- [2.0.0-dev.6](#200-dev6)
 - [1.3.0](#130)
 - [1.2.1](#121)
 - [1.2.0](#120)
@@ -16,9 +16,11 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 2.0.0-dev.5
+## 2.0.0-dev.6
 
 Unreleased development version.
+
+- Completed visual verification of the new timeshift option in installed HA version dev.5 for both receivers; added CI evidence. Only documentation and version metadata changed.
 
 - New per-receiver “Restore timeshift save warning” option (off by default). Reads the previous setting before start/stop and restores a previously enabled warning afterwards, including after an unconfirmed timeshift command. Does not enable previously disabled warnings; failures are reported. This does not save the current buffer.
 
