@@ -8,7 +8,17 @@ Am 27.09.2026 mit Python 3.14.7 und echtem Home-Assistant-Testframework bei simu
 
 Qualitätsabgleich: eindeutige Receiverwahl, Registrierung ohne eingerichtetes Gerät, zweisprachige Aktion und Fehlermeldungen, bestehende Reauth-/Refresh-Behandlung, Serialisierung, keine zusätzlichen Hintergrundabfragen und keine neuen Laufzeitabhängigkeiten. Kriterien und Abdeckungsgrenzen unverändert. Schnittstellen anhand des offiziellen OpenWebif-2.4.0-Controllers und Kontrollmodells geprüft; keine Verbindung zu realen Receivern.
 
-Offen: Unterstützung und HDMI-CEC-Wirkung auf beiden Testimages sowie die Aktion in der installierten HA-Oberfläche praktisch abnehmen. TV-Zustand lässt sich aus OpenWebif-Antworten nicht bestätigen; bei Antwortverlust kann die einmalige Unterdrückungsmarkierung bestehen bleiben. Externe Fernbedienungen teilen die Befehlssperre nicht. Vor main aktuelle vollständige CI für den PR-Stand erforderlich.
+Die anschließende Octagon-Abnahme steht unten. Offen bleiben die praktische Unterstützung und HDMI-CEC-Wirkung am Vu+ sowie die Aktion in der installierten HA-Oberfläche. TV-Zustand lässt sich aus OpenWebif-Antworten nicht bestätigen; bei Antwortverlust kann die einmalige Unterdrückungsmarkierung bestehen bleiben. Externe Fernbedienungen teilen die Befehlssperre nicht. Vor main aktuelle vollständige CI für den PR-Stand erforderlich.
+
+### Octagon-Praxisprüfung vom 27.09.2026, dokumentiert in dev.12
+
+Funktionsstand `d37d7b2487315052b00fa575665bf3f90b47936b` (2.0.0-dev.11) direkt mit dem aktuellen Integrationsclient und `powerup_without_tv` am Octagon SF8008 4K Supreme mit OpenWebif 2.4.0 geprüft. [Tests](https://github.com/topic2k/enigma2-connect/actions/runs/36326914395) und [Hassfest/HACS](https://github.com/topic2k/enigma2-connect/actions/runs/36326914441) für diesen Commit vollständig erfolgreich.
+
+Ausgangszustand: Receiver im Standby, Fernseher laut Nutzer ausgeschaltet, keine Aufnahme, Sleeptimer aus, kein aktiver Timerstart innerhalb der nächsten 15 Minuten; ein Stream war bereits gemeldet. Das Image bestätigte die Unterstützung. Die Funktion führte unter Befehlssperre exakt Standby-Abfrage, Unterstützungsprüfung, einmaliges Setzen, einmaliges Einschalten (`newstate=4`) und frische Standby-Abfrage aus. Der Receiver blieb auch nach drei Sekunden eingeschaltet. Ein zweiter Aufruf im eingeschalteten Zustand las ausschließlich `powerstate`; keine weitere Markierung und kein weiterer Einschaltbefehl.
+
+Der Nutzer bestätigte ausdrücklich: Der Fernseher blieb während des Einschaltens ausgeschaltet. Nach der Beobachtung wurde der vorherige normale Standby wiederhergestellt und durch eine frische Receiverabfrage bestätigt. Keine Einstellungen oder Sender geändert.
+
+Dies ist eine direkte Receiverprüfung des aktuellen Funktionscodes, keine Prüfung der Aktion in der installierten HA-Oberfläche. Vu+ wurde nicht kontaktiert. Diese beiden Abnahmen bleiben offen. Dev.12 ändert nur Dokumentation und Versionsmetadaten; lokale Detailberichte unter `.work/quiet-power-octagon/` sind nicht Teil der Veröffentlichung.
 
 ## Receiver-Sleeptimer – 2.0.0-dev.9
 

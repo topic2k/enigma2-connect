@@ -8,7 +8,17 @@ Tested on 27 September 2026 with Python 3.14.7 and the real Home Assistant test 
 
 Quality review: unambiguous receiver selection, registration without configured devices, bilingual action/errors, existing reauth/refresh handling, serialization, no additional background reads and no runtime dependencies. Criteria and coverage thresholds unchanged. Interfaces checked against the official OpenWebif 2.4.0 controller and control model; no real receivers contacted.
 
-Pending: verify image support and HDMI-CEC behaviour on both test images, plus the action in the installed HA UI. OpenWebif replies cannot confirm physical TV state; response loss can leave the one-shot suppression flag armed. External remotes do not share the command lock. Current full CI for the PR revision remains required before main.
+The subsequent Octagon acceptance is documented below. Pending: verify image support and HDMI-CEC behaviour on Vu+, plus the action in the installed HA UI. OpenWebif replies cannot confirm physical TV state; response loss can leave the one-shot suppression flag armed. External remotes do not share the command lock. Current full CI for the PR revision remains required before main.
+
+### Octagon hardware check on 27 September 2026, documented in dev.12
+
+Revision `d37d7b2487315052b00fa575665bf3f90b47936b` (2.0.0-dev.11) tested directly using the current integration client and `powerup_without_tv` against the Octagon SF8008 4K Supreme running OpenWebif 2.4.0. [Tests](https://github.com/topic2k/enigma2-connect/actions/runs/36326914395) and [Hassfest/HACS](https://github.com/topic2k/enigma2-connect/actions/runs/36326914441) for this commit completed successfully.
+
+Initial state: receiver in standby, TV off according to the user, no recording, sleep timer disabled, no active timer start within the next 15 minutes; a stream was already reported. The image confirmed support. Under the command lock, the function performed exactly a standby read, capability check, one arming request, one wake (`newstate=4`) and a fresh standby read. The receiver remained awake after three seconds. A second call while awake read only `powerstate`; no further arming or wake request.
+
+The user explicitly confirmed that the TV stayed off during the wake. Afterwards, the original normal standby state was restored and confirmed by a fresh receiver read. No settings or channels were changed.
+
+This directly tests the current function code against the receiver, not the action in the installed HA UI. The Vu+ was not contacted. Both acceptance checks remain pending. Dev.12 changes only documentation and version metadata; local detailed reports under `.work/quiet-power-octagon/` are not shipped.
 
 ## Receiver sleep timer – 2.0.0-dev.9
 

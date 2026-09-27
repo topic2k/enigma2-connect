@@ -4,7 +4,7 @@
 
 ## Contents
 
-- [2.0.0-dev.11](#200-dev11)
+- [2.0.0-dev.12](#200-dev12)
 - [1.3.0](#130)
 - [1.2.1](#121)
 - [1.2.0](#120)
@@ -16,9 +16,11 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 2.0.0-dev.11
+## 2.0.0-dev.12
 
 Unreleased development version.
+
+- Idea no. 11 verified on Octagon SF8008 4K Supreme with OpenWebif 2.4.0: receiver woke without the TV, which stayed off according to the user; calling again while awake performed no writes. Original standby restored. Full CI for dev.11 passed. Dev.12 documents acceptance; Vu+ and the installed HA action remain pending.
 
 - Idea no. 11: “Power on without TV” action with fresh standby/image checks, one-shot HDMI-CEC suppression and confirmed wake. No ordinary-wake fallback or automatic write replay; response-loss, deep-standby and TV-state limitations documented. Receiver/HA acceptance pending.
 

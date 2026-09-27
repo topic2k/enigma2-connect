@@ -4,7 +4,7 @@
 
 ## Inhaltsverzeichnis
 
-- [2.0.0-dev.11](#200-dev11)
+- [2.0.0-dev.12](#200-dev12)
 - [1.3.0](#130)
 - [1.2.1](#121)
 - [1.2.0](#120)
@@ -16,9 +16,11 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 2.0.0-dev.11
+## 2.0.0-dev.12
 
 Unveröffentlichte Entwicklerversion.
+
+- Idee Nr. 11 am Octagon SF8008 4K Supreme mit OpenWebif 2.4.0 praktisch geprüft: Receiver ohne Fernseher eingeschaltet, TV blieb laut Nutzerbeobachtung aus; erneuter Aufruf bei eingeschaltetem Receiver ohne Schreibzugriff. Ausgangsstandby wiederhergestellt. Vollständige CI für dev.11 erfolgreich. Dev.12 dokumentiert die Abnahme; Vu+ und installierte HA-Aktion bleiben offen.
 
 - Idee Nr. 11: Aktion „Einschalten ohne Fernseher“ mit frischer Standby-/Image-Prüfung, einmaliger HDMI-CEC-Unterdrückung und bestätigtem Einschalten. Keine normale Einschalt-Ausweichaktion und keine automatische Schreibwiederholung; Grenzen bei Antwortverlust, Tiefschlaf und TV-Zustand dokumentiert. Receiver-/HA-Praxisprüfung offen.
 
