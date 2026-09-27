@@ -625,7 +625,7 @@ library. Local simulations do not replace this hardware check.
 3. Run the action. **Timeshift active** on the device page shows the receiver-reported state. It updates at the configured polling interval (15 seconds by default) and after these actions.
 4. To finish, use **Stop timeshift** for the same receiver.
 
-**Stopping does not ask to save. Unsaved timeshift content may be lost.** Save anything you want to keep through the receiver interface first. The integration does not provide a timeshift save action. Depending on the image, OpenWebif's stop operation may also affect the setting for future save prompts; check it on the receiver if needed.
+**Stopping does not ask to save. Unsaved timeshift content may be lost.** Save anything you want to keep through the receiver interface first. The integration does not provide a timeshift save action. In testing with OpenWebif 2.4.0 on Octagon and Vu+, stopping also disabled the receiver setting **Show warning when timeshift is stopped**. If you want to keep that warning, enable it again in the receiver’s timeshift settings after stopping. The integration does not restore this setting automatically.
 
 “Timeshift active” does not mean “playback paused”. Starting does not guarantee a pause; it does not change the media player's reported playback state. The sensor is unavailable in standby or with missing/invalid timeshift data. An optional timeshift failure leaves the other receiver controls available. Check the receiver before repeating an unconfirmed action. Already active timeshift is not started again, and inactive timeshift is not stopped again.
 

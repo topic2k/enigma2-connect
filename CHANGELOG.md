@@ -4,7 +4,7 @@
 
 ## Inhaltsverzeichnis
 
-- [2.0.0-dev.3](#200-dev3)
+- [2.0.0-dev.4](#200-dev4)
 - [1.3.0](#130)
 - [1.2.1](#121)
 - [1.2.0](#120)
@@ -16,9 +16,11 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 2.0.0-dev.3
+## 2.0.0-dev.4
 
 Unveröffentlichte Entwicklerversion.
+
+- Timeshift auf beiden OpenWebif-2.4.0-Receivern direkt und über die installierte HA-Oberfläche geprüft; vollständige CI bestanden. Bestätigte OpenWebif-Nebenwirkung dokumentiert: Stopp deaktiviert die Speicherrückfrage. Im Prüflauf alle Ausgangseinstellungen wiederhergestellt; keine Änderung des Funktionscodes.
 
 - Idee Nr. 8: gerätebezogene Aktionen zum Starten und Stoppen von Timeshift sowie ein regelmäßig aktualisierter Sensor „Timeshift aktiv“. Vorprüfung und Bestätigung unter Befehlssperre, keine automatische Wiederholung bei Antwortverlust. Fehlende optionale Statusdaten bleiben unverfügbar. Stopp unterdrückt die Speicherrückfrage; Anleitungen erläutern möglichen Inhaltsverlust und die Abgrenzung zum Pausezustand.
 - Entwicklerdokumentation: Ideen 1–5 und 13 in beiden Sprachfassungen als umgesetzt gekennzeichnet und ihre Beschreibungen aktualisiert; verbleibende praktische Prüfgrenzen bleiben ausgewiesen.

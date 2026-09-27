@@ -4,7 +4,7 @@
 
 ## Contents
 
-- [2.0.0-dev.3](#200-dev3)
+- [2.0.0-dev.4](#200-dev4)
 - [1.3.0](#130)
 - [1.2.1](#121)
 - [1.2.0](#120)
@@ -16,9 +16,11 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 2.0.0-dev.3
+## 2.0.0-dev.4
 
 Unreleased development version.
+
+- Tested timeshift on both OpenWebif 2.4.0 receivers directly and through the installed HA UI; full CI passed. Documented a confirmed OpenWebif side effect: stop disables the save warning. All baseline settings restored during testing; no functional code changes.
 
 - Idea No. 8: device-scoped actions to start and stop timeshift and a regularly updated “Timeshift active” sensor. Preflight and confirmation share the command lock; lost responses never trigger automatic replay. Missing optional status data remains unavailable. Stop suppresses the save prompt; guides explain possible content loss and distinguish this status from playback pause.
 - Developer documentation: marked ideas 1–5 and 13 as implemented in both languages and updated their descriptions; remaining practical verification limits stay explicit.

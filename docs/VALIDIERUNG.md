@@ -13,7 +13,19 @@ Geprüft: Start/Stopp mit Nachlesen, bereits erreichter Zielzustand ohne erneute
 
 Ruff, striktes mypy (39 Integrationsmodule), Python-Syntaxprüfung und Diff-Prüfung bestanden. Offline-Lockaktualisierung verändert ausschließlich die lokale Paketversion. Betroffene Qualitätskriterien überprüft: Polling, Geräte-/Entitätsidentität, Verfügbarkeit, Aktionsfehler und Übersetzungen, Reauth, Transportwiederholungen und Dokumentation. Keine Schwellen oder Ausnahmen geändert. Vollständige CI für den neuen Commit bleibt vor main erforderlich.
 
-**Noch offen:** praktische Start-/Stopp-Abnahme auf beiden OpenWebif-2.4.0-Receivern und in der installierten HA-Oberfläche, einschließlich Verhalten der Speicherrückfrage und des imageabhängigen Timeshift-Speichers. Keine echten Timeshift-Schreibbefehle in diesem Implementierungsauftrag ausgeführt; frühere Tonspurabnahmen belegen diese neue Funktion nicht.
+### Praktische Timeshift-Prüfung am 27.09.2026
+
+Geprüfter Funktionsstand **2.0.0-dev.3**, Commit `d9854a5f1a40fab9892370ae089ea06f5f7fa422`: [Tests](https://github.com/topic2k/enigma2-connect/actions/runs/36318850064) und [Hassfest/HACS](https://github.com/topic2k/enigma2-connect/actions/runs/36318849917) erfolgreich. 962 Backendtests und beide Frontendtestsuiten bestanden; Config Flow 100 % Anweisungs-/Zweigabdeckung, alle 39 Produktionsmodule über 95 % kombinierte Abdeckung.
+
+- Auf Octagon SF8008 4K Supreme und Vu+ Solo² mit OpenWebif 2.4.0 waren vor Beginn Timeshift und Aufnahme inaktiv. Timeshift ist auf beiden unter `/media/hdd/timeshift/` konfiguriert, automatischer Start deaktiviert. Nur neu erzeugte Testpuffer verwendet; kein Senderwechsel oder Standby. Der vorhandene Octagon-Stream blieb laut Receiverstatus aktiv; eine durchgehende Bild-/Tonmessung des externen Streams wurde nicht durchgeführt.
+- Direkter Aufruf des Integrationsworkflows: Start und Stopp auf beiden Geräten durch `tsstate` bestätigt. Erneuter Start im aktiven und erneuter Stopp im inaktiven Zustand erzeugten keinen zusätzlichen Schreibbefehl (je Gerät genau ein `tsstart` und ein `tsstop`).
+- Installierte HA-Oberfläche zeigt Version 2.0.0-dev.3, zwei Geräte und 142 Entitäten. Beide Aktionen einschließlich deutscher Beschreibung und Geräteauswahl geprüft. Für jeden Receiver Start und Stopp über **Werkzeuge → Aktionen** ausgeführt, Sensorwechsel „Aus → Ein → Aus“ in der Entitätsansicht geprüft und den aktiven Zustand zusätzlich direkt am Receiver gelesen. Beim Octagon auch Detaildialog mit Ein-/Aus-Verlauf geprüft. Der jeweils andere Receiver blieb aus.
+- **Bestätigte OpenWebif-Nebenwirkung:** Auf beiden Geräten änderte `tsstop` die Einstellung `config.timeshift.check` von `true` auf `false`. Der Stopp wartete nicht auf eine Speicherrückfrage. Das Prüfwerkzeug stellte nach jedem direkten beziehungsweise HA-Test die ursprüngliche Einstellung wieder her und las sie zurück. Dies ist keine automatische Schutzfunktion der Integration; die Einschränkung bleibt im normalen Betrieb bestehen und ist in beiden Benutzerhandbüchern konkret beschrieben.
+- Abschluss: Timeshift auf beiden aus, Speicherrückfrage wieder an, ursprünglicher Sender und Einschaltzustand erhalten, Timerlisten unverändert. Keine Aufnahmeverwaltung, keine Speicherung von Testpuffern und keine anderen Konfigurationseingriffe.
+
+Lokale Nachweise: `.work/timeshift-hardware/` mit Vorprüfung, gesicherten Timeshift-Einstellungen, `direct-0.json`/`direct-1.json`, `ha-start-*.json`, `restore-*.json`, `final-*.json` und `ci-tests.log`; tatsächliche HA-Oberflächenbeobachtungen in dieser Sitzung. Die beschriebenen Start-/Stopp- und UI-Prüfungen sind abgeschlossen, einschließlich Nachweis der Einschränkung. Andere Images, automatisches Dauertimeshift, physische Tonwiedergabe und Verhalten bei vollem/nicht vorhandenem Timeshiftspeicher werden damit nicht als abgenommen behauptet.
+
+Version **2.0.0-dev.4** ergänzt ausschließlich Prüfnachweise, Hinweise und Versionsmetadaten. Der getestete Funktionscode ist unverändert.
 
 ## Supportbasis – 2.0.0-dev.1
 
