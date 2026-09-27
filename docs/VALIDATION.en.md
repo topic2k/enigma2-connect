@@ -2,6 +2,15 @@
 
 # Verification summary
 
+## Timer-conflict test – 2.0.1-dev.1
+
+The [CI run](https://github.com/topic2k/enigma2-connect/actions/runs/36331608102) triggered by synchronizing develop after publishing 2.0.0 failed with 1 failure and 1140 passing tests. The same commit `244673327d246ca7a92c311e77bf9a9b2ff18dc8` had passed on [main](https://github.com/topic2k/enigma2-connect/actions/runs/36331393207) and in the [tag run](https://github.com/topic2k/enigma2-connect/actions/runs/36331584156). The later failed run was not checked before the release completion message.
+
+Cause: the test registered `events.append` as an unmarked synchronous listener. Home Assistant assigns it to the executor, which can vary the order in which the three events are collected. A listener marked with `@callback` now collects them in the event loop. The exact expectation for event count, action names and order is unchanged. Runtime code, quality criteria and CI coverage thresholds are unchanged; no new hardware test is required. Local checks with Python 3.14.7 and the real HA test framework using simulated receivers: all 64 timer tests and five additional repetitions of the affected test passed. Ruff, formatting, syntax, offline lockfile and diff checks passed. The original failed run is retained as evidence.
+
+
+Prepared for main as **2.0.1**: [complete correction tests](https://github.com/topic2k/enigma2-connect/actions/runs/36332431917) passed with 1141 backend tests, both frontend suites, Ruff, mypy, 100% config-flow coverage and all 41 modules above 95% combined coverage; [Hassfest/HACS](https://github.com/topic2k/enigma2-connect/actions/runs/36332431942) passed. Preparation changes only version metadata and documentation; quality criteria and runtime code are unchanged. Source-branch, PR and actual main-commit CI are each awaited separately.
+
 ## Release preparation 2.0.0 – 2026-09-27
 
 Remote branches, tags and published releases checked: latest stable version 1.3.0. The new OpenWebif 2.4.0 minimum requires 2.0.0. Runtime code is unchanged from develop `a3f55ac00528a53e68645361320e5e6c3a009998`: [Tests](https://github.com/topic2k/enigma2-connect/actions/runs/36330809746) and [Hassfest/HACS](https://github.com/topic2k/enigma2-connect/actions/runs/36330809804) passed; 1141 backend tests, both frontend suites and strict mypy for 41 modules passed, with all 41 modules above 95% combined statement/branch coverage.
