@@ -48,6 +48,7 @@ async def test_actions_registered_without_entries(hass):
         "message",
         "sleep_timer_set",
         "sleep_timer_cancel",
+        "powerup_without_tv",
         "timeshift_start",
         "timeshift_stop",
         "record_now",

@@ -4,7 +4,7 @@
 
 ## Contents
 
-- [2.0.0-dev.10](#200-dev10)
+- [2.0.0-dev.11](#200-dev11)
 - [1.3.0](#130)
 - [1.2.1](#121)
 - [1.2.0](#120)
@@ -16,9 +16,11 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 2.0.0-dev.10
+## 2.0.0-dev.11
 
 Unreleased development version.
+
+- Idea no. 11: “Power on without TV” action with fresh standby/image checks, one-shot HDMI-CEC suppression and confirmed wake. No ordinary-wake fallback or automatic write replay; response-loss, deep-standby and TV-state limitations documented. Receiver/HA acceptance pending.
 
 - Tested sleep timer dev.9 on both OpenWebif 2.4.0 receivers and in the installed HA UI. Setting 30 minutes, status display and cancellation confirmed; one minute actually starts, but the image reports `minutes=0`, so HA leaves it unconfirmed. Receiver expiry prompts observed. Complete CI passed. Dev.10 changes only documentation and version metadata; see verification summary for exact acceptance and limitations.
 

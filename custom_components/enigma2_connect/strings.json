@@ -481,7 +481,7 @@
       "message": "Check start and end. Date/time selection uses the Home Assistant timezone. For ambiguous or nonexistent clock-change times, use YAML with an explicit UTC offset. End must follow start."
     },
     "power_unconfirmed": {
-      "message": "No complete response to the power command was received. The receiver may already be restarting or shutting down. Check its state before sending another command."
+      "message": "No complete response to the wake, restart or shutdown command was received. The receiver may already have changed state. Check it before sending another command."
     },
     "request_failed": {
       "message": "The receiver request failed or was rejected."
@@ -635,6 +635,12 @@
     },
     "sleep_timer_unconfirmed": {
       "message": "Sleep timer change was not confirmed. Check the actual receiver state before setting it again."
+    },
+    "quiet_powerup_unavailable": {
+      "message": "Standby or image support for power on without TV could not be confirmed. No wake command was sent."
+    },
+    "quiet_powerup_unconfirmed": {
+      "message": "Power on without TV was not confirmed. Check the receiver before repeating: one-shot HDMI-CEC suppression may already be armed or the receiver may already be awake."
     }
   },
   "services": {
@@ -1079,6 +1085,16 @@
     "sleep_timer_cancel": {
       "name": "Cancel sleep timer",
       "description": "Disables the receiver sleep timer.",
+      "fields": {
+        "device_id": {
+          "name": "Receiver",
+          "description": "Receiver"
+        }
+      }
+    },
+    "powerup_without_tv": {
+      "name": "Power on without TV",
+      "description": "Wakes the receiver from standby without waking the TV via HDMI-CEC. Requires image support; cannot wake from deep standby.",
       "fields": {
         "device_id": {
           "name": "Receiver",

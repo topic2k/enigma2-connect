@@ -60,7 +60,9 @@ TIMER_COMMANDS = frozenset(
 
 RECORDING_COMMANDS = frozenset({"movieinfo", "moviemove", "moviedelete"})
 WRITE_COMMANDS = (
-    TIMER_COMMANDS | RECORDING_COMMANDS | {"selectaudiotrack", "tsstart", "tsstop", "saveconfig"}
+    TIMER_COMMANDS
+    | RECORDING_COMMANDS
+    | {"selectaudiotrack", "tsstart", "tsstop", "saveconfig", "set_powerup_without_waking_tv"}
 )
 
 
@@ -87,6 +89,7 @@ async def power_command_middleware(
         "1",
         "2",
         "3",
+        "4",
     )
     if not timer_command and not power_command:
         return await handler(request)
@@ -170,6 +173,7 @@ class OpenWebifClient:
             "1",
             "2",
             "3",
+            "4",
         )
         try:
             send = self.session.post if post else self.session.get
@@ -196,6 +200,16 @@ class OpenWebifClient:
                     return content
                 # Accept JSON even when the receiver reports a different MIME type.
                 data = await response.json(content_type=None)
+                # These two OpenWebif endpoints return bare JSON booleans.
+                if (
+                    path
+                    in (
+                        "/api/supports_powerup_without_waking_tv",
+                        "/api/set_powerup_without_waking_tv",
+                    )
+                    and type(data) is bool
+                ):
+                    data = {"result": data}
                 # OpenWebif returns a bare array only for this read endpoint.
                 if path == "/api/epgsimilar" and isinstance(data, list):
                     data = {"events": data}

@@ -4,7 +4,7 @@
 
 ## Inhaltsverzeichnis
 
-- [2.0.0-dev.10](#200-dev10)
+- [2.0.0-dev.11](#200-dev11)
 - [1.3.0](#130)
 - [1.2.1](#121)
 - [1.2.0](#120)
@@ -16,9 +16,11 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 2.0.0-dev.10
+## 2.0.0-dev.11
 
 Unveröffentlichte Entwicklerversion.
+
+- Idee Nr. 11: Aktion „Einschalten ohne Fernseher“ mit frischer Standby-/Image-Prüfung, einmaliger HDMI-CEC-Unterdrückung und bestätigtem Einschalten. Keine normale Einschalt-Ausweichaktion und keine automatische Schreibwiederholung; Grenzen bei Antwortverlust, Tiefschlaf und TV-Zustand dokumentiert. Receiver-/HA-Praxisprüfung offen.
 
 - Sleeptimer dev.9 auf beiden OpenWebif-2.4.0-Receivern und in der installierten HA-Oberfläche geprüft. 30 Minuten einstellen, Statusanzeige und Abbrechen bestätigt; eine Minute startet tatsächlich, wird jedoch vom Image mit `minutes=0` zurückgemeldet und bleibt deshalb in HA unbestätigt. Receiver-Rückfragen beim Ablauf beobachtet. Vollständige CI bestanden. Dev.10 aktualisiert nur Dokumentation und Versionsmetadaten; genaue Abnahme und Grenzen siehe Prüfübersicht.
 

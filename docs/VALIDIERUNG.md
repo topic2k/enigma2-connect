@@ -2,6 +2,14 @@
 
 # Prüfübersicht
 
+## Einschalten ohne Fernseher – 2.0.0-dev.11
+
+Am 27.09.2026 mit Python 3.14.7 und echtem Home-Assistant-Testframework bei simulierten Receiverantworten geprüft. 37 gezielte Tests bestanden: unterstützte/fehlende/fehlerhafte Image-Antworten, bereits eingeschaltet, unbekannter Standby, Authentifizierung, Abbruch, Antwortverlust, fehlende Bestätigung, Gerätebindung und gleichzeitige Einschaltaufträge. Drei lokale HTTP-Szenarien prüfen die vollständige Folge und Verbindungsabbrüche beim Setzen/Einschalten ohne automatische Wiederholung. Der erste HTTP-Lauf scheiterte an der fehlenden lokalen Socket-Fixture; nach deren Ergänzung bestanden alle 37 Tests. `powerup.py`: 100 % Anweisungs- und Zweigabdeckung (33 Anweisungen, 10 Zweige). Zusätzlich sieben Prüfungen für Aktionsregistrierung, Übersetzungskataloge und Branding bestanden. Der weitere Regressionslauf für API, Integration, Aktionsselektoren und Steuerungen fand nur die veraltete Sollmenge registrierter Aktionen; sie wurde ergänzt und der betroffene Test im Abschlusslauf erfolgreich wiederholt. Ruff, Formatprüfung, Python-Syntax und striktes mypy (41 Module) bestanden; Offline-Lockabgleich ändert nur die Projektversion.
+
+Qualitätsabgleich: eindeutige Receiverwahl, Registrierung ohne eingerichtetes Gerät, zweisprachige Aktion und Fehlermeldungen, bestehende Reauth-/Refresh-Behandlung, Serialisierung, keine zusätzlichen Hintergrundabfragen und keine neuen Laufzeitabhängigkeiten. Kriterien und Abdeckungsgrenzen unverändert. Schnittstellen anhand des offiziellen OpenWebif-2.4.0-Controllers und Kontrollmodells geprüft; keine Verbindung zu realen Receivern.
+
+Offen: Unterstützung und HDMI-CEC-Wirkung auf beiden Testimages sowie die Aktion in der installierten HA-Oberfläche praktisch abnehmen. TV-Zustand lässt sich aus OpenWebif-Antworten nicht bestätigen; bei Antwortverlust kann die einmalige Unterdrückungsmarkierung bestehen bleiben. Externe Fernbedienungen teilen die Befehlssperre nicht. Vor main aktuelle vollständige CI für den PR-Stand erforderlich.
+
 ## Receiver-Sleeptimer – 2.0.0-dev.9
 
 Am 27.09.2026 mit Python 3.14.7 und dem echten Home-Assistant-Testframework bei simulierten Receiverantworten geprüft. Erster gezielter Lauf: 116 Tests für Sleeptimer, API, Timeshift und lesende Receiver-Abnahme bestanden. Abschlusslauf: weitere 60 Tests für Sleeptimer-Grenzwerte, Serialisierung, HA-Selektoren, Übersetzungen, Icons und reale lokale HTTP-Verbindungen bestanden. `sleep_timer.py` erreicht 100 % Anweisungs- und Zweigabdeckung (46 Anweisungen, 20 Zweige). Zusätzlich 38 Integrations-/Lebenszyklustests bestanden; der zunächst veraltete Sollbestand der Aktionsregistrierung wurde um beide neuen Aktionen ergänzt und der betroffene Test anschließend erfolgreich wiederholt. Ruff, Format-, Syntax- und striktes mypy (40 Module) bestanden. Die Quellenprüfung verwendet die vorhandenen offiziellen OpenWebif-2.4.0-Quellkopien; kein Kontakt zu realen Receivern.

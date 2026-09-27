@@ -37,6 +37,7 @@ from .epg import EpgError, EpgWorkflow
 from .instant_recording import InstantRecording, InstantRecordingError
 from .media_stream import MediaStream
 from .models import AudioTrack, JsonObject, ReceiverState, Snapshot, services
+from .powerup import QuietPowerupError, powerup_without_tv
 from .recording_images import RecordingImages
 from .recording_library import RecordingLibrary, RecordingLibraryError
 from .recording_management import RecordingManagementError, RecordingManager
@@ -284,6 +285,7 @@ class EnigmaCoordinator(DataUpdateCoordinator[Snapshot]):
         except (
             TimeshiftError,
             SleepTimerError,
+            QuietPowerupError,
             AudioTrackError,
             InstantRecordingError,
             TimerEditError,
@@ -328,6 +330,12 @@ class EnigmaCoordinator(DataUpdateCoordinator[Snapshot]):
         if refresh:
             await self.async_request_refresh()
         return result
+
+    async def async_powerup_without_tv(self) -> None:
+        try:
+            await self.perform(powerup_without_tv, self.client, refresh=False)
+        finally:
+            await self.async_request_refresh()
 
     async def async_set_sleep_timer(self, minutes: int | None = None) -> None:
         try:

@@ -114,6 +114,9 @@ def register_services(hass: HomeAssistant) -> None:
             return await coordinator.perform(
                 coordinator.recording_library.list, refresh=False, **params
             )
+        if service == "powerup_without_tv":
+            await coordinator.async_powerup_without_tv()
+            return None
         if service in ("sleep_timer_set", "sleep_timer_cancel"):
             await coordinator.async_set_sleep_timer(params.get("minutes"))
             return None
@@ -240,6 +243,7 @@ def register_services(hass: HomeAssistant) -> None:
             vol.Required("minutes"): vol.All(int, vol.Range(min=1, max=999)),
         },
         "sleep_timer_cancel": base,
+        "powerup_without_tv": base,
         "timeshift_start": base,
         "timeshift_stop": base,
         "record_now": base,

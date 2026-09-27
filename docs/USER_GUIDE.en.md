@@ -634,6 +634,22 @@ library. Local simulations do not replace this hardware check.
 
 ## Messages and automations
 
+### Power on without TV
+
+1. Leave the receiver in normal standby; OpenWebif must remain reachable.
+2. Under **Developer tools → Actions**, choose **Enigma2 Connect: Power on without TV**.
+3. Select the **Receiver** and run the action. For radio, select the desired station afterwards.
+
+The receiver image must support one-shot suppression of the HDMI-CEC wake command. Support is checked before each wake. An already awake receiver is left alone. Normal power-on actions are unchanged. Deep standby is not supported; a TV that is already on will not be turned off. Other HDMI-CEC devices can still wake the TV.
+
+After an error, check the receiver and TV before repeating the action. A lost response may leave suppression armed for the next wake. Receiver acknowledgement does not prove the physical TV state.
+
+```yaml
+action: enigma2_connect.powerup_without_tv
+data:
+  device_id: YOUR_RECEIVER_DEVICE_ID
+```
+
 ### Set and cancel the sleep timer
 
 1. Turn on the receiver. Open **Developer tools → Actions**.

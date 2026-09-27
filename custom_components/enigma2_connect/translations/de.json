@@ -481,7 +481,7 @@
       "message": "Prüfe Beginn und Ende. Die Auswahl verwendet die Home-Assistant-Zeitzone. Bei mehrdeutigen oder nicht existierenden Uhrzeiten während der Zeitumstellung nutze YAML mit explizitem UTC-Offset. Das Ende muss nach dem Beginn liegen."
     },
     "power_unconfirmed": {
-      "message": "Keine vollständige Antwort auf den Power-Befehl erhalten. Der Receiver startet möglicherweise bereits neu oder fährt herunter. Prüfe seinen Zustand, bevor du erneut einen Befehl sendest."
+      "message": "Die Antwort auf den Einschalt-, Neustart- oder Ausschaltbefehl wurde nicht vollständig empfangen. Der Receiver kann seinen Zustand bereits geändert haben. Prüfe ihn vor einem erneuten Befehl."
     },
     "request_failed": {
       "message": "Die Receiver-Anfrage ist fehlgeschlagen oder wurde abgelehnt."
@@ -635,6 +635,12 @@
     },
     "sleep_timer_unconfirmed": {
       "message": "Sleeptimer-Änderung nicht bestätigt. Tatsächlichen Zustand am Receiver prüfen, bevor du erneut einstellst."
+    },
+    "quiet_powerup_unavailable": {
+      "message": "Standby oder Image-Unterstützung für Einschalten ohne Fernseher konnte nicht bestätigt werden. Es wurde kein Einschaltbefehl gesendet."
+    },
+    "quiet_powerup_unconfirmed": {
+      "message": "Einschalten ohne Fernseher wurde nicht bestätigt. Receiver vor einer Wiederholung prüfen: Die einmalige HDMI-CEC-Unterdrückung kann bereits gesetzt oder der Receiver eingeschaltet sein."
     }
   },
   "services": {
@@ -1079,6 +1085,16 @@
     "sleep_timer_cancel": {
       "name": "Sleeptimer abbrechen",
       "description": "Deaktiviert den geräteeigenen Sleeptimer.",
+      "fields": {
+        "device_id": {
+          "name": "Receiver",
+          "description": "Receiver"
+        }
+      }
+    },
+    "powerup_without_tv": {
+      "name": "Einschalten ohne Fernseher",
+      "description": "Schaltet den Receiver aus Standby ein, ohne den Fernseher über HDMI-CEC mitzuwecken. Benötigt Image-Unterstützung; kein Aufwecken aus Tiefschlaf.",
       "fields": {
         "device_id": {
           "name": "Receiver",

@@ -2,6 +2,14 @@
 
 # Verification summary
 
+## Power on without TV – 2.0.0-dev.11
+
+Tested on 27 September 2026 with Python 3.14.7 and the real Home Assistant test framework using simulated receiver replies. 37 targeted tests passed: supported/missing/malformed image replies, already awake, unknown standby, authentication, cancellation, lost replies, missing acknowledgement, receiver targeting and concurrent wake requests. Three local HTTP scenarios exercise the complete sequence and connection loss during arming/waking without automatic replay. The first HTTP run failed because the local socket fixture was missing; after adding it, all 37 tests passed. `powerup.py`: 100% statement and branch coverage (33 statements, 10 branches). Seven additional action registration, translation catalog and branding checks passed.The additional API, integration, action selector and control regression run found only the outdated expected set of registered actions; it was updated and the affected test passed in the final run. Ruff, formatting, Python syntax and strict mypy (41 modules) passed; offline lock reconciliation changes only the project version.
+
+Quality review: unambiguous receiver selection, registration without configured devices, bilingual action/errors, existing reauth/refresh handling, serialization, no additional background reads and no runtime dependencies. Criteria and coverage thresholds unchanged. Interfaces checked against the official OpenWebif 2.4.0 controller and control model; no real receivers contacted.
+
+Pending: verify image support and HDMI-CEC behaviour on both test images, plus the action in the installed HA UI. OpenWebif replies cannot confirm physical TV state; response loss can leave the one-shot suppression flag armed. External remotes do not share the command lock. Current full CI for the PR revision remains required before main.
+
 ## Receiver sleep timer – 2.0.0-dev.9
 
 Checked on 2026-09-27 with Python 3.14.7 and the real Home Assistant test framework using simulated receiver replies. Initial focused run: 116 tests for sleep timer, API, timeshift and read-only receiver acceptance passed. Final run: another 60 tests for sleep timer boundaries, serialization, HA selectors, translations, icons and real local HTTP connections passed. `sleep_timer.py` reaches 100% statement and branch coverage (46 statements, 20 branches). Another 38 integration/lifecycle tests passed; the initially outdated expected action list was extended with both new actions and that test subsequently reran successfully. Ruff, formatting, syntax and strict mypy (40 modules) passed. Source review used the existing official OpenWebif 2.4.0 source copies; no real receivers were contacted.

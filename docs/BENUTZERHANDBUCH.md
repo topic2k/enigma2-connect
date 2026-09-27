@@ -687,6 +687,22 @@ aktualisieren und Home Assistant neu starten.
 
 ## Nachrichten und Automationen
 
+### Einschalten ohne Fernseher
+
+1. Den Receiver in normalem Standby lassen; OpenWebif muss erreichbar sein.
+2. Unter **Entwicklerwerkzeuge → Aktionen** die Aktion **Enigma2 Connect: Einschalten ohne Fernseher** wählen.
+3. Den **Receiver** auswählen und die Aktion ausführen. Für Radio anschließend den gewünschten Sender wählen.
+
+Das Receiver-Image muss die einmalige Unterdrückung des HDMI-CEC-Einschaltbefehls unterstützen. Die Aktion prüft dies vor jedem Einschalten. Ist der Receiver bereits eingeschaltet, passiert nichts. Die normalen Einschaltaktionen bleiben unverändert. Tiefschlaf wird nicht unterstützt; ein bereits eingeschalteter Fernseher wird nicht ausgeschaltet. Andere HDMI-CEC-Geräte können den Fernseher weiterhin einschalten.
+
+Bei einer Fehlermeldung zuerst Receiver und Fernseher prüfen, bevor die Aktion wiederholt wird. Nach einem Antwortverlust kann die Unterdrückung bereits für das nächste Einschalten gesetzt sein. Eine bestätigte Receiverantwort beweist nicht den tatsächlichen Zustand des Fernsehers.
+
+```yaml
+action: enigma2_connect.powerup_without_tv
+data:
+  device_id: DEINE_RECEIVER_GERAETE_ID
+```
+
 ### Sleeptimer einstellen und abbrechen
 
 1. Schalte den Receiver ein. Öffne **Entwicklerwerkzeuge → Aktionen**.
