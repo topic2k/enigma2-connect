@@ -4,7 +4,7 @@
 
 ## Contents
 
-- [2.0.1-dev.1](#201-dev1)
+- [2.0.1](#201)
 - [2.0.0](#200)
 - [1.3.0](#130)
 - [1.2.1](#121)
@@ -17,9 +17,9 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 2.0.1-dev.1
+## 2.0.1
 
-Unreleased development version.
+Unreleased.
 
 - Fixed an intermittent ordering failure in the timer-conflict test: collect events in the HA event loop instead of the thread pool. Existing checks for count, action names and order remain unchanged; no runtime changes.
 
