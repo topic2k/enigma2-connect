@@ -12,6 +12,16 @@ Quality review: no extra polling, platform or runtime dependency; unambiguous re
 
 
 
+### Receiver/HA acceptance on 2026-09-27, recorded in dev.15
+
+Installed version **2.0.0-dev.14** verified from its manifest; installed API code matches feature commit `b3feec80bb06a7bf8094ff6d1112037dc2be5edd`. [Tests](https://github.com/topic2k/enigma2-connect/actions/runs/36329614560) and [Hassfest/HACS](https://github.com/topic2k/enigma2-connect/actions/runs/36329614559) passed for this commit.
+
+**Octagon SF8008 4K Supreme and Vu+ Solo², both OpenWebif 2.4.0:** Initially both in standby, without active recordings, sleep timers or timer starts within 15 minutes. Opened a new unsaved timer draft on each receiver and focused its name using the virtual keyboard. Selected Send text and the corresponding device in the installed HA UI; sent exactly ` E2C Grüße & + %20? #` once per receiver. Both HA calls completed without errors. Receiver screenshots confirm visibly correct umlauts, spaces and special characters, particularly literal `%20`. Existing names were retained, text was appended, and keyboards stayed open without automatic confirmation.
+
+Discarded both keyboard edits and timer drafts without saving. Both receivers restored to standby; hashes of their complete timer lists match before/after. No test timers saved or existing recordings changed. The Octagon stream reported before the test remained present. Original standby and unchanged timer lists were verified; menu positions were not restored identically. Local evidence and screenshots: `.work/text-hardware/`.
+
+Octagon was woken using the installed HA power-on-without-TV action. Vu+ rejects the support query for that separate feature and was woken normally for text testing; this is not additional TV/CEC acceptance. Results cover the tested characters and virtual name fields on these two images, not arbitrary Unicode, field types or focus states. Response-loss and replay protection remain covered by simulated tests; no deliberate real-receiver connection interruption. Dev.15 updates only documentation and version metadata; no new installation is needed for the unchanged text feature.
+
 ## Power on without TV – 2.0.0-dev.11
 
 Tested on 27 September 2026 with Python 3.14.7 and the real Home Assistant test framework using simulated receiver replies. 37 targeted tests passed: supported/missing/malformed image replies, already awake, unknown standby, authentication, cancellation, lost replies, missing acknowledgement, receiver targeting and concurrent wake requests. Three local HTTP scenarios exercise the complete sequence and connection loss during arming/waking without automatic replay. The first HTTP run failed because the local socket fixture was missing; after adding it, all 37 tests passed. `powerup.py`: 100% statement and branch coverage (33 statements, 10 branches). Seven additional action registration, translation catalog and branding checks passed.The additional API, integration, action selector and control regression run found only the outdated expected set of registered actions; it was updated and the affected test passed in the final run. Ruff, formatting, Python syntax and strict mypy (41 modules) passed; offline lock reconciliation changes only the project version.

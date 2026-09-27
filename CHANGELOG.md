@@ -4,7 +4,7 @@
 
 ## Inhaltsverzeichnis
 
-- [2.0.0-dev.14](#200-dev14)
+- [2.0.0-dev.15](#200-dev15)
 - [1.3.0](#130)
 - [1.2.1](#121)
 - [1.2.0](#120)
@@ -16,9 +16,11 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 2.0.0-dev.14
+## 2.0.0-dev.15
 
 Unveröffentlichte Entwicklerversion.
+
+- Idee Nr. 12 mit installierter dev.14 über die HA-Oberfläche an Octagon und Vu+ Solo² (OpenWebif 2.4.0) praktisch geprüft: Text einschließlich Umlauten, Leerzeichen, `&`, `+`, `%20`, `?` und `#` sichtbar korrekt angehängt, kein automatisches Bestätigen. Ungespeicherte Entwürfe verworfen, Standby und unveränderte Timerlisten nachgeprüft. CI des Funktionsstands erfolgreich. Dev.15 dokumentiert die Abnahme ohne Laufzeitänderung.
 
 - Idee Nr. 12: Geräteaktion „Text senden“ für das aktive Receiver-Eingabefeld, mit unverändertem Text, Befehlssperre, geprüfter API-Bestätigung und Schutz vor automatischer Doppelübertragung. DE/EN-Anleitung und simulierte Tests; Receiver-/HA-Praxisprüfung offen.
 
