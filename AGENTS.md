@@ -5,7 +5,8 @@
 ## Projekt
 
 Enigma2 Connect ist eine Home-Assistant-Custom-Integration für Enigma2-Receiver
-mit OpenWebif. Ziel: Home Assistant ab 2026.9, Python ab 3.14.2.
+mit OpenWebif ab 2.4.0. OpenWebif 1.x wird nicht mehr unterstützt oder erneut
+geprüft. Ziel: Home Assistant ab 2026.9, Python ab 3.14.2.
 Der Projektcode steht unter Apache-2.0. Vorhandene fremde Änderungen erhalten.
 
 ## Changelog und Release-Dokumentation

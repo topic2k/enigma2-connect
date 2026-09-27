@@ -4,7 +4,7 @@
 
 ## Inhaltsverzeichnis
 
-- [1.4.0-dev.2](#140-dev2)
+- [2.0.0-dev.1](#200-dev1)
 - [1.3.0](#130)
 - [1.2.1](#121)
 - [1.2.0](#120)
@@ -16,9 +16,12 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 1.4.0-dev.2
+## 2.0.0-dev.1
 
 Unveröffentlichte Entwicklerversion.
+
+- **Inkompatible Voraussetzung:** OpenWebif mindestens **2.4.0**. Unterstützung und erneute Prüfungen für 1.x entfallen; ältere Receiverinstallationen müssen aktualisiert werden. Die neue Mindestversion entspricht der praktisch geprüften Basis beider Receiver.
+- Nutzer bestätigt hörbare Lautsprecherausgabe; Tonspurabnahme abgeschlossen. Die bisherige unveröffentlichte Zielversion 1.4.0 wird wegen der geänderten Voraussetzungen zu 2.0.0.
 
 - Praktische Tonspurabnahme auf beiden Receivern mit OpenWebif 2.4.0 und in der installierten HA-Oberfläche dokumentiert; vollständige CI erfolgreich. Keine Änderung am Funktionscode.
 

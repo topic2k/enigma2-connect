@@ -3,6 +3,13 @@
 # Verification summary
 
 
+
+## Supported baseline – 2.0.0-dev.1
+
+On 2026-09-27 the user selected **OpenWebif 2.4.0 or later** and confirmed audible speaker output. Audio-track acceptance below is therefore complete; retesting 1.4.4 is explicitly no longer planned. Earlier 1.x evidence remains historical. The developer guide records the 2.0.0/2.4.0 source comparison and rationale.
+
+New target 2.0.0-dev.1 documents the breaking support change. Functional code and tests are identical to `3b7761b`, whose [Tests](https://github.com/topic2k/enigma2-connect/actions/runs/36317060835) and [Hassfest/HACS](https://github.com/topic2k/enigma2-connect/actions/runs/36317060749) passed. Targeted checks passed for version consistency, offline lockfile, language versions and diff; this documentation change does not require controlling the receivers again.
+
 ## Audio-track selection – 1.4.0-dev.1
 
 New dynamic selection for idea 7. Checked locally with Python 3.14.7 in the existing HA test framework using simulated receiver replies: parsing, duplicate descriptions, active track, device entity, standby, unsupported API, recovery, authentication errors, stale selections, service changes during reads, rejection and unconfirmed commands. The transport test checks response loss without automatic replay using a local HTTP test server.
@@ -24,7 +31,7 @@ Functional build **1.4.0-dev.1**, commit `7d2b2b307b445b08a94c1c4954f76b90e1038c
 
 Local evidence in `.work/audio-hardware/`: `preflight.json`, `live.json`, `ui-*-*.json` and `ci-tests.log`; browser observations in this session. Version **1.4.0-dev.2** changes only evidence, changelogs and version metadata; functional code is identical to the tested dev.1 build.
 
-**Still unverified:** audible TV/speaker output (not perceptible to the agent; user confirmation requested) and renewed hardware acceptance on OpenWebif 1.4.4. A confirmed active API track is not evidence of audible output.
+**User acceptance on 2026-09-27:** The user confirmed audible speaker output. This is user listening evidence, not an audio measurement by the agent. At the user's explicit request, OpenWebif 1.4.4 will not be retested; OpenWebif 1.x is no longer supported. Historical 1.x results remain evidence for those earlier builds. Audio-track acceptance on the current 2.x test baseline is complete.
 
 ## Release 1.3.0
 

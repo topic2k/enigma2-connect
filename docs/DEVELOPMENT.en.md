@@ -61,6 +61,11 @@ Enigma2 Connect is a standalone Home Assistant custom integration for Enigma2
 receivers using the OpenWebif JSON API. Its domain and component package are
 `enigma2_connect`; the repository and Python project are `enigma2-connect`.
 It targets Home Assistant **2026.9 or later** and Python **3.14.2 or later**.
+
+**OpenWebif 2.4.0 or later** is the supported receiver baseline starting with target version 2.0.0. User decision on 2026-09-27 following acceptance of both test receivers with 2.4.0. OpenWebif 1.x is no longer supported or retested; earlier reports remain historical evidence. Removing previous 1.x support is a breaking change and justifies the integration's major-version increase. This is a documented support boundary; the existing config flow still validates identity and API responses, not a version string.
+
+Comparing the official [2.0.0](https://github.com/oe-alliance/OpenWebif/blob/2.0.0/plugin/controllers/models/audiotrack.py) and [2.4.0](https://github.com/oe-alliance/OpenWebif/blob/2.4.0/plugin/controllers/models/audiotrack.py) tags shows the same audio-track format (`index`, `description`, `active`, `result`) and index selection. Controllers and recording, timer and information models were also compared. 2.4.0 is the practically verified support baseline, not a claimed first version of the audio API. Source inspection alone does not establish full acceptance of earlier 2.x versions. No runtime code changes or additional version detection.
+
 Development uses Linux or WSL; Node.js runs the optional dashboard card's tests.
 
 The project grew from an analysis of `homeassistant-enigma-player` and

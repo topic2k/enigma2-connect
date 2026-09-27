@@ -26,8 +26,9 @@ live TV and TS recordings on browsers and media devices that support HLS.
 
 ## Install and set up
 
-You need Home Assistant **2026.9 or later** and an Enigma2 receiver with OpenWebif
-enabled. OpenWebif is the receiver's web interface. Open it in a browser first
+You need Home Assistant **2026.9 or later** and an Enigma2 receiver with **OpenWebif 2.4.0 or later**
+enabled. Older versions are no longer supported. OpenWebif is the receiver's
+web interface. Open it in a browser first
 and check that you can control the receiver. Home Assistant must also be able
 to reach this address.
 
@@ -93,16 +94,12 @@ also remains blocked while its hardware identity is missing or different.
 
 ### Supported devices
 
-The OpenWebif JSON API is required. Brand names or Enigma2 alone do not prove
-compatibility. These existing checks took place on 13 September 2026 against
-version 0.1.0. In addition, current read-only acceptance passed on the Octagon:
-setup, entities, refresh, screenshot and picon. Additional checks covered recording
-artwork, bounded control actions and address adoption after an actual DHCP change:
+The OpenWebif JSON API **2.4.0 or later** is required. Brand names or Enigma2 alone do not prove compatibility. This overview distinguishes existing functional evidence from the current audio-track acceptance on 2026-09-27. Historical OpenWebif 1.x checks remain in the validation overview but do not establish current support.
 
 | Receiver / OpenWebif | Verified scope and limitation |
 | --- | --- |
-| Octagon SF8008 4K Supreme / 2.4.0 | Live TV/radio, recordings, picons/screenshots, remote controls, messages, timers, standby and restart were checked. |
-| Vu+ Solo² / 1.4.4 | Setup without authentication, separate devices, catalogs, remote controls, messages and timers were checked. No second video/audio acceptance because the DVB input signal was missing. |
+| Octagon SF8008 4K Supreme / 2.4.0 | Live TV/radio, recordings, picons/screenshots, remote controls, messages, timers, standby and restart were checked. Audio-track selection including the HA UI additionally checked on 2026-09-27. |
+| Vu+ Solo² / 2.4.0 | Audio-track selection, channel changes, separate device controls and standby including the HA UI checked on 2026-09-27. Earlier 1.x checks of other functions are historical evidence. |
 | Other Enigma2 receivers / images | May work with a compatible OpenWebif API; no specific hardware evidence yet. Optional data may be absent. |
 | Receivers without the OpenWebif JSON API | Unsupported; an HTML web interface alone is insufficient. |
 

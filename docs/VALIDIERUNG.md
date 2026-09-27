@@ -2,6 +2,13 @@
 
 # Prüfübersicht
 
+
+## Supportbasis – 2.0.0-dev.1
+
+Am 27.09.2026 legt der Nutzer **OpenWebif mindestens 2.4.0** fest und bestätigt die hörbare Lautsprecherausgabe. Damit ist die Tonspurabnahme unten abgeschlossen; ein erneuter Test mit 1.4.4 ist ausdrücklich nicht mehr vorgesehen. Die alten 1.x-Nachweise bleiben historisch erhalten. Quellvergleich der Tags 2.0.0/2.4.0 und Begründung stehen in der Entwicklerdokumentation.
+
+Die neue Zielversion 2.0.0-dev.1 dokumentiert die inkompatible Supportänderung. Funktionscode und Tests sind identisch zu `3b7761b`; dessen [Tests](https://github.com/topic2k/enigma2-connect/actions/runs/36317060835) und [Hassfest/HACS](https://github.com/topic2k/enigma2-connect/actions/runs/36317060749) sind erfolgreich. Versionsstellen, Offline-Lockdatei, Sprachfassungen und Diff gezielt geprüft; keine erneute Receiversteuerung für diese Dokumentationsänderung.
+
 ## Tonspurauswahl – 1.4.0-dev.1
 
 Neue dynamische Auswahl für Idee 7. Lokal unter Python 3.14.7 im vorhandenen HA-Testframework mit simulierten Receiverantworten geprüft: Parser, doppelte Beschreibungen, aktive Spur, Geräteentität, Standby, fehlende API-Unterstützung, Wiederherstellung, Authentifizierungsfehler, veraltete Auswahl, Senderwechsel während Abfragen, Ablehnung und unbestätigte Befehle. Transporttest prüft Antwortverlust ohne automatische Wiederholung über einen lokalen HTTP-Testserver.
@@ -23,7 +30,7 @@ Funktionsstand **1.4.0-dev.1**, Commit `7d2b2b307b445b08a94c1c4954f76b90e1038cb5
 
 Lokale Nachweise unter `.work/audio-hardware/`: `preflight.json`, `live.json`, `ui-*-*.json` und `ci-tests.log`; Browserbeobachtungen in dieser Sitzung. Version **1.4.0-dev.2** ergänzt ausschließlich diese Nachweise, Changelogs und Versionsmetadaten; Funktionscode identisch zum geprüften dev.1-Stand.
 
-**Weiterhin nicht belegt:** hörbare Ausgabe an TV/Lautsprechern (vom Agenten nicht wahrnehmbar; Nutzerbestätigung angefragt) und erneute Hardwareabnahme auf OpenWebif 1.4.4. Die bestätigte aktive API-Spur ist kein Hörnachweis.
+**Nutzerabnahme am 27.09.2026:** Die hörbare Lautsprecherausgabe wurde vom Nutzer bestätigt. Dies ist ein Nutzer-Hörnachweis, keine Audio-Messung durch den Agenten. OpenWebif 1.4.4 wird auf ausdrücklichen Nutzerwunsch nicht erneut geprüft; OpenWebif 1.x gehört nicht mehr zum unterstützten Umfang. Historische 1.x-Ergebnisse bleiben als damalige Nachweise erhalten. Die Tonspurabnahme auf der aktuellen 2.x-Testbasis ist damit abgeschlossen.
 
 ## Release 1.3.0
 

@@ -4,7 +4,7 @@
 
 ## Contents
 
-- [1.4.0-dev.2](#140-dev2)
+- [2.0.0-dev.1](#200-dev1)
 - [1.3.0](#130)
 - [1.2.1](#121)
 - [1.2.0](#120)
@@ -16,9 +16,12 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 1.4.0-dev.2
+## 2.0.0-dev.1
 
 Unreleased development version.
+
+- **Breaking prerequisite:** OpenWebif **2.4.0 or later**. Support and retesting for 1.x end; older receiver installations need updating. The minimum matches the practically verified baseline of both receivers.
+- User confirmed audible speaker output; audio-track acceptance completed. The previous unreleased 1.4.0 target becomes 2.0.0 because of the changed prerequisites.
 
 - Recorded practical audio-track acceptance on both receivers with OpenWebif 2.4.0 and in the installed HA UI; full CI passed. No functional code changes.
 

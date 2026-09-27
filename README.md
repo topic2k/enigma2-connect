@@ -10,7 +10,7 @@
 
 [![Release](https://img.shields.io/github/v/release/topic2k/enigma2-connect?style=flat-square&label=Release)](https://github.com/topic2k/enigma2-connect/releases/latest)
 [![Home Assistant 2026.9+](https://img.shields.io/badge/Home_Assistant-2026.9%2B-009AC7?style=flat-square&logo=homeassistant&logoColor=white)](#deutsch)
-[![OpenWebif 1.4.4+](https://img.shields.io/badge/OpenWebif-1.4.4%2B-007EC6?style=flat-square)](#deutsch)
+[![OpenWebif 2.4.0+](https://img.shields.io/badge/OpenWebif-2.4.0%2B-007EC6?style=flat-square)](#deutsch)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue?style=flat-square)](LICENSE)
 
 [![Tests (main)](https://img.shields.io/github/actions/workflow/status/topic2k/enigma2-connect/tests.yml?branch=main&event=push&style=flat-square&label=Tests)](https://github.com/topic2k/enigma2-connect/actions/workflows/tests.yml?query=branch%3Amain)
@@ -39,7 +39,7 @@ Sensoren zeigen freien Festplattenspeicher sowie optional RAM und Laufzeit an.
 ### Was du brauchst
 
 - Home Assistant **2026.9 oder neuer**.
-- Einen Enigma2-Receiver mit aktiviertem **OpenWebif ab Version 1.4.4**, der von Home Assistant erreichbar ist.
+- Einen Enigma2-Receiver mit aktiviertem **OpenWebif ab Version 2.4.0**, der von Home Assistant erreichbar ist.
 - Die Adresse und gegebenenfalls die Zugangsdaten deines Receivers.
 
 Der verfügbare Funktionsumfang hängt zusätzlich vom Receiver und dessen Firmware ab.
@@ -99,7 +99,7 @@ Sensors show free disk space and optionally RAM and uptime.
 ### What you need
 
 - Home Assistant **2026.9 or later**.
-- An Enigma2 receiver with **OpenWebif 1.4.4 or later** enabled and reachable from Home Assistant.
+- An Enigma2 receiver with **OpenWebif 2.4.0 or later** enabled and reachable from Home Assistant.
 - Your receiver's address and login details, if required.
 
 Available features also depend on the receiver and its firmware.

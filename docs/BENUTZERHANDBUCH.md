@@ -28,7 +28,8 @@ und TS-Aufnahmen auf HLS-fähigen Browsern und Mediengeräten.
 ## Installieren und einrichten
 
 Du brauchst Home Assistant **2026.9 oder neuer** und einen Enigma2-Receiver mit
-aktiviertem OpenWebif. OpenWebif ist die Weboberfläche deines Receivers. Öffne
+aktiviertem **OpenWebif ab Version 2.4.0**. Ältere Versionen werden nicht mehr
+unterstützt. OpenWebif ist die Weboberfläche deines Receivers. Öffne
 sie zuerst im Browser und prüfe, ob du dort den Receiver bedienen kannst.
 Home Assistant muss diese Adresse ebenfalls erreichen können.
 
@@ -100,17 +101,12 @@ die Geräteidentität fehlt oder abweicht.
 
 ### Unterstützte Geräte
 
-Voraussetzung ist die OpenWebif-JSON-API. Markenname oder Enigma2 allein sind kein
-Kompatibilitätsnachweis. Diese Übersicht beschreibt vorhandene Prüfungen vom
-13.09.2026 am damaligen Stand 0.1.0. Zusätzlich bestand die aktuelle lesende
-Abnahme am Octagon: Einrichtung, Entitäten, Aktualisierung, Screenshot und Picon.
-Ergänzend wurden Aufnahmebilder, begrenzte Bedienaktionen und die Adressübernahme
-nach einem tatsächlichen DHCP-Wechsel geprüft:
+Voraussetzung ist die OpenWebif-JSON-API ab **2.4.0**. Markenname oder Enigma2 allein sind kein Kompatibilitätsnachweis. Die Übersicht unterscheidet bisherige Funktionsnachweise von der aktuellen Tonspurabnahme am 27.09.2026. Historische Prüfungen mit OpenWebif 1.x stehen weiterhin in der Prüfübersicht, begründen aber keine aktuelle Unterstützung.
 
 | Receiver / OpenWebif | Belegter Umfang und Grenze |
 | --- | --- |
-| Octagon SF8008 4K Supreme / 2.4.0 | Live-TV/Radio, Aufnahmen, Picons/Bildschirmfoto, Fernbedienung, Nachrichten, Timer, Standby und Neustart wurden geprüft. |
-| Vu+ Solo² / 1.4.4 | Einrichtung ohne Anmeldung, getrennte Gerätezuordnung, Kataloge, Fernbedienung, Nachrichten und Timer wurden geprüft. Ohne DVB-Eingangssignal keine zweite Bild-/Tonabnahme. |
+| Octagon SF8008 4K Supreme / 2.4.0 | Live-TV/Radio, Aufnahmen, Picons/Bildschirmfoto, Fernbedienung, Nachrichten, Timer, Standby und Neustart wurden geprüft. Tonspurauswahl einschließlich HA-Oberfläche zusätzlich am 27.09.2026 geprüft. |
+| Vu+ Solo² / 2.4.0 | Tonspurauswahl, Senderwechsel, getrennte Gerätebedienung und Standby einschließlich HA-Oberfläche am 27.09.2026 geprüft. Frühere 1.x-Prüfungen anderer Funktionen sind historische Nachweise. |
 | Andere Enigma2-Receiver / Images | Können mit passender OpenWebif-API funktionieren; noch kein konkreter Hardware-Nachweis. Optionale Daten können fehlen. |
 | Receiver ohne OpenWebif-JSON-API | Nicht unterstützt; eine HTML-Weboberfläche allein reicht nicht aus. |
 
