@@ -152,6 +152,9 @@ attribute. Values update at the configured polling interval (15 seconds by defau
 and HA cards may extrapolate progress between polls, even while paused; the next
 poll corrects the position. The `media_remaining` attribute remains a snapshot. Duration comes from recording metadata and
 may differ from file length; remaining time stays at zero if position exceeds it.
+Confirmed on both test receivers: even a 45-second recording may report the
+original programme duration. Remaining time then does not reliably describe
+how much of the file is left.
 The official OpenWebif 2.4.0 tag does not yet supply position; the display stays
 empty there and whenever data is missing. Live TV, timeshift and saved library
 watch progress are not used for this. This adds neither pause detection nor seeking.

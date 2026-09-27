@@ -4,7 +4,7 @@
 
 ## Inhaltsverzeichnis
 
-- [2.0.0-dev.7](#200-dev7)
+- [2.0.0-dev.8](#200-dev8)
 - [1.3.0](#130)
 - [1.2.1](#121)
 - [1.2.0](#120)
@@ -16,9 +16,11 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 2.0.0-dev.7
+## 2.0.0-dev.8
 
 Unveröffentlichte Entwicklerversion.
+
+- Idee Nr. 9 auf beiden Receivern mit OpenWebif 2.4.0 und in der installierten HA-Version dev.7 praktisch geprüft: Positionsfortschritt, Pause, HA-Wiedergabe-/Stopptasten, Anzeige und Entfernen der Attribute nach Rückkehr zu Live-TV. Vollständige CI bestanden. Bestätigte Grenze: `duration_sec` kann die ursprüngliche Sendungsdauer statt der tatsächlichen Dateilänge liefern; Restzeit ist dann entsprechend ungenau. Testdaten entfernt und Ausgangszustände wiederhergestellt. Dev.8 ergänzt ausschließlich Dokumentation und Versionsmetadaten.
 
 - Idee Nr. 9: aktuelle Position und gemeldete Dauer lokaler Aufnahmen im Medienplayer, dazu Restzeit als Attribut `media_remaining` in Sekunden. Nur tatsächlich gelieferte, derselben Aufnahme zugeordnete Positionsdaten verwenden; keine Pauseableitung. HA kann zwischen den Abfragen geschätzten Fortschritt anzeigen. Der offizielle OpenWebif-2.4.0-Tag liefert das optionale Positionsfeld noch nicht.
 

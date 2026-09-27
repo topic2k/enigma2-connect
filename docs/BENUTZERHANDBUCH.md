@@ -162,6 +162,9 @@ geschätzten Fortschritt anzeigen, auch während einer Pause; die nächste Abfra
 korrigiert die Position. Das Attribut `media_remaining` bleibt eine Momentaufnahme.
 Die Dauer stammt aus Aufnahmemetadaten und kann von der Dateilänge abweichen;
 überschreitet die Position diese Dauer, bleibt die Restzeit null.
+Auf beiden Testreceivern praktisch bestätigt: Auch eine 45-Sekunden-Aufnahme kann
+die Dauer der ursprünglichen Sendung melden. Die angezeigte Restzeit ist dann
+keine verlässliche Restlaufzeit der Datei.
 Der offizielle OpenWebif-2.4.0-Tag liefert noch keine Position; dort und bei fehlenden
 Daten bleibt diese Anzeige leer. Live-TV, Timeshift und gespeicherter Sehfortschritt
 der Bibliothek werden dafür nicht verwendet. Daraus entstehen keine Pauseerkennung
