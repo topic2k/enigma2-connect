@@ -144,6 +144,18 @@ do not show stop; the [remote card](#dashboard-remote) provides additional butto
 Further individual button entities are disabled by default and can be enabled
 in their entity settings if needed.
 
+For a local recording playing on the receiver, the media player exposes its
+current position and reported duration when the OpenWebif build supplies these
+values. Open the media player in your dashboard; progress presentation depends on
+the card. Remaining seconds are also available in the `media_remaining` entity
+attribute. Values update at the configured polling interval (15 seconds by default),
+and HA cards may extrapolate progress between polls, even while paused; the next
+poll corrects the position. The `media_remaining` attribute remains a snapshot. Duration comes from recording metadata and
+may differ from file length; remaining time stays at zero if position exceeds it.
+The official OpenWebif 2.4.0 tag does not yet supply position; the display stays
+empty there and whenever data is missing. Live TV, timeshift and saved library
+watch progress are not used for this. This adds neither pause detection nor seeking.
+
 Signal quality, SNR and reported bit error rate are optional diagnostics and
 initially disabled for new entities. Open **Settings → Devices & services →
 Entities**, show disabled entities and enable the sensor you need. Existing

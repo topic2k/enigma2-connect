@@ -19,6 +19,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed, HomeAssistantError
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from homeassistant.util import dt as dt_util
 
 from .action_choices import recording_directories
 from .api import (
@@ -142,6 +143,8 @@ class EnigmaCoordinator(DataUpdateCoordinator[Snapshot]):
                     signal = await self.optional("signal")
                     current = await self.optional("getcurrent")
                 state = ReceiverState.parse(raw, current)
+                if state.media_position is not None:
+                    state = replace(state, media_position_updated_at=dt_util.utcnow())
                 timeshift = None
                 if not state.standby:
                     timeshift = parse_timeshift(await self.optional("tsstate"))

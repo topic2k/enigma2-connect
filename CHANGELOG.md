@@ -4,7 +4,7 @@
 
 ## Inhaltsverzeichnis
 
-- [2.0.0-dev.6](#200-dev6)
+- [2.0.0-dev.7](#200-dev7)
 - [1.3.0](#130)
 - [1.2.1](#121)
 - [1.2.0](#120)
@@ -16,9 +16,11 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 2.0.0-dev.6
+## 2.0.0-dev.7
 
 Unveröffentlichte Entwicklerversion.
+
+- Idee Nr. 9: aktuelle Position und gemeldete Dauer lokaler Aufnahmen im Medienplayer, dazu Restzeit als Attribut `media_remaining` in Sekunden. Nur tatsächlich gelieferte, derselben Aufnahme zugeordnete Positionsdaten verwenden; keine Pauseableitung. HA kann zwischen den Abfragen geschätzten Fortschritt anzeigen. Der offizielle OpenWebif-2.4.0-Tag liefert das optionale Positionsfeld noch nicht.
 
 - Sichtprüfung der neuen Timeshift-Option in installierter HA-Version dev.5 für beide Receiver abgeschlossen; CI-Nachweise ergänzt. Nur Dokumentation und Versionsmetadaten geändert.
 

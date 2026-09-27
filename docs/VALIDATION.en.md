@@ -2,6 +2,14 @@
 
 # Verification summary
 
+## Playback position – 2.0.0-dev.7
+
+Idea no. 9 uses only the existing `getcurrent` poll. Source review on 2026-09-27: the official OpenWebif 2.4.0 tag lacks `now.position`; the current upstream controller includes it. Support is not guaranteed for all 2.4.0 builds. The HA frontend needs a timestamp to calculate progress and extrapolates in PLAYING state; with no reliable pause detection, this remains an estimate between polls. Remaining-time attribute is only a sampled value.
+
+Additional run covering parsing, media artwork, controls and integration: 112 tests passed (383.94 seconds). Separately rechecked with the final timestamp integration: 37 focused tests of the final implementation passed (Python 3.14.7, real HA test framework, simulated receivers). Covered valid/invalid position and duration, special characters in references, different recordings, live TV, unsupported responses, unchanged position, forward/backward jumps, UTC timestamps, end, optional failures, offline state and standby. Ruff, formatting, strict mypy (39 modules) and syntax checks passed.
+
+Quality review covers existing polling, device binding, availability, shared models, typing and documentation. No additional polling, writes, dependencies or quality exceptions; existing CI coverage thresholds are unchanged. Offline lock update changes only the project version. Local tests use the real HA framework with simulated receiver responses. Actual playback checks on both receivers and visual checks in installed HA remain outstanding; no receiver was switched for this task. Current complete CI evidence is required before main.
+
 ## Timeshift save warning – 2.0.0-dev.5
 
 New per-receiver optional restoration, disabled by default. Locally checked on 2026-09-27 with Python 3.14.7 and the real HA test framework using simulated receiver responses: 140 tests for timeshift, options, API and config flow passed. Expanded `timeshift.py`: 100% statement/branch coverage (83 statements, 26 branches). After the transport typing correction, 46 additional focused GET/POST tests passed; a real local HTTP server verifies form data and no POST replay after response loss.

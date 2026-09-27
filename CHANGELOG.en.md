@@ -4,7 +4,7 @@
 
 ## Contents
 
-- [2.0.0-dev.6](#200-dev6)
+- [2.0.0-dev.7](#200-dev7)
 - [1.3.0](#130)
 - [1.2.1](#121)
 - [1.2.0](#120)
@@ -16,9 +16,11 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 2.0.0-dev.6
+## 2.0.0-dev.7
 
 Unreleased development version.
+
+- Idea no. 9: current position and reported duration of local recordings in the media player, plus remaining seconds in `media_remaining`. Only use reported position data tied to the same recording; no pause inference. HA may show estimated progress between polls. The official OpenWebif 2.4.0 tag does not yet provide the optional position field.
 
 - Completed visual verification of the new timeshift option in installed HA version dev.5 for both receivers; added CI evidence. Only documentation and version metadata changed.
 

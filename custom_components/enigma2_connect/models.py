@@ -10,6 +10,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from html import unescape
 from typing import Any
+from urllib.parse import quote
 
 from .system_diagnostics import SystemDiagnostics
 
@@ -121,6 +122,37 @@ def timer_range(begin: str | int, end: str | int) -> tuple[int, int]:
     return start, stop
 
 
+def recording_position(
+    reference: str | None, current: dict[str, Any] | None
+) -> tuple[int | None, int | None]:
+    """Read optional local-movie seconds, bound to the same service snapshot.
+
+    The 2.4.0 tag lacks position; newer OpenWebif builds provide it. Never
+    infer position from EPG timestamps, remaining time or saved watch progress.
+    """
+    if not isinstance(reference, str) or not reference.startswith("1:0:0:0:0:0:0:0:0:0:/"):
+        return None, None
+    # getcurrent quotes its refs; statusinfo supplies the raw service reference.
+    current_reference = quote(reference, safe=" ~@#$()*!+=:;,.?/'")
+    info = (current or {}).get("info")
+    now = (current or {}).get("now")
+    if (
+        not isinstance(info, dict)
+        or not isinstance(now, dict)
+        or info.get("ref") != current_reference
+        or now.get("sref") != current_reference
+    ):
+        return None, None
+    position = now.get("position")
+    duration = now.get("duration_sec")
+    if type(position) is not int or position < 0:
+        return None, None
+    # Duration is movie event metadata, not necessarily the full file length.
+    if type(duration) is not int or duration <= 0:
+        return position, None
+    return position, duration
+
+
 @dataclass(frozen=True)
 class ReceiverState:
     standby: bool
@@ -137,6 +169,9 @@ class ReceiverState:
     programme_end: int | None = None
     recording_playback: bool = False
     picon_path: str | None = None
+    media_position: int | None = None
+    media_duration: int | None = None
+    media_position_updated_at: datetime | None = None
 
     @classmethod
     def parse(cls, raw: dict[str, Any], current: dict[str, Any] | None = None) -> ReceiverState:
@@ -151,6 +186,11 @@ class ReceiverState:
         start = number(raw.get("currservice_begin_timestamp"))
         end = number(raw.get("currservice_end_timestamp"))
         current_info = (current or {}).get("info") or {}
+        position, duration = (
+            recording_position(raw.get("currservice_serviceref"), current)
+            if not standby
+            else (None, None)
+        )
         return cls(
             standby=standby,
             channel=text(raw.get("currservice_station")),
@@ -171,6 +211,8 @@ class ReceiverState:
                 reference and reference.startswith(("1:0:0:", "4097:0:0:")) and ":/" in reference
             ),
             picon_path=current_info.get("picon") if isinstance(current_info, dict) else None,
+            media_position=position,
+            media_duration=duration,
         )
 
 

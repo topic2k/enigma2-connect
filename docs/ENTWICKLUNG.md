@@ -1268,11 +1268,19 @@ Schnittstelle: [OpenWebif Audio-API](https://github.com/oe-alliance/OpenWebif/wi
 
 ## Vorgemerkte Ideen
 
-Die Ideen **1–5 und 13** sind umgesetzt, ebenso die Ideen **6, 7 und 8**.
+Die Ideen **1–5 und 13** sind umgesetzt, ebenso die Ideen **6, 7, 8 und 9**.
 Reihenfolge und Abnahme der Aufnahme-Workflows sind im
 [Umsetzungsplan](#umsetzungsplan-aufnahme-workflows) dokumentiert.
 Die übrigen Ideen bleiben unverbindlich. Umsetzung und praktische Abnahme
 werden getrennt betrachtet; verbleibende Prüfgrenzen sind unten benannt.
+
+### Wiedergabeposition – Idee 9 (2.0.0-dev.7)
+
+Plan und Umsetzung: `getcurrent.now.position` und `duration_sec` streng als ganzzahlige Sekunden auswerten; Position ab null, Dauer größer null. Nur lokale `1:0:0:0:0:0:0:0:0:0:/`-Referenzen verwenden, `info.ref` und `now.sref` mit der passend URL-codierten rohen `statusinfo`-Referenz vergleichen. Keine HTML-Decodierung oder doppelte URL-Decodierung bei diesem Identitätsvergleich. Gemischte Antworten verwerfen; Standby, Ausfall und fehlende Position löschen die Anzeige. Ungültige Dauer lässt die Position bestehen. Keine zusätzlichen Abfragen, Dienste, Abhängigkeiten oder SEEK-Freigabe.
+
+HA erhält `media_position`, `media_duration` und bei gültigem Wertepaar `media_remaining = max(0, duration - position)`. `media_position_updated_at` erhält direkt nach dem Lesen einen UTC-Zeitstempel, auch bei unveränderter Position. Das HA-Frontend benötigt ihn zur Fortschrittsanzeige und extrapoliert im angenommenen Zustand PLAYING zwischen den Abfragen, auch bei tatsächlicher Pause; die nächste Abfrage korrigiert den Wert. `media_remaining` bleibt dagegen eine Momentaufnahme. Unveränderte Position bedeutet nicht Pause; vorhandene Play/Pause-Tasten und `assumed_state` bleiben erhalten. `duration_sec` stammt im Controller aus dem Movie-Event und ist keine garantierte Dateilänge; eine darüber hinausgehende Position wird nicht abgeschnitten. Weder EPG-Zeiten noch `remaining` oder `lastseen` dienen als Positionsersatz.
+
+Quellenvergleich vom 27.09.2026: Der [offizielle 2.4.0-Controller](https://github.com/oe-alliance/OpenWebif/blob/2.4.0/plugin/controllers/web.py) enthält noch kein `now.position`; der [aktuelle Controller](https://github.com/oe-alliance/OpenWebif/blob/main/plugin/controllers/web.py) liefert es nach erfolgreicher Seek-Positionsabfrage. Die Mindestversion allein garantiert diese optionale Fähigkeit deshalb nicht. Referenzformat mit dem [Servicemodell](https://github.com/oe-alliance/OpenWebif/blob/2.4.0/plugin/controllers/models/services.py) verglichen. Eigenständige Implementierung gegen die Schnittstelle, kein GPL-Code übernommen. Simulierte Tests und offene Receiver-/HA-Abnahme siehe [Prüfübersicht](VALIDIERUNG.md).
 
 ### Speicherrückfrage wiederherstellen (dev.5)
 
@@ -1407,7 +1415,7 @@ und Rückgabeformate vor einer Umsetzung je OpenWebif-Version und Image prüfen.
 | 6 | Umgesetzt | Festplattenspeicher und Systemdiagnose | Freier Platz je Mountpunkt sowie optionale RAM- und Laufzeitsensoren sind vorhanden. `about` liefert die Grundlagen. Einheiten normalisieren und langsam abfragen; als frei gemeldeter RAM enthält im untersuchten Code auch Buffer und Cache. [Informationsmodell][ideas-info] |
 | 7 | Umgesetzt | Tonspur auswählen | Dynamische Auswahl der vom Receiver angebotenen Tonspuren über `getaudiotracks` und `selectaudiotrack`, einschließlich regelmäßiger Aktualisierung und Prüfung vor dem Umschalten. [Details](#tonspurauswahl) |
 | 8 | Umgesetzt | Timeshift gezielt steuern und anzeigen | Start-/Stopp-Aktionen und „Timeshift aktiv“ über `tsstart`, `tsstop`, `tsstate`. `timeshiftEnabled` ist kein verlässlicher Pausezustand; der untersuchte Stopp-Pfad unterdrückt die Speicherrückfrage. [Controller][ideas-controller] |
-| 9 | Mittel | Wiedergabeposition bei Aufnahmen | Fortschritt und Restzeit im Medienplayer anzeigen. Das bereits abgefragte `getcurrent` liefert für bestimmte lokale Aufnahmen eine Position in Sekunden. Diese allein erlaubt keine sichere Pauseerkennung. [Controller][ideas-controller] |
+| 9 | Umgesetzt | Wiedergabeposition bei Aufnahmen | Fortschritt und Restzeit im Medienplayer anzeigen. Neuere OpenWebif-Builds liefern im bereits abgefragten `getcurrent` für bestimmte lokale Aufnahmen eine Position in Sekunden; im offiziellen 2.4.0-Tag fehlt sie noch. Diese allein erlaubt keine sichere Pauseerkennung. [Controller][ideas-controller] |
 | 10 | Mittel | Receiver-Sleeptimer | „In 30 Minuten Standby“ mit Statusanzeige über den geräteeigenen `sleeptimer`. Verfügbare Felder und Verhalten unterscheiden sich nach Image. [Timerimplementierung][ideas-timers] |
 | 11 | Optional | Einschalten ohne Mitwecken des Fernsehers | Für Radio oder Hintergrundautomationen: `supports_powerup_without_waking_tv` und `set_powerup_without_waking_tv` sind dokumentiert. Image-Unterstützung prüfen; die Funktion ersetzt kein Aufwecken aus Tiefschlaf. [Steuerungs-API][ideas-api] |
 | 12 | Optional | Text an Eingabefelder senden | Suchbegriffe direkt eingeben, statt einzelne Fernbedienungstasten zu senden. `remotecontrol` besitzt einen `text`-Parameter; das aktive Eingabefeld am Receiver bleibt entscheidend. [Controller][ideas-controller] |

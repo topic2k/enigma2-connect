@@ -1187,11 +1187,19 @@ Interface: [OpenWebif audio API](https://github.com/oe-alliance/OpenWebif/wiki/O
 
 ## Recorded ideas
 
-Ideas **1–5 and 13** are implemented, as are ideas **6, 7 and 8**.
+Ideas **1–5 and 13** are implemented, as are ideas **6, 7, 8 and 9**.
 The order and acceptance of the recording workflows are documented in the
 [implementation plan](#implementation-plan-recording-workflows).
 The remaining ideas are tentative. Implementation and practical acceptance
 are tracked separately; remaining verification limits are identified below.
+
+### Playback position – idea 9 (2.0.0-dev.7)
+
+Plan and implementation: strictly parse `getcurrent.now.position` and `duration_sec` as integer seconds; nonnegative position and positive duration. Accept only local `1:0:0:0:0:0:0:0:0:0:/` references, matching `info.ref` and `now.sref` against the appropriately URL-encoded raw `statusinfo` reference. No HTML decoding or double URL decoding for this identity check. Discard mixed snapshots; standby, failure and missing position clear the display. Invalid duration preserves position. No additional polling, services, dependencies or SEEK support.
+
+HA receives `media_position`, `media_duration` and, for a valid pair, `media_remaining = max(0, duration - position)`. `media_position_updated_at` receives a UTC timestamp immediately after reading, including unchanged positions. The HA frontend needs it to display progress and extrapolates between polls in assumed PLAYING state, even during an actual pause; the next poll corrects the value. `media_remaining` remains a snapshot. An unchanged position does not establish pause; existing play/pause buttons and `assumed_state` remain. The controller gets `duration_sec` from movie event metadata, not guaranteed file length; position exceeding duration is not truncated. EPG times, `remaining` and `lastseen` never substitute for position.
+
+Source comparison on 2026-09-27: the [official 2.4.0 controller](https://github.com/oe-alliance/OpenWebif/blob/2.4.0/plugin/controllers/web.py) lacks `now.position`; the [current controller](https://github.com/oe-alliance/OpenWebif/blob/main/plugin/controllers/web.py) returns it following a successful seek-position query. The minimum version alone therefore does not guarantee this optional capability. Reference format checked against the [service model](https://github.com/oe-alliance/OpenWebif/blob/2.4.0/plugin/controllers/models/services.py). Independently implemented against the interface; no GPL code copied. Simulated tests and outstanding receiver/installed-HA acceptance are recorded in the [verification summary](VALIDATION.en.md).
 
 ### Restore save warning (dev.5)
 
@@ -1317,7 +1325,7 @@ support and response formats for each OpenWebif version and image before impleme
 | 6 | Implemented | Disk space and system diagnostics | Free space per mount and optional RAM/uptime sensors are available. `about` supplies the underlying information. Normalize units and poll slowly; reported free RAM includes buffers and cache in the examined code. [Information model][ideas-info] |
 | 7 | Implemented | Select audio tracks | Dynamic selection of tracks reported by the receiver using `getaudiotracks` and `selectaudiotrack`, with regular updates and validation before switching. [Details](#audio-track-selection) |
 | 8 | Implemented | Explicit timeshift controls and status | Start/stop actions and a timeshift-active indicator through `tsstart`, `tsstop`, `tsstate`. `timeshiftEnabled` does not reliably indicate pause; the examined stop path suppresses the save prompt. [Controller][ideas-controller] |
-| 9 | Medium | Playback position for recordings | Display progress and remaining time in the media player. The already queried `getcurrent` returns a position in seconds for certain local recordings. This alone does not reliably establish pause state. [Controller][ideas-controller] |
+| 9 | Implemented | Playback position for recordings | Display progress and remaining time in the media player. Newer OpenWebif builds return a position in seconds in the already queried `getcurrent` for certain local recordings; the official 2.4.0 tag lacks it. This alone does not reliably establish pause state. [Controller][ideas-controller] |
 | 10 | Medium | Receiver sleep timer | “Standby in 30 minutes” with status display through the receiver's own `sleeptimer`. Available fields and behaviour vary by image. [Timer implementation][ideas-timers] |
 | 11 | Optional | Power on without waking the television | For radio or background automations: `supports_powerup_without_waking_tv` and `set_powerup_without_waking_tv` are documented. Check image support; this does not replace waking from deep standby. [Control API][ideas-api] |
 | 12 | Optional | Send text to input fields | Enter search terms directly instead of sending individual remote keys. `remotecontrol` accepts a `text` parameter; the active receiver input field determines where it goes. [Controller][ideas-controller] |

@@ -152,6 +152,21 @@ Stop nicht ein; die [Fernbedienungskarte](#fernbedienung-im-dashboard) bietet
 zusätzliche Tasten. Weitere einzelne Tasten lassen sich bei Bedarf als
 standardmäßig deaktivierte Button-Entitäten in den Entitätseinstellungen aktivieren.
 
+Bei einer auf dem Receiver abgespielten lokalen Aufnahme zeigt der Medienplayer
+die aktuelle Position und die gemeldete Dauer, sofern der OpenWebif-Build diese
+Daten liefert. Öffne den Medienplayer im Dashboard; die Darstellung des Fortschritts
+hängt von der verwendeten Karte ab. Die Restzeit steht zusätzlich in den
+Entitätsattributen als `media_remaining` in Sekunden. Aktualisierung im eingestellten
+Abfrageintervall (standardmäßig 15 Sekunden). HA-Karten können zwischen Abfragen
+geschätzten Fortschritt anzeigen, auch während einer Pause; die nächste Abfrage
+korrigiert die Position. Das Attribut `media_remaining` bleibt eine Momentaufnahme.
+Die Dauer stammt aus Aufnahmemetadaten und kann von der Dateilänge abweichen;
+überschreitet die Position diese Dauer, bleibt die Restzeit null.
+Der offizielle OpenWebif-2.4.0-Tag liefert noch keine Position; dort und bei fehlenden
+Daten bleibt diese Anzeige leer. Live-TV, Timeshift und gespeicherter Sehfortschritt
+der Bibliothek werden dafür nicht verwendet. Daraus entstehen keine Pauseerkennung
+und keine neue Spulfunktion.
+
 Signalqualität, SNR und gemeldete Bitfehlerrate sind optionale Diagnosen und bei
 neuen Entitäten zunächst deaktiviert. Öffne **Einstellungen → Geräte & Dienste →
 Entitäten**, zeige deaktivierte Entitäten an und aktiviere den gewünschten Sensor.

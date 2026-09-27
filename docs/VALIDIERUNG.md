@@ -2,6 +2,14 @@
 
 # Prüfübersicht
 
+## Wiedergabeposition – 2.0.0-dev.7
+
+Idee Nr. 9 verwendet ausschließlich die bestehende `getcurrent`-Abfrage. Quellenprüfung am 27.09.2026: Im offiziellen OpenWebif-2.4.0-Tag fehlt `now.position`, im aktuellen Upstream-Controller ist es vorhanden. Keine Zusicherung für alle 2.4.0-Builds. Das HA-Frontend benötigt zur Fortschrittsberechnung einen Zeitstempel und extrapoliert bei PLAYING; wegen fehlender Pauseerkennung bleibt dies zwischen Abfragen eine Schätzung. Restzeitattribut nur als abgefragte Momentaufnahme.
+
+Ergänzender Lauf mit Parser-, Medienbild-, Steuerungs- und Integrationstests: 112 Tests bestanden (383,94 Sekunden). Danach beziehungsweise separat mit der endgültigen Zeitstempel-Anbindung: 37 gezielte Tests des endgültigen Funktionsstands bestanden (Python 3.14.7, echtes HA-Testframework, simulierte Receiver). Geprüft: gültige und ungültige Positions-/Dauerwerte, Sonderzeichen in Referenzen, unterschiedliche Aufnahmen, Live-TV, fehlende Unterstützung, unveränderte Position, Vor-/Rücksprünge, UTC-Zeitstempel, Ende, optionale Ausfälle, Offlinezustand und Standby. Ruff, Formatprüfung, striktes mypy (39 Module) und Syntaxprüfung bestanden.
+
+Qualitätsabgleich: vorhandenes Polling, Gerätebindung, Verfügbarkeit, gemeinsame Modelle, Typisierung und Dokumentation geprüft. Kein zusätzliches Polling, keine neuen Schreibzugriffe, Abhängigkeiten oder Qualitätsausnahmen; bestehende CI-Abdeckungsgrenzen unverändert. Offline-Lockdatei ändert nur die Projektversion. Lokale Tests verwenden das echte HA-Framework und simulierte Receiverantworten. Reale Wiedergabeprüfung auf beiden Receivern sowie Anzeigeprüfung in einer installierten HA-Oberfläche bleiben offen; kein Receiver wurde dafür umgeschaltet. Vor main sind aktuelle vollständige CI-Nachweise erforderlich.
+
 ## Timeshift-Speicherrückfrage – 2.0.0-dev.5
 
 Neue optionale Wiederherstellung pro Receiver, standardmäßig ausgeschaltet. Am 27.09.2026 lokal mit Python 3.14.7 und echtem HA-Testframework bei simulierten Receiverantworten geprüft: 140 Tests für Timeshift, Optionsdialog, API und Config Flow bestanden. Erweitertes Modul `timeshift.py`: 100 % Anweisungs-/Zweigabdeckung (83 Anweisungen, 26 Zweige). Nach der Transporttypkorrektur zusätzlich 46 gezielte GET-/POST-Tests bestanden; ein echter lokaler HTTP-Server bestätigt Formulardaten und fehlende POST-Wiederholung nach Antwortverlust.
