@@ -12,7 +12,7 @@
       "attempts": 1,
       "last_attempt": "2026-09-28",
       "due": "2026-09-29",
-      "error": "Versuch gestartet; Abschluss noch nicht gespeichert"
+      "error": "Eingabegröße: ValueError"
     },
     "5ca489e53b812814386b51101855a3c13f83578cb623bef63bc338446a61450f": {
       "post": {
@@ -25,7 +25,7 @@
       "attempts": 1,
       "last_attempt": "2026-09-28",
       "due": "2026-09-29",
-      "error": "Versuch gestartet; Abschluss noch nicht gespeichert"
+      "error": "Eingabegröße: ValueError"
     }
   },
   "reviewed": {
