@@ -4,7 +4,7 @@
 
 ## Inhaltsverzeichnis
 
-- [2.1.2-dev.1](#212-dev1)
+- [2.1.2](#212)
 - [2.0.1](#201)
 - [2.0.0](#200)
 - [1.3.0](#130)
@@ -18,9 +18,9 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 2.1.2-dev.1
+## 2.1.2
 
-Unveröffentlichte Entwicklerversion.
+Unveröffentlicht.
 
 - Den Abschnitt „Von Junie gemeldete Modellkosten“ in künftigen Markdown-Berichten und Issues mit `<!---` und `-->` auskommentiert. Die Angaben bleiben im Quelltext und in den strukturierten Ergebnissen erhalten.
 
