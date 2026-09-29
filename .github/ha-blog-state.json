@@ -1,20 +1,6 @@
 {
   "version": 1,
   "entries": {
-    "2728c351bb2ff923632a71f25109ff7493bedb2816b6591cdae8f1d215939870": {
-      "post": {
-        "path": "2026-09-26-llm-tool-result.md",
-        "date": "2026-09-26",
-        "title": "LLM tools return a ToolResult and declare their integration",
-        "text": "As of Home Assistant Core 2026.10, an LLM tool returns an `llm.ToolResult` instead of a plain JSON object. `ToolResult` carries the tool's `data` and an `error` flag that says whether the call failed. On the chat log side, `ToolResultContent.tool_result` is replaced by `ToolResultContent.result`, which holds the `ToolResult`.\n\nReturning a plain JSON object from a tool, reading `ToolResultContent.tool_result`, and setting `tool_result` on a tool result delta are deprecated. They keep working for custom integrations with a warning in the log until Home Assistant Core 2027.11, and stop working after that.\n\nThe release also adds metadata to `llm.Tool`. A tool now has a `title` for people to read, `annotations` that describe how it behaves, and an `integration` that records which integration provides it. The MCP Server integration serves the title and the annotations to MCP clients.\n\nThe annotations are an `llm.ToolAnnotations` with four flags: `read_only`, `destructive`, `idempotent` and `open_world`. The defaults describe the least safe case, so a tool that declares nothing is taken to write, to be destructive, and to reach outside Home Assistant.\n\nCreating a tool without an `integration` is deprecated. A core integration raises an error. A custom integration gets a warning in the log until Home Assistant Core 2027.10, and stops working after that.\n\nBoth changes together look like this:\n\n```python\nfrom homeassistant.core import HomeAssistant\nfrom homeassistant.helpers import llm\n\nfrom .const import DOMAIN\n\n\nclass GetItemsTool(llm.Tool):\n    \"\"\"Tool to read the items on a list.\"\"\"\n\n    name = \"my_integration__get_items\"\n    title = \"Get list items\"\n    description = \"Read the items on a list.\"\n    integration = DOMAIN\n    annotations = llm.ToolAnnotations(\n        read_only=True, destructive=False, idempotent=True, open_world=False\n    )\n\n    async def async_call(\n        self,\n        hass: HomeAssistant,\n        tool_input: llm.ToolInput,\n        llm_context: llm.LLMContext,\n    ) -> llm.ToolResult:\n        \"\"\"Call the tool.\"\"\"\n        return llm.ToolResult(data={\"items\": [\"Milk\", \"Bread\"]})\n"
-      },
-      "upstream": "031f29d0d3712b6d18a00f5b12df80a0215110a8",
-      "attempts": 1,
-      "last_attempt": "2026-09-29",
-      "due": "2026-09-30",
-      "error": "Versuch gestartet; Abschluss noch nicht gespeichert",
-      "recheck": "8bf7244573274313b06cb22bc2b5acae"
-    },
     "5ca489e53b812814386b51101855a3c13f83578cb623bef63bc338446a61450f": {
       "post": {
         "path": "2026-09-28-central-config-flow-abort-reasons.md",
@@ -26,12 +12,13 @@
       "attempts": 1,
       "last_attempt": "2026-09-29",
       "due": "2026-09-30",
-      "error": "Versuch gestartet; Abschluss noch nicht gespeichert",
+      "error": "Junie-Analyse: keine gültige Antwort",
       "recheck": "d9a86522f62a4aa2a25d987bb7df0c0d"
     }
   },
   "reviewed": {
     "9e41a40475df9d186c135d49e74284ccc35af1f3ff88678d7f3e6eb45ea111b9": "2026-09-18",
-    "e1dcae99c9ee4d0709c820530053f1503d2b8527ad7004a8ec3b75d07bb443cc": "2026-09-18"
+    "e1dcae99c9ee4d0709c820530053f1503d2b8527ad7004a8ec3b75d07bb443cc": "2026-09-18",
+    "2728c351bb2ff923632a71f25109ff7493bedb2816b6591cdae8f1d215939870": "2026-09-29"
   }
 }
