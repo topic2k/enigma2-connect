@@ -188,6 +188,8 @@ the hardware test file without acceptance configuration skips the test.
 
 ## Monitor the Home Assistant developer blog
 
+The production Junie monitor allows 800,000 UTF-8 input bytes per post for serialized source context, blog text and shared instructions. This is a local size guard, not a provider token or credit guarantee. The older Gemini tools retain their 400,000-byte limit.
+
 The [workflow](../.github/workflows/ha-developer-blog.yml) checks new or changed
 posts in the official [blog repository](https://github.com/home-assistant/developers.home-assistant/tree/master/blog)
 on Mondays at **07:23 UTC** (09:23 CEST / 08:23 CET). Each run analyzes at most
