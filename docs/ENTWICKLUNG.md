@@ -270,6 +270,8 @@ GitHub muss unter **Settings → Actions → General → Workflow permissions �
 
 ### Zugang, Kosten und Bedienung
 
+Der Abschnitt „Von Junie gemeldete Modellkosten“ bleibt in Markdown-Berichten und Issue-Texten erhalten, wird aber mit `<!---` und `-->` auskommentiert. Er ist im Markdown-Quelltext einsehbar; die numerischen Werte in `report.json` bleiben unverändert.
+
 1. Einen CLI-Token im [Junie-Konto](https://junie.jetbrains.com/tokens) erstellen
    und als Repository-Secret **JUNIE_API_KEY** speichern. Den Token nicht in
    Code, Issues oder Chats eintragen. Vorhandenes JetBrains-Guthaben bereithalten.

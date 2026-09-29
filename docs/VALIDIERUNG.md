@@ -2,6 +2,11 @@
 
 # Prüfübersicht
 
+## Auskommentierte Junie-Kosten – 2.1.2-dev.1
+
+26 gezielte Offline-Tests des Junie-Monitors sowie Ruff, Format-, Python-Syntax- und Offline-Lockprüfung bestanden. Nur die Markdown-Darstellung wird mit `<!---` und `-->` ausgeblendet; Kostenwerte, Modellangaben und strukturierte Ergebnisse bleiben erhalten. Keine Änderung an Integrationslaufzeit oder Qualitätsanforderungen.
+
+
 ## Gezielte erneute Blogprüfung – 2.1.1
 
 87 Offline-Skripttests bestanden. Neue Prüfungen belegen exakte Auswahl bereits geprüfter Beiträge, unveränderten Aufruferstatus, Fehlerwiederholung trotz alter Issue-Marker und Abgleich einer verlorenen Veröffentlichungsantwort über den neuen Wiederholungsmarker. Ungültige, doppelte oder mit dem Fehlerversuchsmodus kombinierte Dateinamen werden vor einer Statusänderung abgelehnt. Ruff, Format-, Syntax-, Workflow- und Lockdateiprüfung bestanden; aktuelle PR-CI vor main-Übernahme erforderlich. Keine Integrationslaufzeit oder Qualitätsanforderungen geändert. Der produktive Neustart der beiden Beiträge folgt nach Übernahme; diese Offline-Nachweise ersetzen keine Live-Analyse.

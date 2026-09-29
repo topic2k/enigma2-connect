@@ -257,6 +257,8 @@ GitHub must permit PR creation via **Settings → Actions → General → Workfl
 
 ### Access, costs and operation
 
+The “Von Junie gemeldete Modellkosten” section remains in Markdown reports and issue bodies but is commented out with `<!---` and `-->`. It is available in the Markdown source; numeric values in `report.json` remain unchanged.
+
 1. Create a CLI token in the [Junie account](https://junie.jetbrains.com/tokens)
    and save it as the repository secret **JUNIE_API_KEY**. Never put the token in
    code, issues or chat. Keep existing JetBrains credits available.
