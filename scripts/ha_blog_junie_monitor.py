@@ -224,11 +224,11 @@ def finish_plan(plan, results_dir, store, publish):
     missing = len(posts) - len(safe_usage)
     models = sorted({m for v in safe_usage.values() for m in v["models"]})
     footer = (
-        f"\n\n### Von Junie gemeldete Modellkosten\n\n"
+        f"\n\n<!---\n### Von Junie gemeldete Modellkosten\n\n"
         f"{cost:.6f} USD für {len(safe_usage)} Beiträge mit Verbrauchsdaten; "
         f"{missing} ohne Verbrauchsnachweis. Fehlende Werte zählen nicht als kostenlos.\n\n"
         f"Modelle: {', '.join(models) or 'Nicht gemeldet'}. "
-        "Quelle: llmUsage[].cost; kein Beleg der Credit-Abbuchung im JetBrains-Konto.\n"
+        "Quelle: llmUsage[].cost; kein Beleg der Credit-Abbuchung im JetBrains-Konto.\n-->\n"
     )
     report = {
         "model": MODEL,

@@ -4,7 +4,7 @@
 
 ## Inhaltsverzeichnis
 
-- [2.1.1](#211)
+- [2.1.2-dev.1](#212-dev1)
 - [2.0.1](#201)
 - [2.0.0](#200)
 - [1.3.0](#130)
@@ -18,9 +18,11 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 2.1.1
+## 2.1.2-dev.1
 
-Unveröffentlicht.
+Unveröffentlichte Entwicklerversion.
+
+- Den Abschnitt „Von Junie gemeldete Modellkosten“ in künftigen Markdown-Berichten und Issues mit `<!---` und `-->` auskommentiert. Die Angaben bleiben im Quelltext und in den strukturierten Ergebnissen erhalten.
 
 - Bereits geprüfte Blogbeiträge können über ihre Dateinamen gezielt erneut analysiert werden. Bestehende Issues bleiben erhalten; eigene Wiederholungskennungen ermöglichen Fehlerwiederholungen und verhindern doppelte Veröffentlichung nach verlorener API-Antwort.
 

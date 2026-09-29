@@ -2,6 +2,11 @@
 
 # Verification summary
 
+## Commented Junie costs – 2.1.2-dev.1
+
+26 targeted offline Junie monitor tests plus Ruff, formatting, Python syntax and offline lockfile checks passed. Only Markdown presentation is hidden with `<!---` and `-->`; cost values, model names and structured results are retained. Integration runtime and quality requirements are unchanged.
+
+
 ## Targeted blog rechecks – 2.1.1
 
 87 offline script tests passed. New checks cover exact selection of reviewed posts, unchanged caller state, retry despite older issue markers, and reconciliation of a lost publication response using the new recheck marker. Unknown or duplicate filenames and combinations with retry mode are rejected before state mutation. Ruff, formatting, syntax, workflow and lockfile checks passed; current PR CI is required before merging into main. Integration runtime and quality requirements are unchanged. The production restart of the two posts follows the merge; these offline checks do not establish live analysis success.
