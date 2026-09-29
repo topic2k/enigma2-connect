@@ -7,6 +7,7 @@ import json
 import math
 import os
 import re
+import uuid
 from datetime import date, datetime, timezone
 from pathlib import Path
 
@@ -68,17 +69,36 @@ def prepare_plan(
     *,
     retry_only=False,
     retry_failed=False,
+    recheck_posts=(),
     publish=False,
     repository="",
     revision="",
     output=OUTPUT,
 ):
     state = copy.deepcopy(state)
-    for key in known:
-        state["entries"].pop(key, None)
-    candidates = scheduler.eligible_posts(
-        posts, state, known, today, retry_only=retry_only, retry_failed=retry_failed
-    )
+    if recheck_posts:
+        requested = set(recheck_posts)
+        by_path = {post["path"]: post for post in posts}
+        if (
+            retry_only
+            or retry_failed
+            or len(requested) != len(recheck_posts)
+            or len(requested) > common.MAX_POSTS
+            or not requested <= by_path.keys()
+        ):
+            raise ValueError("Recheck requires 1-5 distinct available post paths and no retry mode")
+        candidates = [by_path[path] for path in recheck_posts]
+        for post in candidates:
+            key = common.post_id(post)
+            state.get("reviewed", {}).pop(key, None)
+            state["entries"][key] = {"recheck": uuid.uuid4().hex}
+    else:
+        known = scheduler.effective_known(known, state)
+        for key in known:
+            state["entries"].pop(key, None)
+        candidates = scheduler.eligible_posts(
+            posts, state, known, today, retry_only=retry_only, retry_failed=retry_failed
+        )
     selected = candidates[: common.MAX_POSTS]
     keys, failures = [], {}
     for post in selected:
@@ -247,6 +267,7 @@ def main():
     parser.add_argument("--publish", action="store_true")
     parser.add_argument("--retry-only", action="store_true")
     parser.add_argument("--retry-failed", action="store_true")
+    parser.add_argument("--recheck-post", action="append", default=[])
     parser.add_argument("--key")
     parser.add_argument("--usage-file", type=Path)
     parser.add_argument("--outcome")
@@ -278,6 +299,7 @@ def main():
             upstream,
             retry_only=args.retry_only,
             retry_failed=args.retry_failed,
+            recheck_posts=args.recheck_post,
             publish=args.publish,
             repository=repository,
             revision=revision,

@@ -48,6 +48,8 @@ def validate_state(state):
     for key, entry in entries.items():
         if not isinstance(entry, dict) or not isinstance(entry.get("post"), dict):
             raise ValueError("Invalid retry entry")
+        if "recheck" in entry and not re.fullmatch(r"[a-f0-9]{32}", str(entry["recheck"])):
+            raise ValueError("Invalid recheck identity")
         post = entry["post"]
         if any(not isinstance(post.get(field), str) for field in ("path", "title", "text", "date")):
             raise ValueError("Invalid stored post")
@@ -113,6 +115,18 @@ class GithubState:
         self.sha = response["content"]["sha"]
 
 
+def effective_known(known, state):
+    """An explicit recheck reconciles only receipts from that same recheck."""
+    known = set(known)
+    for key, entry in state["entries"].items():
+        if token := entry.get("recheck"):
+            if f"{key}:{token}" in known:
+                known.add(key)
+            else:
+                known.discard(key)
+    return known
+
+
 def eligible_posts(posts, state, known, today, *, retry_only=False, retry_failed=False):
     """Retry stored content first; daily wake-ups never admit unseen posts."""
     known = known | set(state.get("reviewed", {}))
@@ -167,6 +181,7 @@ def process(
     retry_failed=False,
 ):
     """One bounded AI request; persist attempts before work to survive interrupted runs."""
+    known = effective_known(known, state)
     for key in known:
         state["entries"].pop(key, None)
     candidates = eligible_posts(
@@ -237,6 +252,7 @@ def reserve_attempts(selected, state, today, store, upstream):
             "last_attempt": today.isoformat(),
             "due": (today + timedelta(days=1)).isoformat() if attempts == 1 else None,
             "error": "Versuch gestartet; Abschluss noch nicht gespeichert",
+            **({"recheck": old["recheck"]} if "recheck" in old else {}),
         }
     try:
         store.save(state)
@@ -293,6 +309,8 @@ def complete_processing(
                 deferred,
                 model=model,
             )
+            if token := state["entries"][key].get("recheck"):
+                summary += f"\n<!-- ha-blog-recheck:{key}:{token} -->\n"
             if analysis_url:
                 summary += f"\nUrsprung: [Automatische Blog-Analyse]({analysis_url}).\n"
             summary += footer

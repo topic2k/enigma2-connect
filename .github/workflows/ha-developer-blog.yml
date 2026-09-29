@@ -35,6 +35,10 @@ on:
         description: 'Include posts from this date (YYYY-MM-DD)'
         type: string
         default: '2026-09-01'
+      recheck_posts:
+        description: 'Explicitly recheck 1-5 comma-separated blog filenames, including reviewed posts'
+        type: string
+        default: ''
       retry_failed:
         description: 'Retry exhausted entries only (also available in dry runs)'
         type: boolean
@@ -117,6 +121,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           SINCE: ${{ inputs.since || '2026-09-01' }}
+          RECHECK_POSTS: ${{ inputs.recheck_posts }}
           PUBLISH: ${{ github.event_name == 'schedule' || inputs.dry_run == false }}
           RETRY_ONLY: ${{ (github.event_name == 'schedule' && github.event.schedule != '23 7 * * 1') || inputs.retry_failed == true }}
           RETRY_FAILED: ${{ inputs.retry_failed == true }}
@@ -127,6 +132,10 @@ jobs:
           if [ "$PUBLISH" = "true" ]; then args+=(--publish); fi
           if [ "$RETRY_ONLY" = "true" ]; then args+=(--retry-only); fi
           if [ "$RETRY_FAILED" = "true" ]; then args+=(--retry-failed); fi
+          if [ -n "$RECHECK_POSTS" ]; then
+            IFS=',' read -ra posts <<< "$RECHECK_POSTS"
+            for post in "${posts[@]}"; do args+=(--recheck-post="$post"); done
+          fi
           uv run --no-project --python 3.14 python scripts/ha_blog_junie_monitor.py prepare \
             --blog-dir .work/ha-developer-blog/blog --since "$SINCE" "${args[@]}"
       - uses: actions/upload-artifact@v7

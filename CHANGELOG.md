@@ -4,7 +4,7 @@
 
 ## Inhaltsverzeichnis
 
-- [2.1.0](#210)
+- [2.1.1](#211)
 - [2.0.1](#201)
 - [2.0.0](#200)
 - [1.3.0](#130)
@@ -18,9 +18,11 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 2.1.0
+## 2.1.1
 
 Unveröffentlicht.
+
+- Bereits geprüfte Blogbeiträge können über ihre Dateinamen gezielt erneut analysiert werden. Bestehende Issues bleiben erhalten; eigene Wiederholungskennungen ermöglichen Fehlerwiederholungen und verhindern doppelte Veröffentlichung nach verlorener API-Antwort.
 
 - Blog-Monitor erstellt je relevantem Beitrag ein eigenes thematisches `[HA-Blog]`-Issue mit Link zum Analyse-Lauf. Unauffällige Beiträge bleiben still; Teilfehler werden je Beitrag wiederholt.
 - Konkrete Anpassungen und empfohlene Verbesserungen erhalten nach einem begrenzten automatischen Umsetzungsversuch nach Möglichkeit einen Entwurfs-PR gegen develop auf einem eigenen Branch `ha-blog/short-title`. Getrennte Codeerstellung und Veröffentlichung, kein automatischer Merge; unklare Fälle bleiben zur manuellen Prüfung im Issue.

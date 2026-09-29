@@ -2,6 +2,11 @@
 
 # Verification summary
 
+## Targeted blog rechecks – 2.1.1
+
+87 offline script tests passed. New checks cover exact selection of reviewed posts, unchanged caller state, retry despite older issue markers, and reconciliation of a lost publication response using the new recheck marker. Unknown or duplicate filenames and combinations with retry mode are rejected before state mutation. Ruff, formatting, syntax, workflow and lockfile checks passed; current PR CI is required before merging into main. Integration runtime and quality requirements are unchanged. The production restart of the two posts follows the merge; these offline checks do not establish live analysis success.
+
+
 ## Individual blog issues and implementation proposals – 2.1.0
 
 New blog results are published per post with a topical title and a link to the originating Actions run. Concrete results can trigger an isolated, time-bounded implementation attempt and a draft PR against develop. Uncertain results remain issues; no-action results stay silent. Existing aggregate issues are not automatically changed.
