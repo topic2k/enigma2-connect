@@ -324,6 +324,89 @@ class JunieMonitorTests(unittest.TestCase):
         self.assertEqual(plan["keys"], [])
         self.store.save.assert_not_called()
 
+    def test_explicit_recheck_selects_only_requested_reviewed_post(self):
+        keys = {common.post_id(post) for post in self.posts}
+        state = {
+            "version": 1,
+            "entries": {},
+            "reviewed": {key: self.today.isoformat() for key in keys},
+        }
+        original = copy.deepcopy(state)
+        plan = monitor.prepare_plan(
+            self.posts,
+            self.sources,
+            state,
+            keys,
+            self.today,
+            self.store,
+            "b" * 40,
+            recheck_posts=[self.posts[0]["path"]],
+            output=self.root / "plan",
+        )
+        self.assertEqual(plan["posts"], [self.posts[0]])
+        self.assertEqual(state, original)
+        key = common.post_id(self.posts[0])
+        self.assertEqual(plan["state"]["entries"][key]["attempts"], 1)
+        self.assertEqual(len(plan["state"]["entries"][key]["recheck"]), 32)
+        self.assertNotIn(key, plan["state"]["reviewed"])
+        self.assertIn(common.post_id(self.posts[1]), plan["state"]["reviewed"])
+
+    def test_recheck_failure_retries_despite_old_issue_receipt(self):
+        plan = self.plan(recheck_posts=[self.posts[0]["path"]])
+        self.finish(plan)
+        key = common.post_id(self.posts[0])
+        state = self.saved[-1]
+        retried = monitor.prepare_plan(
+            [],
+            self.sources,
+            state,
+            {key},
+            self.today + timedelta(days=1),
+            self.store,
+            "b" * 40,
+            retry_only=True,
+            output=self.root / "retry",
+        )
+        self.assertEqual(retried["posts"], [self.posts[0]])
+        self.assertEqual(
+            retried["state"]["entries"][key]["recheck"], plan["state"]["entries"][key]["recheck"]
+        )
+        self.assertEqual(retried["state"]["entries"][key]["attempts"], 2)
+
+    def test_recheck_issue_receipt_reconciles_ambiguous_publication(self):
+        plan = self.plan(recheck_posts=[self.posts[0]["path"]])
+        result = self.result(self.posts[0])
+        result["assessment"] = "uncertain"
+        self.artifact(self.posts[0], {"results": [result]})
+        self.finish(plan)
+        body = self.publisher.call_args.args[0]["body"]
+        known = common.reviewed_ids(lambda endpoint: [{"body": body}])
+        key = common.post_id(self.posts[0])
+        self.assertIn(key + ":" + plan["state"]["entries"][key]["recheck"], known)
+        # Simulate losing the publication response and retaining the reserved state.
+        retried = monitor.prepare_plan(
+            [],
+            self.sources,
+            plan["state"],
+            known,
+            self.today + timedelta(days=1),
+            self.store,
+            "b" * 40,
+            retry_only=True,
+            output=self.root / "retry",
+        )
+        self.assertEqual(retried["posts"], [])
+
+    def test_recheck_rejects_unknown_duplicate_and_mixed_retry_before_saving(self):
+        for options in (
+            {"recheck_posts": ["unknown.md"]},
+            {"recheck_posts": [self.posts[0]["path"]] * 2},
+            {"recheck_posts": [self.posts[0]["path"]], "retry_only": True},
+        ):
+            with self.subTest(options=options), self.assertRaises(ValueError):
+                self.plan(**options)
+        self.store.save.assert_not_called()
+
     def test_dry_run_does_not_mutate_caller_state(self):
         state = {"version": 1, "entries": {}}
         original = copy.deepcopy(state)

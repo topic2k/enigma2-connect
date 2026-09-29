@@ -2,6 +2,11 @@
 
 # Prüfübersicht
 
+## Gezielte erneute Blogprüfung – 2.1.1
+
+87 Offline-Skripttests bestanden. Neue Prüfungen belegen exakte Auswahl bereits geprüfter Beiträge, unveränderten Aufruferstatus, Fehlerwiederholung trotz alter Issue-Marker und Abgleich einer verlorenen Veröffentlichungsantwort über den neuen Wiederholungsmarker. Ungültige, doppelte oder mit dem Fehlerversuchsmodus kombinierte Dateinamen werden vor einer Statusänderung abgelehnt. Ruff, Format-, Syntax-, Workflow- und Lockdateiprüfung bestanden; aktuelle PR-CI vor main-Übernahme erforderlich. Keine Integrationslaufzeit oder Qualitätsanforderungen geändert. Der produktive Neustart der beiden Beiträge folgt nach Übernahme; diese Offline-Nachweise ersetzen keine Live-Analyse.
+
+
 ## Einzelne Blog-Issues und Umsetzungsvorschläge – 2.1.0
 
 Neue Blogergebnisse werden je Beitrag veröffentlicht, mit thematischem Titel und Ursprung im Actions-Lauf. Konkrete Ergebnisse können einen isolierten, zeitlich begrenzten Umsetzungsversuch und einen Entwurfs-PR gegen develop auslösen. Unklare Ergebnisse bleiben Issues; stille Ergebnisse bleiben ohne Issue. Bestehende Sammel-Issues werden nicht automatisch verändert.

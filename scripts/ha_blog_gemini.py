@@ -115,6 +115,11 @@ def reviewed_ids(request):
             raise ValueError("Unexpected GitHub issue response")
         for issue in issues:
             if "pull_request" not in issue:
+                for key, token in re.findall(
+                    r"<!-- ha-blog-recheck:([a-f0-9]{64}):([a-f0-9]{32}) -->",
+                    issue.get("body") or "",
+                ):
+                    found.add(f"{key}:{token}")
                 for marker in re.findall(MARKER_PATTERN, issue.get("body") or ""):
                     found.add(marker.removeprefix("<!-- ha-blog-gemini:").removesuffix(" -->"))
         if len(issues) < 100:

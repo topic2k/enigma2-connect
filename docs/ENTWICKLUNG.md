@@ -233,6 +233,8 @@ aus. Strukturierte Ergebnisse und Kosten bleiben zur technischen Nachvollziehbar
 
 ### Wiederholung und Berechtigungen
 
+Für eine ausdrücklich erneute Prüfung abgeschlossener Beiträge im manuellen Workflow **Explicitly recheck 1-5 comma-separated blog filenames, including reviewed posts** mit exakten Dateinamen füllen, beispielsweise `2026-09-26-llm-tool-result.md,2026-09-28-central-config-flow-abort-reasons.md`. `since` muss diese Beiträge einschließen; nicht mit **Retry exhausted entries only** kombinieren. Nur die genannten Beiträge werden ausgewählt. Für echte Veröffentlichung `dry_run` deaktivieren; die erneute Prüfung kann neue Einzel-Issues und Umsetzungsvorschläge erzeugen. Frühere Issues bleiben bestehen. Eine eigene Kennung unterscheidet neue Prüfnachweise von früheren, auch bei Fehlerwiederholungen.
+
 Der [Junie-Monitor](../scripts/ha_blog_junie_monitor.py) verwendet die bewährte
 [Status- und Wiederholungslogik](../scripts/ha_blog_scheduler.py). Bei einem ersten
 Fehler wird ausschließlich der betroffene Beitrag für den Folgetag vorgemerkt;

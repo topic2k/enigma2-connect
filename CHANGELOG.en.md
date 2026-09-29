@@ -4,7 +4,7 @@
 
 ## Contents
 
-- [2.1.0](#210)
+- [2.1.1](#211)
 - [2.0.1](#201)
 - [2.0.0](#200)
 - [1.3.0](#130)
@@ -18,9 +18,11 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 2.1.0
+## 2.1.1
 
 Unreleased.
+
+- Previously reviewed blog posts can be explicitly reassessed by filename. Existing issues are preserved; dedicated recheck identities support retries and reconcile publication after a lost API response.
 
 - The blog monitor creates one topical `[HA-Blog]` issue per relevant post with a link to the analysis run. No-action posts remain silent; partial publication failures retry only the affected post.
 - Concrete adaptations and recommended improvements receive a draft PR against develop on a dedicated `ha-blog/short-title` branch where a bounded implementation attempt can produce a proposal. Code generation and publication are isolated; no automatic merge, and uncertain cases remain in their issue for manual review.
