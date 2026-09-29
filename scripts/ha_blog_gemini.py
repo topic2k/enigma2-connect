@@ -151,7 +151,9 @@ def source_snapshot(root):
     return sources
 
 
-def select_batch(posts, known, sources):
+def select_batch(posts, known, sources, *, max_input_bytes=None):
+    if max_input_bytes is None:
+        max_input_bytes = MAX_INPUT_BYTES
     pending = [p for p in posts if post_id(p) not in known]
     selected = pending[:MAX_POSTS]
     numbered = {
@@ -166,7 +168,7 @@ def select_batch(posts, known, sources):
             },
             ensure_ascii=False,
         )
-        if len((INSTRUCTIONS + prompt).encode()) <= MAX_INPUT_BYTES:
+        if len((INSTRUCTIONS + prompt).encode()) <= max_input_bytes:
             return selected, prompt, len(pending) - len(selected)
         if len(selected) == 1:
             raise ValueError(

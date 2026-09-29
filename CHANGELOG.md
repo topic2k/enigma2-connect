@@ -4,6 +4,7 @@
 
 ## Inhaltsverzeichnis
 
+- [2.0.2](#202)
 - [2.0.1](#201)
 - [2.0.0](#200)
 - [1.3.0](#130)
@@ -16,6 +17,12 @@
 - [1.0.2](#102)
 - [1.0.1](#101)
 - [1.0.0](#100)
+
+## 2.0.2
+
+Unveröffentlicht.
+
+- Eingabebudget des produktiven Junie-Blog-Monitors auf 800.000 UTF-8-Bytes erhöht, damit der gewachsene Quellkontext mit einzelnen Blogbeiträgen wieder analysiert werden kann. Separate Budgetgrenze mit Regressionstests; bestehende Gemini-Grenze bleibt erhalten.
 
 ## 2.0.1
 

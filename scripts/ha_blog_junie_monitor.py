@@ -19,6 +19,8 @@ except ImportError:
 
 OUTPUT = Path(".work/blog-monitor/junie-monitor")
 MODEL = "Junie (Standardmodell; tatsächliche Modelle siehe Verbrauch)"
+# Local UTF-8 payload guard, independent of the legacy Gemini request budget.
+MAX_INPUT_BYTES = 800_000
 KEY_PATTERN = r"[a-f0-9]{64}"
 
 
@@ -82,7 +84,9 @@ def prepare_plan(
     for post in selected:
         key = common.post_id(post)
         try:
-            _, prompt, _ = common.select_batch([post], set(), sources)
+            _, prompt, _ = common.select_batch(
+                [post], set(), sources, max_input_bytes=MAX_INPUT_BYTES
+            )
             packet = output / "packets" / key
             packet.mkdir(parents=True, exist_ok=True)
             (packet / "input.json").write_text(prompt, encoding="utf-8")

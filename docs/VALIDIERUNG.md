@@ -2,6 +2,12 @@
 
 # Prüfübersicht
 
+## Junie-Eingabebudget – 2.0.2
+
+Der [Fehllauf vom 29.09.2026](https://github.com/topic2k/enigma2-connect/actions/runs/36580567662) verwarf die beiden Beiträge vom 26. und 28.09. vor dem KI-Aufruf: 557.112 bzw. 559.096 UTF-8-Bytes überschritten die alte Grenze von 400.000 Bytes. Das separate Budget des produktiven Junie-Monitors beträgt jetzt 800.000 Bytes.
+
+Lokale Offline-Prüfung: 72 Skripttests, Ruff, Formatprüfung, Python-Syntax und Lockdateiprüfung bestanden. Beide Originalbeiträge aus dem gespeicherten Run-Plan erzeugen mit der Korrektur gültige Analysepakete; das ist keine echte KI-Auswertung. Regressionstests decken den größeren Kontext und die weiterhin wirksame UTF-8-Obergrenze ab. Integrationslaufzeit, Qualitätscheckliste und Abdeckungsgrenzen bleiben unverändert; keine neuen Receiver-/HA-Praxisprüfungen erforderlich. Remote-main, Tags und Releases vor PR abgeglichen: Basis 2.0.1, Ziel 2.0.2 (unveröffentlicht). Aktuelle PR-CI und die erneute produktive Bloganalyse werden separat geprüft.
+
 ## Timer-Konflikttest – 2.0.1-dev.1
 
 Der nach der Veröffentlichung von 2.0.0 durch die develop-Synchronisierung ausgelöste [CI-Lauf](https://github.com/topic2k/enigma2-connect/actions/runs/36331608102) scheiterte mit 1 Fehler und 1140 erfolgreichen Tests. Derselbe Commit `244673327d246ca7a92c311e77bf9a9b2ff18dc8` hatte zuvor auf [main](https://github.com/topic2k/enigma2-connect/actions/runs/36331393207) sowie im [Tag-Lauf](https://github.com/topic2k/enigma2-connect/actions/runs/36331584156) bestanden. Der spätere Fehllauf wurde bei der Release-Abschlussmeldung nicht mehr kontrolliert.

@@ -2,6 +2,12 @@
 
 # Verification summary
 
+## Junie input budget – 2.0.2
+
+The [failed run on 2026-09-29](https://github.com/topic2k/enigma2-connect/actions/runs/36580567662) rejected the September 26 and 28 posts before calling AI: 557,112 and 559,096 UTF-8 bytes exceeded the old 400,000-byte limit. The production Junie monitor now has a separate 800,000-byte budget.
+
+Local offline verification: 72 script tests, Ruff, formatting, Python syntax and lockfile checks passed. Both original posts from the saved run plan produce valid analysis packets with the fix; this is not an actual AI assessment. Regression tests cover larger context and the retained UTF-8 ceiling. Integration runtime, quality checklist and coverage thresholds remain unchanged; no new receiver/HA acceptance tests are required. Remote main, tags and releases checked before the PR: baseline 2.0.1, target 2.0.2 (unreleased). Current PR CI and the repeated production blog analysis are checked separately.
+
 ## Timer-conflict test – 2.0.1-dev.1
 
 The [CI run](https://github.com/topic2k/enigma2-connect/actions/runs/36331608102) triggered by synchronizing develop after publishing 2.0.0 failed with 1 failure and 1140 passing tests. The same commit `244673327d246ca7a92c311e77bf9a9b2ff18dc8` had passed on [main](https://github.com/topic2k/enigma2-connect/actions/runs/36331393207) and in the [tag run](https://github.com/topic2k/enigma2-connect/actions/runs/36331584156). The later failed run was not checked before the release completion message.

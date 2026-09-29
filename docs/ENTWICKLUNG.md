@@ -196,6 +196,8 @@ direkter Aufruf der Hardware-Testdatei ohne Prüfkonfiguration wird übersprunge
 
 ## Home-Assistant-Entwicklerblog überwachen
 
+Der produktive Junie-Monitor erlaubt pro Beitrag 800.000 UTF-8-Eingabebytes für den serialisierten Quellkontext, Blogtext und die gemeinsamen Anweisungen. Das ist eine lokale Größenbegrenzung, keine Token- oder Credit-Zusage des Anbieters. Die älteren Gemini-Werkzeuge behalten ihre Grenze von 400.000 Bytes.
+
 Der [Workflow](../.github/workflows/ha-developer-blog.yml) prüft montags um
 **07:23 UTC** neue oder geänderte Beiträge im offiziellen
 [Blog-Repository](https://github.com/home-assistant/developers.home-assistant/tree/master/blog).

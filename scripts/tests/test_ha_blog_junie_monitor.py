@@ -78,6 +78,20 @@ class JunieMonitorTests(unittest.TestCase):
             self.assertEqual([p["path"] for p in data["posts"]], [post["path"]])
         self.assertEqual(len(plan["keys"]), 2)
 
+    def test_production_budget_accepts_context_above_legacy_limit(self):
+        self.sources = {"entity.py": "x" * 550_000}
+        with self.assertRaises(ValueError):
+            common.select_batch([self.posts[0]], set(), self.sources)
+        plan = self.plan()
+        self.assertEqual(len(plan["keys"]), 2)
+        self.assertEqual(plan["failures"], {})
+
+    def test_production_budget_still_rejects_oversized_utf8_context(self):
+        self.sources = {"entity.py": "ä" * 400_000}
+        plan = self.plan()
+        self.assertEqual(plan["keys"], [])
+        self.assertEqual(len(plan["failures"]), 2)
+
     def test_partial_failure_retries_only_failed_post_next_day_then_turns_red(self):
         plan = self.plan()
         self.artifact(self.posts[0])
