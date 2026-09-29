@@ -2,6 +2,15 @@
 
 # Verification summary
 
+## Individual blog issues and implementation proposals – 2.1.0
+
+New blog results are published per post with a topical title and a link to the originating Actions run. Concrete results can trigger an isolated, time-bounded implementation attempt and a draft PR against develop. Uncertain results remain issues; no-action results stay silent. Existing aggregate issues are not automatically changed.
+
+83 offline script tests passed, covering individual issues, origin links, partial failures, retained silent reviews, PR deduplication, changed bases, protected paths, size guards and develop draft targeting. Ruff, formatting and actionlint 1.7.12 passed. These tests simulate the PR API; they do not prove actual automatic implementation and PR creation, which will first run on a future concrete blog result. The last production analysis before this change [passed](https://github.com/topic2k/enigma2-connect/actions/runs/36598077884).
+
+Integration runtime, quality checklist, coverage thresholds and existing practical evidence are unchanged. No new receiver/installed-HA acceptance is needed. Automated drafts still require content review and current CI; they do not replace quality evidence or publication approval. The repository must allow Actions to create PRs. Check current PR CI and remote/version baseline before merging into main.
+
+
 ## Junie input budget – 2.0.2
 
 The [failed run on 2026-09-29](https://github.com/topic2k/enigma2-connect/actions/runs/36580567662) rejected the September 26 and 28 posts before calling AI: 557,112 and 559,096 UTF-8 bytes exceeded the old 400,000-byte limit. The production Junie monitor now has a separate 800,000-byte budget.

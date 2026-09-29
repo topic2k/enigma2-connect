@@ -2,6 +2,15 @@
 
 # Prüfübersicht
 
+## Einzelne Blog-Issues und Umsetzungsvorschläge – 2.1.0
+
+Neue Blogergebnisse werden je Beitrag veröffentlicht, mit thematischem Titel und Ursprung im Actions-Lauf. Konkrete Ergebnisse können einen isolierten, zeitlich begrenzten Umsetzungsversuch und einen Entwurfs-PR gegen develop auslösen. Unklare Ergebnisse bleiben Issues; stille Ergebnisse bleiben ohne Issue. Bestehende Sammel-Issues werden nicht automatisch verändert.
+
+83 Offline-Skripttests bestanden, einschließlich separater Issues, Herkunftslinks, Teilfehlern, unveränderten stillen Prüfungen sowie PR-Deduplizierung, Basiswechsel, geschützten Pfaden, Größenbegrenzungen und Entwurfsziel develop. Ruff, Formatprüfung und actionlint 1.7.12 erfolgreich. Die PR-API wird in diesen Tests simuliert; eine tatsächliche automatische Codeumsetzung und PR-Erstellung ist damit nicht belegt und wird erst bei einem künftigen konkreten Blogergebnis ausgeführt. Der letzte produktive Analyselauf vor dieser Änderung [bestand](https://github.com/topic2k/enigma2-connect/actions/runs/36598077884).
+
+Integrationslaufzeit, Qualitätscheckliste, Testschwellen und bestehende Praxisnachweise bleiben unverändert. Keine neue Receiver-/installierte-HA-Abnahme notwendig. Automatische Entwürfe müssen weiterhin inhaltlich und durch aktuelle CI geprüft werden; sie dürfen keine Qualitätsnachweise oder Veröffentlichungsfreigaben ersetzen. Das Repository muss die PR-Erstellung durch Actions erlauben. Vor main-Übernahme aktuelle PR-CI und Remote-/Versionsbasis prüfen.
+
+
 ## Junie-Eingabebudget – 2.0.2
 
 Der [Fehllauf vom 29.09.2026](https://github.com/topic2k/enigma2-connect/actions/runs/36580567662) verwarf die beiden Beiträge vom 26. und 28.09. vor dem KI-Aufruf: 557.112 bzw. 559.096 UTF-8-Bytes überschritten die alte Grenze von 400.000 Bytes. Das separate Budget des produktiven Junie-Monitors beträgt jetzt 800.000 Bytes.

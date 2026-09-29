@@ -222,10 +222,7 @@ Schritt prüft Beitrags-ID, Ergebnisstruktur, Dateipfade, Zeilennummern und wör
 Belege gegen den vor der Analyse gesicherten Quellstand. Eine KI-Einschätzung
 ersetzt keine ausgeführten Kompatibilitätstests und kann inhaltlich falsch sein.
 
-Ein GitHub-Issue enthält nur Beiträge mit notwendigen Anpassungen, empfohlenen
-Ergänzungen oder noch unklarem Prüfbedarf. Wenn alle Bewertungen zugleich
-`no-impact` und `none` ergeben, wird kein Issue erstellt. Auch in gemischten
-Läufen bleiben solche unauffälligen Beiträge aus dem Issue heraus.
+Jeder Beitrag mit notwendigen Anpassungen, empfohlenen Ergänzungen oder unklarem Prüfbedarf erhält ein eigenes Issue. Der Titel beginnt mit `[HA-Blog]` und übernimmt das Thema des Blogbeitrags. Im Inhalt verlinkt „Automatische Blog-Analyse“ auf den auslösenden Actions-Lauf; der ursprüngliche Blogtext bleibt ebenfalls verlinkt. Bei `no-impact` und `none` entsteht kein Issue. Ein Veröffentlichungsfehler betrifft nur den jeweiligen Beitrag; bereits erstellte Issues werden nicht erneut angelegt.
 
 Erfolgreich geprüfte Inhalts-IDs werden mit Prüfdatum im Statusbranch gespeichert,
 auch ohne Issue. Inhaltsbasierte Marker in bestehenden und geschlossenen Issues
@@ -260,6 +257,14 @@ und verweigert das Überschreiben zwischenzeitlich geänderter Zustände. Pushes
 und Pull Requests führen nur Offline-Tests aus. Veröffentlichungen sind auf das
 Originalrepository und den Standardbranch beschränkt; manuelle Probeläufe sind
 auch auf Arbeitsbranches möglich. Parallele Workflow-Läufe werden serialisiert.
+
+### Automatische Umsetzungsvorschläge
+
+Für neu veröffentlichte Issues mit konkreter Anpassung (`impacted`) oder empfohlenem Zusatznutzen (`recommended`) folgt höchstens ein zusätzlicher Junie-Auftrag von 15 Minuten. Sobald eine der beiden Bewertungen `uncertain` ist, bleibt es beim Issue. Der Auftrag startet vom festgehaltenen aktuellen develop-Commit, soll passende Tests und DE/EN-Dokumentation ergänzen und die Projektversion synchron anheben. Nicht belegbare APIs, fehlende Entscheidungen oder notwendige Hardwareprüfungen können einen Vorschlag verhindern. Ohne Quelländerung wird kein leerer PR erstellt.
+
+Der Coding-Agent erhält keinen schreibenden GitHub-Token. Ein frischer Job liest ausschließlich begrenzte UTF-8-Dateiänderungen aus dem Artefakt und erstellt per API einen eigenen Branch `ha-blog/short-title` (kurzer Thementitel; bei Kollision mit Issue-Nummer) und einen **Entwurfs-PR gegen develop** mit Issue- und Analyselink. Er führt den vorgeschlagenen Code nicht aus. Workflow-/AGENTS-Dateien und die Qualitätscheckliste sind gesperrt; Symlinks, Pfadüberschreitungen, Binärdaten und doppelte Dateipfade werden abgelehnt. Bei geändertem develop-Stand oder vorhandenem PR wird nichts überschrieben. Bei Fehlern bleibt das Issue offen; es gibt keine automatische Umsetzungsschleife und keinen automatischen Merge. Fehlgeschlagene Vorschläge werden im Actions-Lauf sichtbar und können manuell übernommen werden.
+
+GitHub muss unter **Settings → Actions → General → Workflow permissions → Allow GitHub Actions to create and approve pull requests** das Erstellen von PRs erlauben. Der Ablauf selbst genehmigt keine Reviews. Durch `GITHUB_TOKEN` erzeugte PRs können eine Freigabe über **Approve workflows to run** benötigen ([GitHub-Dokumentation](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/trigger-a-workflow)). Vor Übernahme gelten unverändert CI, Qualitätsprüfung und erforderliche Praxisnachweise; ein automatisch erstellter Entwurf ist kein Prüfnachweis. Die Umsetzung verbraucht zusätzliche Junie-Credits; das Zeitlimit ist keine feste Kostengrenze. Die bisherigen Kostenangaben im Analysebericht betreffen nur die Analyse. Probeläufe erstellen weder Issues noch Umsetzungsvorschläge.
 
 ### Zugang, Kosten und Bedienung
 

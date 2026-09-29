@@ -66,6 +66,8 @@ rules; the remote comparison before a PR remains mandatory.
 - Prepare and open a pull request from `develop` into `main` only after explicit
   user approval. Merge changes into `main` exclusively through that PR;
   merging also requires user approval.
+- Use a dedicated `ha-blog/short-title` branch for every PR implementing an issue; derive the short title from the issue topic and append the issue number on collisions.
+- Automatic blog implementation proposals may create dedicated branches from current `develop` and draft PRs into `develop`. These drafts remain open for content and technical review; automation must not merge or approve reviews.
 - Create a new release only when explicitly instructed by the user.
   Approval of changes or a pull request does not authorize a release.
 - The versioning rules below do not authorize automatic publication.

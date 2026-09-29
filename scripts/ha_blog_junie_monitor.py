@@ -310,6 +310,15 @@ def main():
         write_json(OUTPUT / "report.json", report)
         (OUTPUT / "summary.md").write_text(report["summary"], encoding="utf-8")
         common.append_summary(report["summary"])
+        if output_path := os.environ.get("GITHUB_OUTPUT"):
+            candidates = [
+                {"number": item["number"], "key": item["key"]}
+                for item in report["issues"]
+                if plan["publish"] and item["implement"] and type(item["number"]) is int
+            ]
+            with open(output_path, "a", encoding="utf-8") as handle:
+                handle.write(f"implementation_matrix={json.dumps({'include': candidates})}\n")
+                handle.write(f"has_implementations={str(bool(candidates)).lower()}\n")
         if report["failed"]:
             raise SystemExit(1)
 

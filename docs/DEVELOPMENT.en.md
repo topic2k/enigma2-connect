@@ -211,10 +211,7 @@ paths, line numbers and quotations against the source snapshot captured before
 analysis. An AI assessment does not replace compatibility tests and can still
 be semantically wrong.
 
-A GitHub issue contains only posts requiring adaptation, recommending an
-improvement or needing further review. If every assessment is both `no-impact`
-and `none`, no issue is created. Such uneventful posts are also excluded from
-issues produced by mixed batches.
+Each post requiring adaptation, recommending an improvement or needing further review gets its own issue. Titles begin with `[HA-Blog]` and use the blog topic. The body links “Automatische Blog-Analyse” to the originating Actions run and also retains the original blog source link. Posts assessed as both `no-impact` and `none` produce no issue. Publication failures retry only that post; already published issues are retained.
 
 Successfully reviewed content IDs and review dates are stored on the state branch,
 even without an issue. Content markers in existing and closed issues still count;
@@ -247,6 +244,14 @@ plan, revalidates agent output and refuses to overwrite concurrently changed
 state. Pushes and pull requests run offline tests only. Publication is restricted
 to the original repository and default branch; manual dry runs also work on
 work branches. Workflow runs are serialized.
+
+### Automatic implementation proposals
+
+Each newly published issue with a concrete adaptation (`impacted`) or recommended enhancement (`recommended`) gets at most one additional 15-minute Junie implementation attempt. If either assessment is `uncertain`, only the issue is created. The attempt starts from a pinned current develop commit and should include targeted tests, DE/EN documentation and synchronized development versioning. Unverified APIs, unresolved decisions or required hardware checks may prevent a proposal. No source changes means no empty PR.
+
+The coding agent receives no write-capable GitHub token. A fresh job reads only bounded UTF-8 source changes from the artifact and uses the API to create a dedicated `ha-blog/short-title` (short topic title; issue number added on collision) branch and a **draft PR against develop**, linking the issue and analysis. It never executes the proposed code. Workflow/AGENTS files and the quality checklist are protected; symlinks, path traversal, binary data and duplicate paths are rejected. A changed develop base or an existing PR is never overwritten. Failures leave the issue open and visible in Actions; there is no automatic implementation retry loop or merge. Failed proposals can be handled manually.
+
+GitHub must permit PR creation via **Settings → Actions → General → Workflow permissions → Allow GitHub Actions to create and approve pull requests**. This workflow does not approve reviews. PRs created with `GITHUB_TOKEN` may require **Approve workflows to run** ([GitHub documentation](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/trigger-a-workflow)). CI, quality review and required practical evidence remain mandatory before merging; an automated draft is not test evidence. Implementation consumes additional Junie credits; the timeout is not a fixed cost ceiling. Existing cost figures in the analysis report cover analysis only. Dry runs create neither issues nor implementation proposals.
 
 ### Access, costs and operation
 

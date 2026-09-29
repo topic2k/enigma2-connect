@@ -273,33 +273,52 @@ def complete_processing(
         state.setdefault("reviewed", {})[key] = today.isoformat()
         del state["entries"][key]
     report["silent_reviewed"] = sorted(quiet)
-    if actionable:
-        successful = {r["id"] for r in actionable}
-        valid_posts = [p for p in selected if gemini.post_id(p) in successful]
-        # Retries use the original blog revision so their stored text and source link agree.
-        revisions = {
-            gemini.post_id(p): state["entries"][gemini.post_id(p)]["upstream"] for p in valid_posts
-        }
+    report["issues"] = []
+    run_id = os.environ.get("GITHUB_RUN_ID", "")
+    analysis_url = (
+        f"https://github.com/{repository}/actions/runs/{run_id}" if run_id.isdigit() else None
+    )
+    by_id = {gemini.post_id(p): p for p in selected}
+    for result in actionable:
+        key = result["id"]
+        post = by_id[key]
+        title = "[HA-Blog] " + " ".join(post["title"].split())[:240]
         try:
             summary = gemini.render_report(
-                valid_posts, actionable, repository, revision, revisions, deferred, model=model
+                [post],
+                [result],
+                repository,
+                revision,
+                state["entries"][key]["upstream"],
+                deferred,
+                model=model,
             )
+            if analysis_url:
+                summary += f"\nUrsprung: [Automatische Blog-Analyse]({analysis_url}).\n"
             summary += footer
-            issue = publish(
+            issue = publish({"title": title, "body": summary})
+            report["issues"].append(
                 {
-                    "title": f"[HA-Blog] Prüfung {today}: {len(valid_posts)} Beiträge",
+                    "key": key,
+                    "number": issue.get("number"),
+                    "url": issue["html_url"],
+                    "title": title,
                     "body": summary,
+                    "implement": (
+                        result["assessment"] != "uncertain"
+                        and result["opportunity"]["assessment"] != "uncertain"
+                        and (
+                            result["assessment"] == "impacted"
+                            or result["opportunity"]["assessment"] == "recommended"
+                        )
+                    ),
                 }
             )
-            report["issue_url"] = issue["html_url"]
-            summaries.append(summary)
-            for key in successful:
-                state.setdefault("reviewed", {})[key] = today.isoformat()
-                del state["entries"][key]
+            summaries.append(f"Issue: {issue['html_url']}\n\n{summary}")
+            state.setdefault("reviewed", {})[key] = today.isoformat()
+            del state["entries"][key]
         except ERRORS as error:
-            failures.update(
-                {key: error_detail("GitHub-Bericht veröffentlichen", error) for key in successful}
-            )
+            failures[key] = error_detail("GitHub-Bericht veröffentlichen", error)
     pending, failed = [], []
     for post in selected:
         key = gemini.post_id(post)

@@ -3,6 +3,7 @@
 
 import copy
 import json
+import os
 import tempfile
 import unittest
 from datetime import date, timedelta
@@ -135,7 +136,7 @@ class JunieMonitorTests(unittest.TestCase):
         self.artifact(self.posts[1], {"results": [result]})
         self.finish(plan)
         payload = self.publisher.call_args.args[0]
-        self.assertIn("1 Beiträge", payload["title"])
+        self.assertEqual(payload["title"], "[HA-Blog] Post 1")
         self.assertNotIn("Post 0", payload["body"])
         self.assertIn("Post 1", payload["body"])
         self.assertIn("Verbesserungen: Empfohlen", payload["body"])
@@ -151,10 +152,57 @@ class JunieMonitorTests(unittest.TestCase):
                 result[field]["assessment"] = "uncertain"
             self.artifact(self.posts[i], {"results": [result]})
         self.finish(plan)
-        self.publisher.assert_called_once()
-        body = self.publisher.call_args.args[0]["body"]
-        self.assertIn("Kompatibilität: uncertain", body)
-        self.assertIn("Verbesserungen: Zu prüfen", body)
+        self.assertEqual(self.publisher.call_count, 2)
+        bodies = [call.args[0]["body"] for call in self.publisher.call_args_list]
+        self.assertIn("Kompatibilität: uncertain", bodies[0])
+        self.assertIn("Verbesserungen: Zu prüfen", bodies[1])
+
+    def test_two_posts_create_separate_topic_issues_with_origin_and_no_cross_content(self):
+        plan = self.plan(publish=True)
+        for post in self.posts:
+            result = self.result(post)
+            result["opportunity"].update(
+                assessment="recommended",
+                evidence=[{"path": "entity.py", "line": 1, "quote": "actual source line"}],
+            )
+            self.artifact(post, {"results": [result]})
+        self.publisher.side_effect = [
+            {"number": 10, "html_url": "https://github.com/o/r/issues/10"},
+            {"number": 11, "html_url": "https://github.com/o/r/issues/11"},
+        ]
+        with patch.dict(os.environ, {"GITHUB_RUN_ID": "1234"}):
+            report = self.finish(plan)
+        self.assertEqual(self.publisher.call_count, 2)
+        for i, call in enumerate(self.publisher.call_args_list):
+            payload = call.args[0]
+            self.assertEqual(payload["title"], f"[HA-Blog] Post {i}")
+            self.assertIn(f"Post {i}", payload["body"])
+            self.assertNotIn(f"Post {1 - i}", payload["body"])
+            self.assertIn("https://github.com/o/r/actions/runs/1234", payload["body"])
+            self.assertEqual(payload["body"].count("<!-- ha-blog-gemini:"), 1)
+        self.assertEqual([item["number"] for item in report["issues"]], [10, 11])
+        self.assertTrue(all(item["implement"] for item in report["issues"]))
+
+    def test_issue_failure_keeps_other_issue_and_only_retries_failed_post(self):
+        plan = self.plan(publish=True)
+        for post in self.posts:
+            result = self.result(post)
+            result["assessment"] = "uncertain"
+            self.artifact(post, {"results": [result]})
+        self.publisher.side_effect = [
+            OSError("publication unavailable"),
+            {
+                "number": 12,
+                "html_url": "https://github.com/o/r/issues/12",
+            },
+        ]
+        report = self.finish(plan)
+        self.assertEqual(
+            [item["key"] for item in report["issues"]], [common.post_id(self.posts[1])]
+        )
+        self.assertFalse(report["issues"][0]["implement"])
+        self.assertEqual(list(self.saved[-1]["entries"]), [common.post_id(self.posts[0])])
+        self.assertEqual(len(report["retry_pending"]), 1)
 
     def test_publication_failure_preserves_silent_success_and_retries_only_relevant(self):
         plan = self.plan()

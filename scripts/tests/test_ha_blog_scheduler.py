@@ -110,7 +110,7 @@ class SchedulerTests(unittest.TestCase):
         self.assertEqual(report["failed"], [])
         self.assertEqual(report["retry_pending"], [])
         self.assertEqual(self.saved[-1]["entries"], {})
-        self.publish.assert_called_once()
+        self.assertEqual(self.publish.call_count, 2)
 
     def test_second_failure_is_terminal_and_not_automatically_retried(self):
         self.fail_first()

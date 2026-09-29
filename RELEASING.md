@@ -28,6 +28,8 @@ nach `develop` übernehmen und `develop` pushen; dafür ist keine weitere Freiga
 Erst nach ausdrücklicher Nutzerfreigabe den gesammelten Stand für einen Pull Request
 von `develop` nach `main` vorbereiten und den PR eröffnen. Die Übernahme nach `main`
 erfolgt ausschließlich über diesen PR und benötigt ebenfalls die Nutzerfreigabe.
+Automatische Blog-Umsetzungsvorschläge bleiben als Entwurfs-PRs gegen `develop` zur Prüfung offen. Diese Automatik darf keine Reviews genehmigen, mergen oder Releases erstellen.
+
 Ein Release einschließlich Entwurf oder Tag benötigt eine separate ausdrückliche
 Anweisung; eine PR- oder Merge-Freigabe ist keine Release-Freigabe.
 

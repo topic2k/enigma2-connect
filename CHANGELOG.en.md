@@ -4,7 +4,7 @@
 
 ## Contents
 
-- [2.0.2](#202)
+- [2.1.0](#210)
 - [2.0.1](#201)
 - [2.0.0](#200)
 - [1.3.0](#130)
@@ -18,9 +18,12 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 2.0.2
+## 2.1.0
 
 Unreleased.
+
+- The blog monitor creates one topical `[HA-Blog]` issue per relevant post with a link to the analysis run. No-action posts remain silent; partial publication failures retry only the affected post.
+- Concrete adaptations and recommended improvements receive a draft PR against develop on a dedicated `ha-blog/short-title` branch where a bounded implementation attempt can produce a proposal. Code generation and publication are isolated; no automatic merge, and uncertain cases remain in their issue for manual review.
 
 - Raised the production Junie blog monitor input budget to 800,000 UTF-8 bytes so the expanded source context can be analyzed with individual blog posts again. Separate budget guard with regression tests; the existing Gemini limit is retained.
 

@@ -67,6 +67,8 @@ bleibt verpflichtend.
 - Erst nach ausdrücklicher Nutzerfreigabe einen Pull Request von `develop` nach
   `main` vorbereiten und eröffnen. Änderungen ausschließlich über diesen PR nach
   `main` übernehmen; auch der Merge benötigt die Nutzerfreigabe.
+- Für jeden PR zur Umsetzung eines Issues einen eigenen Branch `ha-blog/short-title` verwenden; den kurzen Titel aus dem Issue-Thema ableiten und bei Namenskollision die Issue-Nummer ergänzen.
+- Automatische Blog-Umsetzungsvorschläge dürfen eigene Branches vom aktuellen `develop` und Entwurfs-PRs gegen `develop` erstellen. Diese Entwürfe bleiben bis zur inhaltlichen und technischen Prüfung offen; die Automatik darf weder mergen noch Reviews genehmigen.
 - Ein neues Release nur auf ausdrückliche Anweisung des Nutzers erstellen.
   Die Freigabe von Änderungen oder eines Pull Requests ist keine Release-Freigabe.
 - Die folgenden Versionierungsregeln erlauben keine automatische Veröffentlichung.
