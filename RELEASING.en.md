@@ -30,6 +30,9 @@ through that PR; merging also requires user approval. A release, including draft
 or tags, requires a separate explicit instruction; PR or merge approval does not
 authorize a release.
 
+Automatic blog implementation proposals remain draft PRs into `develop` for review. This automation must not approve reviews, merge, or create releases.
+
+
 Automatically increase the version based on the entire unpublished scope since
 the latest stable release: patch for fixes, internal changes and documentation,
 minor for backward-compatible new features, major for incompatible changes.
