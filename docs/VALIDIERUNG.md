@@ -2,6 +2,12 @@
 
 # Prüfübersicht
 
+## Bestehende Blog-Issues erneut umsetzen – 2.1.5-dev.1
+
+109 Offline-Skripttests bestanden. Die neue Auswahl prüft begrenzte, eindeutige Issue-Nummern, offene Einzelbeitrags-Issues, Analysekennungen und Bewertungen; vorhandene PRs werden übersprungen und unklare Bewertungen nicht automatisch umgesetzt. Falsches Repository, falscher Branch, Probeläufe und gemischte Betriebsarten werden abgelehnt. Die lesende Prüfung gegen die echten Issues #21 und #25 wählte genau diese beiden vorhandenen IDs und Inhaltskennungen aus; es wurde dabei kein KI-Auftrag, Kommentar, Issue oder PR erzeugt.
+
+Ruff, Format-, Syntax-, actionlint- und Offline-Lockprüfung bestanden. Integrationslaufzeit, aktuelle HA-Mindestversion und Qualitätscheckliste unverändert; keine Absenkung von Test- oder Abdeckungsvorgaben. Die produktive Wiederholung steht bis zur Aktivierung auf main aus.
+
 ## Blog-Umsetzungsberichte und HA-Mindestversion – 2.1.4-dev.2
 
 104 Offline-Skripttests bestanden. Neue Fälle prüfen gespeicherte Abschlussberichte, fehlende/ungültige Berichte und Artefakte, fehlgeschlagene Aufträge, widersprüchliche oder unzulässige Änderungen, Issue-Kommentare mit Lauf-Link und Deduplizierung sowie HA-Mindestversionshinweise in Entwurfs-PRs und eigenen Kommentaren. Das gezielte Ändern der HA-Zielversion in AGENTS ist erlaubt; weitere Regeländerungen, HACS-Nebeneffekte und Versionsabsenkungen bleiben gesperrt. Ein Fehler beim PR-Kommentar behauptet nicht fälschlich, dass kein PR existiert.

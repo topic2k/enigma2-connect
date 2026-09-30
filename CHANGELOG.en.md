@@ -4,6 +4,7 @@
 
 ## Contents
 
+- [2.1.5-dev.1](#215-dev1)
 - [2.1.4](#214)
 - [2.1.3](#213)
 - [2.0.1](#201)
@@ -18,6 +19,12 @@
 - [1.0.2](#102)
 - [1.0.1](#101)
 - [1.0.0](#100)
+
+## 2.1.5-dev.1
+
+Unreleased development version.
+
+- Targeted implementation retries for existing blog issues via `implementation_issues`: reuse the same issues and analysis keys, skip existing PRs, and avoid new blog analysis or duplicate issues.
 
 ## 2.1.4
 

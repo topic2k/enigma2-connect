@@ -394,6 +394,89 @@ class ImplementationTests(unittest.TestCase):
                 ["issues/12/comments"],
             )
 
+    def assessed_issue(self, number, key, enhancement="Empfohlen"):
+        return {
+            "state": "open",
+            "title": "[HA-Blog] Existing topic",
+            "body": f"<!-- ha-blog-gemini:{key} -->\n**Kompatibilität: no-impact**\n\n"
+            f"**Ergänzungen und Verbesserungen: {enhancement}**\n",
+            "html_url": f"https://github.com/o/r/issues/{number}",
+        }
+
+    def test_replay_reuses_two_issue_numbers_and_keys_with_read_only_calls(self):
+        self.responses["issues/21"] = self.assessed_issue(21, "a" * 64)
+        self.responses["issues/25"] = self.assessed_issue(25, "b" * 64)
+        candidates, existing = implementation.plan_existing_issues(self.request, "21, 25")
+        self.assertEqual(
+            candidates,
+            [
+                {"number": 21, "key": "a" * 64, "attempt": True},
+                {"number": 25, "key": "b" * 64, "attempt": True},
+            ],
+        )
+        self.assertEqual(existing, {})
+        self.assertTrue(all(len(c.args) == 1 for c in self.request.call_args_list))
+
+    def test_replay_rejects_bad_ids_before_api_calls(self):
+        for value in ("", "21,21", "21,", "0", "-1", "21;echo x", "1,2,3,4,5,6"):
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                implementation.plan_existing_issues(self.request, value)
+        self.request.assert_not_called()
+
+    def test_replay_rejects_closed_pr_aggregate_and_unassessed_issues(self):
+        for change in (
+            {"state": "closed"},
+            {"pull_request": {}},
+            {"title": "Other"},
+            {"body": "No assessment"},
+            {"body": f"<!-- ha-blog-gemini:{self.key} -->" * 2},
+        ):
+            with self.subTest(change=change):
+                self.responses["issues/12"] = {**self.assessed_issue(12, self.key), **change}
+                with self.assertRaises(ValueError):
+                    implementation.plan_existing_issues(self.request, "12")
+        self.assertTrue(all(len(c.args) == 1 for c in self.request.call_args_list))
+
+    def test_replay_preserves_uncertain_gate_and_skips_existing_prs(self):
+        self.responses["issues/12"] = self.assessed_issue(12, self.key, "Zu prüfen")
+        candidates, _ = implementation.plan_existing_issues(self.request, "12")
+        self.assertFalse(candidates[0]["attempt"])
+        self.responses["pulls?state=all&base=develop&per_page=100&page=1"] = [
+            {
+                "body": f"<!-- ha-blog-implementation:12:{self.key} -->",
+                "html_url": "https://github.com/o/r/pull/13",
+            }
+        ]
+        candidates, existing = implementation.plan_existing_issues(self.request, "12")
+        self.assertEqual(candidates, [])
+        self.assertEqual(existing, {12: "https://github.com/o/r/pull/13"})
+
+    def test_replay_cli_requires_default_branch_non_dry_exclusive_manual_run(self):
+        environment = {
+            "GITHUB_REPOSITORY": "topic2k/enigma2-connect",
+            "GITHUB_EVENT_NAME": "workflow_dispatch",
+            "GITHUB_REF_NAME": "main",
+            "DEFAULT_BRANCH": "main",
+            "REPLAY_OPTIONS_VALID": "true",
+            "IMPLEMENTATION_ISSUES": "21,25",
+            "GH_TOKEN": "test",
+        }
+        for name, value in (
+            ("GITHUB_REPOSITORY", "other/repo"),
+            ("GITHUB_REF_NAME", "develop"),
+            ("GITHUB_EVENT_NAME", "push"),
+            ("REPLAY_OPTIONS_VALID", "false"),
+        ):
+            with (
+                self.subTest(name=name),
+                patch.dict(os.environ, {**environment, name: value}),
+                patch("sys.argv", ["script", "plan"]),
+                patch.object(implementation, "github_request") as request,
+            ):
+                with self.assertRaises(ValueError):
+                    implementation.main()
+                request.assert_not_called()
+
     def test_comment_failure_does_not_claim_created_pr_is_missing(self):
         self.minimum_change()
         previous = self.request.side_effect

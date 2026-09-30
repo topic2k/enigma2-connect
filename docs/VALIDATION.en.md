@@ -2,6 +2,12 @@
 
 # Verification summary
 
+## Retry existing blog issues – 2.1.5-dev.1
+
+109 offline script tests passed. Selection checks bounded, distinct issue numbers, open single-post issues, analysis markers and assessments; existing PRs are skipped and uncertain assessments do not trigger automatic implementation. Wrong repositories or branches, dry runs and mixed modes are rejected. Read-only verification against real issues #21 and #25 selected exactly those existing IDs and content keys; it created no AI attempts, comments, issues or PRs.
+
+Ruff, formatting, syntax, actionlint and offline lockfile checks passed. Integration runtime, current HA minimum and quality checklist are unchanged; no testing or coverage requirements were lowered. Production replay is pending activation on main.
+
 ## Blog implementation reports and HA minimum – 2.1.4-dev.2
 
 104 offline script tests passed. New cases cover retained completion reports, missing/invalid reports and artifacts, failed attempts, inconsistent or prohibited edits, issue comments with run links and deduplication, and HA minimum notices in draft PRs and dedicated comments. Exact HA target replacements in AGENTS are permitted; other rule edits, unrelated HACS changes and version downgrades remain prohibited. A failed PR comment does not falsely claim that no PR exists.
