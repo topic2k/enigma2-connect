@@ -2,6 +2,12 @@
 
 # Prüfübersicht
 
+## Blog-Umsetzungsberichte und HA-Mindestversion – 2.1.4-dev.2
+
+104 Offline-Skripttests bestanden. Neue Fälle prüfen gespeicherte Abschlussberichte, fehlende/ungültige Berichte und Artefakte, fehlgeschlagene Aufträge, widersprüchliche oder unzulässige Änderungen, Issue-Kommentare mit Lauf-Link und Deduplizierung sowie HA-Mindestversionshinweise in Entwurfs-PRs und eigenen Kommentaren. Das gezielte Ändern der HA-Zielversion in AGENTS ist erlaubt; weitere Regeländerungen, HACS-Nebeneffekte und Versionsabsenkungen bleiben gesperrt. Ein Fehler beim PR-Kommentar behauptet nicht fälschlich, dass kein PR existiert.
+
+Ruff, Format-, Python-Syntax-, actionlint- und Offline-Lockprüfung bestanden. Ausschließlich simulierte GitHub-/Agentenabläufe; keine echten Kommentare oder neuen Junie-Aufträge in dieser Prüfung. Der erste produktive Lauf mit der Erweiterung bleibt ausstehend. Qualitätscheckliste auf Auswirkungen geprüft: Integrationsverhalten, aktuelle HA-Mindestversion und Abdeckungsschwellen unverändert; künftige Entwürfe mit höherer Mindestversion benötigen weiterhin eigene Kompatibilitätsnachweise und aktuelle CI vor Übernahme.
+
 ## Einzelnes Junie-Artefakt – 2.1.3-dev.1
 
 [Run 36725343659](https://github.com/topic2k/enigma2-connect/actions/runs/36725343659) scheiterte beim Lesen der Ergebnisdatei: download-artifact v8 entpackt einen einzelnen Treffer direkt ins Zielverzeichnis, während der Monitor einen Artefakt-Unterordner erwartete. Junies Antwort zum Beitrag vom 28.09. war gültig, einschließlich sämtlicher Quellbelege. Die neue Übergabe verwendet eindeutige Dateinamen je Inhalts-ID und eine gemeinsame Download-Ablage.

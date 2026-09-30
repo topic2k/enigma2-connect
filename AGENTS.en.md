@@ -68,6 +68,7 @@ rules; the remote comparison before a PR remains mandatory.
   merging also requires user approval.
 - Use a dedicated `ha-blog/short-title` branch for every PR implementing an issue; derive the short title from the issue topic and append the issue number on collisions.
 - Automatic blog implementation proposals may create dedicated branches from current `develop` and draft PRs into `develop`. These drafts remain open for content and technical review; automation must not merge or approve reviews.
+- When a blog implementation needs a higher HA minimum, the draft may raise it in `hacs.json` together with matching test dependencies and DE/EN documentation. In both AGENTS files, automation may only replace the existing HA target version accordingly. Record the increase in the PR and a PR comment. Without a PR, comment the reason and run link on the issue; retain the completion report and verification limits.
 - Create a new release only when explicitly instructed by the user.
   Approval of changes or a pull request does not authorize a release.
 - The versioning rules below do not authorize automatic publication.
@@ -95,6 +96,21 @@ rules; the remote comparison before a PR remains mandatory.
   affected requirements before merging.
 
 ## Versioning
+
+### Dependabot exception
+
+Dependabot PRs containing only dependency updates may target `main` directly
+from the Dependabot branch; routing them through `develop` is not required.
+The update alone requires neither a new integration version nor entries in the
+bilingual changelogs or verification summaries. The general pre-PR version
+preparation rules do not apply to this exception. Required code or user
+documentation changes still follow the regular process. Current successful CI,
+review of compatibility and integration quality impacts, and explicit user
+approval to merge remain mandatory. Automatic creation of a Dependabot PR
+requires no additional approval. No automatic merge, tag or release. After an
+approved merge, synchronize `main` into `develop` to retain the dependency update.
+
+### Regular process
 
 - When making changes on `develop` or a working branch, automatically increase
   the version without a separate request, based on the entire unpublished scope

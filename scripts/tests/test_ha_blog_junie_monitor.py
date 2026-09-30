@@ -87,6 +87,35 @@ class JunieMonitorTests(unittest.TestCase):
         self.assertEqual(len(plan["keys"]), 2)
         self.assertEqual(plan["failures"], {})
 
+    def test_finish_schedules_uncertain_issue_for_comment_without_implementation(self):
+        plan = self.plan(publish=True)
+        self.store.load.return_value = plan["state"]
+        self.publisher.return_value = {"html_url": "https://github.com/o/r/issues/12", "number": 12}
+        result = self.result(self.posts[0])
+        result["assessment"] = "uncertain"
+        self.artifact(self.posts[0], {"results": [result]})
+        self.artifact(self.posts[1])
+        output = self.root / "plan"
+        monitor.write_json(output / "plan.json", plan)
+        actions_output = self.root / "outputs.txt"
+        with (
+            patch("sys.argv", ["monitor", "finish", "--results-dir", str(self.root / "results")]),
+            patch.object(monitor, "OUTPUT", output),
+            patch.object(monitor, "github", return_value=("o/r", "a" * 40, self.publisher)),
+            patch.object(monitor.scheduler, "GithubState", return_value=self.store),
+            patch.object(monitor.common, "append_summary"),
+            patch.dict(os.environ, {"GITHUB_OUTPUT": str(actions_output)}),
+        ):
+            monitor.main()
+        outputs = dict(
+            line.split("=", 1) for line in actions_output.read_text(encoding="utf-8").splitlines()
+        )
+        candidate = json.loads(outputs["implementation_matrix"])["include"]
+        self.assertEqual(
+            candidate, [{"number": 12, "key": common.post_id(self.posts[0]), "attempt": False}]
+        )
+        self.assertEqual(outputs["has_implementations"], "true")
+
     def test_production_budget_still_rejects_oversized_utf8_context(self):
         self.sources = {"entity.py": "ä" * 400_000}
         plan = self.plan()

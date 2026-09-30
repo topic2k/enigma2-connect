@@ -30,6 +30,8 @@ von `develop` nach `main` vorbereiten und den PR eröffnen. Die Übernahme nach 
 erfolgt ausschließlich über diesen PR und benötigt ebenfalls die Nutzerfreigabe.
 Automatische Blog-Umsetzungsvorschläge bleiben als Entwurfs-PRs gegen `develop` zur Prüfung offen. Diese Automatik darf keine Reviews genehmigen, mergen oder Releases erstellen.
 
+Eine für die Blog-Umsetzung nötige höhere HA-Mindestversion darf bereits im Entwurf mit Testabhängigkeiten und DE/EN-Dokumentation vorbereitet werden. Ein eigener PR-Kommentar nennt die alte und neue Mindestversion sowie das Ende der Unterstützung älterer HA-Versionen. Die Übernahme bleibt prüfpflichtig; die Freigabe des Entwurfs ist keine Merge- oder Release-Freigabe.
+
 Ein Release einschließlich Entwurf oder Tag benötigt eine separate ausdrückliche
 Anweisung; eine PR- oder Merge-Freigabe ist keine Release-Freigabe.
 
@@ -60,6 +62,17 @@ Das ist keine Aussage über eine erfolgte Veröffentlichung; vor einem PR muss d
 tatsächliche Remote- und Release-Basis erneut geprüft werden.
 
 ## Version vor dem Pull Request
+
+**Dependabot-Ausnahme:** Reine Abhängigkeitsaktualisierungen dürfen als
+Dependabot-PR direkt nach `main` führen, ohne vorherige Übernahme nach `develop`,
+Versionsanhebung oder zusätzliche Einträge in beiden Changelogs und
+Prüfübersichten. Die folgenden Versionsvorbereitungsschritte entfallen für diese
+PRs. Ihre automatische Erstellung benötigt keine zusätzliche Freigabe.
+Kompatibilitäts- und Qualitätsprüfung, aktuelle erfolgreiche CI und ausdrückliche
+Nutzerfreigabe zum Merge bleiben erforderlich. Nötige Code- oder
+Anwenderdokumentationsänderungen folgen dem regulären Ablauf. Kein automatischer
+Merge, Tag oder Release; nach freigegebenem Merge `main` nach `develop`
+synchronisieren. Siehe [Dependabot-Ausnahme](AGENTS.md#ausnahme-für-dependabot).
 
 1. Unmittelbar vor jedem PR nach `main` Remote-Branches und Tags abrufen, etwa mit
    `git fetch origin --prune --tags`, und die veröffentlichten GitHub-Releases

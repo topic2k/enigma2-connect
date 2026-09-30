@@ -4,6 +4,7 @@
 
 ## Contents
 
+- [2.1.4](#214)
 - [2.1.3](#213)
 - [2.0.1](#201)
 - [2.0.0](#200)
@@ -17,6 +18,14 @@
 - [1.0.2](#102)
 - [1.0.1](#101)
 - [1.0.0](#100)
+
+## 2.1.4
+
+Unreleased.
+
+- Automated blog implementations retain a structured completion report with rationale and reported tests. Attempts without a PR leave an issue comment linking the run; missing results and technical failures are explicitly reported. Drafts may raise the required HA minimum together with dependencies and documentation; the PR receives an additional version notice.
+
+- Exempted dependency-only Dependabot updates from the regular branch, version and documentation process: direct PRs into main without version increases or additional changelog/verification-summary entries. Compatibility review, quality requirements, current CI and explicit merge approval remain mandatory; synchronize develop afterwards.
 
 ## 2.1.3
 

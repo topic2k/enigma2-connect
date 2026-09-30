@@ -339,9 +339,9 @@ def main():
         common.append_summary(report["summary"])
         if output_path := os.environ.get("GITHUB_OUTPUT"):
             candidates = [
-                {"number": item["number"], "key": item["key"]}
+                {"number": item["number"], "key": item["key"], "attempt": item["implement"]}
                 for item in report["issues"]
-                if plan["publish"] and item["implement"] and type(item["number"]) is int
+                if plan["publish"] and type(item["number"]) is int
             ]
             with open(output_path, "a", encoding="utf-8") as handle:
                 handle.write(f"implementation_matrix={json.dumps({'include': candidates})}\n")

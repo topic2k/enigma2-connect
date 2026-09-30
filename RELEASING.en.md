@@ -32,6 +32,8 @@ authorize a release.
 
 Automatic blog implementation proposals remain draft PRs into `develop` for review. This automation must not approve reviews, merge, or create releases.
 
+A higher HA minimum required by the blog implementation may be prepared in the draft together with test dependencies and DE/EN documentation. A dedicated PR comment states the old and new minimum and the end of support for older HA versions. Adoption still requires review; authorization of a draft does not authorize merging or releasing.
+
 
 Automatically increase the version based on the entire unpublished scope since
 the latest stable release: patch for fixes, internal changes and documentation,
@@ -60,6 +62,16 @@ This does not claim publication; recheck the actual remote and release baseline
 before preparing a PR.
 
 ## Version before the pull request
+
+**Dependabot exception:** Dependency-only Dependabot PRs may target `main`
+directly without first going through `develop`, increasing the version or adding
+entries to either changelog or verification summary. The version preparation
+steps below do not apply to these PRs. Their automatic creation requires no
+additional approval. Compatibility and quality review, current successful CI
+and explicit user approval to merge remain required. Necessary code or user
+documentation changes follow the regular process. No automatic merge, tag or
+release; after an approved merge, synchronize `main` into `develop`.
+See the [Dependabot exception](AGENTS.en.md#dependabot-exception).
 
 1. Immediately before every PR into `main`, fetch remote branches and tags, for
    example with `git fetch origin --prune --tags`, and check published GitHub

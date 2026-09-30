@@ -69,6 +69,7 @@ bleibt verpflichtend.
   `main` übernehmen; auch der Merge benötigt die Nutzerfreigabe.
 - Für jeden PR zur Umsetzung eines Issues einen eigenen Branch `ha-blog/short-title` verwenden; den kurzen Titel aus dem Issue-Thema ableiten und bei Namenskollision die Issue-Nummer ergänzen.
 - Automatische Blog-Umsetzungsvorschläge dürfen eigene Branches vom aktuellen `develop` und Entwurfs-PRs gegen `develop` erstellen. Diese Entwürfe bleiben bis zur inhaltlichen und technischen Prüfung offen; die Automatik darf weder mergen noch Reviews genehmigen.
+- Wenn eine Blog-Umsetzung eine höhere HA-Mindestversion benötigt, darf der Entwurf diese in `hacs.json` mit passenden Testabhängigkeiten und DE/EN-Dokumentation anheben. In beiden AGENTS-Dateien darf die Automatik ausschließlich die bestehende HA-Zielversion entsprechend ersetzen. Die Anhebung muss im PR und einem PR-Kommentar stehen. Ohne PR wird die Begründung mit Lauf-Link am Issue kommentiert; Abschlussbericht und Prüfgrenzen bleiben nachvollziehbar.
 - Ein neues Release nur auf ausdrückliche Anweisung des Nutzers erstellen.
   Die Freigabe von Änderungen oder eines Pull Requests ist keine Release-Freigabe.
 - Die folgenden Versionierungsregeln erlauben keine automatische Veröffentlichung.
@@ -97,6 +98,23 @@ bleibt verpflichtend.
   den Qualitätsabgleich für betroffene Anforderungen erneuern.
 
 ## Versionierung
+
+### Ausnahme für Dependabot
+
+Reine Dependabot-PRs für Abhängigkeitsaktualisierungen dürfen direkt vom
+Dependabot-Branch nach `main` führen; der Umweg über `develop` entfällt.
+Sie benötigen allein wegen des Updates weder eine neue Integrationsversion noch
+Einträge in den zweisprachigen Changelogs oder Prüfübersichten. Die allgemeinen
+Versionsvorbereitungen vor einem PR gelten für diese Ausnahme nicht.
+Erforderliche Anpassungen an Code oder Anwenderdokumentation fallen weiterhin
+unter den regulären Ablauf. Aktuelle erfolgreiche CI, die Prüfung der Auswirkungen
+auf Kompatibilität und Integrationsqualität sowie die ausdrückliche
+Merge-Freigabe des Nutzers bleiben verpflichtend. Die automatische Erstellung
+eines Dependabot-PRs benötigt keine zusätzliche Freigabe. Kein automatischer
+Merge, Tag oder Release. Nach einem freigegebenen Merge `main` nach `develop`
+synchronisieren, damit die Abhängigkeitsaktualisierung dort erhalten bleibt.
+
+### Regulärer Ablauf
 
 - Bei Änderungen auf `develop` oder einem Arbeitsbranch die Version automatisch
   und ohne gesonderte Aufforderung passend zum gesamten unveröffentlichten Umfang
