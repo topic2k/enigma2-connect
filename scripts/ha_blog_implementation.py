@@ -280,6 +280,58 @@ def branch_name(title, issue_number):
     return f"ha-blog/{slug or f'issue-{issue_number}'}"
 
 
+def plan_existing_issues(request, selected):
+    """Validate explicit issue IDs and reuse their identities without new analysis/issues."""
+    values = [value.strip() for value in selected.split(",")]
+    if not 1 <= len(values) <= 5 or any(not re.fullmatch(r"[1-9][0-9]{0,9}", v) for v in values):
+        raise ValueError("Select 1-5 distinct positive issue numbers separated by commas")
+    numbers = [int(value) for value in values]
+    if len(set(numbers)) != len(numbers):
+        raise ValueError("Duplicate issue numbers")
+    candidates = []
+    for number in numbers:
+        issue = request(f"issues/{number}")
+        body = (issue.get("body") or "").replace("\r\n", "\n")
+        keys = re.findall(r"<!-- ha-blog-gemini:([a-f0-9]{64}) -->", body)
+        assessment = re.findall(
+            r"^\*\*Kompatibilität: (impacted|no-impact|uncertain)\*\*", body, re.M
+        )
+        enhancement = re.findall(
+            r"^\*\*Ergänzungen und Verbesserungen: (Empfohlen|Kein konkreter Vorschlag|Zu prüfen)\*\*$",
+            body,
+            re.M,
+        )
+        if (
+            issue.get("state") != "open"
+            or "pull_request" in issue
+            or not issue.get("title", "").startswith("[HA-Blog] ")
+            or len(keys) != 1
+            or len(assessment) != 1
+            or len(enhancement) != 1
+        ):
+            raise ValueError(f"Issue #{number} is not an open, individually assessed HA blog issue")
+        attempt = (
+            assessment[0] != "uncertain"
+            and enhancement[0] != "Zu prüfen"
+            and (assessment[0] == "impacted" or enhancement[0] == "Empfohlen")
+        )
+        if not attempt and assessment[0] != "uncertain" and enhancement[0] != "Zu prüfen":
+            raise ValueError(f"Issue #{number} has no required or recommended implementation")
+        candidates.append({"number": number, "key": keys[0], "attempt": attempt})
+    existing, page = {}, 1
+    while True:
+        prs = request(f"pulls?state=all&base=develop&per_page=100&page={page}")
+        for candidate in candidates:
+            marker = f"<!-- ha-blog-implementation:{candidate['number']}:{candidate['key']} -->"
+            for pr in prs:
+                if marker in (pr.get("body") or ""):
+                    existing[candidate["number"]] = pr["html_url"]
+        if len(prs) < 100:
+            break
+        page += 1
+    return [item for item in candidates if item["number"] not in existing], existing
+
+
 def available_branch(request, title, issue_number):
     name = branch_name(title, issue_number)
     for candidate in (name, f"{name}-{issue_number}"):
@@ -426,10 +478,41 @@ def publish_validated(request, base, issue_number, key, changes, report, notice,
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("mode", choices=("collect", "publish"))
+    parser.add_argument("mode", choices=("collect", "publish", "plan"))
     parser.add_argument("--root", type=Path, default=Path("implementation"))
     parser.add_argument("--file", type=Path, default=Path("proposal/changes.json"))
     args = parser.parse_args()
+    repository = os.environ.get("GITHUB_REPOSITORY", "")
+
+    def request(endpoint, payload=None):
+        return github_request(repository, os.environ["GH_TOKEN"], endpoint, payload)
+
+    if args.mode == "plan":
+        if (
+            repository != "topic2k/enigma2-connect"
+            or os.environ.get("GITHUB_EVENT_NAME") != "workflow_dispatch"
+            or os.environ.get("GITHUB_REF_NAME") != os.environ.get("DEFAULT_BRANCH", "main")
+            or os.environ.get("REPLAY_OPTIONS_VALID") != "true"
+        ):
+            raise ValueError(
+                "Issue replay requires an exclusive, non-dry manual run on the default branch"
+            )
+        candidates, existing = plan_existing_issues(request, os.environ["IMPLEMENTATION_ISSUES"])
+        with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as handle:
+            handle.write(f"matrix={json.dumps({'include': candidates})}\n")
+            handle.write(f"has_tasks={str(bool(candidates)).lower()}\n")
+        summary = (
+            "Erneute Umsetzung bestehender Issues: "
+            + ", ".join(f"#{item['number']}" for item in candidates)
+            + ".\n"
+        )
+        summary += "\n".join(
+            f"#{number}: vorhandener PR bleibt unverändert: {url}"
+            for number, url in existing.items()
+        )
+        with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as handle:
+            handle.write(summary)
+        return
     base = os.environ["IMPLEMENTATION_BASE"]
     if args.mode == "collect":
         outcome = os.environ.get("IMPLEMENTATION_OUTCOME", "skipped")
@@ -452,11 +535,6 @@ def main():
                 "dieses Laufs; eine inhaltliche Junie-Begründung ist nicht verfügbar."
             ),
         }
-    repository = os.environ["GITHUB_REPOSITORY"]
-
-    def request(endpoint, payload=None):
-        return github_request(repository, os.environ["GH_TOKEN"], endpoint, payload)
-
     message = publish(
         request,
         repository,
