@@ -12,7 +12,7 @@
       "attempts": 2,
       "last_attempt": "2026-09-30",
       "due": null,
-      "error": "Versuch gestartet; Abschluss noch nicht gespeichert",
+      "error": "Junie-Analyse: keine gültige Antwort",
       "recheck": "d9a86522f62a4aa2a25d987bb7df0c0d"
     }
   },
