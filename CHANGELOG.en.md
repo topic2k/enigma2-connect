@@ -4,6 +4,7 @@
 
 ## Contents
 
+- [2.1.6](#216)
 - [2.1.5](#215)
 - [2.1.4](#214)
 - [2.1.3](#213)
@@ -19,6 +20,12 @@
 - [1.0.2](#102)
 - [1.0.1](#101)
 - [1.0.0](#100)
+
+## 2.1.6
+
+Unreleased.
+
+- New blog issues start with a direct link to the published article; links to the analyzed GitHub source revision and the analysis run are retained.
 
 ## 2.1.5
 

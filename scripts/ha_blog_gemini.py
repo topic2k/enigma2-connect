@@ -13,9 +13,23 @@ from urllib.parse import quote
 from urllib.request import Request, urlopen
 
 try:
-    from .ha_blog_monitor import DEFAULT_SINCE, UPSTREAM, github_request, inline, read_posts
+    from .ha_blog_monitor import (
+        DEFAULT_SINCE,
+        UPSTREAM,
+        blog_article_link,
+        github_request,
+        inline,
+        read_posts,
+    )
 except ImportError:  # Direct invocation from the repository root.
-    from ha_blog_monitor import DEFAULT_SINCE, UPSTREAM, github_request, inline, read_posts
+    from ha_blog_monitor import (
+        DEFAULT_SINCE,
+        UPSTREAM,
+        blog_article_link,
+        github_request,
+        inline,
+        read_posts,
+    )
 
 MODEL = "gemini-3.8-flash"
 MAX_POSTS = 5
@@ -267,6 +281,8 @@ def render_report(
 ):
     by_id = {r["id"]: r for r in results}
     lines = [
+        *(blog_article_link(post) for post in posts),
+        "",
         "## Wöchentliche Home-Assistant-Blogprüfung",
         "",
         f"Modell: `{model}` · Integrationsstand: `{revision}` · Zurückgestellt: {deferred}",

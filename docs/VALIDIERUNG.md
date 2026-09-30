@@ -2,6 +2,10 @@
 
 # Prüfübersicht
 
+## Direkter Bloglink am Issue-Anfang – 2.1.6-dev.1
+
+109 Offline-Skripttests bestanden; bestehende Ausgabeprüfungen kontrollieren nun den direkten Artikel-Link in der ersten Zeile bei Vorprüfung, KI-Bericht und produktiven Einzelbeitrags-Issues. Die Links zur festgehaltenen GitHub-Quellfassung und zum Analyse-Lauf bleiben erhalten. Die veröffentlichte Artikeladresse des Beitrags vom 28.09.2026 wurde zusätzlich lesend geprüft. Ruff, Format-, Syntax- und Offline-Lockprüfung bestanden. Nur Berichtsdarstellung geändert; Integrationsverhalten, Qualitätscheckliste und Abdeckungsanforderungen unverändert. Keine bestehenden Issues bearbeitet.
+
 ## Bestehende Blog-Issues erneut umsetzen – 2.1.5-dev.1
 
 109 Offline-Skripttests bestanden. Die neue Auswahl prüft begrenzte, eindeutige Issue-Nummern, offene Einzelbeitrags-Issues, Analysekennungen und Bewertungen; vorhandene PRs werden übersprungen und unklare Bewertungen nicht automatisch umgesetzt. Falsches Repository, falscher Branch, Probeläufe und gemischte Betriebsarten werden abgelehnt. Die lesende Prüfung gegen die echten Issues #21 und #25 wählte genau diese beiden vorhandenen IDs und Inhaltskennungen aus; es wurde dabei kein KI-Auftrag, Kommentar, Issue oder PR erzeugt.

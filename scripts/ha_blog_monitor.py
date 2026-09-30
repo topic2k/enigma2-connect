@@ -40,6 +40,15 @@ def inline(value):
     return re.sub(r"([\\`*_[\]{}|])", r"\\\1", value)
 
 
+def blog_article_link(post):
+    """Link to the published article using the upstream dated Markdown path."""
+    published = date.fromisoformat(post["date"]).strftime("%Y/%m/%d")
+    slug = re.sub(r"^\d{4}-\d{2}-\d{2}[-/]", "", post["path"])
+    slug = slug.removesuffix(".mdx").removesuffix(".md").removesuffix("/index")
+    url = f"https://developers.home-assistant.io/blog/{published}/{quote(slug, safe='/')}/"
+    return f"Blogbeitrag: [{inline(post['title'])}]({url})"
+
+
 def code_index(root):
     """Index HA imports and member names, including original names behind aliases."""
     index = defaultdict(set)
@@ -187,6 +196,8 @@ def existing_markers(request):
 def issue_body(post, result, repository, revision, upstream_revision):
     source = f"{UPSTREAM}/blob/{upstream_revision}/blog/{quote(post['path'])}"
     lines = [
+        blog_article_link(post),
+        "",
         marker(post["path"]),
         f"[Home-Assistant-Entwicklerblog: {inline(post['title'])}]({source})",
         "",

@@ -264,6 +264,8 @@ auch auf Arbeitsbranches möglich. Parallele Workflow-Läufe werden serialisiert
 
 ### Automatische Umsetzungsvorschläge
 
+Neu angelegte Blog-Issues beginnen mit dem direkten Link zum veröffentlichten Artikel auf `developers.home-assistant.io`. Der zusätzlich enthaltene GitHub-Link hält weiterhin die konkret analysierte Fassung fest; der Analyse-Lauf bleibt separat verlinkt.
+
 Bestehende Blog-Issues ohne PR lassen sich unter **Actions → Home Assistant developer blog → Run workflow** gezielt erneut umsetzen: `main` wählen, `dry_run` ausschalten und unter `implementation_issues` zum Beispiel `21,25` eintragen. Andere Test-/Wiederholungsoptionen leer bzw. ausgeschaltet lassen. Zulässig sind ein bis fünf verschiedene offene Einzelbeitrags-Issues mit `[HA-Blog]`-Titel und gültiger Analysekennung. Die Auswahl erzeugt weder neue Blog-Analysen noch neue Issues und verändert den Analyse-Wiederholungszustand nicht. Bereits vorhandene PRs werden übersprungen und in der Laufübersicht verlinkt. Unklare Bewertungen erhalten weiterhin nur einen erklärenden Kommentar. Die eigentlichen Umsetzungsversuche können Junie-Credits verbrauchen.
 
 Jeder Umsetzungsauftrag schreibt einen strukturierten Abschlussbericht mit Ergebnis, konkreter Begründung und tatsächlich ausgeführten Prüfungen. Im Actions-Lauf steht er unter **Artifacts → blog-proposal-ISSUENUMMER → report.md**; `changes.json` enthält denselben Bericht samt Dateiänderungen. Die Artefakte bleiben sieben Tage erhalten. Rohe Junie-Protokolle und Umgebungsdaten werden nicht veröffentlicht. Fehlt der Bericht, wird ausdrücklich nur der technische Fehler gemeldet; eine inhaltliche Begründung wird nicht erfunden.

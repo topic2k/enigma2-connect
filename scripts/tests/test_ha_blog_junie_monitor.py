@@ -263,6 +263,11 @@ class JunieMonitorTests(unittest.TestCase):
         for i, call in enumerate(self.publisher.call_args_list):
             payload = call.args[0]
             self.assertEqual(payload["title"], f"[HA-Blog] Post {i}")
+            self.assertTrue(
+                payload["body"].startswith(
+                    f"Blogbeitrag: [Post {i}](https://developers.home-assistant.io/blog/2026/09/16/post-{i}/)\n\n"
+                )
+            )
             self.assertIn(f"Post {i}", payload["body"])
             self.assertNotIn(f"Post {1 - i}", payload["body"])
             self.assertIn("https://github.com/o/r/actions/runs/1234", payload["body"])
