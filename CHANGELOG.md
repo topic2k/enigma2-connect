@@ -4,7 +4,7 @@
 
 ## Inhaltsverzeichnis
 
-- [2.1.4-dev.1](#214-dev1)
+- [2.1.4-dev.2](#214-dev2)
 - [2.1.3](#213)
 - [2.0.1](#201)
 - [2.0.0](#200)
@@ -19,9 +19,11 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 2.1.4-dev.1
+## 2.1.4-dev.2
 
 Unveröffentlichte Entwicklerversion.
+
+- Automatische Blog-Umsetzungen behalten einen strukturierten Abschlussbericht mit Begründung und gemeldeten Tests. Ohne PR folgt ein Issue-Kommentar mit Lauf-Link; fehlende Ergebnisse und technische Fehler werden ausdrücklich gemeldet. Erforderliche HA-Mindestversionen dürfen im Entwurf samt Abhängigkeiten und Dokumentation angehoben werden; der PR erhält einen zusätzlichen Versionshinweis.
 
 - Reine Dependabot-Abhängigkeitsupdates vom regulären Branch-, Versions- und Dokumentationsablauf ausgenommen: direkte PRs nach main ohne Versionsanhebung oder zusätzliche Changelog-/Prüfübersichtseinträge. Kompatibilitätsprüfung, Qualitätsanforderungen, aktuelle CI und ausdrückliche Merge-Freigabe bleiben verpflichtend; anschließend develop synchronisieren.
 

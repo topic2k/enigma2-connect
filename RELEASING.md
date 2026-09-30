@@ -30,6 +30,8 @@ von `develop` nach `main` vorbereiten und den PR eröffnen. Die Übernahme nach 
 erfolgt ausschließlich über diesen PR und benötigt ebenfalls die Nutzerfreigabe.
 Automatische Blog-Umsetzungsvorschläge bleiben als Entwurfs-PRs gegen `develop` zur Prüfung offen. Diese Automatik darf keine Reviews genehmigen, mergen oder Releases erstellen.
 
+Eine für die Blog-Umsetzung nötige höhere HA-Mindestversion darf bereits im Entwurf mit Testabhängigkeiten und DE/EN-Dokumentation vorbereitet werden. Ein eigener PR-Kommentar nennt die alte und neue Mindestversion sowie das Ende der Unterstützung älterer HA-Versionen. Die Übernahme bleibt prüfpflichtig; die Freigabe des Entwurfs ist keine Merge- oder Release-Freigabe.
+
 Ein Release einschließlich Entwurf oder Tag benötigt eine separate ausdrückliche
 Anweisung; eine PR- oder Merge-Freigabe ist keine Release-Freigabe.
 

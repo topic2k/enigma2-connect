@@ -2,6 +2,8 @@
 """Collect bounded source edits and publish draft PRs from a fresh trusted job."""
 
 import argparse
+import base64
+import html
 import json
 import os
 import re
@@ -17,13 +19,85 @@ except ImportError:
 
 MAX_BYTES = 2_000_000
 MAX_FILES = 80
+REPORT_LIMIT = 6000
+TARGET_FILES = {"AGENTS.md": "Home Assistant ab ", "AGENTS.en.md": "Home Assistant "}
 ALLOWED_ROOT_FILES = {
     "README.md",
     "CHANGELOG.md",
     "CHANGELOG.en.md",
     "pyproject.toml",
     "uv.lock",
+    "hacs.json",
 }
+
+
+def validate_report(report):
+    if not isinstance(report, dict) or set(report) != {"status", "summary", "reason", "tests"}:
+        raise ValueError("Invalid implementation report")
+    if not isinstance(report["status"], str) or report["status"] not in {
+        "ready",
+        "no_changes",
+        "failed",
+    }:
+        raise ValueError("Invalid implementation status")
+    for field in ("summary", "reason", "tests"):
+        value = report[field]
+        if not isinstance(value, str) or not value.strip() or len(value) > REPORT_LIMIT:
+            raise ValueError("Missing or oversized implementation explanation")
+        if any(ord(char) < 32 and char not in "\n\t\r" for char in value):
+            raise ValueError("Invalid implementation explanation")
+    return report
+
+
+def failure_report(reason):
+    return {
+        "status": "failed",
+        "summary": "Kein veröffentlichbarer Umsetzungsvorschlag.",
+        "reason": reason,
+        "tests": "Keine bestandenen Prüfungen durch diesen Ablauf belegt.",
+    }
+
+
+def report_markdown(report):
+    # Render agent text as inert text, not HTML, mentions or forged Markdown links.
+    def quoted(value):
+        value = html.escape(value).replace("@", "@\u200b")
+        value = re.sub(r"([\\`*_{}\[\]()#+.!|>-])", r"\\\1", value)
+        return "\n".join(f"> {line}" for line in value.splitlines())
+
+    return "\n\n".join(
+        f"**{label}**\n\n{quoted(report[field])}"
+        for field, label in (
+            ("summary", "Abschlussbericht der Umsetzung"),
+            ("reason", "Begründung"),
+            ("tests", "Von Junie gemeldete Prüfungen (nicht unabhängig bestätigt)"),
+        )
+    )
+
+
+def comment_once(request, number, marker, body):
+    page = 1
+    while True:
+        comments = request(f"issues/{number}/comments?per_page=100&page={page}")
+        if any(marker in (item.get("body") or "") for item in comments):
+            return
+        if len(comments) < 100:
+            break
+        page += 1
+    request(f"issues/{number}/comments", {"body": f"{marker}\n\n{body}"})
+
+
+def no_pr(request, number, key, run_url, report, *, uncertain=False):
+    message = (
+        "PR-Veröffentlichung nicht abgeschlossen; Ergebnis bitte im Lauf prüfen."
+        if uncertain
+        else "Kein Entwurfs-PR erstellt; Issue bleibt zur Prüfung offen."
+    )
+    body = f"{message}\n\n{report_markdown(report)}\n\n[Analyse und Umsetzung]({run_url})."
+    comment_once(
+        request, number, f"<!-- ha-blog-no-pr:{key}:{run_url.rsplit('/', 1)[-1]} -->", body
+    )
+    return body
 
 
 def allowed_path(value):
@@ -60,11 +134,17 @@ def validate_changes(data, base):
         if not isinstance(item, dict) or set(item) != {"path", "content"}:
             raise ValueError("Invalid file record")
         path, content = item["path"], item["content"]
-        if not allowed_path(path) or path in seen:
+        if (
+            not isinstance(path, str)
+            or (not allowed_path(path) and path not in TARGET_FILES)
+            or path in seen
+        ):
             raise ValueError("Disallowed or duplicate path")
         if content is not None and (not isinstance(content, str) or "\0" in content):
             raise ValueError("Only UTF-8 text edits are supported")
         seen.add(path)
+    if seen.intersection(TARGET_FILES) and "hacs.json" not in seen:
+        raise ValueError("Project instructions require a matching HA minimum change")
     if len(json.dumps(data, ensure_ascii=False).encode()) > MAX_BYTES:
         raise ValueError("Implementation exceeds size limit")
     return changes
@@ -80,7 +160,7 @@ def collect(root, base, output):
     changes = []
     for name in sorted(paths):
         # Work files are ignored by git; reject any other disallowed changes.
-        if not allowed_path(name):
+        if not allowed_path(name) and name not in TARGET_FILES:
             raise ValueError("Implementation changed a protected path")
         path = root / name
         if path.is_symlink() or not path.resolve().is_relative_to(root.resolve()):
@@ -94,6 +174,103 @@ def collect(root, base, output):
     validate_changes(data, base)
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
+
+
+def collect_outcome(root, base, output, outcome):
+    """Always retain a bounded explanation, even after a failed agent or rejected edits."""
+    data = {"base": base, "changes": []}
+    report_path = root / ".work/implementation-report.json"
+    try:
+        if (
+            report_path.is_symlink()
+            or not report_path.resolve().is_relative_to(root.resolve())
+            or report_path.stat().st_size > REPORT_LIMIT * 12
+        ):
+            raise ValueError("Invalid report file")
+        report = validate_report(json.loads(report_path.read_text(encoding="utf-8")))
+    except OSError, ValueError:
+        report = failure_report(
+            "Junies strukturierter Abschlussbericht fehlt oder ist ungültig. "
+            "Die inhaltliche Begründung ist nicht verfügbar."
+        )
+    if outcome == "not_requested":
+        report = {
+            "status": "no_changes",
+            "summary": "Keine automatische Umsetzung beauftragt.",
+            "reason": "Die Kompatibilitäts- oder Verbesserungsbewertung ist unklar (uncertain). "
+            "Das Issue muss zunächst manuell konkretisiert werden.",
+            "tests": "Kein Umsetzungsauftrag und keine Tests ausgeführt.",
+        }
+    elif outcome != "success":
+        report = {
+            **report,
+            "status": "failed",
+            "reason": f"Umsetzungsauftrag nicht erfolgreich abgeschlossen (Status: {outcome}).\n"
+            + report["reason"],
+        }
+    if report["status"] != "failed" and outcome != "not_requested":
+        try:
+            collect(root, base, output)
+            data = json.loads(output.read_text(encoding="utf-8"))
+            if (report["status"] == "ready") != bool(data["changes"]):
+                raise ValueError("Report and changes disagree")
+        except OSError, ValueError, subprocess.SubprocessError:
+            data = {"base": base, "changes": []}
+            report = {
+                **report,
+                "status": "failed",
+                "reason": "Dateiänderungen nicht zulässig oder widersprüchlich zum Abschlussbericht.\n"
+                + report["reason"],
+            }
+    data["report"] = report
+    report["reason"] = report["reason"][:REPORT_LIMIT]
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
+    (output.parent / "report.md").write_text(report_markdown(report), encoding="utf-8")
+
+
+def minimum_version_notice(request, base, changes):
+    changed = next((item for item in changes if item["path"] == "hacs.json"), None)
+    if changed is None:
+        if any(item["path"] in TARGET_FILES for item in changes):
+            raise ValueError("Project instructions may only track a changed HA minimum")
+        return ""
+    previous = request(f"contents/hacs.json?ref={base}")
+    old = json.loads(base64.b64decode(previous["content"]))
+    new = json.loads(changed["content"] or "null")
+    if not isinstance(new, dict) or set(old) != set(new):
+        raise ValueError("Invalid HACS configuration change")
+    if any(old[key] != new[key] for key in old if key != "homeassistant"):
+        raise ValueError("Only the HA minimum may change in HACS configuration")
+    before, after = old["homeassistant"], new["homeassistant"]
+    if not all(
+        isinstance(v, str) and re.fullmatch(r"\d{4}\.\d{1,2}\.\d+", v) for v in (before, after)
+    ):
+        raise ValueError("Invalid HA minimum version")
+    if tuple(map(int, after.split("."))) < tuple(map(int, before.split("."))):
+        raise ValueError("HA minimum must not be lowered")
+    for item in changes:
+        if item["path"] in TARGET_FILES:
+            source = request(f"contents/{item['path']}?ref={base}")
+            original = base64.b64decode(source["content"]).decode("utf-8")
+            prefix = TARGET_FILES[item["path"]]
+            old_target = prefix + before.removesuffix(".0")
+            new_target = prefix + after.removesuffix(".0")
+            if (
+                before == after
+                or original.count(old_target) != 1
+                or item["content"] != original.replace(old_target, new_target, 1)
+            ):
+                raise ValueError("Protected project instructions changed beyond the HA target")
+    if before == after:
+        return ""
+    return (
+        f"**Home-Assistant-Mindestversion angehoben: `{before}` → `{after}`.**\n\n"
+        "Dies ist die Mindestversion, die Enigma2 Connect nach Übernahme dieses PR voraussetzt. "
+        "Ältere Home-Assistant-Versionen werden damit nicht mehr unterstützt. "
+        "Vor Übernahme sind API-Verfügbarkeit, passende Testabhängigkeiten und die "
+        "Dokumentation zu prüfen. Kein automatischer Merge."
+    )
 
 
 def branch_name(title, issue_number):
@@ -116,9 +293,6 @@ def available_branch(request, title, issue_number):
 
 
 def publish(request, repository, base, issue_number, key, data, run_url):
-    changes = validate_changes(data, base)
-    if not changes:
-        return "Keine umsetzbare Änderung erzeugt; Issue bleibt zur manuellen Prüfung offen."
     if type(issue_number) is not int or issue_number < 1 or not re.fullmatch(r"[a-f0-9]{64}", key):
         raise ValueError("Invalid issue identity")
     issue = request(f"issues/{issue_number}")
@@ -130,16 +304,50 @@ def publish(request, repository, base, issue_number, key, data, run_url):
         or marker not in (issue.get("body") or "")
     ):
         raise ValueError("Issue no longer matches the implementation task")
+    try:
+        changes = validate_changes(data, base)
+        report = validate_report(data.get("report"))
+        notice = minimum_version_notice(request, base, changes)
+        return publish_validated(
+            request, base, issue_number, key, changes, report, notice, issue, run_url
+        )
+    except (ValueError, HTTPError) as error:
+        reason = (
+            "Die Veröffentlichung wurde durch die Validierung abgelehnt: " + str(error)
+            if isinstance(error, ValueError)
+            else f"GitHub-API-Fehler bei der Veröffentlichung (HTTP {error.code}). "
+            "Der Lauf kann bereits einen Branch oder PR angelegt haben; bitte prüfen."
+        )
+        no_pr(
+            request,
+            issue_number,
+            key,
+            run_url,
+            failure_report(reason),
+            uncertain=isinstance(error, HTTPError),
+        )
+        raise
+
+
+def publish_validated(request, base, issue_number, key, changes, report, notice, issue, run_url):
     pr_marker = f"<!-- ha-blog-implementation:{issue_number}:{key} -->"
     page = 1
     while True:
         existing = request(f"pulls?state=all&base=develop&per_page=100&page={page}")
         for pr in existing:
             if pr_marker in (pr.get("body") or ""):
+                if notice:
+                    comment_once(
+                        request, pr["number"], f"<!-- ha-blog-ha-minimum:{key} -->", notice
+                    )
                 return f"Vorhandener PR bleibt unverändert: {pr['html_url']}"
         if len(existing) < 100:
             break
         page += 1
+    if report["status"] != "ready" or not changes:
+        if changes:
+            raise ValueError("Unfinished implementation contains edits")
+        return no_pr(request, issue_number, key, run_url, report)
     branch = available_branch(request, issue["title"], issue_number)
     current = request("git/ref/heads/develop")["object"]["sha"]
     if current != base:
@@ -169,7 +377,13 @@ def publish(request, repository, base, issue_number, key, data, run_url):
         edits.append(edit)
     new_tree = request("git/trees", {"base_tree": tree_sha, "tree": edits})
     if new_tree["sha"] == tree_sha:
-        return "Keine Quelländerung; kein leerer PR erstellt."
+        return no_pr(
+            request,
+            issue_number,
+            key,
+            run_url,
+            {**report, "reason": "Keine Quelländerung gegenüber develop.\n" + report["reason"]},
+        )
     new_commit = request(
         "git/commits",
         {
@@ -190,6 +404,7 @@ def publish(request, repository, base, issue_number, key, data, run_url):
         "Dieser Ablauf bescheinigt keine bestandenen Tests. Falls GitHub die CI zurückhält, "
         "Approve workflows to run im PR wählen. Kein automatischer Merge.\n\n"
         "Das Issue erst nach geprüfter Übernahme der Umsetzung schließen.\n"
+        f"\n{report_markdown(report)}\n\n{notice}\n"
     )
     pr = request(
         "pulls",
@@ -201,6 +416,11 @@ def publish(request, repository, base, issue_number, key, data, run_url):
             "body": body,
         },
     )
+    if notice:
+        try:
+            comment_once(request, pr["number"], f"<!-- ha-blog-ha-minimum:{key} -->", notice)
+        except HTTPError as error:
+            raise RuntimeError("Draft PR exists, but its HA minimum comment failed") from error
     return f"Entwurfs-PR: {pr['html_url']}"
 
 
@@ -212,11 +432,26 @@ def main():
     args = parser.parse_args()
     base = os.environ["IMPLEMENTATION_BASE"]
     if args.mode == "collect":
-        collect(args.root, base, args.file)
+        outcome = os.environ.get("IMPLEMENTATION_OUTCOME", "skipped")
+        if outcome not in {"success", "failure", "cancelled", "skipped"}:
+            outcome = "failure"
+        if os.environ.get("IMPLEMENTATION_REQUESTED") == "false":
+            outcome = "not_requested"
+        collect_outcome(args.root, base, args.file, outcome)
         return
-    if args.file.is_symlink() or args.file.stat().st_size > MAX_BYTES:
-        raise ValueError("Invalid proposal artifact")
-    data = json.loads(args.file.read_text(encoding="utf-8"))
+    try:
+        if args.file.is_symlink() or args.file.stat().st_size > MAX_BYTES:
+            raise ValueError("Invalid proposal artifact")
+        data = json.loads(args.file.read_text(encoding="utf-8"))
+    except OSError, ValueError:
+        data = {
+            "base": base,
+            "changes": [],
+            "report": failure_report(
+                "Das Ergebnisartefakt fehlt oder ist ungültig. Details stehen im implement-Job "
+                "dieses Laufs; eine inhaltliche Junie-Begründung ist nicht verfügbar."
+            ),
+        }
     repository = os.environ["GITHUB_REPOSITORY"]
 
     def request(endpoint, payload=None):
@@ -234,6 +469,8 @@ def main():
     print(message)
     with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as handle:
         handle.write(message + "\n")
+    if data["report"]["status"] == "failed":
+        raise SystemExit(1)
 
 
 if __name__ == "__main__":

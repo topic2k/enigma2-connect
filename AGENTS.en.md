@@ -68,6 +68,7 @@ rules; the remote comparison before a PR remains mandatory.
   merging also requires user approval.
 - Use a dedicated `ha-blog/short-title` branch for every PR implementing an issue; derive the short title from the issue topic and append the issue number on collisions.
 - Automatic blog implementation proposals may create dedicated branches from current `develop` and draft PRs into `develop`. These drafts remain open for content and technical review; automation must not merge or approve reviews.
+- When a blog implementation needs a higher HA minimum, the draft may raise it in `hacs.json` together with matching test dependencies and DE/EN documentation. In both AGENTS files, automation may only replace the existing HA target version accordingly. Record the increase in the PR and a PR comment. Without a PR, comment the reason and run link on the issue; retain the completion report and verification limits.
 - Create a new release only when explicitly instructed by the user.
   Approval of changes or a pull request does not authorize a release.
 - The versioning rules below do not authorize automatic publication.

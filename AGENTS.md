@@ -69,6 +69,7 @@ bleibt verpflichtend.
   `main` übernehmen; auch der Merge benötigt die Nutzerfreigabe.
 - Für jeden PR zur Umsetzung eines Issues einen eigenen Branch `ha-blog/short-title` verwenden; den kurzen Titel aus dem Issue-Thema ableiten und bei Namenskollision die Issue-Nummer ergänzen.
 - Automatische Blog-Umsetzungsvorschläge dürfen eigene Branches vom aktuellen `develop` und Entwurfs-PRs gegen `develop` erstellen. Diese Entwürfe bleiben bis zur inhaltlichen und technischen Prüfung offen; die Automatik darf weder mergen noch Reviews genehmigen.
+- Wenn eine Blog-Umsetzung eine höhere HA-Mindestversion benötigt, darf der Entwurf diese in `hacs.json` mit passenden Testabhängigkeiten und DE/EN-Dokumentation anheben. In beiden AGENTS-Dateien darf die Automatik ausschließlich die bestehende HA-Zielversion entsprechend ersetzen. Die Anhebung muss im PR und einem PR-Kommentar stehen. Ohne PR wird die Begründung mit Lauf-Link am Issue kommentiert; Abschlussbericht und Prüfgrenzen bleiben nachvollziehbar.
 - Ein neues Release nur auf ausdrückliche Anweisung des Nutzers erstellen.
   Die Freigabe von Änderungen oder eines Pull Requests ist keine Release-Freigabe.
 - Die folgenden Versionierungsregeln erlauben keine automatische Veröffentlichung.

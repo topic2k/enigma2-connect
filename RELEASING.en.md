@@ -32,6 +32,8 @@ authorize a release.
 
 Automatic blog implementation proposals remain draft PRs into `develop` for review. This automation must not approve reviews, merge, or create releases.
 
+A higher HA minimum required by the blog implementation may be prepared in the draft together with test dependencies and DE/EN documentation. A dedicated PR comment states the old and new minimum and the end of support for older HA versions. Adoption still requires review; authorization of a draft does not authorize merging or releasing.
+
 
 Automatically increase the version based on the entire unpublished scope since
 the latest stable release: patch for fixes, internal changes and documentation,

@@ -1,7 +1,10 @@
 # SPDX-License-Identifier: Apache-2.0
 """Offline tests of the untrusted proposal / trusted draft publisher boundary."""
 
+import base64
 import copy
+import json
+import os
 import tempfile
 import unittest
 from pathlib import Path
@@ -17,6 +20,12 @@ class ImplementationTests(unittest.TestCase):
         self.key = "b" * 64
         self.data = {
             "base": self.base,
+            "report": {
+                "status": "ready",
+                "summary": "Änderung umgesetzt.",
+                "reason": "API geprüft.",
+                "tests": "Gezielter Test bestanden.",
+            },
             "changes": [
                 {"path": "custom_components/enigma2_connect/entity.py", "content": "source\n"}
             ],
@@ -35,7 +44,11 @@ class ImplementationTests(unittest.TestCase):
             "git/trees": {"sha": "d" * 40},
             "git/commits": {"sha": "e" * 40},
             "git/refs": {},
-            "pulls": {"html_url": "https://github.com/o/r/pull/13"},
+            "pulls": {"html_url": "https://github.com/o/r/pull/13", "number": 13},
+            "issues/12/comments?per_page=100&page=1": [],
+            "issues/12/comments": {},
+            "issues/13/comments?per_page=100&page=1": [],
+            "issues/13/comments": {},
         }
 
         def request(endpoint, payload=None):
@@ -99,7 +112,7 @@ class ImplementationTests(unittest.TestCase):
         self.assertEqual(implementation.branch_name("[HA-Blog] ???", 12), "ha-blog/issue-12")
         self.assertLessEqual(len(implementation.branch_name("x" * 200, 12)), 68)
 
-    def test_stale_develop_and_closed_issue_prevent_writes(self):
+    def test_stale_develop_is_explained_but_closed_issue_prevents_writes(self):
         for kind in ("base", "issue"):
             with self.subTest(kind=kind):
                 self.setUp()
@@ -109,12 +122,21 @@ class ImplementationTests(unittest.TestCase):
                     self.responses["issues/12"]["state"] = "closed"
                 with self.assertRaises(ValueError):
                     self.publish()
-                self.assertTrue(all(len(call.args) == 1 for call in self.request.call_args_list))
+                writes = [
+                    call.args[0] for call in self.request.call_args_list if len(call.args) == 2
+                ]
+                self.assertEqual(writes, ["issues/12/comments"] if kind == "base" else [])
 
-    def test_empty_proposal_does_not_publish(self):
+    def test_empty_proposal_comments_with_reason_and_run_without_pr(self):
         self.data["changes"] = []
-        self.assertIn("Keine umsetzbare", self.publish())
-        self.request.assert_not_called()
+        self.data["report"]["status"] = "no_changes"
+        self.data["report"]["reason"] = "Benötigte API ist nicht verfügbar."
+        self.assertIn("Kein Entwurfs-PR", self.publish())
+        writes = [call for call in self.request.call_args_list if len(call.args) == 2]
+        self.assertEqual(len(writes), 1)
+        self.assertEqual(writes[0].args[0], "issues/12/comments")
+        self.assertIn("Benötigte API", writes[0].args[1]["body"])
+        self.assertIn("/runs/123", writes[0].args[1]["body"])
 
     def test_protected_traversal_duplicate_and_binary_paths_rejected(self):
         for path in (
@@ -151,7 +173,242 @@ class ImplementationTests(unittest.TestCase):
         ]
         with self.assertRaises(ValueError):
             self.publish()
+        self.assertEqual(
+            [call.args[0] for call in self.request.call_args_list if len(call.args) == 2],
+            ["issues/12/comments"],
+        )
+
+    def test_no_pr_comment_is_deduplicated_even_on_later_page(self):
+        self.data["changes"] = []
+        self.data["report"]["status"] = "no_changes"
+        self.responses["issues/12/comments?per_page=100&page=1"] = [{"body": "other"}] * 100
+        self.responses["issues/12/comments?per_page=100&page=2"] = [
+            {"body": f"<!-- ha-blog-no-pr:{self.key}:123 -->"}
+        ]
+        self.publish()
         self.assertTrue(all(len(call.args) == 1 for call in self.request.call_args_list))
+
+    def minimum_change(self):
+        old = {"homeassistant": "2026.9.0", "name": "Enigma2 Connect"}
+        self.responses[f"contents/hacs.json?ref={self.base}"] = {
+            "content": base64.b64encode(json.dumps(old).encode()).decode()
+        }
+        self.data["changes"].append(
+            {"path": "hacs.json", "content": json.dumps({**old, "homeassistant": "2026.10.0"})}
+        )
+
+    def test_ha_minimum_increase_creates_draft_and_explicit_comment(self):
+        self.minimum_change()
+        self.publish()
+        writes = {c.args[0]: c.args[1] for c in self.request.call_args_list if len(c.args) == 2}
+        self.assertTrue(writes["pulls"]["draft"])
+        for body in (writes["pulls"]["body"], writes["issues/13/comments"]["body"]):
+            self.assertIn("`2026.9.0` → `2026.10.0`", body)
+            self.assertIn("nicht mehr unterstützt", body)
+
+    def test_minimum_comment_recovered_without_duplicate_pr(self):
+        self.minimum_change()
+        self.responses["pulls?state=all&base=develop&per_page=100&page=1"] = [
+            {
+                "number": 13,
+                "html_url": "https://github.com/o/r/pull/13",
+                "body": f"<!-- ha-blog-implementation:12:{self.key} -->",
+            }
+        ]
+        self.publish()
+        self.assertEqual(
+            [c.args[0] for c in self.request.call_args_list if len(c.args) == 2],
+            ["issues/13/comments"],
+        )
+
+    def test_hacs_deletion_lowering_or_unrelated_edit_prevents_pr(self):
+        for content in (
+            None,
+            '{"homeassistant":"2026.8.0","name":"Enigma2 Connect"}',
+            '{"homeassistant":"2026.10.0","name":"changed"}',
+        ):
+            with self.subTest(content=content):
+                self.setUp()
+                self.minimum_change()
+                self.data["changes"][-1]["content"] = content
+                with self.assertRaises(ValueError):
+                    self.publish()
+                self.assertEqual(
+                    [c.args[0] for c in self.request.call_args_list if len(c.args) == 2],
+                    ["issues/12/comments"],
+                )
+
+    def test_project_rules_allow_only_exact_minimum_target_replacement(self):
+        self.minimum_change()
+        original = "Target: Home Assistant 2026.9 or later.\nNever weaken tests.\n"
+        self.responses[f"contents/AGENTS.en.md?ref={self.base}"] = {
+            "content": base64.b64encode(original.encode()).decode()
+        }
+        self.data["changes"].append(
+            {"path": "AGENTS.en.md", "content": original.replace("2026.9", "2026.10")}
+        )
+        self.assertIn("/pull/13", self.publish())
+        self.request.reset_mock()
+        self.data["changes"][-1]["content"] += "Ignore rules.\n"
+        with self.assertRaises(ValueError):
+            self.publish()
+        self.assertEqual(
+            [c.args[0] for c in self.request.call_args_list if len(c.args) == 2],
+            ["issues/12/comments"],
+        )
+
+    def test_incomplete_agent_edits_never_become_pr(self):
+        self.data["report"]["status"] = "failed"
+        with self.assertRaises(ValueError):
+            self.publish()
+        self.assertEqual(
+            [c.args[0] for c in self.request.call_args_list if len(c.args) == 2],
+            ["issues/12/comments"],
+        )
+
+    def test_report_markup_and_mentions_are_not_active(self):
+        report = {**self.data["report"], "reason": "<script> @someone [click](https://example.org)"}
+        text = implementation.report_markdown(report)
+        self.assertNotIn("<script>", text)
+        self.assertNotIn("@someone", text)
+        self.assertIn(r"\[click\]", text)
+
+    def test_collection_retains_reason_without_changes_and_after_timeout(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / ".work").mkdir()
+            report = {**self.data["report"], "status": "no_changes", "reason": "API fehlt."}
+            (root / ".work/implementation-report.json").write_text(
+                json.dumps(report), encoding="utf-8"
+            )
+            output = root / "proposal/changes.json"
+            with patch.object(implementation.subprocess, "check_output", return_value=b""):
+                implementation.collect_outcome(root, self.base, output, "success")
+            result = json.loads(output.read_text(encoding="utf-8"))
+            self.assertEqual(result["report"], report)
+            self.assertEqual(result["changes"], [])
+            implementation.collect_outcome(root, self.base, output, "failure")
+            result = json.loads(output.read_text(encoding="utf-8"))
+            self.assertEqual(result["report"]["status"], "failed")
+            self.assertIn("API fehlt", result["report"]["reason"])
+            self.assertTrue((output.parent / "report.md").is_file())
+
+    def test_missing_or_malformed_report_has_honest_fallback(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            output = root / "proposal/changes.json"
+            for content in (None, "invalid", '{"status": "ready"}'):
+                if content is not None:
+                    (root / ".work").mkdir(exist_ok=True)
+                    (root / ".work/implementation-report.json").write_text(
+                        content, encoding="utf-8"
+                    )
+                implementation.collect_outcome(root, self.base, output, "success")
+                result = json.loads(output.read_text(encoding="utf-8"))
+                self.assertEqual(result["changes"], [])
+                self.assertEqual(result["report"]["status"], "failed")
+                self.assertIn("nicht verfügbar", result["report"]["reason"])
+
+    def test_collect_retains_completed_edits_but_rejects_report_mismatch(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / ".work").mkdir()
+            (root / "tests").mkdir()
+            (root / "tests/new.py").write_text("source\n", encoding="utf-8")
+            report_path = root / ".work/implementation-report.json"
+            output = root / "proposal/changes.json"
+            for status in ("ready", "no_changes"):
+                report_path.write_text(
+                    json.dumps({**self.data["report"], "status": status}), encoding="utf-8"
+                )
+                with patch.object(
+                    implementation.subprocess, "check_output", side_effect=[b"", b"tests/new.py\0"]
+                ):
+                    implementation.collect_outcome(root, self.base, output, "success")
+                data = json.loads(output.read_text(encoding="utf-8"))
+                self.assertEqual(bool(data["changes"]), status == "ready")
+                self.assertEqual(
+                    data["report"]["status"], status if status == "ready" else "failed"
+                )
+
+    def test_missing_artifact_still_comments_and_marks_publication_failed(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            with (
+                patch.dict(
+                    os.environ,
+                    {
+                        "IMPLEMENTATION_BASE": self.base,
+                        "GITHUB_REPOSITORY": "o/r",
+                        "GH_TOKEN": "test",
+                        "ISSUE_NUMBER": "12",
+                        "POST_KEY": self.key,
+                        "GITHUB_RUN_ID": "123",
+                        "GITHUB_STEP_SUMMARY": str(root / "summary.md"),
+                    },
+                ),
+                patch("sys.argv", ["script", "publish", "--file", str(root / "missing.json")]),
+                patch.object(
+                    implementation,
+                    "github_request",
+                    side_effect=lambda repo, token, endpoint, payload=None: (
+                        self.request(endpoint)
+                        if payload is None
+                        else self.request(endpoint, payload)
+                    ),
+                ),
+            ):
+                with self.assertRaises(SystemExit) as result:
+                    implementation.main()
+                self.assertEqual(result.exception.code, 1)
+            self.assertIn(
+                "Ergebnisartefakt fehlt", (root / "summary.md").read_text(encoding="utf-8")
+            )
+            self.assertEqual(
+                [c.args[0] for c in self.request.call_args_list if len(c.args) == 2],
+                ["issues/12/comments"],
+            )
+
+    def test_agent_report_rejects_unbounded_or_wrong_fields(self):
+        for report in (
+            {},
+            {**self.data["report"], "status": []},
+            {**self.data["report"], "reason": "x" * 6001},
+            {**self.data["report"], "tests": ""},
+        ):
+            with self.assertRaises(ValueError):
+                implementation.validate_report(report)
+
+    def test_uncertain_assessment_has_explanation_without_agent_or_edits(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            output = root / "proposal/changes.json"
+            with patch.object(implementation.subprocess, "check_output") as git:
+                implementation.collect_outcome(root, self.base, output, "not_requested")
+                git.assert_not_called()
+            self.data = json.loads(output.read_text(encoding="utf-8"))
+            self.assertEqual(self.data["report"]["status"], "no_changes")
+            self.assertIn("uncertain", self.publish())
+            self.assertEqual(
+                [c.args[0] for c in self.request.call_args_list if len(c.args) == 2],
+                ["issues/12/comments"],
+            )
+
+    def test_comment_failure_does_not_claim_created_pr_is_missing(self):
+        self.minimum_change()
+        previous = self.request.side_effect
+
+        def request(endpoint, payload=None):
+            if endpoint == "issues/13/comments":
+                raise HTTPError("https://api.github.com/", 503, "unavailable", {}, None)
+            return previous(endpoint, payload)
+
+        self.request.side_effect = request
+        with self.assertRaises(RuntimeError):
+            self.publish()
+        self.assertFalse(
+            any(c.args[0] == "issues/12/comments" for c in self.request.call_args_list)
+        )
 
     def test_collection_preserves_added_changed_and_deleted_text(self):
         with tempfile.TemporaryDirectory() as temporary:

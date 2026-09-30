@@ -2,6 +2,12 @@
 
 # Verification summary
 
+## Blog implementation reports and HA minimum – 2.1.4-dev.2
+
+104 offline script tests passed. New cases cover retained completion reports, missing/invalid reports and artifacts, failed attempts, inconsistent or prohibited edits, issue comments with run links and deduplication, and HA minimum notices in draft PRs and dedicated comments. Exact HA target replacements in AGENTS are permitted; other rule edits, unrelated HACS changes and version downgrades remain prohibited. A failed PR comment does not falsely claim that no PR exists.
+
+Ruff, formatting, Python syntax, actionlint and offline lockfile checks passed. GitHub/agent workflows were simulated only; no real comments or new Junie attempts were made for this verification. The first production run with this enhancement is still pending. Quality checklist reviewed for impact: integration behavior, current HA minimum and coverage thresholds are unchanged; future drafts raising the minimum still require their own compatibility evidence and current CI before adoption.
+
 ## Single Junie artifact – 2.1.3-dev.1
 
 [Run 36725343659](https://github.com/topic2k/enigma2-connect/actions/runs/36725343659) failed to read the result file: download-artifact v8 extracts a sole match directly into the target directory, while the monitor expected an artifact subdirectory. Junie’s September 28 assessment was valid, including every source citation. The corrected handoff uses per-content-ID filenames and a merged download directory.
