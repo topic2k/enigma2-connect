@@ -98,6 +98,23 @@ bleibt verpflichtend.
 
 ## Versionierung
 
+### Ausnahme für Dependabot
+
+Reine Dependabot-PRs für Abhängigkeitsaktualisierungen dürfen direkt vom
+Dependabot-Branch nach `main` führen; der Umweg über `develop` entfällt.
+Sie benötigen allein wegen des Updates weder eine neue Integrationsversion noch
+Einträge in den zweisprachigen Changelogs oder Prüfübersichten. Die allgemeinen
+Versionsvorbereitungen vor einem PR gelten für diese Ausnahme nicht.
+Erforderliche Anpassungen an Code oder Anwenderdokumentation fallen weiterhin
+unter den regulären Ablauf. Aktuelle erfolgreiche CI, die Prüfung der Auswirkungen
+auf Kompatibilität und Integrationsqualität sowie die ausdrückliche
+Merge-Freigabe des Nutzers bleiben verpflichtend. Die automatische Erstellung
+eines Dependabot-PRs benötigt keine zusätzliche Freigabe. Kein automatischer
+Merge, Tag oder Release. Nach einem freigegebenen Merge `main` nach `develop`
+synchronisieren, damit die Abhängigkeitsaktualisierung dort erhalten bleibt.
+
+### Regulärer Ablauf
+
 - Bei Änderungen auf `develop` oder einem Arbeitsbranch die Version automatisch
   und ohne gesonderte Aufforderung passend zum gesamten unveröffentlichten Umfang
   gegenüber der letzten stabilen Version erhöhen: Patch für Fehlerkorrekturen,

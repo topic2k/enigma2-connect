@@ -96,6 +96,21 @@ rules; the remote comparison before a PR remains mandatory.
 
 ## Versioning
 
+### Dependabot exception
+
+Dependabot PRs containing only dependency updates may target `main` directly
+from the Dependabot branch; routing them through `develop` is not required.
+The update alone requires neither a new integration version nor entries in the
+bilingual changelogs or verification summaries. The general pre-PR version
+preparation rules do not apply to this exception. Required code or user
+documentation changes still follow the regular process. Current successful CI,
+review of compatibility and integration quality impacts, and explicit user
+approval to merge remain mandatory. Automatic creation of a Dependabot PR
+requires no additional approval. No automatic merge, tag or release. After an
+approved merge, synchronize `main` into `develop` to retain the dependency update.
+
+### Regular process
+
 - When making changes on `develop` or a working branch, automatically increase
   the version without a separate request, based on the entire unpublished scope
   since the last stable version: patch for fixes, internal changes and

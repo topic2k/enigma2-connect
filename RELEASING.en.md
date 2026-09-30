@@ -61,6 +61,16 @@ before preparing a PR.
 
 ## Version before the pull request
 
+**Dependabot exception:** Dependency-only Dependabot PRs may target `main`
+directly without first going through `develop`, increasing the version or adding
+entries to either changelog or verification summary. The version preparation
+steps below do not apply to these PRs. Their automatic creation requires no
+additional approval. Compatibility and quality review, current successful CI
+and explicit user approval to merge remain required. Necessary code or user
+documentation changes follow the regular process. No automatic merge, tag or
+release; after an approved merge, synchronize `main` into `develop`.
+See the [Dependabot exception](AGENTS.en.md#dependabot-exception).
+
 1. Immediately before every PR into `main`, fetch remote branches and tags, for
    example with `git fetch origin --prune --tags`, and check published GitHub
    releases. Local versions or tags alone are insufficient.

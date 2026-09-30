@@ -61,6 +61,17 @@ tatsächliche Remote- und Release-Basis erneut geprüft werden.
 
 ## Version vor dem Pull Request
 
+**Dependabot-Ausnahme:** Reine Abhängigkeitsaktualisierungen dürfen als
+Dependabot-PR direkt nach `main` führen, ohne vorherige Übernahme nach `develop`,
+Versionsanhebung oder zusätzliche Einträge in beiden Changelogs und
+Prüfübersichten. Die folgenden Versionsvorbereitungsschritte entfallen für diese
+PRs. Ihre automatische Erstellung benötigt keine zusätzliche Freigabe.
+Kompatibilitäts- und Qualitätsprüfung, aktuelle erfolgreiche CI und ausdrückliche
+Nutzerfreigabe zum Merge bleiben erforderlich. Nötige Code- oder
+Anwenderdokumentationsänderungen folgen dem regulären Ablauf. Kein automatischer
+Merge, Tag oder Release; nach freigegebenem Merge `main` nach `develop`
+synchronisieren. Siehe [Dependabot-Ausnahme](AGENTS.md#ausnahme-für-dependabot).
+
 1. Unmittelbar vor jedem PR nach `main` Remote-Branches und Tags abrufen, etwa mit
    `git fetch origin --prune --tags`, und die veröffentlichten GitHub-Releases
    prüfen. Lokale Versionsangaben oder Tags allein reichen nicht.

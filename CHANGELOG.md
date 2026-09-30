@@ -4,6 +4,7 @@
 
 ## Inhaltsverzeichnis
 
+- [2.1.4-dev.1](#214-dev1)
 - [2.1.3](#213)
 - [2.0.1](#201)
 - [2.0.0](#200)
@@ -17,6 +18,12 @@
 - [1.0.2](#102)
 - [1.0.1](#101)
 - [1.0.0](#100)
+
+## 2.1.4-dev.1
+
+Unveröffentlichte Entwicklerversion.
+
+- Reine Dependabot-Abhängigkeitsupdates vom regulären Branch-, Versions- und Dokumentationsablauf ausgenommen: direkte PRs nach main ohne Versionsanhebung oder zusätzliche Changelog-/Prüfübersichtseinträge. Kompatibilitätsprüfung, Qualitätsanforderungen, aktuelle CI und ausdrückliche Merge-Freigabe bleiben verpflichtend; anschließend develop synchronisieren.
 
 ## 2.1.3
 
