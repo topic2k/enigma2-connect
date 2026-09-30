@@ -4,7 +4,7 @@
 
 ## Inhaltsverzeichnis
 
-- [2.1.3-dev.1](#213-dev1)
+- [2.1.3](#213)
 - [2.0.1](#201)
 - [2.0.0](#200)
 - [1.3.0](#130)
@@ -18,9 +18,9 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 2.1.3-dev.1
+## 2.1.3
 
-Unveröffentlichte Entwicklerversion.
+Unveröffentlicht.
 
 - Einzelne Junie-Ergebnisse werden zuverlässig eingelesen: pro Beitrag eindeutiger Dateiname und gemeinsame Download-Ablage verhindern die abweichende Ordnerstruktur bei nur einem Artefakt. Fehlende Dateien werden getrennt von ungültigen Analyseantworten gemeldet; Ergebnisvalidierung unverändert.
 

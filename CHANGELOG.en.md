@@ -4,7 +4,7 @@
 
 ## Contents
 
-- [2.1.3-dev.1](#213-dev1)
+- [2.1.3](#213)
 - [2.0.1](#201)
 - [2.0.0](#200)
 - [1.3.0](#130)
@@ -18,9 +18,9 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 2.1.3-dev.1
+## 2.1.3
 
-Unreleased development version.
+Unreleased.
 
 - Single Junie results are read reliably: per-post filenames and a merged download directory avoid the differing layout for a sole artifact. Missing files are reported separately from invalid analysis responses; result validation remains unchanged.
 
