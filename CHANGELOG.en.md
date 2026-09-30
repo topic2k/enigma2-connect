@@ -4,7 +4,7 @@
 
 ## Contents
 
-- [2.1.4-dev.2](#214-dev2)
+- [2.1.4](#214)
 - [2.1.3](#213)
 - [2.0.1](#201)
 - [2.0.0](#200)
@@ -19,9 +19,9 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 2.1.4-dev.2
+## 2.1.4
 
-Unreleased development version.
+Unreleased.
 
 - Automated blog implementations retain a structured completion report with rationale and reported tests. Attempts without a PR leave an issue comment linking the run; missing results and technical failures are explicitly reported. Drafts may raise the required HA minimum together with dependencies and documentation; the PR receives an additional version notice.
 
