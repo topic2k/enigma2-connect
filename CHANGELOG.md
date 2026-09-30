@@ -4,6 +4,7 @@
 
 ## Inhaltsverzeichnis
 
+- [2.1.6-dev.1](#216-dev1)
 - [2.1.5](#215)
 - [2.1.4](#214)
 - [2.1.3](#213)
@@ -19,6 +20,12 @@
 - [1.0.2](#102)
 - [1.0.1](#101)
 - [1.0.0](#100)
+
+## 2.1.6-dev.1
+
+Unveröffentlichte Entwicklerversion.
+
+- Neue Blog-Issues beginnen mit einem direkten Link zum veröffentlichten Blogartikel; die Links zur analysierten GitHub-Quellfassung und zum Analyse-Lauf bleiben erhalten.
 
 ## 2.1.5
 

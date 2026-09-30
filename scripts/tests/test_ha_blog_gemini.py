@@ -307,6 +307,9 @@ class GeminiTests(unittest.TestCase):
             },
         }
         body = gemini.render_report([self.post], [result], "owner/repo", "a" * 40, "b" * 40, 2)
+        self.assertIn(
+            "https://developers.home-assistant.io/blog/2026/09/04/test/", body.splitlines()[0]
+        )
         self.assertNotIn("@owner", body)
         self.assertNotIn("<script>", body)
         self.assertIn("/blob/" + "a" * 40, body)

@@ -2,6 +2,10 @@
 
 # Verification summary
 
+## Direct article link at the start of issues – 2.1.6-dev.1
+
+109 offline script tests passed; existing output checks now verify the direct article link on the first line of triage, AI reports and production single-post issues. Pinned GitHub source and analysis-run links remain intact. The published article URL for September 28, 2026 was also verified read-only. Ruff, formatting, syntax and offline lockfile checks passed. Report presentation only; integration behavior, quality checklist and coverage requirements are unchanged. No existing issues were edited.
+
 ## Retry existing blog issues – 2.1.5-dev.1
 
 109 offline script tests passed. Selection checks bounded, distinct issue numbers, open single-post issues, analysis markers and assessments; existing PRs are skipped and uncertain assessments do not trigger automatic implementation. Wrong repositories or branches, dry runs and mixed modes are rejected. Read-only verification against real issues #21 and #25 selected exactly those existing IDs and content keys; it created no AI attempts, comments, issues or PRs.

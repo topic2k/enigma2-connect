@@ -118,6 +118,11 @@ class BlogMonitorTests(unittest.TestCase):
         results = self.process(posts, request, limit=1)
         self.assertEqual([r["action"] for r in results], ["created", "deferred"])
         body = request.call_args.args[1]["body"]
+        self.assertTrue(
+            body.startswith(
+                "Blogbeitrag: [Test](https://developers.home-assistant.io/blog/2026/09/04/test/)\n\n"
+            )
+        )
         self.assertIn("/blob/" + "a" * 40, body)
         self.assertIn("/blob/" + "b" * 40, body)
         retry = Mock(

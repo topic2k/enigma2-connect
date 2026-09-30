@@ -251,6 +251,8 @@ work branches. Workflow runs are serialized.
 
 ### Automatic implementation proposals
 
+New blog issues start with a direct link to the published article on `developers.home-assistant.io`. The additional GitHub link still pins the exact source revision used for analysis; the analysis run remains linked separately.
+
 Existing blog issues without PRs can be retried under **Actions → Home Assistant developer blog → Run workflow**: select `main`, disable `dry_run`, and enter e.g. `21,25` in `implementation_issues`. Leave other test/retry options empty or disabled. One to five distinct open single-post issues with an `[HA-Blog]` title and a valid analysis marker are accepted. This selection creates neither new blog analyses nor new issues, and does not change analysis retry state. Existing PRs are skipped and linked in the run summary. Uncertain assessments still receive only an explanatory comment. Actual implementation attempts may consume Junie credits.
 
 Every implementation attempt writes a structured completion report with its outcome, concrete rationale and checks actually performed. In Actions it is available under **Artifacts → blog-proposal-ISSUENUMBER → report.md**; `changes.json` contains the same report and source edits. Artifacts are retained for seven days. Raw Junie logs and environment data are not published. If the report is missing, only the technical failure is reported; no substantive explanation is invented.
