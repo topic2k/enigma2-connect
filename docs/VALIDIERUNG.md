@@ -2,6 +2,13 @@
 
 # Prüfübersicht
 
+## Einzelnes Junie-Artefakt – 2.1.3-dev.1
+
+[Run 36725343659](https://github.com/topic2k/enigma2-connect/actions/runs/36725343659) scheiterte beim Lesen der Ergebnisdatei: download-artifact v8 entpackt einen einzelnen Treffer direkt ins Zielverzeichnis, während der Monitor einen Artefakt-Unterordner erwartete. Junies Antwort zum Beitrag vom 28.09. war gültig, einschließlich sämtlicher Quellbelege. Die neue Übergabe verwendet eindeutige Dateinamen je Inhalts-ID und eine gemeinsame Download-Ablage.
+
+89 Offline-Skripttests bestanden, einschließlich Sammlung und Einlesen eines einzelnen Artefakts, mehrerer Ergebnisse, erhaltener Kostenwerte und einer eindeutigen Fehlermeldung bei fehlenden Dateien. Der tatsächliche Run-Plan mit Originalantwort wurde offline durchgespielt: ein simuliertes Issue, keine Fehler, gemeldete Modellkosten 0,09785628 USD erhalten. Keine echte Veröffentlichung oder erneute KI-Anfrage in dieser Prüfung. Ruff, Format-, Syntax-, Workflow- und Lockprüfung; keine Abschwächung der Quellbelegprüfung, Qualitätscheckliste oder CI-Schwellen. Integrationslaufzeit unverändert.
+
+
 ## Auskommentierte Junie-Kosten – 2.1.2-dev.1
 
 26 gezielte Offline-Tests des Junie-Monitors sowie Ruff, Format-, Python-Syntax- und Offline-Lockprüfung bestanden. Nur die Markdown-Darstellung wird mit `<!---` und `-->` ausgeblendet; Kostenwerte, Modellangaben und strukturierte Ergebnisse bleiben erhalten. Keine Änderung an Integrationslaufzeit oder Qualitätsanforderungen.

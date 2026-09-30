@@ -63,7 +63,7 @@ class JunieMonitorTests(unittest.TestCase):
 
     def artifact(self, post, data=None, **extra):
         monitor.write_json(
-            self.root / "results" / f"junie-result-{common.post_id(post)}" / "result.json",
+            self.root / "results" / f"result-{common.post_id(post)}.json",
             {"data": data or {"results": [self.result(post)]}, **extra},
         )
 
@@ -92,6 +92,64 @@ class JunieMonitorTests(unittest.TestCase):
         plan = self.plan()
         self.assertEqual(plan["keys"], [])
         self.assertEqual(len(plan["failures"]), 2)
+
+    def test_single_collected_artifact_is_read_from_flat_download_directory(self):
+        self.posts = self.posts[:1]
+        plan = self.plan()
+        key = common.post_id(self.posts[0])
+        packet = self.root / "plan" / "packets" / key
+        monitor.write_json(packet / "result.json", {"results": [self.result(self.posts[0])]})
+        usage = self.root / "usage.json"
+        monitor.write_json(
+            usage,
+            {
+                "llmUsage": [
+                    {
+                        "model": "model",
+                        "cost": 0.1,
+                        "inputTokens": 1,
+                        "cacheInputTokens": 0,
+                        "outputTokens": 1,
+                    }
+                ]
+            },
+        )
+        with (
+            patch(
+                "sys.argv",
+                [
+                    "monitor",
+                    "collect",
+                    "--key",
+                    key,
+                    "--usage-file",
+                    str(usage),
+                    "--outcome",
+                    "success",
+                ],
+            ),
+            patch.object(monitor, "OUTPUT", self.root / "plan"),
+        ):
+            monitor.main()
+        # download-artifact extracts a sole artifact directly into the target directory.
+        target = self.root / "results"
+        target.mkdir()
+        (self.root / "plan" / f"result-{key}.json").replace(target / f"result-{key}.json")
+        report = self.finish(plan)
+        self.assertEqual(report["failed"], [])
+        self.assertEqual(report["retry_pending"], [])
+        self.assertEqual(len(report["results"]), 1)
+        self.assertEqual(report["reported_cost_usd"], 0.1)
+        self.assertEqual(report["unmeasured_posts"], 0)
+
+    def test_missing_artifact_reports_file_failure_instead_of_invalid_ai_response(self):
+        report = self.finish(self.plan())
+        self.assertTrue(
+            all(
+                item["error"] == "Junie-Ergebnisdatei: nicht gefunden"
+                for item in report["retry_pending"]
+            )
+        )
 
     def test_partial_failure_retries_only_failed_post_next_day_then_turns_red(self):
         plan = self.plan()
@@ -426,7 +484,7 @@ class JunieMonitorTests(unittest.TestCase):
     def test_malformed_worker_envelope_only_retries_its_own_post(self):
         plan = self.plan()
         monitor.write_json(
-            self.root / "results" / f"junie-result-{common.post_id(self.posts[0])}" / "result.json",
+            self.root / "results" / f"result-{common.post_id(self.posts[0])}.json",
             ["invalid worker envelope"],
         )
         self.artifact(self.posts[1])
