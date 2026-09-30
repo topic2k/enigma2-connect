@@ -222,6 +222,8 @@ artifact for 30 days.
 
 ### Retries and permissions
 
+Result artifacts contain a per-post `result-<content-ID>.json` and are downloaded together with `merge-multiple: true`. The read path is identical for one or several artifacts. Missing result files are explicitly reported as file failures; content IDs, schema and source citations remain fully validated.
+
 To explicitly reassess completed posts, fill **Explicitly recheck 1-5 comma-separated blog filenames, including reviewed posts** in the manual workflow with exact filenames, for example `2026-09-26-llm-tool-result.md,2026-09-28-central-config-flow-abort-reasons.md`. The `since` date must include those posts; do not combine with **Retry exhausted entries only**. Only the named posts are selected. Disable `dry_run` for publication; a recheck can create new individual issues and implementation proposals. Existing issues remain intact. A dedicated identity distinguishes new receipts from previous assessments, including retries.
 
 The [Junie monitor](../scripts/ha_blog_junie_monitor.py) reuses the established

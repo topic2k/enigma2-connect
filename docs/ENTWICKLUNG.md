@@ -233,6 +233,8 @@ aus. Strukturierte Ergebnisse und Kosten bleiben zur technischen Nachvollziehbar
 
 ### Wiederholung und Berechtigungen
 
+Ergebnisartefakte enthalten je Beitrag `result-<Inhalts-ID>.json` und werden mit `merge-multiple: true` gemeinsam heruntergeladen. So bleibt der Lesepfad bei einem oder mehreren Artefakten gleich. Eine fehlende Ergebnisdatei wird ausdrücklich als Dateifehler gemeldet; Inhalts-ID, Schema und Quellbelege werden weiterhin vollständig validiert.
+
 Für eine ausdrücklich erneute Prüfung abgeschlossener Beiträge im manuellen Workflow **Explicitly recheck 1-5 comma-separated blog filenames, including reviewed posts** mit exakten Dateinamen füllen, beispielsweise `2026-09-26-llm-tool-result.md,2026-09-28-central-config-flow-abort-reasons.md`. `since` muss diese Beiträge einschließen; nicht mit **Retry exhausted entries only** kombinieren. Nur die genannten Beiträge werden ausgewählt. Für echte Veröffentlichung `dry_run` deaktivieren; die erneute Prüfung kann neue Einzel-Issues und Umsetzungsvorschläge erzeugen. Frühere Issues bleiben bestehen. Eine eigene Kennung unterscheidet neue Prüfnachweise von früheren, auch bei Fehlerwiederholungen.
 
 Der [Junie-Monitor](../scripts/ha_blog_junie_monitor.py) verwendet die bewährte

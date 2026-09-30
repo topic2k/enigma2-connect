@@ -203,7 +203,7 @@ jobs:
         if: always() && !cancelled()
         with:
           name: junie-result-${{ matrix.key }}
-          path: .work/blog-monitor/junie-monitor/result.json
+          path: .work/blog-monitor/junie-monitor/result-${{ matrix.key }}.json
           retention-days: 7
 
   publish:
@@ -231,6 +231,7 @@ jobs:
         with:
           pattern: junie-result-*
           path: .work/junie-results
+          merge-multiple: true
       - uses: astral-sh/setup-uv@v10.1.0
         with:
           python-version: '3.14'

@@ -2,6 +2,13 @@
 
 # Verification summary
 
+## Single Junie artifact – 2.1.3-dev.1
+
+[Run 36725343659](https://github.com/topic2k/enigma2-connect/actions/runs/36725343659) failed to read the result file: download-artifact v8 extracts a sole match directly into the target directory, while the monitor expected an artifact subdirectory. Junie’s September 28 assessment was valid, including every source citation. The corrected handoff uses per-content-ID filenames and a merged download directory.
+
+89 offline script tests passed, including collection and reading of a single artifact, multiple results, retained cost values and a distinct missing-file error. Offline replay of the actual run plan and original response produced one simulated issue with no failures and retained reported model costs of USD 0.09785628. No real publication or new AI call occurred in this verification. Ruff, formatting, syntax, workflow and lockfile checks; citation validation, quality checklist and CI thresholds remain intact. Integration runtime is unchanged.
+
+
 ## Commented Junie costs – 2.1.2-dev.1
 
 26 targeted offline Junie monitor tests plus Ruff, formatting, Python syntax and offline lockfile checks passed. Only Markdown presentation is hidden with `<!---` and `-->`; cost values, model names and structured results are retained. Integration runtime and quality requirements are unchanged.

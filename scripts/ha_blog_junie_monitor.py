@@ -188,7 +188,7 @@ def finish_plan(plan, results_dir, store, publish):
         if key in failures:
             continue
         try:
-            item = read_json(results_dir / f"junie-result-{key}" / "result.json", 150_000)
+            item = read_json(results_dir / f"result-{key}.json", 150_000)
             if not isinstance(item, dict):
                 raise ValueError("Invalid worker envelope")
             # Do not trust the agent or artifact job to validate its own claims.
@@ -201,6 +201,8 @@ def finish_plan(plan, results_dir, store, publish):
             if "data" not in item:
                 raise ValueError("Missing agent result")
             valid.extend(common.validate_results(item["data"], [post], sources))
+        except FileNotFoundError:
+            failures[key] = "Junie-Ergebnisdatei: nicht gefunden"
         except OSError, ValueError, KeyError, TypeError:
             failures[key] = "Junie-Analyse: keine gültige Antwort"
     # Sanitize again in the trusted publication job (worker artifacts are untrusted).
@@ -277,7 +279,10 @@ def main():
         if not args.key or not re.fullmatch(KEY_PATTERN, args.key):
             raise ValueError("Invalid post ID")
         collect(
-            OUTPUT / "packets" / args.key, args.usage_file, args.outcome, OUTPUT / "result.json"
+            OUTPUT / "packets" / args.key,
+            args.usage_file,
+            args.outcome,
+            OUTPUT / f"result-{args.key}.json",
         )
         return
     repository, revision, request = github()
