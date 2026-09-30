@@ -4,7 +4,7 @@
 
 ## Inhaltsverzeichnis
 
-- [2.1.5-dev.1](#215-dev1)
+- [2.1.5](#215)
 - [2.1.4](#214)
 - [2.1.3](#213)
 - [2.0.1](#201)
@@ -20,9 +20,9 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 2.1.5-dev.1
+## 2.1.5
 
-Unveröffentlichte Entwicklerversion.
+Unveröffentlicht.
 
 - Gezielte Wiederholung der Umsetzung für vorhandene Blog-Issues über `implementation_issues`: dieselben Issues und Analyseschlüssel verwenden, vorhandene PRs überspringen und keine neue Blog-Analyse oder doppelte Issues erzeugen.
 
