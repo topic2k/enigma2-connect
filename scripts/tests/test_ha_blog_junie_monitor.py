@@ -102,7 +102,7 @@ class JunieMonitorTests(unittest.TestCase):
             patch("sys.argv", ["monitor", "finish", "--results-dir", str(self.root / "results")]),
             patch.object(monitor, "OUTPUT", output),
             patch.object(monitor, "github", return_value=("o/r", "a" * 40, self.publisher)),
-            patch.object(monitor.scheduler, "GithubState", return_value=self.store),
+            patch.object(monitor.feed, "FeedState", return_value=self.store),
             patch.object(monitor.common, "append_summary"),
             patch.dict(os.environ, {"GITHUB_OUTPUT": str(actions_output)}),
         ):
@@ -535,7 +535,7 @@ class JunieMonitorTests(unittest.TestCase):
             patch("sys.argv", ["monitor", "finish"]),
             patch.object(monitor, "OUTPUT", self.root / "plan"),
             patch.object(monitor, "github", return_value=("o/r", "a" * 40, Mock())),
-            patch.object(monitor.scheduler, "GithubState", return_value=self.store),
+            patch.object(monitor.feed, "FeedState", return_value=self.store),
             patch.object(monitor, "finish_plan") as finish,
         ):
             with self.assertRaisesRegex(ValueError, "changed since reservation"):

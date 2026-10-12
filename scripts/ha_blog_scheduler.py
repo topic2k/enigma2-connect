@@ -254,6 +254,18 @@ def reserve_attempts(selected, state, today, store, upstream):
             "error": "Versuch gestartet; Abschluss noch nicht gespeichert",
             **({"recheck": old["recheck"]} if "recheck" in old else {}),
         }
+        run_id, run_attempt = (
+            os.environ.get("GITHUB_RUN_ID", ""),
+            os.environ.get("GITHUB_RUN_ATTEMPT", "1"),
+        )
+        if run_id.isdigit() and run_attempt.isdigit():
+            state["entries"][key].update(
+                run_id=run_id,
+                run_attempt=run_attempt,
+                started=datetime.now(timezone.utc)
+                .isoformat(timespec="seconds")
+                .replace("+00:00", "Z"),
+            )
     try:
         store.save(state)
     except ERRORS as error:
@@ -353,6 +365,8 @@ def complete_processing(
         }
         (pending if entry["attempts"] == 1 else failed).append(item)
     try:
+        if hasattr(type(store), "record_completion"):
+            store.record_completion(selected, results, failures, report, state)
         store.save(state)
     except ERRORS as error:
         raise InfrastructureError(error_detail("GitHub-Status speichern", error)) from None

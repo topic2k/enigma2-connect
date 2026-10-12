@@ -7,6 +7,10 @@ on:
     - cron: '23 7 * * 0,2-6'
   workflow_dispatch:
     inputs:
+      feed_only:
+        description: 'Rebuild the Atom feed from stored results without AI analysis'
+        type: boolean
+        default: false
       junie_test:
         description: 'Manual analysis-only Junie trial of one stored Modbus post'
         type: boolean
@@ -57,6 +61,7 @@ on:
       - 'scripts/ha_blog_junie.py'
       - 'scripts/ha_blog_junie_monitor.py'
       - 'scripts/ha_blog_implementation.py'
+      - 'scripts/ha_blog_feed.py'
       - 'scripts/tests/**'
   pull_request:
     paths:
@@ -68,6 +73,7 @@ on:
       - 'scripts/ha_blog_junie.py'
       - 'scripts/ha_blog_junie_monitor.py'
       - 'scripts/ha_blog_implementation.py'
+      - 'scripts/ha_blog_feed.py'
       - 'scripts/tests/**'
 
 permissions:
@@ -94,6 +100,7 @@ jobs:
     needs: test
     if: >-
       (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') &&
+      inputs.feed_only != true &&
       !inputs.implementation_issues &&
       inputs.cloudflare_test != true && inputs.junie_test != true &&
       github.repository == 'topic2k/enigma2-connect' &&
@@ -233,6 +240,8 @@ jobs:
           name: junie-plan
           path: .work/blog-monitor/junie-monitor
       - uses: actions/download-artifact@v8
+        if: needs.monitor.outputs.has_tasks == 'true'
+        continue-on-error: true
         with:
           pattern: junie-result-*
           path: .work/junie-results
@@ -256,7 +265,7 @@ jobs:
 
   replay-issues:
     needs: test
-    if: github.event_name == 'workflow_dispatch' && inputs.implementation_issues != ''
+    if: github.event_name == 'workflow_dispatch' && inputs.implementation_issues != '' && inputs.feed_only != true
     runs-on: ubuntu-latest
     timeout-minutes: 3
     permissions:
@@ -411,11 +420,71 @@ jobs:
           ISSUE_NUMBER: ${{ matrix.number }}
           POST_KEY: ${{ matrix.key }}
         run: uv run --no-project --python 3.14 python scripts/ha_blog_implementation.py publish
+      - uses: actions/upload-artifact@v7
+        if: always() && !cancelled()
+        with:
+          name: blog-publication-${{ matrix.number }}
+          path: .work/blog-publications/publication-${{ matrix.number }}.json
+          if-no-files-found: error
+          retention-days: 30
+
+  feed:
+    needs: [test, monitor, publish, replay-issues, implementation-plan, implement, draft-pr]
+    if: >-
+      always() && !cancelled() && needs.test.result == 'success' &&
+      github.repository == 'topic2k/enigma2-connect' &&
+      github.ref_name == github.event.repository.default_branch &&
+      (github.event_name == 'schedule' ||
+       (github.event_name == 'workflow_dispatch' && inputs.dry_run == false &&
+        inputs.junie_test != true && inputs.cloudflare_test != true))
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+      actions: read
+      pages: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@v8
+        continue-on-error: true
+        with:
+          pattern: blog-publication-*
+          path: .work/blog-publications
+          merge-multiple: true
+      - uses: astral-sh/setup-uv@v10.1.0
+        with:
+          python-version: '3.14'
+      - name: Update the durable results and publish Atom
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          FEED_ONLY: ${{ inputs.feed_only }}
+          EXCLUSIVE_OPTIONS_VALID: ${{ inputs.implementation_issues == '' && inputs.recheck_posts == '' && inputs.retry_failed != true && inputs.cloudflare_smoke != true && inputs.cloudflare_individual != true && inputs.cloudflare_post == '' }}
+          FINISHING_RUN: 'true'
+        shell: bash
+        run: |
+          if [ "$FEED_ONLY" = "true" ] && [ "$EXCLUSIVE_OPTIONS_VALID" != "true" ]; then
+            echo 'feed_only must not be combined with analysis or implementation options' >&2
+            exit 1
+          fi
+          base_url=$(gh api "repos/$GITHUB_REPOSITORY/pages" --jq .html_url)
+          uv run --no-project --python 3.14 python scripts/ha_blog_feed.py \
+            --publish --base-url "${base_url%/}/" --implementations .work/blog-publications
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: ha-blog-atom
+          path: .work/blog-monitor/feed/
+          include-hidden-files: true
+          retention-days: 30
 
   cloudflare-test:
     needs: test
     if: >-
       github.event_name == 'workflow_dispatch' && inputs.cloudflare_test == true &&
+      inputs.feed_only != true &&
       !inputs.implementation_issues &&
       inputs.junie_test != true &&
       github.repository == 'topic2k/enigma2-connect'
@@ -470,6 +539,7 @@ jobs:
     needs: test
     if: >-
       github.event_name == 'workflow_dispatch' && inputs.junie_test == true &&
+      inputs.feed_only != true &&
       !inputs.implementation_issues &&
       inputs.cloudflare_test != true && github.repository == 'topic2k/enigma2-connect'
     runs-on: ubuntu-latest

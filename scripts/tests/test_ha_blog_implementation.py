@@ -58,7 +58,7 @@ class ImplementationTests(unittest.TestCase):
 
         self.request = Mock(side_effect=request)
 
-    def publish(self):
+    def publish(self, **kwargs):
         return implementation.publish(
             self.request,
             "o/r",
@@ -67,7 +67,46 @@ class ImplementationTests(unittest.TestCase):
             self.key,
             self.data,
             "https://github.com/o/r/actions/runs/123",
+            **kwargs,
         )
+
+    def test_structured_publication_preserves_draft_url_and_report(self):
+        outcome = {}
+        self.publish(publication=outcome)
+        self.assertEqual(outcome["status"], "draft")
+        self.assertEqual(outcome["pr_url"], "https://github.com/o/r/pull/13")
+        self.assertEqual(outcome["tests"], self.data["report"]["tests"])
+
+    def test_structured_no_changes_and_existing_pr_have_distinct_outcomes(self):
+        self.data["changes"] = []
+        self.data["report"]["status"] = "no_changes"
+        outcome = {}
+        self.publish(publication=outcome)
+        self.assertEqual(outcome["status"], "no_changes")
+        self.responses["pulls?state=all&base=develop&per_page=100&page=1"] = [
+            {
+                "body": f"<!-- ha-blog-implementation:12:{self.key} -->",
+                "html_url": "https://github.com/o/r/pull/13",
+            }
+        ]
+        self.publish(publication=outcome)
+        self.assertEqual(outcome["status"], "existing")
+
+    def test_structured_publication_keeps_created_pr_when_comment_fails(self):
+        self.minimum_change()
+        previous = self.request.side_effect
+
+        def request(endpoint, payload=None):
+            if endpoint == "issues/13/comments":
+                raise HTTPError("https://api.github.com/", 503, "unavailable", {}, None)
+            return previous(endpoint, payload)
+
+        self.request.side_effect = request
+        outcome = {}
+        with self.assertRaises(RuntimeError):
+            self.publish(publication=outcome)
+        self.assertEqual(outcome["status"], "draft")
+        self.assertEqual(outcome["pr_url"], "https://github.com/o/r/pull/13")
 
     def test_creates_draft_against_develop_with_issue_and_run_links(self):
         self.assertIn("/pull/13", self.publish())
