@@ -2,6 +2,12 @@
 
 # Prüfübersicht
 
+## Tägliche Blogprüfung – 2.1.7-dev.2
+
+135 Offline-Skripttests bestanden. Neue Fälle prüfen die gemeinsame Auswahl fälliger Wiederholungen und neuer Beiträge am Folgetag, das Überspringen erfolgreich geprüfter Inhalte und die Bearbeitung zurückgestellter Beiträge im nächsten Tageslauf bei weiterhin höchstens fünf Beiträgen pro Lauf. Die manuelle Auswahl ausgeschöpfter Fehlversuche bleibt getrennt verfügbar.
+
+Ruff, Format-, Python-Syntax-, actionlint- und Lockdateiprüfung bestanden. Der Zeitplan ist täglich um 07:23 UTC vorgesehen; diese simulierten Prüfungen lösen keinen KI-Auftrag aus und belegen noch keinen produktiven Tageslauf. Integrationsverhalten und Qualitätscheckliste sind nicht betroffen; Test- und Abdeckungsvorgaben bleiben erhalten. Aktivierung nach Übernahme des Workflows nach main.
+
 ## Direkter Bloglink am Issue-Anfang – 2.1.6-dev.1
 
 109 Offline-Skripttests bestanden; bestehende Ausgabeprüfungen kontrollieren nun den direkten Artikel-Link in der ersten Zeile bei Vorprüfung, KI-Bericht und produktiven Einzelbeitrags-Issues. Die Links zur festgehaltenen GitHub-Quellfassung und zum Analyse-Lauf bleiben erhalten. Die veröffentlichte Artikeladresse des Beitrags vom 28.09.2026 wurde zusätzlich lesend geprüft. Ruff, Format-, Syntax- und Offline-Lockprüfung bestanden. Nur Berichtsdarstellung geändert; Integrationsverhalten, Qualitätscheckliste und Abdeckungsanforderungen unverändert. Keine bestehenden Issues bearbeitet.

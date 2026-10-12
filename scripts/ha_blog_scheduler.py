@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Weekly blog review with durable, per-content retries on the following UTC day."""
+"""Daily blog review with durable, per-content retries on the following UTC day."""
 
 import argparse
 import base64
@@ -128,7 +128,7 @@ def effective_known(known, state):
 
 
 def eligible_posts(posts, state, known, today, *, retry_only=False, retry_failed=False):
-    """Retry stored content first; daily wake-ups never admit unseen posts."""
+    """Retry stored content first; retry-only calls never admit unseen posts."""
     known = known | set(state.get("reviewed", {}))
     entries = state["entries"]
     candidates = []

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Review new HA blog posts with one bounded Gemini request per weekly run."""
+"""Review new HA blog posts with one bounded Gemini request per run."""
 
 import argparse
 import hashlib
@@ -283,7 +283,7 @@ def render_report(
     lines = [
         *(blog_article_link(post) for post in posts),
         "",
-        "## Wöchentliche Home-Assistant-Blogprüfung",
+        "## Home-Assistant-Blogprüfung",
         "",
         f"Modell: `{model}` · Integrationsstand: `{revision}` · Zurückgestellt: {deferred}",
         "KI-Einschätzung anhand des bereitgestellten Codes; keine ausgeführten Kompatibilitätstests.",

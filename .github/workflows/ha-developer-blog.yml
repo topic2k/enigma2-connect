@@ -2,9 +2,7 @@ name: Home Assistant developer blog
 
 on:
   schedule:
-    - cron: '23 7 * * 1'
-    # Other days only retry entries already due; they do not scan for new posts.
-    - cron: '23 7 * * 0,2-6'
+    - cron: '23 7 * * *'
   workflow_dispatch:
     inputs:
       feed_only:
@@ -135,7 +133,7 @@ jobs:
           SINCE: ${{ inputs.since || '2026-09-01' }}
           RECHECK_POSTS: ${{ inputs.recheck_posts }}
           PUBLISH: ${{ github.event_name == 'schedule' || inputs.dry_run == false }}
-          RETRY_ONLY: ${{ (github.event_name == 'schedule' && github.event.schedule != '23 7 * * 1') || inputs.retry_failed == true }}
+          RETRY_ONLY: ${{ inputs.retry_failed == true }}
           RETRY_FAILED: ${{ inputs.retry_failed == true }}
         shell: bash
         run: |
