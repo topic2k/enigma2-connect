@@ -4,6 +4,7 @@
 
 ## Contents
 
+- [2.1.7](#217)
 - [2.1.6](#216)
 - [2.1.5](#215)
 - [2.1.4](#214)
@@ -20,6 +21,12 @@
 - [1.0.2](#102)
 - [1.0.1](#101)
 - [1.0.0](#100)
+
+## 2.1.7
+
+Unreleased.
+
+- Home Assistant blog checks discover new and changed posts daily at 07:23 UTC. Due retries take priority; each run handles at most five posts, with remaining posts deferred until the next day.
 
 ## 2.1.6
 

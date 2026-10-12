@@ -9,6 +9,7 @@ import os
 import re
 import subprocess
 import unicodedata
+from datetime import datetime, timezone
 from pathlib import Path, PurePosixPath
 from urllib.error import HTTPError
 
@@ -344,7 +345,7 @@ def available_branch(request, title, issue_number):
     raise ValueError("Both topic branches already exist; refusing to overwrite")
 
 
-def publish(request, repository, base, issue_number, key, data, run_url):
+def publish(request, repository, base, issue_number, key, data, run_url, *, publication=None):
     if type(issue_number) is not int or issue_number < 1 or not re.fullmatch(r"[a-f0-9]{64}", key):
         raise ValueError("Invalid issue identity")
     issue = request(f"issues/{issue_number}")
@@ -359,17 +360,32 @@ def publish(request, repository, base, issue_number, key, data, run_url):
     try:
         changes = validate_changes(data, base)
         report = validate_report(data.get("report"))
+        if publication is not None:
+            publication.update({field: report[field] for field in ("summary", "reason", "tests")})
         notice = minimum_version_notice(request, base, changes)
         return publish_validated(
-            request, base, issue_number, key, changes, report, notice, issue, run_url
+            request,
+            base,
+            issue_number,
+            key,
+            changes,
+            report,
+            notice,
+            issue,
+            run_url,
+            publication=publication,
         )
     except (ValueError, HTTPError) as error:
+        if publication is not None:
+            publication.update(status="uncertain" if isinstance(error, HTTPError) else "failed")
         reason = (
             "Die Veröffentlichung wurde durch die Validierung abgelehnt: " + str(error)
             if isinstance(error, ValueError)
             else f"GitHub-API-Fehler bei der Veröffentlichung (HTTP {error.code}). "
             "Der Lauf kann bereits einen Branch oder PR angelegt haben; bitte prüfen."
         )
+        if publication is not None:
+            publication.update(summary="Veröffentlichung nicht abgeschlossen.", reason=reason)
         no_pr(
             request,
             issue_number,
@@ -381,13 +397,17 @@ def publish(request, repository, base, issue_number, key, data, run_url):
         raise
 
 
-def publish_validated(request, base, issue_number, key, changes, report, notice, issue, run_url):
+def publish_validated(
+    request, base, issue_number, key, changes, report, notice, issue, run_url, *, publication=None
+):
     pr_marker = f"<!-- ha-blog-implementation:{issue_number}:{key} -->"
     page = 1
     while True:
         existing = request(f"pulls?state=all&base=develop&per_page=100&page={page}")
         for pr in existing:
             if pr_marker in (pr.get("body") or ""):
+                if publication is not None:
+                    publication.update(status="existing", pr_url=pr["html_url"])
                 if notice:
                     comment_once(
                         request, pr["number"], f"<!-- ha-blog-ha-minimum:{key} -->", notice
@@ -399,6 +419,8 @@ def publish_validated(request, base, issue_number, key, changes, report, notice,
     if report["status"] != "ready" or not changes:
         if changes:
             raise ValueError("Unfinished implementation contains edits")
+        if publication is not None:
+            publication.update(status="failed" if report["status"] == "failed" else "no_changes")
         return no_pr(request, issue_number, key, run_url, report)
     branch = available_branch(request, issue["title"], issue_number)
     current = request("git/ref/heads/develop")["object"]["sha"]
@@ -429,6 +451,8 @@ def publish_validated(request, base, issue_number, key, changes, report, notice,
         edits.append(edit)
     new_tree = request("git/trees", {"base_tree": tree_sha, "tree": edits})
     if new_tree["sha"] == tree_sha:
+        if publication is not None:
+            publication.update(status="no_changes")
         return no_pr(
             request,
             issue_number,
@@ -468,6 +492,8 @@ def publish_validated(request, base, issue_number, key, changes, report, notice,
             "body": body,
         },
     )
+    if publication is not None:
+        publication.update(status="draft", pr_url=pr["html_url"])
     if notice:
         try:
             comment_once(request, pr["number"], f"<!-- ha-blog-ha-minimum:{key} -->", notice)
@@ -535,15 +561,42 @@ def main():
                 "dieses Laufs; eine inhaltliche Junie-Begründung ist nicht verfügbar."
             ),
         }
-    message = publish(
-        request,
-        repository,
-        base,
-        int(os.environ["ISSUE_NUMBER"]),
-        os.environ["POST_KEY"],
-        data,
-        f"https://github.com/{repository}/actions/runs/{os.environ['GITHUB_RUN_ID']}",
-    )
+    run_url = f"https://github.com/{repository}/actions/runs/{os.environ['GITHUB_RUN_ID']}/attempts/{os.environ.get('GITHUB_RUN_ATTEMPT', '1')}"
+    publication = {
+        "status": "failed",
+        "updated": datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z"),
+        "run_url": run_url,
+        "summary": "Veröffentlichung nicht abgeschlossen.",
+        "reason": "Technischer Fehler; Details stehen im Actions-Lauf.",
+        "tests": "Keine unabhängig bestätigten Prüfungen.",
+    }
+    try:
+        message = publish(
+            request,
+            repository,
+            base,
+            int(os.environ["ISSUE_NUMBER"]),
+            os.environ["POST_KEY"],
+            data,
+            run_url.split("/attempts/")[0],
+            publication=publication,
+        )
+    finally:
+        output = Path(".work/blog-publications")
+        output.mkdir(parents=True, exist_ok=True)
+        (output / f"publication-{os.environ['ISSUE_NUMBER']}.json").write_text(
+            json.dumps(
+                {
+                    "version": 1,
+                    "content_id": os.environ["POST_KEY"],
+                    "issue_number": int(os.environ["ISSUE_NUMBER"]),
+                    "outcome": publication,
+                },
+                ensure_ascii=False,
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
     print(message)
     with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as handle:
         handle.write(message + "\n")

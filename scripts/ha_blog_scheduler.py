@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Weekly blog review with durable, per-content retries on the following UTC day."""
+"""Daily blog review with durable, per-content retries on the following UTC day."""
 
 import argparse
 import base64
@@ -128,7 +128,7 @@ def effective_known(known, state):
 
 
 def eligible_posts(posts, state, known, today, *, retry_only=False, retry_failed=False):
-    """Retry stored content first; daily wake-ups never admit unseen posts."""
+    """Retry stored content first; retry-only calls never admit unseen posts."""
     known = known | set(state.get("reviewed", {}))
     entries = state["entries"]
     candidates = []
@@ -254,6 +254,18 @@ def reserve_attempts(selected, state, today, store, upstream):
             "error": "Versuch gestartet; Abschluss noch nicht gespeichert",
             **({"recheck": old["recheck"]} if "recheck" in old else {}),
         }
+        run_id, run_attempt = (
+            os.environ.get("GITHUB_RUN_ID", ""),
+            os.environ.get("GITHUB_RUN_ATTEMPT", "1"),
+        )
+        if run_id.isdigit() and run_attempt.isdigit():
+            state["entries"][key].update(
+                run_id=run_id,
+                run_attempt=run_attempt,
+                started=datetime.now(timezone.utc)
+                .isoformat(timespec="seconds")
+                .replace("+00:00", "Z"),
+            )
     try:
         store.save(state)
     except ERRORS as error:
@@ -353,6 +365,8 @@ def complete_processing(
         }
         (pending if entry["attempts"] == 1 else failed).append(item)
     try:
+        if hasattr(type(store), "record_completion"):
+            store.record_completion(selected, results, failures, report, state)
         store.save(state)
     except ERRORS as error:
         raise InfrastructureError(error_detail("GitHub-Status speichern", error)) from None

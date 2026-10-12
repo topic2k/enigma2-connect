@@ -4,6 +4,7 @@
 
 ## Inhaltsverzeichnis
 
+- [2.1.7](#217)
 - [2.1.6](#216)
 - [2.1.5](#215)
 - [2.1.4](#214)
@@ -20,6 +21,12 @@
 - [1.0.2](#102)
 - [1.0.1](#101)
 - [1.0.0](#100)
+
+## 2.1.7
+
+Unveröffentlicht.
+
+- Die Home-Assistant-Blogprüfung sucht täglich um 07:23 UTC nach neuen und geänderten Beiträgen. Fällige Fehlerwiederholungen haben Vorrang; höchstens fünf Beiträge pro Lauf, weitere Beiträge folgen am nächsten Tag.
 
 ## 2.1.6
 

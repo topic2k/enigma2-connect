@@ -2,6 +2,12 @@
 
 # Verification summary
 
+## Daily blog checks – 2.1.7-dev.2
+
+135 offline script tests passed. New cases cover selecting due retries together with new posts on the following day, skipping successfully reviewed content and processing deferred posts in the next daily run while retaining the five-post limit. Explicit manual selection of exhausted retries remains available separately.
+
+Ruff, formatting, Python syntax, actionlint and lockfile checks passed. The intended schedule is daily at 07:23 UTC; these simulated checks trigger no AI tasks and do not establish a production daily run. Integration behavior and the quality checklist are unaffected; testing and coverage requirements remain intact. Activation follows adoption of the workflow on main.
+
 ## Direct article link at the start of issues – 2.1.6-dev.1
 
 109 offline script tests passed; existing output checks now verify the direct article link on the first line of triage, AI reports and production single-post issues. Pinned GitHub source and analysis-run links remain intact. The published article URL for September 28, 2026 was also verified read-only. Ruff, formatting, syntax and offline lockfile checks passed. Report presentation only; integration behavior, quality checklist and coverage requirements are unchanged. No existing issues were edited.

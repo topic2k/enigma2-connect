@@ -102,7 +102,7 @@ class JunieMonitorTests(unittest.TestCase):
             patch("sys.argv", ["monitor", "finish", "--results-dir", str(self.root / "results")]),
             patch.object(monitor, "OUTPUT", output),
             patch.object(monitor, "github", return_value=("o/r", "a" * 40, self.publisher)),
-            patch.object(monitor.scheduler, "GithubState", return_value=self.store),
+            patch.object(monitor.feed, "FeedState", return_value=self.store),
             patch.object(monitor.common, "append_summary"),
             patch.dict(os.environ, {"GITHUB_OUTPUT": str(actions_output)}),
         ):
@@ -196,7 +196,34 @@ class JunieMonitorTests(unittest.TestCase):
         self.assertEqual(terminal["posts"], [])
         self.publisher.assert_not_called()
 
-    def test_quiet_results_are_remembered_without_issue_or_weekly_reanalysis(self):
+    def test_next_day_discovers_new_posts_after_due_retries_and_skips_reviewed_content(self):
+        self.artifact(self.posts[0])
+        self.finish(self.plan())
+        state = self.saved[-1]
+        new_post = dict(
+            path="post-new.md", title="New post", text="New announcement", date="2026-09-17"
+        )
+        self.posts.append(new_post)
+        next_day = self.plan(state, day=1)
+        self.assertEqual(next_day["posts"], [self.posts[1], new_post])
+        self.assertNotIn(common.post_id(self.posts[0]), next_day["keys"])
+
+    def test_daily_backlog_is_processed_next_day_with_five_post_limit(self):
+        self.posts = [
+            dict(path=f"post-{i}.md", title=f"Post {i}", text=f"News {i}", date="2026-09-16")
+            for i in range(6)
+        ]
+        first = self.plan()
+        self.assertEqual(len(first["posts"]), 5)
+        self.assertEqual(first["deferred"], 1)
+        for post in first["posts"]:
+            self.artifact(post)
+        self.finish(first)
+        next_day = self.plan(self.saved[-1], day=1)
+        self.assertEqual(next_day["posts"], [self.posts[5]])
+        self.assertEqual(next_day["deferred"], 0)
+
+    def test_quiet_results_are_remembered_without_issue_or_daily_reanalysis(self):
         plan = self.plan(publish=True)
         for post in self.posts:
             self.artifact(post)
@@ -535,7 +562,7 @@ class JunieMonitorTests(unittest.TestCase):
             patch("sys.argv", ["monitor", "finish"]),
             patch.object(monitor, "OUTPUT", self.root / "plan"),
             patch.object(monitor, "github", return_value=("o/r", "a" * 40, Mock())),
-            patch.object(monitor.scheduler, "GithubState", return_value=self.store),
+            patch.object(monitor.feed, "FeedState", return_value=self.store),
             patch.object(monitor, "finish_plan") as finish,
         ):
             with self.assertRaisesRegex(ValueError, "changed since reservation"):

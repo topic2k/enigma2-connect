@@ -12,9 +12,11 @@ from datetime import date, datetime, timezone
 from pathlib import Path
 
 try:
+    from . import ha_blog_feed as feed
     from . import ha_blog_gemini as common
     from . import ha_blog_scheduler as scheduler
 except ImportError:
+    import ha_blog_feed as feed
     import ha_blog_gemini as common
     import ha_blog_scheduler as scheduler
 
@@ -286,7 +288,11 @@ def main():
         )
         return
     repository, revision, request = github()
-    store = scheduler.GithubState(request, revision)
+    store = (
+        feed.FeedState(request, revision, repository)
+        if args.publish or args.mode == "finish"
+        else scheduler.GithubState(request, revision)
+    )
     if args.mode == "prepare":
         today = datetime.now(timezone.utc).date()
         known, state = common.reviewed_ids(request), store.load()
@@ -308,6 +314,7 @@ def main():
             publish=args.publish,
             repository=repository,
             revision=revision,
+            output=OUTPUT,
         )
         with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as handle:
             handle.write(f"matrix={json.dumps({'key': plan['keys']})}\n")

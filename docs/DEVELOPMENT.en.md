@@ -192,9 +192,10 @@ The production Junie monitor allows 800,000 UTF-8 input bytes per post for seria
 
 The [workflow](../.github/workflows/ha-developer-blog.yml) checks new or changed
 posts in the official [blog repository](https://github.com/home-assistant/developers.home-assistant/tree/master/blog)
-on Mondays at **07:23 UTC** (09:23 CEST / 08:23 CET). Each run analyzes at most
+daily at **07:23 UTC** (09:23 CEST / 08:23 CET). Each run analyzes at most
 **five posts individually and sequentially using Junie**. Additional new posts
-wait for the next weekly run. No due posts means no AI task.
+wait for the next daily run. Due retries are selected before new posts.
+No due posts means no AI task.
 
 ### Assessment and report
 
@@ -228,8 +229,8 @@ To explicitly reassess completed posts, fill **Explicitly recheck 1-5 comma-sepa
 
 The [Junie monitor](../scripts/ha_blog_junie_monitor.py) reuses the established
 [state and retry logic](../scripts/ha_blog_scheduler.py). A first failure queues
-only the affected post for the next day and leaves the run successful. Other
-weekdays at 07:23 UTC retry only due stored posts. A second failure of the same
+only the affected post for the next day and leaves the run successful. The daily
+run at 07:23 UTC includes due stored posts and new or changed blog content. A second failure of the same
 post fails the run. Missed retries are caught up later. Exhausted entries require
 an explicit manual retry.
 

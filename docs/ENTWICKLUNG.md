@@ -198,12 +198,13 @@ direkter Aufruf der Hardware-Testdatei ohne Prüfkonfiguration wird übersprunge
 
 Der produktive Junie-Monitor erlaubt pro Beitrag 800.000 UTF-8-Eingabebytes für den serialisierten Quellkontext, Blogtext und die gemeinsamen Anweisungen. Das ist eine lokale Größenbegrenzung, keine Token- oder Credit-Zusage des Anbieters. Die älteren Gemini-Werkzeuge behalten ihre Grenze von 400.000 Bytes.
 
-Der [Workflow](../.github/workflows/ha-developer-blog.yml) prüft montags um
+Der [Workflow](../.github/workflows/ha-developer-blog.yml) prüft täglich um
 **07:23 UTC** neue oder geänderte Beiträge im offiziellen
 [Blog-Repository](https://github.com/home-assistant/developers.home-assistant/tree/master/blog).
 Das entspricht 09:23 Uhr MESZ bzw. 08:23 Uhr MEZ. Pro Lauf werden höchstens
 **fünf Beiträge einzeln und nacheinander mit Junie** analysiert. Weitere neue
-Beiträge bleiben bis zum nächsten Wochenlauf zurückgestellt. Ohne fällige
+Beiträge bleiben bis zum nächsten Tageslauf zurückgestellt. Fällige Fehlerwiederholungen
+werden vor neuen Beiträgen ausgewählt. Ohne fällige
 Beiträge wird kein KI-Auftrag gestartet.
 
 ### Inhalt und Bericht
@@ -240,8 +241,8 @@ Für eine ausdrücklich erneute Prüfung abgeschlossener Beiträge im manuellen 
 Der [Junie-Monitor](../scripts/ha_blog_junie_monitor.py) verwendet die bewährte
 [Status- und Wiederholungslogik](../scripts/ha_blog_scheduler.py). Bei einem ersten
 Fehler wird ausschließlich der betroffene Beitrag für den Folgetag vorgemerkt;
-der Lauf bleibt erfolgreich. An den übrigen Wochentagen um 07:23 UTC werden nur
-fällige gespeicherte Beiträge erneut versucht. Erst der zweite Fehler desselben
+der Lauf bleibt erfolgreich. Der tägliche Lauf um 07:23 UTC berücksichtigt
+fällige gespeicherte Beiträge und neue oder geänderte Blogtexte. Erst der zweite Fehler desselben
 Beitrags führt zu einem fehlgeschlagenen Lauf. Verpasste Wiederholungen werden
 nachgeholt. Danach sind weitere Versuche nur ausdrücklich manuell möglich.
 
