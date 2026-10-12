@@ -1,0 +1,141 @@
+{
+  "version": 1,
+  "id": "b724111666a95082fbbc64583c75af02aaf8d64d9ce2bbaf789defbed81b603b",
+  "path": "2026-09-28-central-config-flow-abort-reasons.md",
+  "title": "Shared config flow abort reasons are translated centrally",
+  "date": "2026-09-28",
+  "published": "2026-09-28T15:37:31Z",
+  "updated": "2026-09-30T16:19:19Z",
+  "attempts": [
+    {
+      "id": "36444877094:1:5ca489e53b812814386b51101855a3c13f83578cb623bef63bc338446a61450f",
+      "content_id": "5ca489e53b812814386b51101855a3c13f83578cb623bef63bc338446a61450f",
+      "started": "2026-09-28T15:37:31Z",
+      "updated": "2026-09-28T15:37:31Z",
+      "status": "failed",
+      "revision": "cc694990b68f8944e7df7c8afd1cef2562439eb4",
+      "run_url": "https://github.com/topic2k/enigma2-connect/actions/runs/36444877094/attempts/1",
+      "error": "Eingabegröße: ValueError",
+      "due": "2026-09-29",
+      "attempts": 1
+    },
+    {
+      "id": "36580567662:1:5ca489e53b812814386b51101855a3c13f83578cb623bef63bc338446a61450f",
+      "content_id": "5ca489e53b812814386b51101855a3c13f83578cb623bef63bc338446a61450f",
+      "started": "2026-09-29T14:10:51Z",
+      "updated": "2026-09-29T14:10:51Z",
+      "status": "failed",
+      "revision": "cc694990b68f8944e7df7c8afd1cef2562439eb4",
+      "run_url": "https://github.com/topic2k/enigma2-connect/actions/runs/36580567662/attempts/1",
+      "error": "Eingabegröße: ValueError",
+      "due": null,
+      "attempts": 2
+    },
+    {
+      "id": "36598077884:1:5ca489e53b812814386b51101855a3c13f83578cb623bef63bc338446a61450f",
+      "content_id": "5ca489e53b812814386b51101855a3c13f83578cb623bef63bc338446a61450f",
+      "started": "2026-09-29T16:35:43Z",
+      "updated": "2026-09-29T16:35:43Z",
+      "status": "completed",
+      "revision": "6080edbbe8a017927032cea4fc178d2991e83e1c",
+      "run_url": "https://github.com/topic2k/enigma2-connect/actions/runs/36598077884/attempts/1",
+      "result": {
+        "id": "5ca489e53b812814386b51101855a3c13f83578cb623bef63bc338446a61450f",
+        "assessment": "no-impact",
+        "reason": "Home Assistant Core 2026.10 führt eine zentrale Übersetzung für Standard-Abort-Gründe wie 'reauth_successful' und 'reconfigure_successful' ein. Die Integration nutzt in 'config_flow.py' 'async_update_reload_and_abort(entry, data_updates=data)', wodurch diese Standardgründe automatisch bedient werden. Da bestehende lokale Übersetzungsschlüssel in 'strings.json' weiterhin fehlerfrei toleriert werden und die Integration auf Home Assistant ab 2026.9 abzielt, besteht kein zwingender Anpassungsbedarf.",
+        "ha_version": "2026.10",
+        "next_steps": "Keine zwingenden Maßnahmen erforderlich. Die bestehende Implementierung bleibt voll funktionsfähig.",
+        "evidence": [],
+        "opportunity": {
+          "assessment": "recommended",
+          "reason": "Sobald die minimale Home-Assistant-Kompatibilität auf 2026.10 angehoben wird, können die redundanten Abort-Schlüssel 'reauth_successful' und 'reconfigure_successful' aus 'strings.json' sowie den Übersetzungsdateien entfernt werden, da Home Assistant diese zentral bereitstellt.",
+          "next_steps": "Nach Anhebung der Mindestversion auf 2026.10 die Schlüssel 'reauth_successful' und 'reconfigure_successful' aus den Abschnitten 'config.abort' in 'strings.json', 'translations/de.json' und 'translations/en.json' entfernen. Die Aufrufe von 'async_update_reload_and_abort' in 'config_flow.py' greifen dann automatisch auf die zentralen Texte der Home-Assistant-Domäne zu.",
+          "evidence": [
+            {
+              "path": "custom_components/enigma2_connect/config_flow.py",
+              "line": 209,
+              "quote": "                    return self.async_update_reload_and_abort(entry, data_updates=data)"
+            },
+            {
+              "path": "custom_components/enigma2_connect/strings.json",
+              "line": 72,
+              "quote": "      \"reauth_successful\": \"Authentication updated.\","
+            },
+            {
+              "path": "custom_components/enigma2_connect/strings.json",
+              "line": 73,
+              "quote": "      \"reconfigure_successful\": \"Configuration updated.\","
+            }
+          ]
+        }
+      },
+      "publication": "not_required"
+    },
+    {
+      "id": "36606325099:1:5ca489e53b812814386b51101855a3c13f83578cb623bef63bc338446a61450f",
+      "content_id": "5ca489e53b812814386b51101855a3c13f83578cb623bef63bc338446a61450f",
+      "started": "2026-09-29T17:46:48Z",
+      "updated": "2026-09-29T17:46:48Z",
+      "status": "failed",
+      "revision": "00abd0ee7f55acabd32d30480a8bd0b3715bc4e4",
+      "run_url": "https://github.com/topic2k/enigma2-connect/actions/runs/36606325099/attempts/1",
+      "error": "Junie-Analyse: keine gültige Antwort",
+      "due": "2026-09-30",
+      "attempts": 1
+    },
+    {
+      "id": "36725343659:1:5ca489e53b812814386b51101855a3c13f83578cb623bef63bc338446a61450f",
+      "content_id": "5ca489e53b812814386b51101855a3c13f83578cb623bef63bc338446a61450f",
+      "started": "2026-09-30T13:59:57Z",
+      "updated": "2026-09-30T13:59:57Z",
+      "status": "failed",
+      "revision": "e6fa774ee88fcb20cf5dba06158e71cc8f64cc6f",
+      "run_url": "https://github.com/topic2k/enigma2-connect/actions/runs/36725343659/attempts/1",
+      "error": "Junie-Analyse: keine gültige Antwort",
+      "due": null,
+      "attempts": 2
+    },
+    {
+      "id": "36742894730:1:5ca489e53b812814386b51101855a3c13f83578cb623bef63bc338446a61450f",
+      "content_id": "5ca489e53b812814386b51101855a3c13f83578cb623bef63bc338446a61450f",
+      "started": "2026-09-30T16:19:19Z",
+      "updated": "2026-09-30T16:19:19Z",
+      "status": "completed",
+      "revision": "2569e2aa2a97f1966972b10bedde1b4995d93a56",
+      "run_url": "https://github.com/topic2k/enigma2-connect/actions/runs/36742894730/attempts/1",
+      "result": {
+        "id": "5ca489e53b812814386b51101855a3c13f83578cb623bef63bc338446a61450f",
+        "assessment": "no-impact",
+        "reason": "Die zentrale Übersetzung von Standard-Abbruchgründen ab Home Assistant Core 2026.10 ist abwärtskompatibel und erfordert keine zwingenden Codeanpassungen. Die bestehenden lokalen Übersetzungen in strings.json und den Übersetzungsdateien bleiben weiterhin voll funktionsfähig.",
+        "ha_version": "2026.10",
+        "next_steps": "Keine zwingenden Maßnahmen erforderlich, da der bestehende Code voll kompatibel bleibt.",
+        "evidence": [],
+        "opportunity": {
+          "assessment": "recommended",
+          "reason": "Die Nutzung zentraler Übersetzungen für reauth_successful und reconfigure_successful eliminiert redundante Übersetzungsstrings in strings.json sowie den Sprachdateien. Dies maximiert die Wartbarkeit, reduziert Übersetzungsaufwände und stellt eine konsistente Benutzeroberfläche gemäß Home Assistant Core sicher.",
+          "next_steps": "Sobald die minimale Home-Assistant-Version der Integration auf 2026.10 angehoben wird, können die redundanten Schlüssel reauth_successful und reconfigure_successful aus strings.json sowie translations/de.json und translations/en.json unter config.abort entfernt werden. In config_flow.py wird async_update_reload_and_abort in Zeile 209 unverändert ohne expliziten reason-Parameter aufgerufen und nutzt dann automatisch die zentralen Strings.",
+          "evidence": [
+            {
+              "path": "custom_components/enigma2_connect/config_flow.py",
+              "line": 209,
+              "quote": "                    return self.async_update_reload_and_abort(entry, data_updates=data)"
+            },
+            {
+              "path": "custom_components/enigma2_connect/strings.json",
+              "line": 72,
+              "quote": "      \"reauth_successful\": \"Authentication updated.\","
+            },
+            {
+              "path": "custom_components/enigma2_connect/strings.json",
+              "line": 73,
+              "quote": "      \"reconfigure_successful\": \"Configuration updated.\","
+            }
+          ]
+        }
+      },
+      "publication": "published",
+      "issue_url": "https://github.com/topic2k/enigma2-connect/issues/25",
+      "issue_number": 25
+    }
+  ]
+}

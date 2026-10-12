@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "id": "44b6221cb9fafe1ca94ac605a211f68236d035aef8730b30fbb739ee1439f469",
+  "path": "2026-09-30-probatio-validation-engine.md",
+  "title": "Probatio is our validation engine",
+  "date": "2026-09-30",
+  "published": "2026-10-05T16:12:32Z",
+  "updated": "2026-10-05T16:12:32Z",
+  "attempts": [
+    {
+      "id": "37338601450:1:065e0ecde500193adf0014109c6a745e6e92934b7064f9fa7515c456ccabba88",
+      "content_id": "065e0ecde500193adf0014109c6a745e6e92934b7064f9fa7515c456ccabba88",
+      "started": "2026-10-05T16:12:32Z",
+      "updated": "2026-10-05T16:12:32Z",
+      "status": "completed",
+      "revision": "3a08ea7395af9b03077189267b06d869b5734967",
+      "run_url": "https://github.com/topic2k/enigma2-connect/actions/runs/37338601450/attempts/1",
+      "result": {
+        "id": "065e0ecde500193adf0014109c6a745e6e92934b7064f9fa7515c456ccabba88",
+        "assessment": "no-impact",
+        "reason": "Home Assistant Core 2026.9 hat voluptuous durch Probatio ersetzt, stellt jedoch durch ein Alias in sys.modules vollständige Rückwärtskompatibilität für bestehende Custom-Integrations bereit. Bestehende Imports (import voluptuous as vol) und Schemadefinitionen in enigma2_connect funktionieren ohne zwingende Codeanpassungen weiter.",
+        "ha_version": "Home Assistant Core 2026.9, 2026.9.1",
+        "next_steps": "Keine zwingenden Anpassungen erforderlich. Bestehende Schemadefinitionen und Imports können unverändert beibehalten werden.",
+        "evidence": [],
+        "opportunity": {
+          "assessment": "recommended",
+          "reason": "Durch die direkte Nutzung von Probatio können neue Validierungsfunktionen genutzt werden, insbesondere probatio.Secret zum Schutz von Kennwörtern vor der Ausgabe in Validierungsfehlern im Config Flow sowie felderübergreifende Regeln (wie AtLeastOne/ExactlyOne) für Service-Parameter.",
+          "next_steps": "1. Umstellung auf direkten Import von probatio in config_flow.py und services.py.\n2. Absicherung des Passwort-Feldes im Konfigurationsschema mittels probatio.Secret(\"password\").\n3. Nutzung von probatio-Validatoren (z. B. ExactlyOne/AtLeastOne) für Timer-Services (service_reference vs. channel).\nVoraussetzung: Home Assistant Core ab 2026.9 (bereits Zielversion des Projekts). Trade-off: Direkter Import von probatio verhindert die Nutzung auf älteren Home-Assistant-Versionen vor 2026.9.",
+          "evidence": [
+            {
+              "path": "custom_components/enigma2_connect/config_flow.py",
+              "line": 95,
+              "quote": "    password = vol.Optional(\"password\")"
+            },
+            {
+              "path": "custom_components/enigma2_connect/services.py",
+              "line": 189,
+              "quote": "        vol.Optional(\"service_reference\"): vol.All(str, vol.Strip, vol.Length(min=1)),"
+            }
+          ]
+        }
+      },
+      "publication": "published",
+      "issue_url": "https://github.com/topic2k/enigma2-connect/issues/29",
+      "issue_number": 29
+    }
+  ]
+}

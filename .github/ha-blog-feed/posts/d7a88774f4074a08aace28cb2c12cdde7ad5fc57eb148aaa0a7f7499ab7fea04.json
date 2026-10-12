@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "id": "d7a88774f4074a08aace28cb2c12cdde7ad5fc57eb148aaa0a7f7499ab7fea04",
+  "path": "2026-10-08-water-heater-native-temperature.md",
+  "title": "Water heater entities now expose their temperature unit",
+  "date": "2026-10-08",
+  "published": "2026-10-12T17:01:47Z",
+  "updated": "2026-10-12T17:01:47Z",
+  "attempts": [
+    {
+      "id": "38279923066:1:bf06dc439c5488ba80e576de4c1c4a6775bafd737424fe5a9b007140c1cccca6",
+      "content_id": "bf06dc439c5488ba80e576de4c1c4a6775bafd737424fe5a9b007140c1cccca6",
+      "started": "2026-10-12T17:01:47Z",
+      "updated": "2026-10-12T17:01:47Z",
+      "status": "completed",
+      "revision": "3a08ea7395af9b03077189267b06d869b5734967",
+      "run_url": "https://github.com/topic2k/enigma2-connect/actions/runs/38279923066/attempts/1",
+      "result": {
+        "id": "bf06dc439c5488ba80e576de4c1c4a6775bafd737424fe5a9b007140c1cccca6",
+        "assessment": "no-impact",
+        "reason": "Enigma2 Connect ist eine Integration für Enigma2-Set-Top-Boxen und implementiert keine Entitäten der Plattform 'water_heater' (Warmwasserbereiter). Die Einführung des Attributs 'temperature_unit' und die Umbenennung der Temperatureigenschaften in 'native_*' betreffen ausschließlich die WaterHeaterEntity-Basisklasse.",
+        "ha_version": "2026.11 (Einführung temperature_unit und Umbenennung mit native_ / Deprecation-Warnungen), 2027.11 (Entfernung der alten Eigenschaftsnamen)",
+        "next_steps": "Keine Anpassungen erforderlich, da die Integration keine Water-Heater-Entitäten verwendet.",
+        "evidence": [],
+        "opportunity": {
+          "assessment": "none",
+          "reason": "Enigma2-Receiver dienen dem Fernsehempfang, Streaming und Aufnahmebetrieb ohne Heizungs- oder Warmwasserfunktionen. Die neuen Water-Heater-Funktionen bieten daher keinen Nutzen für die Integration.",
+          "next_steps": "Keine Maßnahmen erforderlich.",
+          "evidence": []
+        }
+      },
+      "publication": "not_required"
+    }
+  ]
+}

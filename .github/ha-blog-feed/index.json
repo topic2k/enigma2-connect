@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "posts": {
+    "0158ad2e34b32d95015c231f72c813ae4f14c9a737d2436971c95abe4e4a4a67": "2026-09-15-device-entry-config-entries-deprecation.md",
+    "0fec13b46c541521033aebdb0796be157abba950bc9a63e4efd9a065f416eadc": "2026-10-08-climate-native-temperature.md",
+    "44b6221cb9fafe1ca94ac605a211f68236d035aef8730b30fbb739ee1439f469": "2026-09-30-probatio-validation-engine.md",
+    "5ba2ba4d0d8ac028e9fe3a2adc4cbc21d4ec29632b343ab29dd19c8971fc8cc1": "2026-10-12-new-entity-lifecycle-hooks.md",
+    "72bb5924c35d2a3927356af49408c5cb9e369336eeb3a2b8e83bf585af163728": "2026-09-02-modbus-get-hub-deprecation.md",
+    "73db67a685e749e0f7533c1bd6ba6385ef021e58a92e296b7341a94b6de96867": "2026-09-11-lawn-mower-stop-action-idle-activity.md",
+    "9017f5397b5190b9110657ec9c81b1504235db153ea43238a41083164db081b6": "2026-09-26-llm-tool-result.md",
+    "9742e5fe362ab5b452e1538cfbb0ac595336b3986ae94ec770a587fab52de70e": "2026-10-09-uom-selector.md",
+    "b724111666a95082fbbc64583c75af02aaf8d64d9ce2bbaf789defbed81b603b": "2026-09-28-central-config-flow-abort-reasons.md",
+    "b897fcf7b683c1d6ec460e3dca34c377221b13d22c731f88890e4cd9254bd8db": "2026-09-17-Use-config-entry-exc-in-migration.md",
+    "ba2fd5fd9d4f9135b64368845c66ceac88bdeaef46b397673fa7d94ff8d329af": "2026-09-04-device-and-state-class-selectors.md",
+    "d7a88774f4074a08aace28cb2c12cdde7ad5fc57eb148aaa0a7f7499ab7fea04": "2026-10-08-water-heater-native-temperature.md",
+    "e25d18686050392be6ba403394b03db432f1fee2f1686be2a3f53f8da861f980": "2026-10-06-restore-state-last-states-removal.md",
+    "f948a5b94abfd00b40af6d07f945fff3eb9c770b24d4923fdd602ca841624103": "2026-09-07-oauth2-central-error-handling.md"
+  }
+}

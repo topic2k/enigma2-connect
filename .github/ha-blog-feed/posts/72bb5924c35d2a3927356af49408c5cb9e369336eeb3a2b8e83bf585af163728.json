@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "id": "72bb5924c35d2a3927356af49408c5cb9e369336eeb3a2b8e83bf585af163728",
+  "path": "2026-09-02-modbus-get-hub-deprecation.md",
+  "title": "Deprecating modbus.get_hub in favor of async_get_unit",
+  "date": "2026-09-02",
+  "published": "2026-09-16T17:14:35Z",
+  "updated": "2026-09-16T17:14:35Z",
+  "attempts": [
+    {
+      "id": "35125959582:1:7a6e0c68343e755bd95937a59ad644a3a5cb893697238d06d3cc85c82c78578c",
+      "content_id": "7a6e0c68343e755bd95937a59ad644a3a5cb893697238d06d3cc85c82c78578c",
+      "started": "2026-09-16T17:14:35Z",
+      "updated": "2026-09-16T17:14:35Z",
+      "status": "completed",
+      "revision": "b8f85992340f4b63133bbb072cde4f55bb188b7c",
+      "run_url": "https://github.com/topic2k/enigma2-connect/actions/runs/35125959582/attempts/1",
+      "result": {
+        "id": "7a6e0c68343e755bd95937a59ad644a3a5cb893697238d06d3cc85c82c78578c",
+        "assessment": "no-impact",
+        "reason": "Die Integration Enigma2 Connect kommuniziert ausschließlich über HTTP (OpenWebif REST API via aiohttp) mit Enigma2-Receivern und verwendet weder Modbus noch die Funktion modbus.get_hub.",
+        "ha_version": "2026.9 (Verfügbarkeit async_get_unit), 2026.10 (Deprecation modbus.get_hub), 2027.10 (Entfernung modbus.get_hub)",
+        "next_steps": "Keine Anpassungen erforderlich.",
+        "evidence": [],
+        "opportunity": {
+          "assessment": "none",
+          "reason": "Enigma2-Receiver kommunizieren über Web-Schnittstellen (OpenWebif) und bieten keine Modbus-Schnittstelle. Die Modbus-Architektur ist für diese Integration nicht relevant.",
+          "next_steps": "Keine Implementierung oder Umstellung erforderlich.",
+          "evidence": []
+        }
+      },
+      "publication": "not_required"
+    }
+  ]
+}

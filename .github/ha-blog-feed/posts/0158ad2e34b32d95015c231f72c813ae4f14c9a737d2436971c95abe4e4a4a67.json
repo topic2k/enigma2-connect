@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "id": "0158ad2e34b32d95015c231f72c813ae4f14c9a737d2436971c95abe4e4a4a67",
+  "path": "2026-09-15-device-entry-config-entries-deprecation.md",
+  "title": "`DeviceEntry.config_entries` deprecation is now enforced",
+  "date": "2026-09-15",
+  "published": "2026-09-18T11:54:44Z",
+  "updated": "2026-09-18T11:54:44Z",
+  "attempts": [
+    {
+      "id": "35341449965:1:e1dcae99c9ee4d0709c820530053f1503d2b8527ad7004a8ec3b75d07bb443cc",
+      "content_id": "e1dcae99c9ee4d0709c820530053f1503d2b8527ad7004a8ec3b75d07bb443cc",
+      "started": "2026-09-18T11:54:44Z",
+      "updated": "2026-09-18T11:54:44Z",
+      "status": "completed",
+      "revision": "228d30f1d162dc1c2bc76265f05e03e27fbd56c5",
+      "run_url": "https://github.com/topic2k/enigma2-connect/actions/runs/35341449965/attempts/1",
+      "result": {
+        "id": "e1dcae99c9ee4d0709c820530053f1503d2b8527ad7004a8ec3b75d07bb443cc",
+        "assessment": "impacted",
+        "reason": "In services.py greift die Funktion resolve() beim Auflösen des Zielgeräts auf die veraltete Eigenschaft device.config_entries zu. Ab Home Assistant Core 2026.10 löst dies bei Custom Integrations eine Warnung zur Laufzeit aus und wird in Core 2027.10 vollständig entfernt.",
+        "ha_version": "Home Assistant Core 2026.10 (Laufzeit-Warnung für Custom Integrations; PR #181949), 2027.10 (vollständige Entfernung für Custom Integrations; zuvor 2027.8 angekündigt)",
+        "next_steps": "In custom_components/enigma2_connect/services.py den Zugriff auf device.config_entries durch den direkten Vergleich device.config_entry_id == entry.entry_id ersetzen oder den Helfer dr.async_get_device_and_config_entry_for_domain nutzen.",
+        "evidence": [
+          {
+            "path": "custom_components/enigma2_connect/services.py",
+            "line": 31,
+            "quote": "            and entry.entry_id in device.config_entries"
+          }
+        ],
+        "opportunity": {
+          "assessment": "recommended",
+          "reason": "Die Auflösung von Gerät zu Config-Entry in resolve() kann durch den Helfer dr.async_get_device_and_config_entry_for_domain() vereinfacht werden. Dies reduziert Boilerplate-Code, vermeidet das manuelle Iterieren über alle Config-Entries der Domäne und nutzt das standardisierte Core-Muster.",
+          "next_steps": "In services.py den Helfer dr.async_get_device_and_config_entry_for_domain(hass, device_id, domain=DOMAIN) verwenden. Voraussetzungen: Verfügbar ab Home Assistant Core 2026.8 (die Integration zielt auf 2026.9+ ab). Trade-offs: Keine nennenswerten Nachteile; vereinfacht den Code und sorgt für einheitliche Fehlerbehandlung.",
+          "evidence": [
+            {
+              "path": "custom_components/enigma2_connect/services.py",
+              "line": 26,
+              "quote": "        device = dr.async_get(hass).async_get(device_id)"
+            }
+          ]
+        }
+      },
+      "publication": "not_required"
+    }
+  ]
+}

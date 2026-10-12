@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "id": "9742e5fe362ab5b452e1538cfbb0ac595336b3986ae94ec770a587fab52de70e",
+  "path": "2026-10-09-uom-selector.md",
+  "title": "New unit of measurement selector",
+  "date": "2026-10-09",
+  "published": "2026-10-12T17:01:47Z",
+  "updated": "2026-10-12T17:01:47Z",
+  "attempts": [
+    {
+      "id": "38279923066:1:e512d7658a7bf4e98f44f0dfb0a48a321836736907d99c323282d740cfd654f1",
+      "content_id": "e512d7658a7bf4e98f44f0dfb0a48a321836736907d99c323282d740cfd654f1",
+      "started": "2026-10-12T17:01:47Z",
+      "updated": "2026-10-12T17:01:47Z",
+      "status": "failed",
+      "revision": "3a08ea7395af9b03077189267b06d869b5734967",
+      "run_url": "https://github.com/topic2k/enigma2-connect/actions/runs/38279923066/attempts/1",
+      "error": "Junie-Analyse: keine gültige Antwort",
+      "due": "2026-10-13",
+      "attempts": 1
+    }
+  ]
+}

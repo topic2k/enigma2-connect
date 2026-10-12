@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "id": "0fec13b46c541521033aebdb0796be157abba950bc9a63e4efd9a065f416eadc",
+  "path": "2026-10-08-climate-native-temperature.md",
+  "title": "Climate entities now expose their temperature unit",
+  "date": "2026-10-08",
+  "published": "2026-10-12T17:01:47Z",
+  "updated": "2026-10-12T17:01:47Z",
+  "attempts": [
+    {
+      "id": "38279923066:1:65b9a7c7450f02e0b28ec8fe59a78de0a3b5f47a9d640a5de8951a20bdd9461e",
+      "content_id": "65b9a7c7450f02e0b28ec8fe59a78de0a3b5f47a9d640a5de8951a20bdd9461e",
+      "started": "2026-10-12T17:01:47Z",
+      "updated": "2026-10-12T17:01:47Z",
+      "status": "completed",
+      "revision": "3a08ea7395af9b03077189267b06d869b5734967",
+      "run_url": "https://github.com/topic2k/enigma2-connect/actions/runs/38279923066/attempts/1",
+      "result": {
+        "id": "65b9a7c7450f02e0b28ec8fe59a78de0a3b5f47a9d640a5de8951a20bdd9461e",
+        "assessment": "no-impact",
+        "reason": "Die Integration Enigma2 Connect steuert Enigma2-Set-Top-Boxen und implementiert keine Climate-Plattform (ClimateEntity). Die Umbenennung der Temperatureigenschaften auf native_* und das neue temperature_unit-Attribut für ClimateEntity betreffen diese Integration daher nicht.",
+        "ha_version": "2026.11 (Einführung und Deprecation-Warnung), 2027.11 (Entfernung alter Eigenschaften)",
+        "next_steps": "Keine Anpassungen erforderlich, da keine Climate-Plattform verwendet wird.",
+        "evidence": [
+          {
+            "path": "custom_components/enigma2_connect/__init__.py",
+            "line": 27,
+            "quote": "PLATFORMS = ["
+          }
+        ],
+        "opportunity": {
+          "assessment": "none",
+          "reason": "Enigma2-Receiver sind Medienwiedergabe- und TV-Empfangsgeräte ohne Klimatisierungs- oder Thermostatfunktionen. Eine Implementierung von Climate-Entitäten ist fachlich unpassend und bietet keinen Nutzen.",
+          "next_steps": "Keine Schritte erforderlich, da Climate-Funktionen für TV-Set-Top-Boxen nicht relevant sind.",
+          "evidence": []
+        }
+      },
+      "publication": "not_required"
+    }
+  ]
+}

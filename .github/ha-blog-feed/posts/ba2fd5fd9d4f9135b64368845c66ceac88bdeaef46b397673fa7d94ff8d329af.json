@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "id": "ba2fd5fd9d4f9135b64368845c66ceac88bdeaef46b397673fa7d94ff8d329af",
+  "path": "2026-09-04-device-and-state-class-selectors.md",
+  "title": "New device and state class selectors",
+  "date": "2026-09-04",
+  "published": "2026-09-16T17:14:35Z",
+  "updated": "2026-09-16T17:14:35Z",
+  "attempts": [
+    {
+      "id": "35125959582:1:c4252e2dc5f9b53b5a029457de2bd01f3cea9ad09583cfdbbe12e7508a89552c",
+      "content_id": "c4252e2dc5f9b53b5a029457de2bd01f3cea9ad09583cfdbbe12e7508a89552c",
+      "started": "2026-09-16T17:14:35Z",
+      "updated": "2026-09-16T17:14:35Z",
+      "status": "completed",
+      "revision": "b8f85992340f4b63133bbb072cde4f55bb188b7c",
+      "run_url": "https://github.com/topic2k/enigma2-connect/actions/runs/35125959582/attempts/1",
+      "result": {
+        "id": "c4252e2dc5f9b53b5a029457de2bd01f3cea9ad09583cfdbbe12e7508a89552c",
+        "assessment": "no-impact",
+        "reason": "Die Integration verwendet in ihren Konfigurations- und Optionsabläufen keine Selektoren für Geräte- oder Sensorstatusklassen und wählt diese auch nicht per SelectSelector aus. Alle Entitäten besitzen feste, typspezifische Geräte- und Zustandsklassen.",
+        "ha_version": "Nicht angegeben",
+        "next_steps": "Keine Schritte erforderlich.",
+        "evidence": [],
+        "opportunity": {
+          "assessment": "none",
+          "reason": "Die Enigma2-Connect-Integration bindet spezifische Set-Top-Box-Hardware an, deren Entitäten feste semantische Klassen besitzen. Eine benutzerdefinierte Auswahl von Geräte- oder Zustandsklassen in Config Flows oder Blueprints bietet für diese Integration keinen Mehrwert.",
+          "next_steps": "Keine Implementierung erforderlich.",
+          "evidence": []
+        }
+      },
+      "publication": "not_required"
+    }
+  ]
+}

@@ -1,0 +1,102 @@
+{
+  "version": 1,
+  "id": "9017f5397b5190b9110657ec9c81b1504235db153ea43238a41083164db081b6",
+  "path": "2026-09-26-llm-tool-result.md",
+  "title": "LLM tools return a ToolResult and declare their integration",
+  "date": "2026-09-26",
+  "published": "2026-09-28T15:37:31Z",
+  "updated": "2026-09-29T17:46:48Z",
+  "attempts": [
+    {
+      "id": "36444877094:1:2728c351bb2ff923632a71f25109ff7493bedb2816b6591cdae8f1d215939870",
+      "content_id": "2728c351bb2ff923632a71f25109ff7493bedb2816b6591cdae8f1d215939870",
+      "started": "2026-09-28T15:37:31Z",
+      "updated": "2026-09-28T15:37:31Z",
+      "status": "failed",
+      "revision": "cc694990b68f8944e7df7c8afd1cef2562439eb4",
+      "run_url": "https://github.com/topic2k/enigma2-connect/actions/runs/36444877094/attempts/1",
+      "error": "Eingabegröße: ValueError",
+      "due": "2026-09-29",
+      "attempts": 1
+    },
+    {
+      "id": "36580567662:1:2728c351bb2ff923632a71f25109ff7493bedb2816b6591cdae8f1d215939870",
+      "content_id": "2728c351bb2ff923632a71f25109ff7493bedb2816b6591cdae8f1d215939870",
+      "started": "2026-09-29T14:10:51Z",
+      "updated": "2026-09-29T14:10:51Z",
+      "status": "failed",
+      "revision": "cc694990b68f8944e7df7c8afd1cef2562439eb4",
+      "run_url": "https://github.com/topic2k/enigma2-connect/actions/runs/36580567662/attempts/1",
+      "error": "Eingabegröße: ValueError",
+      "due": null,
+      "attempts": 2
+    },
+    {
+      "id": "36598077884:1:2728c351bb2ff923632a71f25109ff7493bedb2816b6591cdae8f1d215939870",
+      "content_id": "2728c351bb2ff923632a71f25109ff7493bedb2816b6591cdae8f1d215939870",
+      "started": "2026-09-29T16:35:43Z",
+      "updated": "2026-09-29T16:35:43Z",
+      "status": "completed",
+      "revision": "6080edbbe8a017927032cea4fc178d2991e83e1c",
+      "run_url": "https://github.com/topic2k/enigma2-connect/actions/runs/36598077884/attempts/1",
+      "result": {
+        "id": "2728c351bb2ff923632a71f25109ff7493bedb2816b6591cdae8f1d215939870",
+        "assessment": "no-impact",
+        "reason": "Die Integration Enigma2 Connect registriert oder nutzt derzeit keine LLM-Tools (llm.Tool) und verwendet weder ToolResultContent noch ToolResult. Die Änderungen an Rückgabetypen und Tool-Metadaten erfordern daher keine Anpassung der bestehenden Codebasis.",
+        "ha_version": "Home Assistant Core 2026.10 (Einführung), 2027.10 (Entfernung von Tools ohne integration-Attribut), 2027.11 (Entfernung von einfacher JSON-Rückgabe und ToolResultContent.tool_result)",
+        "next_steps": "Keine Anpassungen am bestehenden Code erforderlich, da keine LLM-Tools implementiert sind.",
+        "evidence": [],
+        "opportunity": {
+          "assessment": "recommended",
+          "reason": "Die Bereitstellung eigener LLM-Tools (z. B. für EPG-Suche, Sendungsdetails oder Aufnahme-Programmierung) ermöglicht Sprachassistenten (Assist), LLMs und MCP-Clients die strukturierte und sichere Interaktion mit Enigma2-Receivern unter Verwendung von ToolResult und ToolAnnotations.",
+          "next_steps": "Implementierung von llm.Tool-Klassen (z. B. für EPG-Suche) mit Attributen wie title, integration=DOMAIN, passenden ToolAnnotations (z. B. read_only=True) und ToolResult-Rückgabe. Registrierung der Tools beim Setup der Integration ab Home Assistant Core 2026.10.",
+          "evidence": [
+            {
+              "path": "custom_components/enigma2_connect/__init__.py",
+              "line": 42,
+              "quote": "    register_services(hass)"
+            }
+          ]
+        }
+      },
+      "publication": "not_required"
+    },
+    {
+      "id": "36606325099:1:2728c351bb2ff923632a71f25109ff7493bedb2816b6591cdae8f1d215939870",
+      "content_id": "2728c351bb2ff923632a71f25109ff7493bedb2816b6591cdae8f1d215939870",
+      "started": "2026-09-29T17:46:48Z",
+      "updated": "2026-09-29T17:46:48Z",
+      "status": "completed",
+      "revision": "00abd0ee7f55acabd32d30480a8bd0b3715bc4e4",
+      "run_url": "https://github.com/topic2k/enigma2-connect/actions/runs/36606325099/attempts/1",
+      "result": {
+        "id": "2728c351bb2ff923632a71f25109ff7493bedb2816b6591cdae8f1d215939870",
+        "assessment": "no-impact",
+        "reason": "Die Integration Enigma2 Connect implementiert oder registriert derzeit keine LLM-Tools (llm.Tool) und nutzt weder homeassistant.helpers.llm noch ToolResultContent. Die Umstellung auf llm.ToolResult und die neuen Metadaten-Attribute (integration, annotations, title) erfordern daher keine verpflichtenden Anpassungen am bestehenden Code.",
+        "ha_version": "Home Assistant Core 2026.10 (Verfügbarkeit und Beginn der Deprecation), Core 2027.10 (Entfernung von Tools ohne integration-Attribut), Core 2027.11 (Entfernung von Plain-JSON-Rückgabewerten und alten ToolResult-Attributen)",
+        "next_steps": "Keine verpflichtenden Schritte erforderlich, da die Integration keine LLM-Tools bereitstellt.",
+        "evidence": [],
+        "opportunity": {
+          "assessment": "recommended",
+          "reason": "Die Integration verfügt über umfangreiche Receiver- und EPG-Funktionen (z. B. EPG-Suche und Programminformationen). Durch das Bereitstellen eigener LLM-Tools mit den in HA Core 2026.10 eingeführten APIs (llm.Tool mit integration, annotations und Rückgabe von llm.ToolResult) können Sprachassistenten (Assist) und LLM-Agenten (z. B. MCP Server) gezielt EPG-Abfragen und Receiver-Steuerungsbefehle ausführen.",
+          "next_steps": "1. Erstellen von Tool-Klassen erbend von homeassistant.helpers.llm.Tool (z. B. für die EPG-Suche auf Basis von EpgWorkflow.search).\n2. Konfiguration der neuen Metadaten: title, description, integration=DOMAIN sowie annotations=llm.ToolAnnotations(read_only=True, destructive=False, idempotent=True, open_world=False).\n3. Rückgabe der Ergebnisse in async_call als llm.ToolResult(data=...). \n4. Registrierung der Tools beim Setup des Config Entries in custom_components/enigma2_connect/__init__.py.\n5. Voraussetzungen: Verfügbar ab Home Assistant Core 2026.10; Abwägung: Zusätzlicher Testaufwand und Begrenzung der Ergebnisgröße bei großen EPG-Datensätzen beachten.",
+          "evidence": [
+            {
+              "path": "custom_components/enigma2_connect/__init__.py",
+              "line": 51,
+              "quote": "async def async_setup_entry(hass: HomeAssistant, entry: EnigmaConfigEntry) -> bool:"
+            },
+            {
+              "path": "custom_components/enigma2_connect/epg.py",
+              "line": 49,
+              "quote": "    async def search(self, query: str) -> JsonObject:"
+            }
+          ]
+        }
+      },
+      "publication": "published",
+      "issue_url": "https://github.com/topic2k/enigma2-connect/issues/21",
+      "issue_number": 21
+    }
+  ]
+}

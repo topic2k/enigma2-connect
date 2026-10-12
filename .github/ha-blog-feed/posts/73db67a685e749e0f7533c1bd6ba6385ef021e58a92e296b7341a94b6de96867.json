@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "id": "73db67a685e749e0f7533c1bd6ba6385ef021e58a92e296b7341a94b6de96867",
+  "path": "2026-09-11-lawn-mower-stop-action-idle-activity.md",
+  "title": "New stop action and idle activity for lawn mowers",
+  "date": "2026-09-11",
+  "published": "2026-09-16T17:14:35Z",
+  "updated": "2026-09-16T17:14:35Z",
+  "attempts": [
+    {
+      "id": "35125959582:1:fa2796a548ecc556abb978896a54194313c760015fbbf37c7b7a2b76dddf387b",
+      "content_id": "fa2796a548ecc556abb978896a54194313c760015fbbf37c7b7a2b76dddf387b",
+      "started": "2026-09-16T17:14:35Z",
+      "updated": "2026-09-16T17:14:35Z",
+      "status": "completed",
+      "revision": "b8f85992340f4b63133bbb072cde4f55bb188b7c",
+      "run_url": "https://github.com/topic2k/enigma2-connect/actions/runs/35125959582/attempts/1",
+      "result": {
+        "id": "fa2796a548ecc556abb978896a54194313c760015fbbf37c7b7a2b76dddf387b",
+        "assessment": "no-impact",
+        "reason": "Die Änderungen betreffen ausschließlich die Rasenmäher-Plattform (LawnMowerEntity, LawnMowerEntityFeature.STOP und LawnMowerActivity.IDLE). Enigma2 Connect ist eine Integration für Enigma2-DVB-Receiver und implementiert keine Rasenmäher-Entitäten.",
+        "ha_version": "2026.10",
+        "next_steps": "Keine Anpassungen erforderlich, da die Integration keine Rasenmäher-Plattform nutzt.",
+        "evidence": [],
+        "opportunity": {
+          "assessment": "none",
+          "reason": "Die neuen Funktionen für Rasenmäher bieten für eine Set-Top-Box-Integration keinerlei fachlichen Nutzen oder Verbesserungsmöglichkeiten.",
+          "next_steps": "Keine Schritte erforderlich, da Rasenmäher-Features für Enigma2-Receiver irrelevant sind.",
+          "evidence": []
+        }
+      },
+      "publication": "not_required"
+    }
+  ]
+}

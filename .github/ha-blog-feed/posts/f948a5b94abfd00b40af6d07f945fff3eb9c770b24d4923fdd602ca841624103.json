@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "id": "f948a5b94abfd00b40af6d07f945fff3eb9c770b24d4923fdd602ca841624103",
+  "path": "2026-09-07-oauth2-central-error-handling.md",
+  "title": "OAuth2 error handling moved into the helper",
+  "date": "2026-09-07",
+  "published": "2026-09-16T17:14:35Z",
+  "updated": "2026-09-16T17:14:35Z",
+  "attempts": [
+    {
+      "id": "35125959582:1:ef62db3f88734b20e1309a683038b24d3e36f5cc9512ff9b889afac82ff5af6a",
+      "content_id": "ef62db3f88734b20e1309a683038b24d3e36f5cc9512ff9b889afac82ff5af6a",
+      "started": "2026-09-16T17:14:35Z",
+      "updated": "2026-09-16T17:14:35Z",
+      "status": "completed",
+      "revision": "b8f85992340f4b63133bbb072cde4f55bb188b7c",
+      "run_url": "https://github.com/topic2k/enigma2-connect/actions/runs/35125959582/attempts/1",
+      "result": {
+        "id": "ef62db3f88734b20e1309a683038b24d3e36f5cc9512ff9b889afac82ff5af6a",
+        "assessment": "no-impact",
+        "reason": "Die Integration Enigma2 Connect verwendet direkte HTTP- bzw. HTTPS-Verbindungen mit Basic Authentication für OpenWebif und nutzt weder den OAuth2-Helper noch OAuth2-Authentifizierungsabläufe von Home Assistant.",
+        "ha_version": "2026.10",
+        "next_steps": "Keine Anpassungen erforderlich.",
+        "evidence": [],
+        "opportunity": {
+          "assessment": "none",
+          "reason": "Enigma2- und OpenWebif-Geräte bieten keine OAuth2-Schnittstelle, sondern ausschliesslich lokale HTTP-Authentifizierung, weshalb der OAuth2-Helper für diese Integration keine Anwendungsmöglichkeit bietet.",
+          "next_steps": "Keine Umsetzung erforderlich, da die zugrundeliegende OpenWebif-API kein OAuth2 unterstützt.",
+          "evidence": []
+        }
+      },
+      "publication": "not_required"
+    }
+  ]
+}

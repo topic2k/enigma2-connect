@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "id": "e25d18686050392be6ba403394b03db432f1fee2f1686be2a3f53f8da861f980",
+  "path": "2026-10-06-restore-state-last-states-removal.md",
+  "title": "Removal of RestoreStateData.last_states",
+  "date": "2026-10-06",
+  "published": "2026-10-12T17:01:47Z",
+  "updated": "2026-10-12T17:01:47Z",
+  "attempts": [
+    {
+      "id": "38279923066:1:f49964e1ba5550e1c800affbbe26809c48fd0c0841da4f0db07d5545f20c4ff3",
+      "content_id": "f49964e1ba5550e1c800affbbe26809c48fd0c0841da4f0db07d5545f20c4ff3",
+      "started": "2026-10-12T17:01:47Z",
+      "updated": "2026-10-12T17:01:47Z",
+      "status": "completed",
+      "revision": "3a08ea7395af9b03077189267b06d869b5734967",
+      "run_url": "https://github.com/topic2k/enigma2-connect/actions/runs/38279923066/attempts/1",
+      "result": {
+        "id": "f49964e1ba5550e1c800affbbe26809c48fd0c0841da4f0db07d5545f20c4ff3",
+        "assessment": "no-impact",
+        "reason": "Die Integration greift nicht direkt auf RestoreStateData oder last_states zu. Alle Entitäten erben von CoordinatorEntity und beziehen ihren Zustand dynamisch über den EnigmaCoordinator vom OpenWebif des Receivers.",
+        "ha_version": "2026.11",
+        "next_steps": "Keine Anpassungen erforderlich.",
+        "evidence": [],
+        "opportunity": {
+          "assessment": "none",
+          "reason": "Die Integration bildet einen Enigma2-Receiver ab, dessen Gerätezustände live über die OpenWebif-API abgefragt werden. Ein direkter Zugriff auf gespeicherte Alt-Zustände über RestoreStateData bietet für diese Hardware-Integration keinen funktionalen Nutzen.",
+          "next_steps": "Keine Maßnahmen erforderlich.",
+          "evidence": []
+        }
+      },
+      "publication": "not_required"
+    }
+  ]
+}
