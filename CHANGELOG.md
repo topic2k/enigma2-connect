@@ -4,7 +4,7 @@
 
 ## Inhaltsverzeichnis
 
-- [2.1.7-dev.2](#217-dev2)
+- [2.1.7](#217)
 - [2.1.6](#216)
 - [2.1.5](#215)
 - [2.1.4](#214)
@@ -22,9 +22,9 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 2.1.7-dev.2
+## 2.1.7
 
-Unveröffentlichte Entwicklerversion.
+Unveröffentlicht.
 
 - Die Home-Assistant-Blogprüfung sucht täglich um 07:23 UTC nach neuen und geänderten Beiträgen. Fällige Fehlerwiederholungen haben Vorrang; höchstens fünf Beiträge pro Lauf, weitere Beiträge folgen am nächsten Tag.
 
