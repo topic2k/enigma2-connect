@@ -5,7 +5,7 @@
   "title": "New unit of measurement selector",
   "date": "2026-10-09",
   "published": "2026-10-12T17:01:47Z",
-  "updated": "2026-10-13T15:08:49Z",
+  "updated": "2026-10-13T15:11:19Z",
   "attempts": [
     {
       "id": "38279923066:1:e512d7658a7bf4e98f44f0dfb0a48a321836736907d99c323282d740cfd654f1",
@@ -23,13 +23,28 @@
       "id": "38419419375:1:e512d7658a7bf4e98f44f0dfb0a48a321836736907d99c323282d740cfd654f1",
       "content_id": "e512d7658a7bf4e98f44f0dfb0a48a321836736907d99c323282d740cfd654f1",
       "started": "2026-10-13T15:08:49Z",
-      "updated": "2026-10-13T15:08:49Z",
-      "status": "started",
+      "updated": "2026-10-13T15:11:19Z",
+      "status": "completed",
       "revision": "7af96658f7e47191fb8d8c3a08f15e32ec96ead7",
       "upstream": "97f2a19b78cbbd46bc71c9d08b941dc254ce292a",
       "run_url": "https://github.com/topic2k/enigma2-connect/actions/runs/38419419375/attempts/1",
       "attempts": 2,
-      "due": null
+      "due": null,
+      "result": {
+        "id": "e512d7658a7bf4e98f44f0dfb0a48a321836736907d99c323282d740cfd654f1",
+        "assessment": "no-impact",
+        "reason": "Die Integration definiert feste Maßeinheiten für Sensoren direkt in den SensorEntityDescriptions (wie Bytes, Sekunden, dB, %) und enthält in Konfigurations-, Options- oder Service-Schemata keine Auswahlfelder für Maßeinheiten. Der neue UnitOfMeasurementSelector ist für Flows und Blueprints gedacht, in denen Nutzer Maßeinheiten konfigurieren, und betrifft die bestehende Codebasis nicht.",
+        "ha_version": "Nicht angegeben",
+        "next_steps": "Keine Anpassungen erforderlich.",
+        "evidence": [],
+        "opportunity": {
+          "assessment": "none",
+          "reason": "Enigma2 Connect verarbeitet feste Messwerte von OpenWebif-Receivern, deren Einheiten nativ über SensorEntityDescriptions feststehen und von Home Assistant im Frontend konvertiert werden können. Es gibt keine anwendbaren Konfigurationsoptionen oder Services, bei denen die Auswahl einer Maßeinheit einen funktionellen oder praktischen Nutzen stiften würde.",
+          "next_steps": "Keine Maßnahmen erforderlich.",
+          "evidence": []
+        }
+      },
+      "publication": "not_required"
     }
   ]
 }
