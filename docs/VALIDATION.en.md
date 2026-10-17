@@ -2,6 +2,27 @@
 
 # Verification summary
 
+## Dedicated receiver component planning – 2.1.8-dev.1
+
+On 17 October 2026, analyzed integration commit `7af9665`, both recorded ideas
+and OpenWebif dependencies including discovery, images, files and streaming.
+Checked Enigma2 entry points against public upstream sources; moving source
+branches do not establish acceptance of installed images. The
+[implementation plan](DEVELOPMENT.en.md#implementation-plan-dedicated-receiver-component)
+defines seven stages, migration invariants, boundaries and separate acceptance.
+Reviewed German/English content for consistency; the minimal recording resolver
+is explicitly scheduled before the first receiver snapshots.
+
+Version/JSON/TOML consistency, 166 local links/anchors in developer guides and
+changelogs, Markdown code fences, the WSL offline lock check and
+`git diff --check` passed. The lockfile changes only the local project version;
+all dependencies and functional manifest settings are preserved. Documentation
+and version metadata only, so no new runtime tests or receiver/installed-HA
+acceptance were performed. No plugin implemented or installed. Reviewed quality
+checklist impact: no criteria, coverage thresholds or existing acceptance
+limitations changed; all new functional/performance evidence remains outstanding
+for its implementation stage.
+
 ## Daily blog checks – 2.1.7-dev.2
 
 135 offline script tests passed. New cases cover selecting due retries together with new posts on the following day, skipping successfully reviewed content and processing deferred posts in the next daily run while retaining the five-post limit. Explicit manual selection of exhausted retries remains available separately.

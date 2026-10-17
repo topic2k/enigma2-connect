@@ -4,6 +4,7 @@
 
 ## Inhaltsverzeichnis
 
+- [2.1.8-dev.1](#218-dev1)
 - [2.1.7](#217)
 - [2.1.6](#216)
 - [2.1.5](#215)
@@ -21,6 +22,12 @@
 - [1.0.2](#102)
 - [1.0.1](#101)
 - [1.0.0](#100)
+
+## 2.1.8-dev.1
+
+Unveröffentlichte Entwicklerversion.
+
+- Eigene Receiver-Komponente geplant: Architektur, OpenWebif-Abhängigkeiten, native Schnittstellen, interaktive Dialoge, receiverseitige Aufnahmebilder und gestufte Migration bis zum Betrieb ohne OpenWebif in beiden Entwicklerhandbüchern dokumentiert. Planungsstand, offene Image-/Lizenzfragen und erforderliche Abnahmen ausdrücklich getrennt von umgesetzten Funktionen.
 
 ## 2.1.7
 

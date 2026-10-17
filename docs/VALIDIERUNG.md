@@ -2,6 +2,27 @@
 
 # Prüfübersicht
 
+## Planung der eigenen Receiver-Komponente – 2.1.8-dev.1
+
+Am 17.10.2026 Integrationsstand `7af9665`, die beiden vorgemerkten Ideen und
+die OpenWebif-Abhängigkeiten einschließlich Discovery, Bildern, Dateien und
+Streaming analysiert. Enigma2-Ansatzpunkte anhand öffentlicher Upstreamquellen
+geprüft; bewegliche Quellstände sind keine Abnahme installierter Images.
+Der [Umsetzungsplan](ENTWICKLUNG.md#umsetzungsplan-eigene-receiver-komponente)
+enthält sieben Stufen, Migrationsinvarianten, Grenzen und getrennte Abnahmen.
+Deutsche/englische Fassung fachlich abgeglichen; der minimale Aufnahme-Resolver
+ist ausdrücklich vor den ersten Receiver-Snapshots eingeplant.
+
+Versions-/JSON-/TOML-Abgleich, 166 lokale Links/Anker in Entwicklerhandbüchern
+und Changelogs, Markdown-Codeblockgrenzen, Offline-Lockcheck in WSL und
+`git diff --check` bestanden. Die Lockdatei ändert ausschließlich die eigene
+Projektversion; sämtliche Abhängigkeiten und Manifest-Funktionseinstellungen
+sind erhalten. Nur Dokumentation und Versionsmetadaten geändert, daher keine
+neuen Laufzeittests oder Receiver-/HA-Praxisprüfungen. Kein Plugin implementiert
+oder installiert. Qualitätscheckliste auf Auswirkungen geprüft: keine Kriterien,
+Abdeckungsgrenzen oder bestehenden Prüfvorbehalte verändert; alle neuen
+Funktions-/Leistungsnachweise bleiben für die jeweilige Umsetzungsstufe offen.
+
 ## Tägliche Blogprüfung – 2.1.7-dev.2
 
 135 Offline-Skripttests bestanden. Neue Fälle prüfen die gemeinsame Auswahl fälliger Wiederholungen und neuer Beiträge am Folgetag, das Überspringen erfolgreich geprüfter Inhalte und die Bearbeitung zurückgestellter Beiträge im nächsten Tageslauf bei weiterhin höchstens fünf Beiträgen pro Lauf. Die manuelle Auswahl ausgeschöpfter Fehlversuche bleibt getrennt verfügbar.

@@ -26,6 +26,7 @@ and everyday use, see the [user guide](USER_GUIDE.en.md). The
 - [Disk space and system diagnostics](#disk-space-and-system-diagnostics)
 - [Audio-track selection](#audio-track-selection)
 - [Recorded ideas](#recorded-ideas)
+- [Implementation plan: dedicated receiver component](#implementation-plan-dedicated-receiver-component)
 - [Files and local archives](#files-and-local-archives)
 
 ## README badges
@@ -1392,6 +1393,279 @@ and firmware differences first; the last answer alone does not establish manual
 confirmation. Starting points:
 [OpenWebif message model](https://github.com/E2OpenPlugins/e2openplugin-OpenWebif/blob/master/plugin/controllers/models/message.py)
 and [Enigma2 dialog](https://github.com/openatv/enigma2/blob/master/lib/python/Screens/MessageBox.py).
+
+## Implementation plan: dedicated receiver component
+
+Planning date **17 October 2026**, based on integration commit `7af9665` (2.1.7).
+This is an architecture and work plan; the new component is neither implemented
+nor verified on receivers. The current OpenWebif requirement still applies. The
+two ideas above are the first uses of a dedicated receiver interface that can
+gradually cover the complete integration.
+
+### Goal and architecture decision
+
+Use an **Enigma2 plugin with its own local API**, working name “Enigma2 Connect
+Receiver”, and a separate process for expensive frame extraction. A standalone
+operating-system service cannot directly cover the GUI session, dialogs,
+navigation and timers. The plugin accesses these APIs on Enigma2's main thread;
+FFmpeg, substantial file work and network transfers must not block interaction.
+Add a persistent media daemon only if measured load justifies that separation.
+
+```mermaid
+flowchart LR
+    HA[HA entities, actions and cards] --> B[ReceiverBackend]
+    B --> O[OpenWebif adapter during migration]
+    B --> C[Connect client: HTTPS, JSON and events]
+    C --> P[Receiver plugin]
+    P --> E[Enigma2: session, navigation, EPG and timers]
+    P --> W[Bounded snapshot worker]
+    P --> M[Recording files and native stream services]
+```
+
+Use a separate port, authentication, discovery and package dependencies. The API
+must not import OpenWebif or depend on its web server, configuration or files.
+Native Enigma2 stream services may remain if startup, authorization and operation
+without OpenWebif are demonstrated. A general web interface like OpenWebif is
+outside the required scope; receiver settings need a small local plugin screen.
+
+The HA integration and domain `enigma2_connect` remain the entry point. For later
+implementation, use a separate receiver repository with its own package/release
+cycle, initially keeping HA-independent client modules inside the integration.
+A separate PyPI library is not a prerequisite. Version the API, plugin and
+integration independently and document compatibility. Receiver packages do not
+belong in the HACS artifact.
+
+### Inventory and required replacements
+
+The integration uses roughly three dozen JSON endpoints and additional HTTP
+resources. Replacing `api.py` alone is insufficient: the coordinator, actions and
+workflow models know endpoint names and sometimes raw OpenWebif data.
+
+| Area / current coupling | Required native backend capability |
+| --- | --- |
+| `config_flow.py`, `entity.py`, `about`, Bonjour `openwebif*` | Identity/MAC aliases, model/image, dedicated discovery, pairing, reauth, network changes, device information and configuration destination |
+| `coordinator.py`, `models.py`: `statusinfo`, `getcurrent`, `signal` | Consistent status with reference, playback session, EPG, position/duration, volume/mute, standby, recording/stream activity and optional tuner values |
+| `bouquets`, `getservices`, `epgsearch`, `epgsimilar`, `event` | TV/radio bouquets, stable service references, search/similar events, event details and freshness checks before recording |
+| `remotecontrol`, `zap`, `vol`, `message`, `powerstate` | Keys/long press, Unicode text, channel changes and recording playback, volume/mute, messages, standby, GUI/system restart and deep standby |
+| `audio_tracks.py`, `timeshift.py`, `sleep_timer.py`, `powerup.py` | Audio tracks, timeshift, sleep timer and optional CEC suppression; explicit capabilities and confirmed outcomes rather than version assumptions |
+| `timer_edit.py`, `instant_recording.py`, `calendar.py` | Read/create/edit/delete/enable timers, instant recording, weekly repeats, event recording, directories/tags and structured conflicts |
+| `recording_library.py`, `recording_management.py` | Recursive catalog, destinations, metadata/progress, title changes, move/delete including sidecars, revisions and operation status |
+| `/grab`, `/picon/…`, `camera.py`, `channel_media.py` | Authenticated screenshots and channel images; screen capture and recording frames remain separate capabilities |
+| `/file`, `recording_snapshot.py`, `media_stream.py`, `stream_vod.py` | Restricted recording access with GET/HEAD and correct byte ranges; include `.ap` index data for existing VOD/keyframe remux |
+| `stream_receiver.py`, `/web/streamhls.m3u`, `/web/video.m3u`, TS port 8001 | Dedicated live-TV/transcoding stream descriptors, authorized transport and verified service availability without OpenWebif |
+
+Retain the nine HA platforms, cards, media source and usable HLS/remux/VOD
+processing. Receiver snapshots replace neither the recording file service for
+external playback nor FFmpeg for any required HA transcoding. Frame extraction
+must not change the current channel or take over a TV playback hardware decoder.
+
+### API, events and operation
+
+1. **Domain contract:** A typed `ReceiverBackend` supplies device information,
+   state, catalogs, actions, images and media sources. OpenWebif quirks (mutating
+   GET requests, double URL decoding, inconsistent acknowledgements) stay in its
+   adapter. Missing data remains unknown; `None` differs from a valid empty list.
+2. **Versioned API:** Proposed base `/v1`, with `info`, `capabilities`, `state`,
+   timer/recording/dialog resources and `operations/{id}`. Report capabilities
+   separately, such as `dialogs.choices`, `snapshots.recording`, `stream.live`,
+   `stream.recording_range` and `power.cec`. Missing FFmpeg must not disable
+   control or dialogs. Writes use POST/PATCH/DELETE with validated sizes/ranges.
+3. **Events:** Start with HTTP JSON plus Server-Sent Events; HA initiates the
+   connection, requiring neither a broker nor an inbound HA port. State and
+   events carry a boot ID, sequence/revision and timestamp. Match the initial
+   snapshot to an event cursor to avoid losing updates during connection.
+   Bound replay buffers and slow clients; implement heartbeats, backoff and full
+   resync after gaps/restarts. Slow polling reconciles state and values without
+   usable hooks. Decide any `iot_class` change from the implemented push/polling
+   behavior and HA requirements.
+4. **Write safety:** Request ID, expected resource revision and a bounded
+   persistent operation journal. Repeated IDs with identical content return the
+   known operation; different content is rejected. Distinguish `accepted`,
+   `running`, `completed`, `failed` and `unknown`. A crash between an Enigma2
+   operation and journal completion can still leave uncertainty: no blanket
+   exactly-once guarantee. Read/reconcile results; never repeat an uncertain
+   write through the other backend.
+5. **Access:** Explicitly open pairing on the receiver, display a short-lived
+   one-time code on the TV and confirm access; issue revocable tokens per HA
+   instance. HTTPS with a validated trust anchor or fingerprint confirmed during
+   pairing; no silent certificate-validation bypass. Pairing itself must resist
+   device substitution/MITM; certificate changes require renewed trust checks.
+   Establish TLS/library availability in stage 0. Dedicated mDNS, for example
+   `_e2connect._tcp.local.`, is only a discovery hint; authenticate identity
+   afterwards. Separate read, control and file-management permissions. Keep
+   tokens out of URLs, logs and diagnostic exports.
+6. **File/process boundaries:** Recording IDs rather than arbitrary paths/URLs;
+   validate allowed recording directories, symlinks, path changes and sidecars.
+   No shell endpoint or arbitrary FFmpeg arguments. Bound reads/writes, handle
+   cancellation/timeouts and release file descriptors when clients disconnect.
+   Reduce worker privileges where reliably supported by the image.
+
+OpenATV supplies session/autostart hooks and an Enigma2-integrated Twisted reactor.
+This is a possible server foundation, not a guarantee for every image. Do not
+start a second reactor or access Enigma2 objects from worker threads. Use symbolic
+plugin constants and isolate image differences in small adapters. Python
+**3.14.2 is the HA requirement**, not automatically the plugin requirement.
+Inventory receiver Python, TLS, FFmpeg codecs, package manager and stream services
+for each supported image.
+
+| Native entry point to investigate | Planned use / boundary |
+| --- | --- |
+| `PluginDescriptor.WHERE_SESSIONSTART`, `WHERE_AUTOSTART`, `WHERE_PLUGINMENU` | Session binding, lifecycle and local configuration; use named constants |
+| `session.nav`, `nav.event`, `nav.record_event` | Current service and recording changes; detach callbacks during shutdown |
+| `service.seek()`, player `onPlayStateChanged` / `seekstate` | Position/file duration and actual playback state; rebind when the player changes, never infer pause from a fixed position |
+| `session.nav.RecordTimer`, `RecordTimerEntry`, `on_state_change` | Timer operations/conflicts and events; periodic reconciliation for edits without a complete event |
+| `eServiceCenter`, `eServiceReference`, `eEPGCache` | Channel catalogs and on-demand EPG queries |
+| `Screens.Standby`, `config.misc.standbyCounter` | Standby transitions; image-specific CEC and power adapters |
+| `session.openWithCallback`, dedicated `Screen` | Dialog display with explicit completion reasons |
+| `eStreamServer`, image-provided grab helper | Verify independent streaming and screenshots; presence alone proves neither access control nor hardware support |
+
+### First application: recording frames on the receiver
+
+Add `receiver_snapshot` to the existing image-provider ordering; provider choice
+and position remain configurable per receiver. A request contains recording ID,
+revision, position and a bounded image size. Return a job ID immediately; report
+completion and provide authenticated image retrieval separately. Reuse the HA
+image cache and neutral fallback. Do not silently change the selected position:
+for a shorter completed recording, use its midpoint as the current code does.
+HA's missing-FFmpeg repair must consider the selected image provider; a working
+receiver provider needs no HA FFmpeg for frame extraction. Discard completed jobs
+if their recording revision or configuration has become obsolete.
+
+One worker per receiver, a small bounded queue, deduplication of identical jobs,
+lower process priority and explicit CPU/memory/runtime/output limits. Start
+measurement with the current HA limits of 45 seconds and at most 640 × 640 pixels;
+the existing 64 MiB limit is a network budget, not a ready-made limit for local
+file decoding. Establish software decoder/codec availability; allow hardware
+acceleration only after proving that TV playback is unaffected.
+
+Cache keys bind recording, file change/revision, position and image profile;
+bound size/age and invalidate on moves/deletion. Prefer RAM or a suitable disk,
+avoiding unbounded flash writes. Read ongoing recordings only when the requested
+position is safely available. Defer under recording load; do not wake a disk only
+for background preparation if the corresponding receiver option forbids it.
+Deep standby means unavailable. Missing FFmpeg/codec, changed file and timeout
+are distinct outcomes. Test both receivers with H.264/MPEG-2 and HEVC where
+available; playback, recording and timeshift must remain undisturbed.
+
+### Second application: interactive messages
+
+A dedicated dialog manager assigns question IDs and stable answer IDs; visible
+labels such as “Now/Later/Cancel” remain configurable. Default selection and
+timeout action are separate fields. Distinguish `answered`, `timed_out`,
+`cancelled`, `rejected` and `interrupted`; only explicit input may produce
+`answered`. Applying a default after timeout is not user confirmation.
+Before completion distinguish `queued` and `displayed`; a label such as “Cancel”
+is a selectable answer ID, whereas closing the dialog has a separate reason.
+
+One visible Connect dialog per receiver, a bounded FIFO queue and configurable
+expiry for queued questions; do not displace other Enigma2 dialogs. Results bind
+question ID, receiver ID, answer ID, reason and timestamp. Enforce client
+ownership, cancellation by ID, bounded retention and result retrieval after
+disconnects. Mark open questions interrupted after a GUI restart; never attribute
+an old answer to the next question.
+In standby, reject by default with a clear reason; explicitly requested queuing
+must have an expiry and never wake the receiver automatically. Record whether
+cancellation came from the remote or the requesting client. Keep question text
+and answer contents out of diagnostics; automated follow-up actions run in HA.
+
+A new HA action, for example `dialog_show`, returns the question ID immediately;
+`dialog_status`/`dialog_cancel` and a correlated event such as
+`enigma2_connect_dialog_result` support automations without blocking an action
+for a long period. Result retrieval closes the race between the action and event
+subscription; automations must check IDs and deduplicate events. Retain Notify
+for simple messages. Later add UI text and YAML examples to “Messages and
+automations” in both user guides.
+
+OpenWebif's global last answer is insufficient. Enigma2's ordinary MessageBox
+callback can also return the current selection or default on timeout. Use a
+small dedicated dialog class with separate input/timeout paths, or a verified
+image adapter; never infer “True means a manual Yes”.
+
+### Migration and work packages
+
+| Stage | Deliverable and dependency | Acceptance before proceeding |
+| --- | --- | --- |
+| 0 – Feasibility | Inventory both pilot receivers, Octagon SF8008 4K Supreme and Vu+ Solo²: image/build, actual Python, CPU/RAM, TLS/Twisted, FFmpeg, package manager, stream/grab helpers. Small plugin for session, state, test dialog and bounded frame extraction; licensing/package decision. | Each claimed hook works on the relevant image; decoder/TLS/dialog limits measured. Record support matrix and resource limits. Explicitly restrict or adapt unavailable capabilities. |
+| 1 – Backend boundary and protocol | Typed contracts, normalized models, OpenWebif adapter, factory in config flow/setup, media sources without client-internal access. API schema and client/plugin contract tests. | Appropriate regression tests retain current behavior, including actions, identifiers, errors and media paths. |
+| 2 – Receiver foundation | Installable package, settings, HTTPS/pairing, identity/capabilities, state, events, journal and clean startup/shutdown. Requires stages 0/1. | Installation, upgrade, removal/rollback and GUI restart preserve settings; verify token revocation, reconnects and resource limits. |
+| 3 – Both new features | Correlated dialogs first, then snapshot worker/provider on the shared foundation. An existing entry can initially use Connect only for these capabilities. | Timeout never becomes confirmation; safely associate multiple questions/clients. Frames at the selected position without channel changes or recording disruption; verify failures/fallback. |
+| 4 – Complete control | Native state/channel/EPG data, remote/text, volume, power/CEC, audio, timeshift, sleep timer and timers/conflicts. | Per-image capability matrix, event/poll reconciliation, concurrent remote and HA interaction, DST/weekly repeats and uncertain writes. Timeshift settings remain unchanged after stopping. |
+| 5 – Recordings and media | Native catalogs/management with receiver-side conflict checks; picons, screenshots, file service including `.ap`, live TV and HLS/VOD integration. | Use dedicated test recordings for writes; verify partial failures, sidecars, mount/cross-filesystem boundaries and restart recovery. Separately prove range/seek, tuner exhaustion, stream limits and external playback. |
+| 6 – Independent operation | Native mode in the existing entry, complete documentation/support matrix and acceptance without OpenWebif. | Stop OpenWebif, disable its autostart and restart Enigma2: setup, discovery, all supported features and media paths pass without hidden OWIF requests/fallback. Additionally test installation on an image without the OWIF package. |
+
+Stage 3 delivers an independently useful first scope. **Only stage 6 demonstrates
+OpenWebif independence.** During migration distinguish “OpenWebif”, “OpenWebif
+with Connect extensions” and “Connect” modes. Assign exactly one write path per
+capability; switch only after pending operations are completed or reconciled.
+Do not change backends automatically after a failure.
+
+Dependency for stage 3: stage 2 already needs a minimal read-only recording
+resolver for permitted directories, mapping existing service references to native
+recording IDs and file revisions. A supplied legacy reference must be validated
+against receiver-side inventory; it is not permission to read any path. The full
+catalog, filtering and management remain in stage 5.
+
+Before switching to Connect, compare native capabilities with the features
+already supported on that receiver. Missing replacements prevent full migration;
+a reduced capability list does not prove parity. New optional snapshot profiles
+may have explicit limits. Run targeted local checks per stage and require current
+complete CI and quality review before adoption into main; maintain evidence and
+outstanding hardware checks in both verification summaries.
+
+Preserve `entry_id`, device/entity identifiers, action names and response modes.
+Current device identity uses a MAC or `host:` fallback; match authenticated MAC
+aliases and explicitly associate fallback entries. New native devices need a
+stable identity. Media identifiers additionally depend on byte-exact service
+references and their hashes: return legacy references or retain a persistent
+mapping. New recording IDs must not unexpectedly change saved media links.
+Version config-entry migration and test reauth, discovery duplicates, address
+changes, reload and a documented return to the previous backend.
+
+Optional new capabilities are compatible additions. Later removing the OpenWebif
+adapter or making the plugin mandatory would be a separate breaking decision,
+requiring a major version and migration guide. Independent operation does not
+automatically require removing the old adapter. Determine versions under the
+project rules when each stage is implemented.
+
+### Verification, open decisions and sources
+
+Separate contract tests for both backends, real local HTTP/SSE/range tests and
+simulated Enigma2 adapters from hardware tests. Cover failures between request,
+execution and acknowledgement, duplicated/lost events, restart, token revocation,
+path/symlink changes, full disks, concurrent clients and incomplete catalogs.
+File management cannot generally lock external Samba/NFS users; document the
+protection boundary and unknown activity explicitly.
+
+HA: retain 100% config-flow statement/branch coverage, over 95% combined coverage
+per production module, strict mypy and lifecycle/reauth/diagnostic checks. Do not
+relax existing quality exceptions or thresholds. Give the receiver component its
+own CI for selected Python/image variants, API contracts, packages and security
+boundaries. Hardware acceptance per image covers visible dialogs and the original
+remote, concurrent recordings/streams, standby and GUI/system restarts, followed
+by an extended load run. Each advertised capability needs appropriate evidence;
+missing DVB reception remains an explicit test limitation.
+
+The largest unknowns are receiver Python/TLS versions, snapshot performance on
+the Vu+, GUI/timer/CEC differences, independent stream authentication and package
+distribution. Stage 0 resolves these before substantial restructuring. A complete,
+verified backend is a project of several development months as a rough planning
+assumption; re-estimate each stage after feasibility testing. A plugin prototype
+and two extra features do not constitute complete replacement.
+
+The existing Apache-2.0 assessment covers the HTTP client. A plugin importing
+Enigma2, its helpers and package distribution require a separate provenance and
+license review. Do not relabel server/GUI source files as Apache. Decide the
+plugin license before distribution and update `docs/LIZENZEN.md`; separate
+repositories do not replace that review.
+
+Sources checked on 17 October 2026; upstream branches move, so record exact image
+source revisions in stage 0. These establish implementation entry points, not
+acceptance of the two receivers:
+
+- [OpenATV PluginDescriptor](https://github.com/openatv/enigma2/blob/master/lib/python/Plugins/Plugin.py) and [StartEnigma/session/reactor](https://github.com/openatv/enigma2/blob/master/lib/python/StartEnigma.py).
+- [OpenATV MessageBox](https://github.com/openatv/enigma2/blob/master/lib/python/Screens/MessageBox.py) and [OpenWebif message model](https://github.com/E2OpenPlugins/e2openplugin-OpenWebif/blob/master/plugin/controllers/models/message.py).
+- [Navigation/events](https://github.com/openatv/enigma2/blob/master/lib/python/Navigation.py), [playback/seek](https://github.com/openatv/enigma2/blob/master/lib/python/Screens/InfoBarGenerics.py), [timer events](https://github.com/openatv/enigma2/blob/master/lib/python/timer.py) and [native streaming](https://github.com/openatv/enigma2/blob/master/lib/dvb/streamserver.cpp).
+- [HA coordinator and push](https://contributors.home-assistant.io/core/integrations/fetching-data/) and [config flow/identity](https://contributors.home-assistant.io/core/integrations/config-flow/).
 
 ## Files and local archives
 

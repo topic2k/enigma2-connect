@@ -4,6 +4,7 @@
 
 ## Contents
 
+- [2.1.8-dev.1](#218-dev1)
 - [2.1.7](#217)
 - [2.1.6](#216)
 - [2.1.5](#215)
@@ -21,6 +22,12 @@
 - [1.0.2](#102)
 - [1.0.1](#101)
 - [1.0.0](#100)
+
+## 2.1.8-dev.1
+
+Unreleased development version.
+
+- Planned a dedicated receiver component: architecture, OpenWebif dependencies, native interfaces, interactive dialogs, receiver-side recording frames and staged migration to operation without OpenWebif in both developer guides. Planning status, unresolved image/licensing questions and required acceptance are explicitly distinguished from implemented features.
 
 ## 2.1.7
 
