@@ -2,6 +2,36 @@
 
 # Prüfübersicht
 
+## Docker-Testlabor – 2.1.8-dev.2
+
+Am 17.10.2026 mit Docker Desktop (Linux-Container), Compose 5.6.0 und dem
+offiziellen HA-Image 2026.10.1 unter Windows tatsächlich gestartet. Der Container
+meldet Python 3.14.6; FFmpeg ist unter `/usr/bin/ffmpeg` vorhanden. Automatische
+Ersteinrichtung, Anmeldung, HA-Zustand `RUNNING`, Laden des Enigma2-Connect-
+Einrichtungsformulars und anschließendes Verwerfen des Testflows bestanden.
+`check_config` und Compose-Konfigurationsprüfung erfolgreich. Stopp und erneuter
+Start erhalten lokale Daten und den Benutzer; eine absichtlich veraltete Datei
+im installierten Komponentenordner wurde beim Quellupdate entfernt. Temporäre
+Prüfdateien und Staging-Verzeichnisse anschließend entfernt. Installierte Version
+2.1.8-dev.2 bestätigt. Beide Labore laufen parallel mit getrennten Volumes und
+Loopback-Ports 18123 (EnigmaHACompanion) und 18124 (Enigma2 Connect).
+
+Sechs Offline-Skripttests prüfen fortgesetztes Onboarding, vor der Benutzeranlage
+gesicherte Zugangsdaten, Ablehnung fremder Labor-URLs, Aufräumen eines unerwarteten
+Config Flows, Login nach ungültigem Refresh-Token und den fehlenden Onboarding-
+Endpunkt abgeschlossener Installationen. Ruff, Format-, Python-Syntax-,
+Versions-/Lockdatei- und lokale Dokumentationsprüfungen bestanden. Die Lockdatei
+ändert ausschließlich die eigene Projektversion. Im Startlog nur die übliche
+Custom-Integration-Warnung; beim Erststart zusätzlich eine Warnung im externen
+Paket `rich`, keine beobachteten Startfehler.
+
+Tatsächliche HA-Container-Prüfung ohne eingerichteten Receiver, kein Nachweis für
+Receiveraktionen, Streaming zu LAN-Geräten, automatische Discovery, HAOS,
+Supervisor, Add-ons oder die HA-Mindestversion 2026.9. Die simulierten Tests
+sind davon getrennt. Qualitätscheckliste auf Auswirkungen geprüft: keine
+Integrationslogik, Kriterien, Abdeckungsgrenzen oder bestehenden Prüfvorbehalte
+verändert. Aktuelle CI bleibt vor einer späteren Übernahme nach `main` erforderlich.
+
 ## Planung der eigenen Receiver-Komponente – 2.1.8-dev.1
 
 Am 17.10.2026 Integrationsstand `7af9665`, die beiden vorgemerkten Ideen und

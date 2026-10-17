@@ -2,6 +2,35 @@
 
 # Verification summary
 
+## Docker test lab – 2.1.8-dev.2
+
+Actually started on 17 October 2026 using Docker Desktop (Linux containers),
+Compose 5.6.0 and the official HA 2026.10.1 image on Windows. The container
+reports Python 3.14.6; FFmpeg is available at `/usr/bin/ffmpeg`. Automatic
+onboarding, authentication, HA state `RUNNING`, loading the Enigma2 Connect setup
+form and discarding the test flow passed. `check_config` and Compose configuration
+validation passed. Stop and restart preserved local data and the user; a
+deliberately stale installed component file was removed during the source update.
+Temporary verification files and staging directories were removed afterwards.
+Installed version 2.1.8-dev.2 confirmed. Both labs run simultaneously with separate
+volumes and loopback ports 18123 (EnigmaHACompanion) and 18124 (Enigma2 Connect).
+
+Six offline script tests cover resumed onboarding, saving credentials before user
+creation, rejecting another lab's URL, cleaning up an unexpected config flow,
+login after an invalid refresh token and the absent onboarding endpoint on
+completed installations. Ruff, formatting, Python syntax, version/lockfile and
+local documentation checks passed. The lockfile changes only the local project
+version. Startup logs contain the usual custom-integration warning; first startup
+also reported a warning in the external `rich` package, with no observed startup
+errors.
+
+Actual HA Container verification without a configured receiver; no evidence for
+receiver actions, streaming to LAN devices, automatic discovery, HAOS, Supervisor,
+add-ons or minimum HA version 2026.9. Simulated tests are reported separately.
+Reviewed quality checklist impact: no integration logic, criteria, coverage
+thresholds or existing acceptance limitations changed. Current CI remains required
+before a later merge into `main`.
+
 ## Dedicated receiver component planning – 2.1.8-dev.1
 
 On 17 October 2026, analyzed integration commit `7af9665`, both recorded ideas

@@ -11,6 +11,7 @@ die [README](../README.md) bleibt der kurze Einstieg für Anwender.
 - [README-Badges](#readme-badges)
 - [Projekt und Voraussetzungen](#projekt-und-voraussetzungen)
 - [Entwicklungsumgebung und Prüfungen](#entwicklungsumgebung-und-prüfungen)
+- [Docker-Testlabor](#docker-testlabor)
 - [Lesende Receiver-Abnahme](#lesende-receiver-abnahme)
 - [Home-Assistant-Entwicklerblog überwachen](#home-assistant-entwicklerblog-überwachen)
 - [Cloudflare-Probelauf](#cloudflare-probelauf)
@@ -159,6 +160,23 @@ Die vorhandene lokale WSL-Umgebung kann über `.work/run_tests.sh` verwendet
 werden; sie ist kein Bestandteil einer frischen Installation. Auf dem
 Windows-Mount vermeidet `--capture=sys` bekannte Probleme der pytest-Erfassung.
 Weitere lokale Pfade und Berichte stehen im Validierungsdokument.
+
+## Docker-Testlabor
+
+Ein getrenntes HA-Container-Labor mit automatischer Ersteinrichtung steht unter
+[`dev/ha`](../dev/ha/README.md#deutsch). Es installiert den aktuellen Quellstand,
+behält lokale Testdaten und läuft parallel zum EnigmaHACompanion-Labor:
+
+```sh
+python scripts/ha_dev.py start
+python scripts/ha_dev.py check
+```
+
+Oberfläche: **http://127.0.0.1:18124**, Testlogin: **`enigma2connect` / `notsecret`**.
+Receiver werden ausdrücklich über die Oberfläche hinzugefügt. Die Anleitung
+beschreibt Neustarts, Logs, Datenhaltung und Netzwerkgrenzen. Das festgelegte
+HA-Image ist ein zusätzlicher manueller Teststand; die bestehende CI und ihre
+Abdeckungsanforderungen bleiben erforderlich.
 
 ## Lesende Receiver-Abnahme
 

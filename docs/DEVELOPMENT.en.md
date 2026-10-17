@@ -11,6 +11,7 @@ and everyday use, see the [user guide](USER_GUIDE.en.md). The
 - [README badges](#readme-badges)
 - [Project and requirements](#project-and-requirements)
 - [Development environment and checks](#development-environment-and-checks)
+- [Docker test lab](#docker-test-lab)
 - [Read-only receiver acceptance](#read-only-receiver-acceptance)
 - [Monitor the Home Assistant developer blog](#monitor-the-home-assistant-developer-blog)
 - [Cloudflare trial](#cloudflare-trial)
@@ -153,6 +154,22 @@ documented build.
 The existing local WSL environment can use `.work/run_tests.sh`; it is not part
 of a fresh installation. On the Windows mount, `--capture=sys` avoids known
 pytest capture issues. The validation document records further local paths and reports.
+
+## Docker test lab
+
+An isolated HA Container lab with automatic onboarding is available in
+[`dev/ha`](../dev/ha/README.md#english). It installs the current source, preserves
+local test data and runs alongside the EnigmaHACompanion lab:
+
+```sh
+python scripts/ha_dev.py start
+python scripts/ha_dev.py check
+```
+
+UI: **http://127.0.0.1:18124**, test login: **`enigma2connect` / `notsecret`**.
+Receivers are added explicitly through the UI. The guide covers restarts, logs,
+persistence and network limitations. The pinned HA image provides an additional
+manual test environment; existing CI and coverage requirements remain necessary.
 
 ## Read-only receiver acceptance
 

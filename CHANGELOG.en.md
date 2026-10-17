@@ -4,7 +4,7 @@
 
 ## Contents
 
-- [2.1.8-dev.1](#218-dev1)
+- [2.1.8-dev.2](#218-dev2)
 - [2.1.7](#217)
 - [2.1.6](#216)
 - [2.1.5](#215)
@@ -23,9 +23,11 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 2.1.8-dev.1
+## 2.1.8-dev.2
 
 Unreleased development version.
+
+- Added an isolated Docker test lab with HA 2026.10.1, automatic onboarding, installation of current source and a persistent configuration volume. Separate loopback port 18124 supports parallel operation with EnigmaHACompanion; start, stop, logs and configuration checks plus DE/EN instructions. Receivers are added manually.
 
 - Planned a dedicated receiver component: architecture, OpenWebif dependencies, native interfaces, interactive dialogs, receiver-side recording frames and staged migration to operation without OpenWebif in both developer guides. Planning status, unresolved image/licensing questions and required acceptance are explicitly distinguished from implemented features.
 

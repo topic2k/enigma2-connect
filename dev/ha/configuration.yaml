@@ -1,0 +1,19 @@
+# Isolated development instance: discovery and physical receivers are opt-in.
+homeassistant:
+  name: Enigma2 Connect Testlabor
+  time_zone: Europe/Berlin
+  unit_system: metric
+  country: DE
+frontend:
+config:
+api:
+http:
+websocket_api:
+history:
+logbook:
+media_source:
+ffmpeg:
+logger:
+  default: warning
+  logs:
+    custom_components.enigma2_connect: debug
