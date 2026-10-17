@@ -4,7 +4,7 @@
 
 ## Inhaltsverzeichnis
 
-- [2.1.8-dev.2](#218-dev2)
+- [2.1.8-dev.3](#218-dev3)
 - [2.1.7](#217)
 - [2.1.6](#216)
 - [2.1.5](#215)
@@ -23,9 +23,11 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 2.1.8-dev.2
+## 2.1.8-dev.3
 
 Unveröffentlichte Entwicklerversion.
+
+- Stufe 0 auf der Vu+ Solo² mit dem HA-Testcontainer geprüft: temporäres Receiver-Plugin mit eigener HTTPS-Schnittstelle und interaktiven Dialogen sowie begrenzte FFmpeg-Einzelbildtests. Voraussetzungen, Messwerte, Rückbau und offene Abnahmen zweisprachig dokumentiert. Octagon-Prüfung wegen ungeklärtem SSH-Schlüsselwechsel ausstehend; ausschließlich lesender Zugriff bleibt verbindlich. Lokale Zugangsdaten vom Git-Bestand ausgeschlossen.
 
 - Isoliertes Docker-Testlabor mit HA 2026.10.1, automatischer Ersteinrichtung, Installation des aktuellen Quellstands und dauerhaftem Konfigurationsvolume ergänzt. Eigener Loopback-Port 18124 für parallelen Betrieb mit EnigmaHACompanion; Start, Stopp, Logs und Konfigurationsprüfung sowie DE/EN-Anleitung. Receiver werden manuell hinzugefügt.
 

@@ -2,6 +2,59 @@
 
 # Verification summary
 
+## Receiver feasibility stage 0 – 2.1.8-dev.3
+
+Tested on 17 October 2026 at integration revision `8529207` (2.1.8-dev.2),
+using HA 2026.10.1 in the existing Docker lab and the real Vu+ Solo². The
+[findings and prerequisites](DEVELOPMENT.en.md#stage-0-feasibility-on-17-october-2026)
+apply to OpenATV 7.6.0 build 20260921. **Vu+ feasibility is positive with limits;
+overall stage 0 remains open.** Octagon SSH was rejected before authentication
+because its host key differed; no commands, files, installation or restarts on
+that receiver. Confirming its identity is required before collecting its current
+inventory; authorization remains strictly read-only even after confirmation.
+
+Actual checks:
+
+- Configured Vu+ in the HA lab: entry loaded, 72 registered entities, 22 active
+  and available. This demonstrates the existing OpenWebif integration.
+- Temporary dedicated HTTPS listener in the Enigma2 process, session/navigation
+  and the shared main thread with `e2reactor.PollReactor` verified. Python in the
+  HA container reaches the API with a verified test certificate; untrusted
+  certificate and incorrect token rejected. Concurrent dialog returns 409,
+  oversized request 413. Selection returns `answered/later`, timeout
+  `timed_out/null`, Exit and client cancellation each `cancelled/null`.
+  Test dialog visually checked; key input automated through HA/OpenWebif.
+- Six separate software decoder runs on the Vu+: synthetic MPEG-2 SD, H.264 HD
+  and HEVC Full HD files, two positions each. Correct JPEG/color,
+  0.330–1.286 s and measured peak RSS of 17,780–41,920 KiB. HEVC emitted
+  reference-frame/RPS warnings. No real recordings, UHD or load acceptance.
+- One Vu+ GUI restart each to load and remove the probe. HA responses were
+  unconfirmed/HTTP errors; neither restart was repeated, completion was verified
+  through changed PID and reachable state. Removed plugin link, test files,
+  certificate and private key from the Vu+, and confirmed listener closure;
+  container fixtures removed. Service reference, volume, mute, standby and
+  complete timer list identical before/after; no recording active.
+  After cleanup, the HA entry was loaded again with all 22 active entities
+  available. The HA test entry remains configured for subsequent implementation work.
+
+Separately, eleven simulated prototype tests passed for dialog states,
+authentication, limits and lifecycle, along with syntax checks. Probe limits are
+configured, not proven under deliberate overload. Physical remote, other
+skins/images, standby, restart during pending questions, multiple clients,
+endurance, concurrent recording/streaming and precise seeking in real files
+remain untested. The frame worker ran separately through SSH; neither a native
+snapshot API nor a HA backend adapter was implemented. OpenWebif remained active:
+complete independence, independent streaming authentication and installation
+without OpenWebif remain untested. Packaging, persistent identity/pairing,
+licensing decision and Octagon matrix are pending.
+
+Changed only documentation, version metadata and Git exclusion of local
+credentials; prototype and raw evidence remain local. Checked version/lock
+consistency, documentation links/anchors and `git diff --check`. Reviewed quality
+checklist impact: no integration logic, criteria, coverage thresholds or existing
+validation limits changed. Current CI remains required before eventual adoption
+into `main`. This check does not replace acceptance of the future receiver product.
+
 ## Docker test lab – 2.1.8-dev.2
 
 Actually started on 17 October 2026 using Docker Desktop (Linux containers),

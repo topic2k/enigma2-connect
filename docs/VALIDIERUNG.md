@@ -2,6 +2,60 @@
 
 # Prüfübersicht
 
+## Receiver-Machbarkeit Stufe 0 – 2.1.8-dev.3
+
+Am 17.10.2026 auf Integrationsstand `8529207` (2.1.8-dev.2) mit HA 2026.10.1
+im vorhandenen Docker-Testlabor und der echten Vu+ Solo² geprüft. Die
+[Befunde und Voraussetzungen](ENTWICKLUNG.md#stufe-0-machbarkeitsstand-am-17102026)
+gelten für OpenATV 7.6.0 Build 20260921. **Vu+-Machbarkeit eingeschränkt positiv;
+Gesamtstufe 0 weiterhin offen.** Der Octagon wurde wegen eines abweichenden
+SSH-Hostschlüssels vor der Anmeldung abgewiesen; dort keine Befehle, Dateien,
+Installation oder Neustarts. Eine bestätigte Geräteidentität fehlt für sein
+aktuelles Inventar; die Freigabe erlaubt dort auch danach nur lesende Prüfungen.
+
+Tatsächliche Prüfungen:
+
+- Vu+ im HA-Testlabor eingerichtet: Entry geladen, 72 registrierte Entitäten,
+  davon 22 aktiv und verfügbar. Dies belegt die bestehende OpenWebif-Integration.
+- Temporärer eigener HTTPS-Listener im Enigma2-Prozess, Session/Navigation und
+  gemeinsamer Hauptthread mit `e2reactor.PollReactor` nachgewiesen. Python aus
+  dem HA-Container erreicht die API mit geprüftem Testzertifikat; unvertrautes
+  Zertifikat und falscher Token abgewiesen. Paralleler Dialog erhält 409,
+  übergroßer Request 413. Auswahl ergibt `answered/later`, Timeout
+  `timed_out/null`, Exit und Clientabbruch jeweils `cancelled/null`.
+  Testdialog sichtbar geprüft; Tasten über HA/OpenWebif automatisiert.
+- Sechs separate Software-Decoderläufe auf der Vu+: künstliche MPEG-2-SD-,
+  H.264-HD- und HEVC-Full-HD-Dateien, je zwei Positionen. JPEG/Farbe passend,
+  0,330–1,286 s und 17.780–41.920 KiB gemessener Spitzen-RSS. HEVC mit
+  Referenzbild-/RPS-Warnungen. Keine realen Aufnahmen, UHD oder Lastabnahme.
+- Je ein GUI-Neustart der Vu+ zum Laden und Entfernen. HA-Aufrufantwort jeweils
+  unbestätigt/HTTP-Fehler; keinen Neustart wiederholt, Erfolg über neue PID und
+  erreichbaren Zustand bestätigt. Pluginlink, Testdateien, Testzertifikat und
+  privater Schlüssel auf der Vu+ entfernt, Listener geschlossen; Container-
+  Testdateien entfernt. Senderreferenz, Lautstärke, Stummschaltung, Standby und
+  vollständige Timerliste vor/nach den Prüfungen identisch; keine Aufnahme aktiv.
+  Nach dem Rückbau erneut HA-Eintrag geladen und alle 22 aktiven Entitäten
+  verfügbar. Der HA-Testeintrag bleibt für kommende Umsetzungsschritte eingerichtet.
+
+Davon getrennt bestanden elf simulierte Prototypentests zu Dialogzuständen,
+Authentifizierung, Grenzen und Lifecycle sowie Syntaxprüfungen. Die Probegrenzen
+sind konfiguriert, kein Nachweis unter absichtlicher Überlast. Physische
+Fernbedienung, andere Skins/Images, Standby, Neustart während offener Fragen,
+Mehrclient-/Langzeitbetrieb, Aufnahme-/Stream-Parallelbetrieb und genauer Seek
+realer Dateien stehen aus. Bildworker wurde separat über SSH ausgeführt; weder
+native Snapshot-API noch HA-Backendadapter umgesetzt. OpenWebif blieb aktiv:
+vollständige Unabhängigkeit, unabhängige Streaming-Authentifizierung und
+Installation ohne OpenWebif sind weiterhin ungeprüft. Paketierung, dauerhafte
+Identität/Pairing, Lizenzentscheidung und Octagon-Matrix fehlen.
+
+Nur Dokumentation, Versionsmetadaten und Git-Ausschluss lokaler Zugangsdaten
+geändert; Prototyp und Rohbelege bleiben lokal. Versions-/Lockabgleich,
+Dokumentationslinks/Anker und `git diff --check` geprüft. Qualitätscheckliste auf
+Auswirkungen geprüft: keine Integrationslogik, Kriterien, Abdeckungsgrenzen oder
+bisherigen Prüfvorbehalte geändert. Aktuelle CI bleibt vor einer späteren
+Übernahme nach `main` erforderlich. Diese Prüfung ersetzt keine Abnahme des
+künftigen Receiver-Produkts.
+
 ## Docker-Testlabor – 2.1.8-dev.2
 
 Am 17.10.2026 mit Docker Desktop (Linux-Container), Compose 5.6.0 und dem

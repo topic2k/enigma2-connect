@@ -89,3 +89,32 @@ Die Apache-Lizenz des Projekts beansprucht ausdrücklich keine Umlizenzierung di
 4. Keine Übernahme aus dem älteren Enigma-Repository ohne geklärte Freigabe.
 5. Keine GPL-Serverbestandteile in den Apache-Produktionscode kopieren.
 6. `.work`, Testumgebungen und Paket-Caches aus Veröffentlichungen ausschließen.
+
+## Ergänzung: Receiver-Machbarkeit am 17.10.2026
+
+Die bisherige Entscheidung betrifft die HA-Integration als HTTP-Client. Der
+temporäre lokale Vu+-Prototyp importiert Enigma2-Klassen und benötigt daher vor
+Veröffentlichung eine gesonderte Lizenz-/Herkunftsentscheidung. Er wurde nicht
+als Produktionscode in dieses Apache-2.0-Repository aufgenommen. Die Untersuchung
+von installierter Enigma2-Struktur ist keine Freigabe zur Übernahme fremder
+GUI-/Serverdateien. Ein eigener Paketname oder ein separates Repository ersetzt
+die Prüfung nicht.
+
+Inventar der Vu+: Enigma2-Paket
+`7.6.0+git35126+e42a0ff0+e42a0ffb00-r1`; installierte `StartEnigma.py` lokal
+gesichert, SHA-256
+`21fc7f0dc17a49305ece68c57e0680044b9f46122b19717628d38e53280ab7e0`.
+Die weiteren untersuchten Plugin-/GUI-Module lagen überwiegend als Bytecode vor;
+deren Codeobjekt-Metadaten wurden lesend erfasst. Damit ist die Laufzeitstruktur
+belegt, jedoch noch kein vollständiger Abgleich mit einem veröffentlichten
+Quellarchiv einschließlich aller Lizenzhinweise. Dies bleibt vor Paketverteilung
+erforderlich, ebenso die Zuordnung sämtlicher mitgelieferter Abhängigkeiten.
+
+Das vorhandene FFmpeg 8.0 meldet `--enable-gpl` und `--enable-nonfree`. Für die
+Machbarkeitsmessung wurde ausschließlich dieses installierte Programm gestartet.
+Es wird nicht als Binärdatei mit dem Projekt/Plugin gebündelt oder weitergegeben.
+Die [FFmpeg-Lizenzhinweise](https://ffmpeg.org/legal.html) unterscheiden nach
+aktivierten Komponenten; die allgemeine LGPL-Angabe reicht für diesen Build
+nicht als Weiterverteilungsnachweis. Vor einer eigenen Binärverteilung wäre ein
+separater, vollständig belegter Build-/Lizenzentscheid nötig. Die geplante
+Receiver-Paketierung nutzt zunächst Imagepakete und prüft Fähigkeiten zur Laufzeit.

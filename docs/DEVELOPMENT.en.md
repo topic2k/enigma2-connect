@@ -1414,8 +1414,11 @@ and [Enigma2 dialog](https://github.com/openatv/enigma2/blob/master/lib/python/S
 ## Implementation plan: dedicated receiver component
 
 Planning date **17 October 2026**, based on integration commit `7af9665` (2.1.7).
-This is an architecture and work plan; the new component is neither implemented
-nor verified on receivers. The current OpenWebif requirement still applies. The
+This is an architecture and work plan. A temporary feasibility prototype has
+since been tested on the Vu+ and removed; the
+[stage 0 findings](#stage-0-feasibility-on-17-october-2026) distinguish evidence
+from open items. A production receiver component is still pending. The current
+OpenWebif requirement still applies. The
 two ideas above are the first uses of a dedicated receiver interface that can
 gradually cover the complete integration.
 
@@ -1598,6 +1601,142 @@ callback can also return the current selection or default on timeout. Use a
 small dedicated dialog class with separate input/timeout paths, or a verified
 image adapter; never infer “True means a manual Yes”.
 
+### Stage 0: feasibility on 17 October 2026
+
+**Result: The technical approach is feasible on the Vu+ within the tested limits;
+stage 0 as a whole remains open.** A temporary plugin ran inside real Enigma2,
+returned authenticated HTTPS responses and displayed correlated dialogs.
+A separately executed FFmpeg process generated test images at selected positions.
+The checks cover one pilot receiver and do not constitute product acceptance.
+
+The Octagon remains authorized exclusively for read-only access. Its different
+SSH host key prevented access; confirmation of its identity is pending.
+No commands were executed on it during this task. Historical evidence replaces
+neither its current inventory nor runtime evidence for the new plugin.
+Installation, dialogs and restarts on the Octagon are outside the authorization
+provided for this verification task.
+
+| Prerequisite | Vu+ Solo² | Octagon SF8008 4K Supreme |
+| --- | --- | --- |
+| Current image and architecture | Met: OpenATV 7.6.0, build 20260921, MIPS/mips32el | Open: no current inventory collected |
+| Receiver Python | Met for the experiment: 3.13.12 | Open |
+| Enigma2 session and main thread | Verified in the actual plugin | Open; no runtime experiment |
+| HTTP/TLS libraries | Twisted 25.5.0, pyOpenSSL 25.1.0, OpenSSL 3.6.0 present | Open |
+| Authenticated HTTPS | Verified with an explicitly trusted test certificate | Open |
+| Dialog with correlated response | Choice, timeout and cancellation verified | Open; dialog tests are not authorized |
+| FFmpeg/ffprobe and software decoders | FFmpeg 8.0 present; three synthetic profiles tested | Open |
+| Package manager and helpers | `opkg`, `grab` and OpenSSL present | Open |
+| Resources | About 559 MiB RAM; only about 27 MiB free flash | Open |
+| Installable product package | Open; temporary experiment only | Open |
+| License and exact provenance of components to distribute | Open | Open |
+| Operation without OpenWebif | Open | Open |
+
+The earlier historical VTi description does not describe this Vu+ test setup.
+The CPU inventory reports BCM7346B2/BMIPS5000 and two logical CPUs.
+Receiver and HA need separate Python requirements: Python 3.13 is the
+verified baseline for the next receiver pilot; this does not change the HA
+requirement of Python 3.14.2 or later. Support for a broader range of receiver
+Python versions still needs to be defined and tested on actual installations.
+
+The prototype uses the existing `e2reactor.PollReactor`.
+Session, navigation and the current service were available in the Enigma2 process;
+startup and request execution occurred on the main thread. The standalone
+Python inventory not finding `enigma` does not indicate missing plugin access here.
+GUI access must remain in the Enigma2 context; expensive decoding belongs
+in a separate process. A second reactor is not required.
+
+The pilot should use a small `opkg`/IPK package depending on existing image
+packages; avoid a second Python/TLS distribution in the limited flash. FFmpeg
+remains an optional image capability checked at runtime. `avahi-daemon` and
+`/usr/bin/transtreamproxy` are installed; this does not yet establish dedicated
+discovery or independently authenticated streaming. Root free space was about
+27 MiB before testing and 28.24 MiB after cleanup; these are point-in-time values.
+Persistent image caches belong on a suitable separate medium. The Enigma2
+package revision and source evidence are in the
+[license record](LIZENZEN.md#ergänzung-receiver-machbarkeit-am-17102026).
+
+The existing Docker lab ran HA 2026.10.1 and Python 3.14.6. The Vu+ was added
+through the actual config flow: entry loaded, 72 registered entities,
+including 22 active and available entities and 50 disabled by default.
+The baseline read connection, playback, recording count and timer count, among others.
+It verifies the existing OpenWebif integration; a native HA backend adapter
+for the new receiver component has not yet been implemented or tested by this work.
+
+Additional Python calls from the HA container reached the test plugin directly.
+An untrusted certificate was rejected and the explicitly trusted certificate
+accepted; an invalid token returned HTTP 401. A second dialog while a question
+was open returned HTTP 409, and an oversized request body returned HTTP 413.
+A choice returned `answered` with an answer ID; timeout returned `timed_out` without
+an answer. Exit and client cancellation returned `cancelled` without an answer.
+No test dialog remained open. OK and Exit were injected through the existing
+HA remote and OpenWebif. The original physical remote has not yet been tested.
+
+The probe limited requests to 4096 bytes, results to 32 entries and connections
+to four; at most one owned dialog was allowed, with a timeout of 1–30 seconds.
+These are configured experimental values. The live checks verify the cases
+listed above; additional limits and failure cases were partly tested only with
+simulated Enigma2/HTTP objects. They do not establish load or security acceptance.
+
+| Synthetic TS file | Tested positions | Time per image | Highest measured RSS |
+| --- | --- | --- | --- |
+| MPEG-2, 720 × 576, 12 seconds | 2 and 10 seconds | 0.330–0.761 seconds | 17,780 KiB |
+| H.264, 1280 × 720, 12 seconds | 2 and 10 seconds | 0.527–0.577 seconds | 28,568 KiB |
+| HEVC, 1920 × 1080, 6 seconds | 1 and 4 seconds | 1.164–1.286 seconds | 41,920 KiB |
+
+All six calls returned JPEGs containing the test color expected at that position.
+Output was scaled to at most 640 pixels along either edge. HEVC reported reference
+picture/RPS warnings despite successful output; this remains a decoder limitation.
+The process used software decoders, reduced priority and configured thread limits.
+Configured limits were 256 MiB address space, 45 seconds CPU time,
+40 seconds waiting time, 64 file descriptors and 5 MiB output; allowed
+FFmpeg protocols were `file,pipe`. The limits were not deliberately exhausted.
+The measurements describe six individual calls, not worst-case sizing.
+RSS measures the decoder child process, not total Enigma2 and plugin memory.
+The frame worker ran separately through SSH; a native snapshot API and its
+HA integration have not yet been demonstrated.
+
+Short color files do not adequately represent actual broadcasts, long GOPs,
+damaged or growing recordings or large seeks. 4K, concurrent recordings/streams,
+sustained load, cancellation under load and low-memory conditions remain untested.
+No recordings were running before the experiments; the checks therefore do not
+establish non-interference with an ongoing recording. The available flash requires
+small packages and a bounded cache on suitable storage instead of root flash.
+
+The Vu+ GUI was restarted once through the HA test integration to load the
+temporary plugin and once to remove it. Each HA response was unconfirmed because
+of an HTTP error; neither command was repeated. Both restarts were subsequently
+confirmed by a changed GUI process ID and state. The plugin link, temporary
+receiver files and container test files were removed; the test listener was
+closed afterwards. Service reference, volume, standby and timer list matched
+the initial state, and no recording was running. These comparisons establish
+before/after states, not uninterrupted picture or audio playback.
+After cleanup, the HA entry was loaded again and all 22 active entities were
+available. The configured Vu+ remains in the HA lab for subsequent implementation
+work. Raw inventory, prototype, test helpers and measurements remain local under
+`.work/receiver-feasibility/`; they are not included in distribution. The material
+findings are recorded here and in both validation summaries. Local credentials
+under `.local-info/` remain excluded from Git.
+
+The next work items and decisions are:
+
+1. Confirm the Octagon's identity and add only its read-only inventory. Define
+   later hardware tests separately; do not treat outstanding limits as passed checks.
+2. Define the receiver pilot matrix, minimum Python version, package format and
+   minimum storage requirement. A package manager alone does not prove a safe package lifecycle.
+3. Resolve provenance and licensing of the Enigma2 interface, libraries and helpers.
+   The installed FFmpeg reports `--enable-gpl` and `--enable-nonfree`; it will not
+   be bundled in this phase. Source revision and redistribution require separate resolution.
+4. Prepare the API contract and backend boundary from stage 1; then implement
+   pairing, certificate management, token revocation, stable device identity and events.
+5. Build a recording resolver with path protection and file revisions before
+   the production snapshot worker; then measure queue, cancellation, cache and resource budget.
+6. Test dialogs with the original remote, competing clients, standby and restarts;
+   verify package installation, upgrade, removal and reconnection separately.
+
+The plugin license must be decided separately from the HA client's Apache-2.0 license.
+Complete replacement of existing functions and acceptance with OpenWebif disabled
+remain later stages. The Vu+ experiment does not remove these requirements.
+
 ### Migration and work packages
 
 | Stage | Deliverable and dependency | Acceptance before proceeding |
@@ -1662,9 +1801,11 @@ remote, concurrent recordings/streams, standby and GUI/system restarts, followed
 by an extended load run. Each advertised capability needs appropriate evidence;
 missing DVB reception remains an explicit test limitation.
 
-The largest unknowns are receiver Python/TLS versions, snapshot performance on
-the Vu+, GUI/timer/CEC differences, independent stream authentication and package
-distribution. Stage 0 resolves these before substantial restructuring. A complete,
+Python/TLS and basic dialog/frame paths are now demonstrated on the tested Vu+.
+Octagon inventory, realistic snapshot load, GUI/timer/CEC differences, independent
+stream authentication and package distribution remain unresolved. Resolve the
+remaining stage 0 questions before substantial restructuring, or explicitly
+limit the pilot to capabilities supported by evidence. A complete,
 verified backend is a project of several development months as a rough planning
 assumption; re-estimate each stage after feasibility testing. A plugin prototype
 and two extra features do not constitute complete replacement.
