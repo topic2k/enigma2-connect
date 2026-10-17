@@ -4,7 +4,7 @@
 
 ## Contents
 
-- [2.1.8-dev.3](#218-dev3)
+- [2.1.8-dev.4](#218-dev4)
 - [2.1.7](#217)
 - [2.1.6](#216)
 - [2.1.5](#215)
@@ -23,11 +23,11 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 2.1.8-dev.3
+## 2.1.8-dev.4
 
 Unreleased development version.
 
-- Tested stage 0 on the Vu+ Solo² with the HA test container: temporary receiver plugin with its own HTTPS endpoint and interactive dialogs, plus bounded FFmpeg frame extraction. Documented prerequisites, measurements, cleanup and remaining acceptance in both languages. Octagon inspection is pending confirmation of a changed SSH host key; access remains strictly read-only. Excluded local credentials from Git.
+- Tested stage 0 on the Vu+ Solo² with the HA test container: temporary receiver plugin with its own HTTPS endpoint and interactive dialogs, plus bounded FFmpeg frame extraction. Documented prerequisites, measurements, cleanup and remaining acceptance in both languages. Inventoried the Octagon strictly read-only after SSH identity confirmation: documented matching Python/TLS and static plugin interfaces, its different ARM platform and larger memory/storage reserves. Its plugin runtime acceptance remains pending; access stays strictly read-only. Excluded local credentials from Git.
 
 - Added an isolated Docker test lab with HA 2026.10.1, automatic onboarding, installation of current source and a persistent configuration volume. Separate loopback port 18124 supports parallel operation with EnigmaHACompanion; start, stop, logs and configuration checks plus DE/EN instructions. Receivers are added manually.
 

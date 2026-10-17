@@ -2,6 +2,39 @@
 
 # Prüfübersicht
 
+## Octagon-Inventar Stufe 0 – 2.1.8-dev.4
+
+Am 17.10.2026 nach ausdrücklicher Bestätigung der Octagon-Identität ausschließlich
+lesend geprüft. Vor Anmeldung den bestätigten Ed25519-Schlüssel exakt abgeglichen;
+keine Änderung der globalen SSH-Vertrauensdatei. Abfragen mit `python3 -B`,
+Paket-/Bibliotheksinventar, FFmpeg-Versions-/Decoderliste, Speicherwerte und
+statische Enigma2-Dateianalyse. Keine Uploads, Dateien oder Konfigurationsänderungen
+auf dem Octagon, keine GUI-Aktionen, Medien-/Decoderläufe, Installationen oder
+Neustarts. Die Vu+ und das HA-Labor wurden in dieser Fortsetzung nicht verändert.
+
+OpenATV 7.6.0 Build 20260831, ARM32/armv7l, vier logische CPUs, Python 3.13.12,
+Twisted 25.5.0, pyOpenSSL 25.1.0, OpenSSL 3.6.0, FFmpeg/ffprobe 8.0 und `opkg`
+vorhanden. MPEG-2/H.264/HEVC-Softwaredecoder gelistet; 926,49 MiB RAM gesamt,
+285,87 MiB verfügbar, 4,14 GiB Root verfügbar. `StartEnigma.py` und neun
+Plugin-/GUI-/Reactor-Dateien sind gegenüber den gesicherten Vu+-Dateien jeweils
+SHA-256-identisch; auch ihre statisch gelesenen Strukturen stimmen überein.
+Das ist installierte Schnittstellenkompatibilität, kein Plugin-Laufzeitnachweis.
+
+Die [aktualisierte Matrix](ENTWICKLUNG.md#stufe-0-machbarkeitsstand-am-17102026)
+trennt erfüllte Voraussetzungen von ungeprüftem HTTPS-/Dialog-/Snapshotbetrieb,
+Paketlebenszyklus und OpenWebif-Unabhängigkeit. **Inventar beider Receiver
+abgeschlossen; Gesamtstufe 0 bleibt mit diesen Grenzen und der offenen
+Lizenz-/Paketentscheidung unvollständig.** Die früheren Vu+-Nachweise bleiben
+erhalten. Rohdaten und verglichene Quellbelege liegen lokal unter
+`.work/receiver-feasibility/`; öffentliche Dokumentation ohne Zugangsdaten.
+
+DE/EN-Dokumentation fachlich abgeglichen, lokale Links/Anker, Versionskonsistenz,
+Offline-Lockcheck und `git diff --check` geprüft; die Lockdatei ändert nur die
+eigene Projektversion. Keine Integrationslogik geändert; Qualitätskriterien,
+Abdeckungsgrenzen und bestehende Prüfvorbehalte unverändert. Keine neue HA- oder
+Plugin-Laufzeitabnahme behauptet. Aktuelle CI bleibt vor Übernahme nach `main`
+erforderlich.
+
 ## Receiver-Machbarkeit Stufe 0 – 2.1.8-dev.3
 
 Am 17.10.2026 auf Integrationsstand `8529207` (2.1.8-dev.2) mit HA 2026.10.1

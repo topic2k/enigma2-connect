@@ -2,6 +2,39 @@
 
 # Verification summary
 
+## Octagon inventory stage 0 – 2.1.8-dev.4
+
+Inspected strictly read-only on 17 October 2026 after explicit confirmation of
+Octagon identity. Matched the confirmed Ed25519 key exactly before authentication;
+the global SSH trust file was unchanged. Queries used `python3 -B`, package/library
+inventory, FFmpeg version/decoder lists, memory/storage figures and static
+Enigma2 file analysis. No uploads, files or configuration changes on the Octagon,
+no GUI actions, media/decoder runs, installation or restarts. The Vu+ and HA lab
+were not modified during this continuation.
+
+OpenATV 7.6.0 build 20260831, ARM32/armv7l, four logical CPUs, Python 3.13.12,
+Twisted 25.5.0, pyOpenSSL 25.1.0, OpenSSL 3.6.0, FFmpeg/ffprobe 8.0 and `opkg`
+installed. MPEG-2/H.264/HEVC software decoders listed; 926.49 MiB total RAM,
+285.87 MiB available, 4.14 GiB root available. `StartEnigma.py` and nine
+plugin/GUI/reactor files each have the same SHA-256 as the saved Vu+ files;
+their statically read structures also match. This establishes installed
+interface compatibility, not plugin runtime behavior.
+
+The [updated matrix](DEVELOPMENT.en.md#stage-0-feasibility-on-17-october-2026)
+separates met prerequisites from untested HTTPS/dialog/snapshot operation,
+package lifecycle and OpenWebif independence. **Both receiver inventories are
+complete; overall stage 0 remains incomplete because of these limits and the
+pending licensing/packaging decision.** Previous Vu+ evidence is retained.
+Raw data and compared source evidence remain local under
+`.work/receiver-feasibility/`; public documentation contains no credentials.
+
+Compared DE/EN documentation, checked local links/anchors, version consistency,
+offline lock validation and `git diff --check`; the lockfile changes only the
+project version. No integration logic changed; quality criteria, coverage
+thresholds and existing validation limits remain unchanged. No new HA or plugin
+runtime acceptance is claimed. Current CI remains required before adoption into
+`main`.
+
 ## Receiver feasibility stage 0 – 2.1.8-dev.3
 
 Tested on 17 October 2026 at integration revision `8529207` (2.1.8-dev.2),

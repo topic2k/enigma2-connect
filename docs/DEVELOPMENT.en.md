@@ -1607,29 +1607,56 @@ image adapter; never infer “True means a manual Yes”.
 stage 0 as a whole remains open.** A temporary plugin ran inside real Enigma2,
 returned authenticated HTTPS responses and displayed correlated dialogs.
 A separately executed FFmpeg process generated test images at selected positions.
-The checks cover one pilot receiver and do not constitute product acceptance.
+Current inventory is available for both pilot receivers; runtime checks cover
+only the Vu+ and do not constitute product acceptance.
 
-The Octagon remains authorized exclusively for read-only access. Its different
-SSH host key prevented access; confirmation of its identity is pending.
-No commands were executed on it during this task. Historical evidence replaces
-neither its current inventory nor runtime evidence for the new plugin.
-Installation, dialogs and restarts on the Octagon are outside the authorization
-provided for this verification task.
+The Octagon remains authorized exclusively for read-only access. After explicit
+confirmation of its identity, its inventory was collected on 17 October 2026.
+The confirmed SSH key was matched exactly before authentication; global SSH
+trust settings were unchanged. Only system/package queries and static file
+analysis using `python3 -B` were performed, without writing Python bytecode.
+No files were uploaded or created on the receiver, no settings changed, and no
+dialogs, decoder load tests or restarts performed. Installed prerequisites are
+verified; execution of the new plugin on the Octagon remains untested and is
+outside this task's authorization.
 
 | Prerequisite | Vu+ Solo² | Octagon SF8008 4K Supreme |
 | --- | --- | --- |
-| Current image and architecture | Met: OpenATV 7.6.0, build 20260921, MIPS/mips32el | Open: no current inventory collected |
-| Receiver Python | Met for the experiment: 3.13.12 | Open |
-| Enigma2 session and main thread | Verified in the actual plugin | Open; no runtime experiment |
-| HTTP/TLS libraries | Twisted 25.5.0, pyOpenSSL 25.1.0, OpenSSL 3.6.0 present | Open |
+| Current image and architecture | Met: OpenATV 7.6.0, build 20260921, MIPS/mips32el | Recorded: OpenATV 7.6.0, build 20260831, ARM32/armv7l |
+| Receiver Python | Met for the experiment: 3.13.12 | 3.13.12 installed |
+| Enigma2 session and main thread | Verified in the actual plugin | Examined files/structure identical; runtime evidence pending |
+| HTTP/TLS libraries | Twisted 25.5.0, pyOpenSSL 25.1.0, OpenSSL 3.6.0 present | Same versions installed and importable |
 | Authenticated HTTPS | Verified with an explicitly trusted test certificate | Open |
 | Dialog with correlated response | Choice, timeout and cancellation verified | Open; dialog tests are not authorized |
-| FFmpeg/ffprobe and software decoders | FFmpeg 8.0 present; three synthetic profiles tested | Open |
-| Package manager and helpers | `opkg`, `grab` and OpenSSL present | Open |
-| Resources | About 559 MiB RAM; only about 27 MiB free flash | Open |
+| FFmpeg/ffprobe and software decoders | FFmpeg 8.0 present; three synthetic profiles tested | FFmpeg/ffprobe 8.0; MPEG-2/H.264/HEVC listed, no frame/performance measurement |
+| Package manager and helpers | `opkg`, `grab` and OpenSSL present | `opkg`, `grab`, OpenSSL and Avahi present |
+| Resources | About 559 MiB RAM; only about 27 MiB free flash | 926.49 MiB RAM, four logical CPUs; 4.14 GiB root available |
 | Installable product package | Open; temporary experiment only | Open |
 | License and exact provenance of components to distribute | Open | Open |
 | Operation without OpenWebif | Open | Open |
+
+The Octagon reports kernel 4.4.35 and package architecture
+`cortexa15hf-neon-vfpv4`; its running Python is ARM32 regardless of the 4K model
+label. At the measurement point, 285.87 MiB RAM and 449.98 MiB in `/tmp` were
+available, with no swap. These reserves establish capacity, not decoder speed or
+load tolerance. Installed Enigma2 is `7.6.0+git35125+4fbbe910+4fbbe9136d-r1`;
+the Vu+ uses the separately recorded `e42a0ffb00` build.
+
+`StartEnigma.py` and the nine examined modules `Plugins/Plugin`,
+`Components/PluginComponent`, `Screens/Screen`, `Screens/MessageBox`, `Navigation`,
+`Screens/InfoBarGenerics`, `Components/MenuList`, `Components/ActionMap` and
+`e2reactor` each have identical SHA-256 values on both receivers. Their statically
+read code-object structures also match. This supports a shared OpenATV adapter;
+hardware/driver differences and actual session startup remain untested. The GUI
+modules were not executed in the SSH Python process. This does not establish
+that their other components or the complete images are identical.
+
+The Octagon lists software decoders, plus additional V4L2 wrappers; the latter
+do not prove working hardware acceleration. `streamproxy`, `transtreamproxy`
+and `streamproxy-wsgi` were not found in its executable search path. A TCP
+listener on port 8001 was present. This proves neither a missing streaming path
+nor independently authenticated access; the stream provider and authentication
+still need separate verification.
 
 The earlier historical VTi description does not describe this Vu+ test setup.
 The CPU inventory reports BCM7346B2/BMIPS5000 and two logical CPUs.
@@ -1647,8 +1674,8 @@ in a separate process. A second reactor is not required.
 
 The pilot should use a small `opkg`/IPK package depending on existing image
 packages; avoid a second Python/TLS distribution in the limited flash. FFmpeg
-remains an optional image capability checked at runtime. `avahi-daemon` and
-`/usr/bin/transtreamproxy` are installed; this does not yet establish dedicated
+remains an optional image capability checked at runtime. On the Vu+,
+`avahi-daemon` and `/usr/bin/transtreamproxy` are installed; this does not yet establish dedicated
 discovery or independently authenticated streaming. Root free space was about
 27 MiB before testing and 28.24 MiB after cleanup; these are point-in-time values.
 Persistent image caches belong on a suitable separate medium. The Enigma2
@@ -1719,8 +1746,9 @@ under `.local-info/` remain excluded from Git.
 
 The next work items and decisions are:
 
-1. Confirm the Octagon's identity and add only its read-only inventory. Define
-   later hardware tests separately; do not treat outstanding limits as passed checks.
+1. Use the Vu+ with the HA test container for development; Octagon prerequisites
+   are now recorded. Access there remains read-only. Keep plugin runtime evidence
+   pending until a separately authorized test environment is available.
 2. Define the receiver pilot matrix, minimum Python version, package format and
    minimum storage requirement. A package manager alone does not prove a safe package lifecycle.
 3. Resolve provenance and licensing of the Enigma2 interface, libraries and helpers.
@@ -1802,8 +1830,9 @@ by an extended load run. Each advertised capability needs appropriate evidence;
 missing DVB reception remains an explicit test limitation.
 
 Python/TLS and basic dialog/frame paths are now demonstrated on the tested Vu+.
-Octagon inventory, realistic snapshot load, GUI/timer/CEC differences, independent
-stream authentication and package distribution remain unresolved. Resolve the
+Octagon inventory is now recorded; its plugin runtime, realistic snapshot load,
+GUI/timer/CEC differences, independent stream authentication and package
+distribution remain unresolved. Resolve the
 remaining stage 0 questions before substantial restructuring, or explicitly
 limit the pilot to capabilities supported by evidence. A complete,
 verified backend is a project of several development months as a rough planning

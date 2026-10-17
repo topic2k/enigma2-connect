@@ -105,8 +105,8 @@ Inventar der Vu+: Enigma2-Paket
 gesichert, SHA-256
 `21fc7f0dc17a49305ece68c57e0680044b9f46122b19717628d38e53280ab7e0`.
 Die weiteren untersuchten Plugin-/GUI-Module lagen überwiegend als Bytecode vor;
-deren Codeobjekt-Metadaten wurden lesend erfasst. Damit ist die Laufzeitstruktur
-belegt, jedoch noch kein vollständiger Abgleich mit einem veröffentlichten
+deren Codeobjekt-Metadaten wurden lesend erfasst. Damit ist die installierte
+Schnittstellenstruktur belegt, jedoch noch kein vollständiger Abgleich mit einem veröffentlichten
 Quellarchiv einschließlich aller Lizenzhinweise. Dies bleibt vor Paketverteilung
 erforderlich, ebenso die Zuordnung sämtlicher mitgelieferter Abhängigkeiten.
 
@@ -118,3 +118,17 @@ aktivierten Komponenten; die allgemeine LGPL-Angabe reicht für diesen Build
 nicht als Weiterverteilungsnachweis. Vor einer eigenen Binärverteilung wäre ein
 separater, vollständig belegter Build-/Lizenzentscheid nötig. Die geplante
 Receiver-Paketierung nutzt zunächst Imagepakete und prüft Fähigkeiten zur Laufzeit.
+
+Die anschließende lesende Octagon-Inventur am selben Tag ermittelte das
+Enigma2-Paket `7.6.0+git35125+4fbbe910+4fbbe9136d-r1` (OpenATV 7.6.0,
+Imagebuild 20260831). Seine installierte `StartEnigma.py` besitzt denselben oben
+genannten SHA-256-Wert wie auf der Vu+. Auch die neun untersuchten Plugin-/GUI-/
+Reactor-Bytecodedateien sind jeweils hashgleich; das ist keine Aussage zur
+Identität des vollständigen Images oder zur Lizenz aller darin enthaltenen Teile.
+Die statischen Nachweise ersetzen weder Quellarchiv-/Lizenzabgleich noch
+Octagon-Laufzeittests. Auf dem Octagon wurde kein eigener Plugin-Code ausgeführt.
+
+Auch dessen FFmpeg 8.0 meldet `--enable-gpl` und `--enable-nonfree`; abgefragt
+wurden ausschließlich Version und Decoderliste. Die oben festgehaltene Trennung
+zwischen installierter Imageabhängigkeit und eigener Binärweitergabe gilt für
+beide Geräte. Eine neue Weiterverteilungsfreigabe folgt aus dem Inventar nicht.

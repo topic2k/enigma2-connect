@@ -1704,29 +1704,57 @@ oder nachweislich geeigneter Imageadapter; keine Ableitung „True = manuell Ja�
 Stufe 0 insgesamt bleibt offen.** Ein temporäres Plugin lief im echten Enigma2,
 lieferte authentifizierte HTTPS-Antworten und zeigte korrelierte Dialoge.
 Ein getrennt ausgeführter FFmpeg-Prozess erzeugte positionsabhängige Testbilder.
-Die Prüfung umfasst einen Pilotreceiver und ersetzt keine Produktabnahme.
+Das aktuelle Inventar beider Pilotreceiver liegt vor; die Laufzeitprüfung umfasst
+ausschließlich die Vu+ und ersetzt keine Produktabnahme.
 
-Der Octagon bleibt ausschließlich für lesende Zugriffe freigegeben. Sein
-abweichender SSH-Hostschlüssel verhinderte den Zugriff; die Bestätigung seiner
-Identität steht aus. Auf ihm wurden in diesem Auftrag keine Befehle ausgeführt.
-Historische Nachweise ersetzen weder sein aktuelles Inventar noch einen
-Laufzeitnachweis des neuen Plugins. Installation, Dialoge und Neustarts sind
-auf dem Octagon durch den vorliegenden Prüfauftrag nicht freigegeben.
+Der Octagon bleibt ausschließlich für lesende Zugriffe freigegeben. Nach der
+ausdrücklichen Bestätigung seiner Identität wurde am 17.10.2026 sein Inventar
+erhoben. Der bestätigte SSH-Schlüssel wurde vor der Anmeldung exakt geprüft;
+globale SSH-Vertrauenseinstellungen blieben unverändert. Ausgeführt wurden nur
+System-/Paketabfragen und statische Dateianalyse mit `python3 -B`, ohne Python-
+Bytecode zu schreiben. Keine Dateien hochgeladen oder auf dem Receiver angelegt,
+keine Einstellungen geändert, keine Dialoge, Decoderlasttests oder Neustarts.
+Die installierten Voraussetzungen sind belegt, die Ausführung des neuen Plugins
+auf dem Octagon ist weiterhin offen und nicht durch diesen Auftrag freigegeben.
 
 | Voraussetzung | Vu+ Solo² | Octagon SF8008 4K Supreme |
 | --- | --- | --- |
-| Aktuelles Image und Architektur | Erfüllt: OpenATV 7.6.0, Build 20260921, MIPS/mips32el | Offen: aktuelles Inventar nicht erhoben |
-| Receiver-Python | Erfüllt für den Versuch: 3.13.12 | Offen |
-| Enigma2-Session und Hauptthread | Tatsächlich im Plugin nachgewiesen | Offen; kein Laufzeitversuch |
-| HTTP/TLS-Bibliotheken | Twisted 25.5.0, pyOpenSSL 25.1.0, OpenSSL 3.6.0 vorhanden | Offen |
+| Aktuelles Image und Architektur | Erfüllt: OpenATV 7.6.0, Build 20260921, MIPS/mips32el | Erfasst: OpenATV 7.6.0, Build 20260831, ARM32/armv7l |
+| Receiver-Python | Erfüllt für den Versuch: 3.13.12 | 3.13.12 vorhanden |
+| Enigma2-Session und Hauptthread | Tatsächlich im Plugin nachgewiesen | Untersuchte Dateien/Struktur identisch; Laufzeitnachweis offen |
+| HTTP/TLS-Bibliotheken | Twisted 25.5.0, pyOpenSSL 25.1.0, OpenSSL 3.6.0 vorhanden | Dieselben Versionen vorhanden und importierbar |
 | Authentifiziertes HTTPS | Mit ausdrücklich vertrautem Testzertifikat nachgewiesen | Offen |
 | Dialog mit korrelierter Antwort | Auswahl, Timeout und Abbruch nachgewiesen | Offen; keine Dialogtests erlaubt |
-| FFmpeg/ffprobe und Softwaredecoder | FFmpeg 8.0 vorhanden; drei künstliche Profile geprüft | Offen |
-| Paketmanager und Hilfsprogramme | `opkg`, `grab` und OpenSSL vorhanden | Offen |
-| Ressourcen | Rund 559 MiB RAM; nur rund 27 MiB freier Flash | Offen |
+| FFmpeg/ffprobe und Softwaredecoder | FFmpeg 8.0 vorhanden; drei künstliche Profile geprüft | FFmpeg/ffprobe 8.0; MPEG-2/H.264/HEVC gelistet, keine Bild-/Leistungsmessung |
+| Paketmanager und Hilfsprogramme | `opkg`, `grab` und OpenSSL vorhanden | `opkg`, `grab`, OpenSSL und Avahi vorhanden |
+| Ressourcen | Rund 559 MiB RAM; nur rund 27 MiB freier Flash | 926,49 MiB RAM, vier logische CPUs; 4,14 GiB Root verfügbar |
 | Installierbares Produktpaket | Offen; nur temporärer Versuch | Offen |
 | Lizenz und genaue Herkunft der zu verteilenden Komponenten | Offen | Offen |
 | Betrieb ohne OpenWebif | Offen | Offen |
+
+Der Octagon meldet Kernel 4.4.35 und Paketarchitektur `cortexa15hf-neon-vfpv4`;
+das laufende Python ist ARM32, unabhängig von der 4K-Gerätebezeichnung. Zum
+Messzeitpunkt waren 285,87 MiB RAM und 449,98 MiB in `/tmp` verfügbar, ohne Swap.
+Diese Reserven belegen Kapazität, keine Decoderleistung oder Lastverträglichkeit.
+Enigma2 ist als `7.6.0+git35125+4fbbe910+4fbbe9136d-r1` installiert; auf der Vu+
+läuft der gesondert dokumentierte Build `e42a0ffb00`.
+
+`StartEnigma.py` sowie die neun untersuchten Module `Plugins/Plugin`,
+`Components/PluginComponent`, `Screens/Screen`, `Screens/MessageBox`, `Navigation`,
+`Screens/InfoBarGenerics`, `Components/MenuList`, `Components/ActionMap` und
+`e2reactor` haben auf beiden Receivern jeweils identische SHA-256-Werte. Auch
+die statisch gelesenen Codeobjekt-Strukturen stimmen überein. Das ist ein guter
+Ansatz für einen gemeinsamen OpenATV-Adapter; Hardware-/Treiberunterschiede und
+der echte Sessionstart sind damit nicht geprüft. Die GUI-Module wurden im
+SSH-Python nicht ausgeführt. Ihre übrigen Teile und das gesamte Image sind
+dadurch nicht als identisch nachgewiesen.
+
+Auf dem Octagon sind die Softwaredecoder gelistet, einschließlich zusätzlicher
+V4L2-Wrapper; letztere belegen keine funktionierende Hardwarebeschleunigung.
+`streamproxy`, `transtreamproxy` und `streamproxy-wsgi` wurden dort nicht im
+Suchpfad gefunden. Ein TCP-Listener auf Port 8001 war vorhanden. Daraus folgt
+weder ein fehlender Streamingweg noch ein unabhängig authentifizierter Zugang;
+Streamanbieter und Authentifizierung bleiben separat zu prüfen.
 
 Die bisherige historische VTi-Beschreibung ist keine Beschreibung dieses
 Vu+-Prüfstands. Das CPU-Inventar meldet BCM7346B2/BMIPS5000 und zwei logische
@@ -1745,7 +1773,7 @@ in einen getrennten Prozess. Ein zweiter Reactor ist dafür nicht erforderlich.
 Für den Piloten ist ein kleines `opkg`/IPK-Paket mit Abhängigkeiten auf vorhandene
 Imagepakete vorgesehen; keine zweite Python-/TLS-Distribution im knappen Flash.
 FFmpeg bleibt eine optionale Fähigkeit des Images mit Laufzeitprüfung.
-`avahi-daemon` und `/usr/bin/transtreamproxy` sind installiert; eigene Discovery
+Auf der Vu+ sind `avahi-daemon` und `/usr/bin/transtreamproxy` installiert; eigene Discovery
 und ein unabhängig authentifizierter Streamzugang sind damit noch nicht belegt.
 Root-Reserve vor den Tests rund 27 MiB, nach dem Rückbau 28,24 MiB; dies sind
 Momentaufnahmen. Dauerhafte Bildcaches gehören auf geeignetes separates Medium.
@@ -1816,8 +1844,9 @@ Lokale Zugangsdaten unter `.local-info/` bleiben von Git ausgeschlossen.
 
 Die nächsten Arbeitsschritte und Entscheidungen sind:
 
-1. Octagon-Identität bestätigen und nur das lesende Inventar ergänzen. Den Umfang
-   späterer Hardwaretests getrennt festlegen; vorhandene Grenzen nicht als bestanden werten.
+1. Den Entwicklungsprüfstand auf Vu+ mit HA-Testcontainer festlegen; die Octagon-
+   Voraussetzungen sind erfasst. Dort bleibt es bei lesenden Prüfungen. Fehlende
+   Plugin-Laufzeitnachweise bis zu einer gesondert freigegebenen Testumgebung offenhalten.
 2. Receiver-Pilotmatrix, Python-Untergrenze, Paketformat und minimalen Speicherbedarf
    festlegen. Ein vorhandener Paketmanager allein belegt noch keinen sicheren Paketlebenszyklus.
 3. Herkunft und Lizenz der Enigma2-Anbindung, Bibliotheken und Helfer klären.
@@ -1901,8 +1930,9 @@ anschließend längerer Lastlauf. Jede als unterstützt beworbene Funktion brauc
 einen passenden Nachweis. Fehlender DVB-Empfang ist eine offene Prüfgrenze.
 
 Für den Vu+-Prüfstand sind Python/TLS und einfache Dialog-/Bildpfade jetzt
-belegt. Offen bleiben das Octagon-Inventar, reale Snapshot-Last, Unterschiede der
-GUI-/Timer-/CEC-APIs, unabhängige Stream-Authentifizierung und Paketverteilung.
+belegt; das Octagon-Inventar ist ergänzt. Offen bleiben seine Plugin-Laufzeit,
+reale Snapshot-Last, Unterschiede der GUI-/Timer-/CEC-APIs, unabhängige Stream-
+Authentifizierung und Paketverteilung.
 Die verbleibenden Stufe-0-Fragen vor großem Umbau klären oder den belegten
 Pilotumfang ausdrücklich begrenzen.
 Als grobe Planungsgröße sind für ein erprobtes vollständiges Backend mehrere
