@@ -2,7 +2,7 @@
 
 # Verification summary
 
-## HA test stack 2026.10.4 – 2.1.8-dev.6
+## HA test stack 2026.10.4 – 2.1.8
 
 Updated the development/test stack on **1 November 2026** to HA 2026.10.4 via
 `pytest-homeassistant-custom-component==0.13.375`. `uv lock --check` and
@@ -29,7 +29,17 @@ new `const` paths or the component exports present in HA 2026.9. HA 2026.9 was n
 run separately in this validation. Tests use the real HA test framework and
 synthetic media; receiver traffic is simulated. This is not receiver
 or production-HA acceptance. Quality criteria and coverage thresholds remain
-unchanged; this verification does not show an update to GitHub's default branch.
+unchanged. Local checks do not replace current CI results for the pull request.
+
+For PR preparation on **1 November 2026**, the manifest, `pyproject.toml`,
+`uv.lock` and both changelogs were aligned to `2.1.8`. `uv.lock` changes only the
+local project version from `2.1.8.dev6` to `2.1.8`; package versions and the
+dependency resolution remain unchanged. `uv lock --check` (183 packages) and
+`git diff --check` passed. `uv lock --offline` could not re-resolve
+`hassil==3.12.1` for Python 3.15 because its registry metadata was unavailable in
+the local cache; no resolver-generated re-lock is claimed. `quality_scale.yaml`
+was reviewed; no criteria or coverage thresholds were lowered. The CI checks for
+the exact PR revision must pass before merge.
 
 ## Dependabot security updates – 2.1.8-dev.5
 

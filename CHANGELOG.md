@@ -4,9 +4,7 @@
 
 ## Inhaltsverzeichnis
 
-- [2.1.8-dev.6](#218-dev6)
-- [2.1.8-dev.5](#218-dev5)
-- [2.1.8-dev.4](#218-dev4)
+- [2.1.8](#218)
 - [2.1.7](#217)
 - [2.1.6](#216)
 - [2.1.5](#215)
@@ -25,21 +23,13 @@
 - [1.0.1](#101)
 - [1.0.0](#100)
 
-## 2.1.8-dev.6
+## 2.1.8
 
-Unveröffentlichte Entwicklerversion.
+Unveröffentlicht.
 
 - Entwicklungs-/Teststack auf Home Assistant 2026.10.4 über `pytest-homeassistant-custom-component==0.13.375` aktualisiert; die Dev-Abhängigkeiten `hassil` und `home-assistant-intents` an HA angeglichen. Overrides für HA-gepinnte Pakete mit gepatchten Versionen entfernt; `certifi` und `multidict` lösen ohne exakte Overrides auf gepatchte Lockversionen auf. Wegen des weiterhin verwundbaren HA-Pins `Pillow==12.3.0` bleibt `Pillow==13.0.0` als gezielter Test-Override. Schema- und Entity-Konstantenimporte an HA 2026.10 angepasst, mit Fallbacks für ältere unterstützte HA-Stände. Das Entladen eines Eintrags ohne initialisierte Laufzeitdaten löst keine Ausnahme mehr aus. Die HA-Mindestversion und produktiven Manifest-Abhängigkeiten bleiben unverändert.
 
-## 2.1.8-dev.5
-
-Unveröffentlichte Entwicklerversion.
-
 - Sicherheitskorrekturen für die Entwicklungs-/Testabhängigkeiten `aiohttp`, `certifi`, `multidict`, `Pillow`, `PyJWT` und `uv` per gezielten UV-Overrides; `yarl` wird passend zur neuen `aiohttp`-Mindestversion mit angehoben. Bestehende `cryptography`-/`pyOpenSSL`-Ausnahmen bleiben erhalten. Die Home-Assistant-Mindestversion und produktiven Manifest-Abhängigkeiten bleiben unverändert.
-
-## 2.1.8-dev.4
-
-Unveröffentlichte Entwicklerversion.
 
 - Stufe 0 auf der Vu+ Solo² mit dem HA-Testcontainer geprüft: temporäres Receiver-Plugin mit eigener HTTPS-Schnittstelle und interaktiven Dialogen sowie begrenzte FFmpeg-Einzelbildtests. Voraussetzungen, Messwerte, Rückbau und offene Abnahmen zweisprachig dokumentiert. Octagon nach bestätigter SSH-Identität ausschließlich lesend inventarisiert: gleiche Python-/TLS-Basis und statische Plugin-Schnittstellen, abweichende ARM-Plattform und größere Speicherreserven dokumentiert. Seine Plugin-Laufzeitabnahme bleibt offen; ausschließlich lesender Zugriff bleibt verbindlich. Lokale Zugangsdaten vom Git-Bestand ausgeschlossen.
 

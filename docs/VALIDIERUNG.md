@@ -2,7 +2,7 @@
 
 # Prüfübersicht
 
-## HA-Teststack 2026.10.4 – 2.1.8-dev.6
+## HA-Teststack 2026.10.4 – 2.1.8
 
 Am **01.11.2026** den Entwicklungs-/Teststack mit
 `pytest-homeassistant-custom-component==0.13.375` auf HA 2026.10.4 aktualisiert.
@@ -30,8 +30,18 @@ die neuen `const`-Pfade oder die in HA 2026.9 vorhandenen Komponentenexporte.
 HA 2026.9 wurde in diesem Lauf nicht separat ausgeführt. Die Tests nutzen das
 echte HA-Testframework und synthetische Medien; Receiververkehr ist simuliert.
 Keine Receiver- oder Produktiv-HA-Abnahme.
-Qualitätskriterien und Abdeckungsgrenzen blieben unverändert; die Prüfung belegt
-noch keine Aktualisierung des GitHub-Default-Branch.
+Qualitätskriterien und Abdeckungsgrenzen blieben unverändert. Lokale Prüfungen
+ersetzen nicht die aktuellen CI-Ergebnisse des Pull Requests.
+
+Für die PR-Vorbereitung am **01.11.2026** wurden Manifest, `pyproject.toml`,
+`uv.lock` und beide Changelogs auf `2.1.8` abgeglichen. `uv.lock` ändert nur die
+lokale Projektversion von `2.1.8.dev6` auf `2.1.8`; Paketversionen und
+Abhängigkeitsauflösung blieben unverändert. `uv lock --check` (183 Pakete) und
+`git diff --check` bestanden. `uv lock --offline` konnte mangels lokal verfügbarer
+Registry-Metadaten `hassil==3.12.1` für Python 3.15 nicht neu auflösen; eine
+Resolver-Neuauflösung wird daher nicht behauptet. `quality_scale.yaml` wurde
+geprüft; Kriterien und Abdeckungsgrenzen wurden nicht abgesenkt. Vor dem Merge
+müssen die CI-Prüfungen des konkreten PR-Stands erfolgreich sein.
 
 ## Dependabot-Sicherheitsupdates – 2.1.8-dev.5
 
