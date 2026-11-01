@@ -79,9 +79,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: EnigmaConfigEntry) -> bo
 
 async def async_unload_entry(hass: HomeAssistant, entry: EnigmaConfigEntry) -> bool:
     unloaded = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
-    if unloaded:
-        await entry.runtime_data.media_stream.async_close()
-        await entry.runtime_data.recording_images.async_close()
+    runtime_data = getattr(entry, "runtime_data", None)
+    if unloaded and runtime_data is not None:
+        await runtime_data.media_stream.async_close()
+        await runtime_data.recording_images.async_close()
     return unloaded
 
 

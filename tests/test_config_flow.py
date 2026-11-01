@@ -8,6 +8,7 @@ import pytest
 import voluptuous as vol
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
+from custom_components.enigma2_connect import async_unload_entry
 from custom_components.enigma2_connect.api import AuthenticationError, ConnectionError
 from custom_components.enigma2_connect.config_flow import host
 from custom_components.enigma2_connect.const import DOMAIN
@@ -24,6 +25,15 @@ def mock_platform_lifecycle():
         patch("custom_components.enigma2_connect.async_unload_entry", return_value=True),
     ):
         yield
+
+
+async def test_unload_entry_without_runtime_data(hass):
+    entry = MockConfigEntry(domain=DOMAIN, unique_id="aabbccddeeff", data=DATA)
+    entry.add_to_hass(hass)
+    with patch.object(
+        hass.config_entries, "async_unload_platforms", new_callable=AsyncMock, return_value=True
+    ):
+        assert await async_unload_entry(hass, entry)
 
 
 @pytest.mark.parametrize("source", ["user", "reauth", "reconfigure"])

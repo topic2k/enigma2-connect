@@ -4,6 +4,7 @@
 
 ## Inhaltsverzeichnis
 
+- [2.1.8-dev.6](#218-dev6)
 - [2.1.8-dev.5](#218-dev5)
 - [2.1.8-dev.4](#218-dev4)
 - [2.1.7](#217)
@@ -23,6 +24,12 @@
 - [1.0.2](#102)
 - [1.0.1](#101)
 - [1.0.0](#100)
+
+## 2.1.8-dev.6
+
+Unveröffentlichte Entwicklerversion.
+
+- Entwicklungs-/Teststack auf Home Assistant 2026.10.4 über `pytest-homeassistant-custom-component==0.13.375` aktualisiert; die Dev-Abhängigkeiten `hassil` und `home-assistant-intents` an HA angeglichen. Overrides für HA-gepinnte Pakete mit gepatchten Versionen entfernt; `certifi` und `multidict` lösen ohne exakte Overrides auf gepatchte Lockversionen auf. Wegen des weiterhin verwundbaren HA-Pins `Pillow==12.3.0` bleibt `Pillow==13.0.0` als gezielter Test-Override. Schema- und Entity-Konstantenimporte an HA 2026.10 angepasst, mit Fallbacks für ältere unterstützte HA-Stände. Das Entladen eines Eintrags ohne initialisierte Laufzeitdaten löst keine Ausnahme mehr aus. Die HA-Mindestversion und produktiven Manifest-Abhängigkeiten bleiben unverändert.
 
 ## 2.1.8-dev.5
 

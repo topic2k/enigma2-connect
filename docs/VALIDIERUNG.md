@@ -2,6 +2,37 @@
 
 # Prüfübersicht
 
+## HA-Teststack 2026.10.4 – 2.1.8-dev.6
+
+Am **01.11.2026** den Entwicklungs-/Teststack mit
+`pytest-homeassistant-custom-component==0.13.375` auf HA 2026.10.4 aktualisiert.
+`uv lock --check` und `uv sync --locked` bestanden; die Synchronisierung lief mit
+Python 3.14.7. Installierte Versionen stimmen mit `uv.lock` überein:
+`aiohttp==3.14.5`, `certifi==2026.10.18`, `cryptography==50.0.1`,
+`multidict==6.9.1`, `Pillow==13.0.0`, `PyJWT==2.15.1`, `pyOpenSSL==26.4.0`,
+`uv==0.13.5`, `yarl==1.25.1`, `hassil==3.12.1` und
+`home-assistant-intents==2026.10.6`. Nur der Pillow-Override bleibt bestehen, da
+HA 2026.10.4 weiterhin die von GHSA-5x8w-8jj5-q52h betroffene Version 12.3.0 pinnt.
+
+Mypy für 41 Quelldateien, Ruff-Lint und Formatkontrolle bestanden. Der gezielte
+API-/Config-Flow-/Action-Choice-/Bild-/Streaminglauf mit Projekt-FFmpeg 8.1.2
+bestand zunächst mit **279 Tests** in 659,61 Sekunden. Nach dem Abgleich und der
+Synchronisierung von `hassil` und `home-assistant-intents` bestand ein weiterer
+gezielter Lauf mit **164 Tests**. Ein zusätzlicher Regressionstest
+reproduzierte vor der Korrektur das Entladen eines Eintrags ohne `runtime_data`;
+`async_unload_entry` überspringt nun nur dann das Schließen der Ressourcen, wenn
+keine Laufzeitdaten initialisiert wurden. Keine Testfehler; Ausgabe enthielt
+HA-/Asyncio-Laufzeitwarnungen und den zlib-Fallback-Hinweis.
+
+HA 2026.10-Schemaimporte verwenden `probatio`, wenn verfügbar, und behalten für
+ältere unterstützte HA-Stände den `voluptuous`-Fallback. Entity-Konstanten nutzen
+die neuen `const`-Pfade oder die in HA 2026.9 vorhandenen Komponentenexporte.
+HA 2026.9 wurde in diesem Lauf nicht separat ausgeführt. Die Tests nutzen das
+echte HA-Testframework und synthetische Medien; Receiververkehr ist simuliert.
+Keine Receiver- oder Produktiv-HA-Abnahme.
+Qualitätskriterien und Abdeckungsgrenzen blieben unverändert; die Prüfung belegt
+noch keine Aktualisierung des GitHub-Default-Branch.
+
 ## Dependabot-Sicherheitsupdates – 2.1.8-dev.5
 
 Am **01.11.2026** über die GitHub-Dependabot-API geprüft: 71 Meldungen insgesamt,

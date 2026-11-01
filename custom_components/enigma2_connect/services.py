@@ -7,11 +7,15 @@ import asyncio
 from typing import TYPE_CHECKING, Any, cast
 
 if TYPE_CHECKING:
+    import probatio as vol
     from homeassistant.core import HomeAssistant, ServiceCall
 
     from .coordinator import EnigmaConfigEntry, EnigmaCoordinator
-
-import voluptuous as vol
+else:
+    try:
+        import probatio as vol
+    except ModuleNotFoundError:
+        import voluptuous as vol
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.core import ServiceResponse, SupportsResponse, callback
 from homeassistant.exceptions import HomeAssistantError, ServiceValidationError

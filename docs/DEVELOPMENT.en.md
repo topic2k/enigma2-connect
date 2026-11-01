@@ -124,29 +124,27 @@ pinned to the HA test build requirements. A fresh environment built from the
 lockfile verifies completeness. The integration gains no additional runtime
 packages.
 
-**Temporary security override:** Home Assistant 2026.9.1 and 2026.9.2 pin
-`cryptography==48.0.1` and `pyOpenSSL==26.2.0`. To address
-[CVE-2026-69247](https://github.com/pyca/cryptography/security/advisories/GHSA-g6cj-pr64-35w5),
-`[tool.uv].override-dependencies` selects `cryptography==50.0.1` and
-`pyopenssl==26.4.0` in the development environment. The second upgrade is necessary
-because pyOpenSSL 26.2.0 requires cryptography below 49, while 26.4.0 supports 50.
-This deliberately differs from Home Assistant's package metadata and is checked
-by our integration tests; it is not a general HA compatibility certification.
-When updating the HA test stack, remove the override once its requirements allow
-patched cryptography from version 50, then recheck the lockfile and tests.
-The custom integration does not install these packages itself; its manifest
-requirements remain empty. Production HA installations retain their own package
-versions, which this repository change does not update.
+**Temporary security exception:** The development/test stack uses
+`pytest-homeassistant-custom-component==0.13.375` with Home Assistant 2026.10.4.
+This HA release pins patched versions of the previously overridden packages, so
+the overrides for `aiohttp`, `cryptography`, `pyOpenSSL`, `PyJWT`, `uv` and `yarl`
+have been removed. `certifi` and `multidict` resolve without overrides and must
+remain at patched versions in the lockfile.
 
-Additional temporary security overrides for the HA test stack select
-`aiohttp==3.14.4`, `certifi==2026.10.18`, `multidict==6.9.1`, `Pillow==13.0.0`,
-`PyJWT==2.15.0` and `uv==0.13.4`. They address the currently open Dependabot alerts
-in `uv.lock` and remain limited to the affected development/test dependencies.
-The additional `yarl==1.25.1` override is needed because `aiohttp==3.14.4`
-requires it while HA 2026.9.1 pins `yarl==1.24.5`.
-Once the pinned HA test stack provides patched versions, remove the corresponding
-overrides and recheck the lockfile and affected integration tests. This is not a
-general certification of a modified Home Assistant package set.
+Only `Pillow==13.0.0` remains in `[tool.uv].override-dependencies`: HA 2026.10.4
+still pins `Pillow==12.3.0`, which is affected by
+[GHSA-5x8w-8jj5-q52h](https://github.com/advisories/GHSA-5x8w-8jj5-q52h); 13.0.0
+is the first patched version. This exception is limited to development/tests and
+is not a general certification of a modified Home Assistant package set. The
+custom integration does not install these packages itself; its manifest
+requirements remain empty. This change does not update production HA installations
+or the HA minimum version.
+
+HA 2026.10 uses `probatio` schemas at form and service boundaries. The integration
+uses these API-compatible validators when HA provides `probatio`, and falls back
+to `voluptuous` for older supported HA versions. The newer entity-constant paths
+through `const` modules are used when available; older supported HA releases use
+the constants exported by their component modules.
 
 Python tests use the real Home Assistant framework with simulated receiver
 responses and transports. They cover configuration, device targeting, platforms,

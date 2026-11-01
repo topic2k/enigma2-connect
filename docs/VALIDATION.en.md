@@ -2,6 +2,35 @@
 
 # Verification summary
 
+## HA test stack 2026.10.4 – 2.1.8-dev.6
+
+Updated the development/test stack on **1 November 2026** to HA 2026.10.4 via
+`pytest-homeassistant-custom-component==0.13.375`. `uv lock --check` and
+`uv sync --locked` passed; synchronization used Python 3.14.7. Installed versions
+match `uv.lock`: `aiohttp==3.14.5`, `certifi==2026.10.18`,
+`cryptography==50.0.1`, `multidict==6.9.1`, `Pillow==13.0.0`, `PyJWT==2.15.1`,
+`pyOpenSSL==26.4.0`, `uv==0.13.5`, `yarl==1.25.1`, `hassil==3.12.1` and
+`home-assistant-intents==2026.10.6`. The Pillow override is the only remaining
+override because HA 2026.10.4 still pins version 12.3.0, affected by
+GHSA-5x8w-8jj5-q52h.
+
+Mypy across 41 source files, Ruff lint and format checks passed. The targeted
+API/config-flow/action-choice/image/streaming run using project FFmpeg 8.1.2
+initially passed **279 tests** in 659.61 seconds. After aligning and synchronizing
+`hassil` and `home-assistant-intents`, a further targeted run passed **164 tests**.
+An additional regression test reproduced
+the unload of an entry without `runtime_data` before the fix; `async_unload_entry`
+now skips resource closing only when runtime data was never initialized. No test
+failures; output included HA/asyncio runtime warnings and the zlib fallback notice.
+
+HA 2026.10 schema imports use `probatio` when available and retain the
+`voluptuous` fallback for older supported HA releases. Entity constants use the
+new `const` paths or the component exports present in HA 2026.9. HA 2026.9 was not
+run separately in this validation. Tests use the real HA test framework and
+synthetic media; receiver traffic is simulated. This is not receiver
+or production-HA acceptance. Quality criteria and coverage thresholds remain
+unchanged; this verification does not show an update to GitHub's default branch.
+
 ## Dependabot security updates – 2.1.8-dev.5
 
 Checked via the GitHub Dependabot API on **1 November 2026**: 71 alerts in total,

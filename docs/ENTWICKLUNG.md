@@ -129,29 +129,29 @@ Dev-Gruppe, fest auf die Anforderungen des HA-Teststands abgestimmt. Eine frisch
 Umgebung aus der Lockdatei prüft die Vollständigkeit. Die Integration erhält
 dadurch keine zusätzlichen Laufzeitpakete.
 
-**Befristete Sicherheitsausnahme:** Home Assistant 2026.9.1 und 2026.9.2 binden
-`cryptography==48.0.1` und `pyOpenSSL==26.2.0`. Wegen
-[CVE-2026-69247](https://github.com/pyca/cryptography/security/advisories/GHSA-g6cj-pr64-35w5)
-setzt `[tool.uv].override-dependencies` in der Entwicklungsumgebung stattdessen
-`cryptography==50.0.1` und `pyopenssl==26.4.0`. Die zweite Anhebung ist erforderlich,
-weil pyOpenSSL 26.2.0 nur cryptography unter 49 erlaubt; 26.4.0 unterstützt 50.
-Dies weicht bewusst von Home Assistants Paketmetadaten ab und wird mit unseren
-Integrationstests geprüft, nicht als allgemeine HA-Freigabe behauptet. Bei einem
-späteren Update des HA-Teststacks die Ausnahme entfernen, sobald dessen Vorgaben
-eine reparierte cryptography-Version ab 50 zulassen, und Lockdatei/Tests erneut prüfen.
-Die Custom-Integration installiert diese Pakete nicht selbst; ihre Manifest-
-Anforderungen bleiben leer. Für eine produktive HA-Installation gelten deren
-eigene Paketversionen, die durch diese Repository-Änderung nicht aktualisiert werden.
+**Befristete Sicherheitsausnahme:** Der Entwicklungs-/Teststack verwendet
+`pytest-homeassistant-custom-component==0.13.375` mit Home Assistant 2026.10.4.
+Dieser HA-Stand pinnt gepatchte Versionen der zuvor abweichend festgelegten Pakete;
+die dazugehörigen Overrides für `aiohttp`, `cryptography`, `pyOpenSSL`, `PyJWT`,
+`uv` und `yarl` sind deshalb entfernt. `certifi` und `multidict` werden ohne
+Overrides aufgelöst und müssen in der Lockdatei weiterhin auf gepatchten Versionen
+stehen.
 
-Weitere befristete Sicherheits-Overrides für den HA-Teststack setzen `aiohttp==3.14.4`,
-`certifi==2026.10.18`, `multidict==6.9.1`, `Pillow==13.0.0`, `PyJWT==2.15.0` und
-`uv==0.13.4`. Sie beheben die derzeit offenen Dependabot-Meldungen in `uv.lock`;
-die Versionen bleiben auf die betroffenen Entwicklungs-/Testabhängigkeiten begrenzt.
-Zusätzlich ist `yarl==1.25.1` erforderlich, da `aiohttp==3.14.4` diese Mindestversion
-verlangt, HA 2026.9.1 aber `yarl==1.24.5` festlegt.
-Sobald der festgelegte HA-Teststack gepatchte Versionen vorgibt, die jeweiligen
-Overrides entfernen und Lockdatei sowie betroffene Integrationstests erneut prüfen.
-Das ist keine allgemeine Freigabe eines abweichenden Home-Assistant-Paketstands.
+Nur `Pillow==13.0.0` bleibt in `[tool.uv].override-dependencies`: HA 2026.10.4
+pinnt weiterhin die von [GHSA-5x8w-8jj5-q52h](https://github.com/advisories/GHSA-5x8w-8jj5-q52h)
+betroffene Version `Pillow==12.3.0`; 13.0.0 ist die erste gepatchte Version.
+Die Ausnahme gilt nur für Entwicklungs-/Tests und stellt keine allgemeine
+Freigabe eines abweichenden Home-Assistant-Paketstands dar. Die Custom-Integration
+installiert diese Pakete nicht selbst; ihre Manifest-Anforderungen bleiben leer.
+Produktive HA-Installationen und die HA-Mindestversion werden durch diese Änderung
+nicht aktualisiert.
+
+HA 2026.10 verwendet `probatio`-Schemas an den Formular- und Servicegrenzen. Die
+Integration verwendet diese API-kompatiblen Validatoren, wenn HA `probatio`
+bereitstellt, und fällt für ältere unterstützte HA-Versionen auf `voluptuous`
+zurück. Die neuen Entity-Konstantenpfade über `const`-Module werden verwendet,
+wenn sie verfügbar sind; ältere unterstützte HA-Versionen verwenden die
+Konstanten aus den jeweiligen Komponentenmodulen.
 
 Die Python-Tests verwenden das echte Home-Assistant-Framework; Receiver-Antworten
 und Transporte sind simuliert. Sie prüfen unter anderem Config Flow,
