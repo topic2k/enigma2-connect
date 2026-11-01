@@ -1,6 +1,8 @@
 # SPDX-License-Identifier: Apache-2.0
 """Exercise setup recovery and identity protection through the HA flow manager."""
 
+import builtins
+import importlib
 from copy import deepcopy
 from unittest.mock import AsyncMock, patch
 
@@ -8,7 +10,7 @@ import pytest
 import voluptuous as vol
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.enigma2_connect import async_unload_entry
+from custom_components.enigma2_connect import async_unload_entry, config_flow
 from custom_components.enigma2_connect.api import AuthenticationError, ConnectionError
 from custom_components.enigma2_connect.config_flow import host
 from custom_components.enigma2_connect.const import DOMAIN
@@ -25,6 +27,22 @@ def mock_platform_lifecycle():
         patch("custom_components.enigma2_connect.async_unload_entry", return_value=True),
     ):
         yield
+
+
+def test_validator_falls_back_to_voluptuous():
+    original_import = builtins.__import__
+
+    def import_without_probatio(name, *args, **kwargs):
+        if name == "probatio":
+            raise ModuleNotFoundError("No module named 'probatio'", name=name)
+        return original_import(name, *args, **kwargs)
+
+    try:
+        with patch.object(builtins, "__import__", side_effect=import_without_probatio):
+            importlib.reload(config_flow)
+        assert config_flow.vol is vol
+    finally:
+        importlib.reload(config_flow)
 
 
 async def test_unload_entry_without_runtime_data(hass):

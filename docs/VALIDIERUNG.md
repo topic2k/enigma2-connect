@@ -33,6 +33,10 @@ Keine Receiver- oder Produktiv-HA-Abnahme.
 Qualitätskriterien und Abdeckungsgrenzen blieben unverändert. Lokale Prüfungen
 ersetzen nicht die aktuellen CI-Ergebnisse des Pull Requests.
 
+Ein zusätzlicher gezielter Lauf von `tests/test_config_flow.py` bestand mit
+**37 Tests**. Der Regressionstest simuliert einen fehlenden `probatio`-Import und
+prüft den `voluptuous`-Fallback; er ersetzt keinen separaten Lauf mit HA 2026.9.
+
 Für die PR-Vorbereitung am **01.11.2026** wurden Manifest, `pyproject.toml`,
 `uv.lock` und beide Changelogs auf `2.1.8` abgeglichen. `uv.lock` ändert nur die
 lokale Projektversion von `2.1.8.dev6` auf `2.1.8`; Paketversionen und

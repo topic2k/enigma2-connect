@@ -31,6 +31,10 @@ synthetic media; receiver traffic is simulated. This is not receiver
 or production-HA acceptance. Quality criteria and coverage thresholds remain
 unchanged. Local checks do not replace current CI results for the pull request.
 
+A further targeted run of `tests/test_config_flow.py` passed **37 tests**. The
+regression test simulates a missing `probatio` import and verifies the
+`voluptuous` fallback; it does not replace a separate run with HA 2026.9.
+
 For PR preparation on **1 November 2026**, the manifest, `pyproject.toml`,
 `uv.lock` and both changelogs were aligned to `2.1.8`. `uv.lock` changes only the
 local project version from `2.1.8.dev6` to `2.1.8`; package versions and the
