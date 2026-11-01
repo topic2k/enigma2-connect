@@ -34,6 +34,10 @@ unchanged. Local checks do not replace current CI results for the pull request.
 A further targeted run of `tests/test_config_flow.py` passed **37 tests**. The
 regression test simulates a missing `probatio` import and verifies the
 `voluptuous` fallback; it does not replace a separate run with HA 2026.9.
+The platform compatibility run passed **4 tests**: three forced legacy constant
+imports for `binary_sensor`, `notify` and `remote`, plus the regular platform
+setup/unload test. Afterwards, `ruff check .`, `ruff format --check .` and
+`mypy` across 41 source files passed.
 
 For PR preparation on **1 November 2026**, the manifest, `pyproject.toml`,
 `uv.lock` and both changelogs were aligned to `2.1.8`. `uv.lock` changes only the

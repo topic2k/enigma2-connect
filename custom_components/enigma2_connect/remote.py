@@ -13,17 +13,16 @@ if TYPE_CHECKING:
     from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
     from .coordinator import EnigmaConfigEntry
+else:
+    try:
+        from homeassistant.components.remote.const import RemoteEntityFeature
+    except ImportError:
+        from homeassistant.components.remote import RemoteEntityFeature
 
 from collections.abc import Iterable
 
 from homeassistant.components.remote import RemoteEntity
 from homeassistant.exceptions import ServiceValidationError
-
-if not TYPE_CHECKING:
-    try:
-        from homeassistant.components.remote.const import RemoteEntityFeature
-    except ImportError:
-        from homeassistant.components.remote import RemoteEntityFeature
 
 from .const import DOMAIN, KEYS
 from .entity import EnigmaEntity

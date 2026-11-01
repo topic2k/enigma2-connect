@@ -36,6 +36,10 @@ ersetzen nicht die aktuellen CI-Ergebnisse des Pull Requests.
 Ein zusätzlicher gezielter Lauf von `tests/test_config_flow.py` bestand mit
 **37 Tests**. Der Regressionstest simuliert einen fehlenden `probatio`-Import und
 prüft den `voluptuous`-Fallback; er ersetzt keinen separaten Lauf mit HA 2026.9.
+Der Plattform-Kompatibilitätslauf bestand mit **4 Tests**: drei erzwungene
+Legacy-Konstantenpfade für `binary_sensor`, `notify` und `remote` sowie der
+reguläre Plattform-Setup-/Unload-Test. Anschließend bestanden `ruff check .`,
+`ruff format --check .` und `mypy` für 41 Quelldateien.
 
 Für die PR-Vorbereitung am **01.11.2026** wurden Manifest, `pyproject.toml`,
 `uv.lock` und beide Changelogs auf `2.1.8` abgeglichen. `uv.lock` ändert nur die

@@ -11,15 +11,14 @@ if TYPE_CHECKING:
     from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
     from .coordinator import EnigmaConfigEntry, EnigmaCoordinator
-
-from homeassistant.components.binary_sensor import BinarySensorEntity
-from homeassistant.const import EntityCategory
-
-if not TYPE_CHECKING:
+else:
     try:
         from homeassistant.components.binary_sensor.const import BinarySensorDeviceClass
     except ImportError:
         from homeassistant.components.binary_sensor import BinarySensorDeviceClass
+
+from homeassistant.components.binary_sensor import BinarySensorEntity
+from homeassistant.const import EntityCategory
 
 from .entity import EnigmaEntity
 

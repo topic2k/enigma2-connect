@@ -1,6 +1,8 @@
 # SPDX-License-Identifier: Apache-2.0
 """Real HA config-entry lifecycle, entity platforms and actions."""
 
+import builtins
+import importlib
 from datetime import UTC, datetime
 from unittest.mock import AsyncMock, PropertyMock, patch
 
@@ -29,6 +31,35 @@ from custom_components.enigma2_connect.media_player import EnigmaMediaPlayer
 from custom_components.enigma2_connect.remote import EnigmaRemote
 
 from .conftest import DATA, REFERENCE
+
+
+@pytest.mark.parametrize(
+    ("platform", "component", "constant"),
+    [
+        ("binary_sensor", "binary_sensor", "BinarySensorDeviceClass"),
+        ("notify", "notify", "NotifyEntityFeature"),
+        ("remote", "remote", "RemoteEntityFeature"),
+    ],
+)
+def test_platform_constant_import_fallback(platform, component, constant):
+    module = importlib.import_module(f"custom_components.enigma2_connect.{platform}")
+    component_module = importlib.import_module(f"homeassistant.components.{component}")
+    constants_module = importlib.import_module(f"homeassistant.components.{component}.const")
+    constant_value = getattr(constants_module, constant)
+    original_import = builtins.__import__
+
+    def import_without_const(name, *args, **kwargs):
+        if name == f"homeassistant.components.{component}.const":
+            raise ImportError("Simulate an HA version without the const module export")
+        return original_import(name, *args, **kwargs)
+
+    try:
+        with patch.object(component_module, constant, constant_value, create=True):
+            with patch.object(builtins, "__import__", side_effect=import_without_const):
+                importlib.reload(module)
+            assert getattr(module, constant) is constant_value
+    finally:
+        importlib.reload(module)
 
 
 async def setup(hass, entry):

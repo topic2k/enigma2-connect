@@ -11,14 +11,13 @@ if TYPE_CHECKING:
     from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
     from .coordinator import EnigmaConfigEntry
-
-from homeassistant.components.notify import NotifyEntity
-
-if not TYPE_CHECKING:
+else:
     try:
         from homeassistant.components.notify.const import NotifyEntityFeature
     except ImportError:
         from homeassistant.components.notify import NotifyEntityFeature
+
+from homeassistant.components.notify import NotifyEntity
 
 from .entity import EnigmaEntity
 
