@@ -11,6 +11,7 @@ and everyday use, see the [user guide](USER_GUIDE.en.md). The
 - [README badges](#readme-badges)
 - [Project and requirements](#project-and-requirements)
 - [Development environment and checks](#development-environment-and-checks)
+- [Docker test lab](#docker-test-lab)
 - [Read-only receiver acceptance](#read-only-receiver-acceptance)
 - [Monitor the Home Assistant developer blog](#monitor-the-home-assistant-developer-blog)
 - [Cloudflare trial](#cloudflare-trial)
@@ -26,6 +27,7 @@ and everyday use, see the [user guide](USER_GUIDE.en.md). The
 - [Disk space and system diagnostics](#disk-space-and-system-diagnostics)
 - [Audio-track selection](#audio-track-selection)
 - [Recorded ideas](#recorded-ideas)
+- [Implementation plan: dedicated receiver component](#implementation-plan-dedicated-receiver-component)
 - [Files and local archives](#files-and-local-archives)
 
 ## README badges
@@ -122,19 +124,27 @@ pinned to the HA test build requirements. A fresh environment built from the
 lockfile verifies completeness. The integration gains no additional runtime
 packages.
 
-**Temporary security override:** Home Assistant 2026.9.1 and 2026.9.2 pin
-`cryptography==48.0.1` and `pyOpenSSL==26.2.0`. To address
-[CVE-2026-69247](https://github.com/pyca/cryptography/security/advisories/GHSA-g6cj-pr64-35w5),
-`[tool.uv].override-dependencies` selects `cryptography==50.0.1` and
-`pyopenssl==26.4.0` in the development environment. The second upgrade is necessary
-because pyOpenSSL 26.2.0 requires cryptography below 49, while 26.4.0 supports 50.
-This deliberately differs from Home Assistant's package metadata and is checked
-by our integration tests; it is not a general HA compatibility certification.
-When updating the HA test stack, remove the override once its requirements allow
-patched cryptography from version 50, then recheck the lockfile and tests.
-The custom integration does not install these packages itself; its manifest
-requirements remain empty. Production HA installations retain their own package
-versions, which this repository change does not update.
+**Temporary security exception:** The development/test stack uses
+`pytest-homeassistant-custom-component==0.13.375` with Home Assistant 2026.10.4.
+This HA release pins patched versions of the previously overridden packages, so
+the overrides for `aiohttp`, `cryptography`, `pyOpenSSL`, `PyJWT`, `uv` and `yarl`
+have been removed. `certifi` and `multidict` resolve without overrides and must
+remain at patched versions in the lockfile.
+
+Only `Pillow==13.0.0` remains in `[tool.uv].override-dependencies`: HA 2026.10.4
+still pins `Pillow==12.3.0`, which is affected by
+[GHSA-5x8w-8jj5-q52h](https://github.com/advisories/GHSA-5x8w-8jj5-q52h); 13.0.0
+is the first patched version. This exception is limited to development/tests and
+is not a general certification of a modified Home Assistant package set. The
+custom integration does not install these packages itself; its manifest
+requirements remain empty. This change does not update production HA installations
+or the HA minimum version.
+
+HA 2026.10 uses `probatio` schemas at form and service boundaries. The integration
+uses these API-compatible validators when HA provides `probatio`, and falls back
+to `voluptuous` for older supported HA versions. The newer entity-constant paths
+through `const` modules are used when available; older supported HA releases use
+the constants exported by their component modules.
 
 Python tests use the real Home Assistant framework with simulated receiver
 responses and transports. They cover configuration, device targeting, platforms,
@@ -152,6 +162,22 @@ documented build.
 The existing local WSL environment can use `.work/run_tests.sh`; it is not part
 of a fresh installation. On the Windows mount, `--capture=sys` avoids known
 pytest capture issues. The validation document records further local paths and reports.
+
+## Docker test lab
+
+An isolated HA Container lab with automatic onboarding is available in
+[`dev/ha`](../dev/ha/README.md#english). It installs the current source, preserves
+local test data and runs alongside the EnigmaHACompanion lab:
+
+```sh
+python scripts/ha_dev.py start
+python scripts/ha_dev.py check
+```
+
+UI: **http://127.0.0.1:18124**, test login: **`enigma2connect` / `notsecret`**.
+Receivers are added explicitly through the UI. The guide covers restarts, logs,
+persistence and network limitations. The pinned HA image provides an additional
+manual test environment; existing CI and coverage requirements remain necessary.
 
 ## Read-only receiver acceptance
 
@@ -1392,6 +1418,449 @@ and firmware differences first; the last answer alone does not establish manual
 confirmation. Starting points:
 [OpenWebif message model](https://github.com/E2OpenPlugins/e2openplugin-OpenWebif/blob/master/plugin/controllers/models/message.py)
 and [Enigma2 dialog](https://github.com/openatv/enigma2/blob/master/lib/python/Screens/MessageBox.py).
+
+## Implementation plan: dedicated receiver component
+
+Planning date **17 October 2026**, based on integration commit `7af9665` (2.1.7).
+This is an architecture and work plan. A temporary feasibility prototype has
+since been tested on the Vu+ and removed; the
+[stage 0 findings](#stage-0-feasibility-on-17-october-2026) distinguish evidence
+from open items. A production receiver component is still pending. The current
+OpenWebif requirement still applies. The
+two ideas above are the first uses of a dedicated receiver interface that can
+gradually cover the complete integration.
+
+### Goal and architecture decision
+
+Use an **Enigma2 plugin with its own local API**, working name “Enigma2 Connect
+Receiver”, and a separate process for expensive frame extraction. A standalone
+operating-system service cannot directly cover the GUI session, dialogs,
+navigation and timers. The plugin accesses these APIs on Enigma2's main thread;
+FFmpeg, substantial file work and network transfers must not block interaction.
+Add a persistent media daemon only if measured load justifies that separation.
+
+```mermaid
+flowchart LR
+    HA[HA entities, actions and cards] --> B[ReceiverBackend]
+    B --> O[OpenWebif adapter during migration]
+    B --> C[Connect client: HTTPS, JSON and events]
+    C --> P[Receiver plugin]
+    P --> E[Enigma2: session, navigation, EPG and timers]
+    P --> W[Bounded snapshot worker]
+    P --> M[Recording files and native stream services]
+```
+
+Use a separate port, authentication, discovery and package dependencies. The API
+must not import OpenWebif or depend on its web server, configuration or files.
+Native Enigma2 stream services may remain if startup, authorization and operation
+without OpenWebif are demonstrated. A general web interface like OpenWebif is
+outside the required scope; receiver settings need a small local plugin screen.
+
+The HA integration and domain `enigma2_connect` remain the entry point. For later
+implementation, use a separate receiver repository with its own package/release
+cycle, initially keeping HA-independent client modules inside the integration.
+A separate PyPI library is not a prerequisite. Version the API, plugin and
+integration independently and document compatibility. Receiver packages do not
+belong in the HACS artifact.
+
+### Inventory and required replacements
+
+The integration uses roughly three dozen JSON endpoints and additional HTTP
+resources. Replacing `api.py` alone is insufficient: the coordinator, actions and
+workflow models know endpoint names and sometimes raw OpenWebif data.
+
+| Area / current coupling | Required native backend capability |
+| --- | --- |
+| `config_flow.py`, `entity.py`, `about`, Bonjour `openwebif*` | Identity/MAC aliases, model/image, dedicated discovery, pairing, reauth, network changes, device information and configuration destination |
+| `coordinator.py`, `models.py`: `statusinfo`, `getcurrent`, `signal` | Consistent status with reference, playback session, EPG, position/duration, volume/mute, standby, recording/stream activity and optional tuner values |
+| `bouquets`, `getservices`, `epgsearch`, `epgsimilar`, `event` | TV/radio bouquets, stable service references, search/similar events, event details and freshness checks before recording |
+| `remotecontrol`, `zap`, `vol`, `message`, `powerstate` | Keys/long press, Unicode text, channel changes and recording playback, volume/mute, messages, standby, GUI/system restart and deep standby |
+| `audio_tracks.py`, `timeshift.py`, `sleep_timer.py`, `powerup.py` | Audio tracks, timeshift, sleep timer and optional CEC suppression; explicit capabilities and confirmed outcomes rather than version assumptions |
+| `timer_edit.py`, `instant_recording.py`, `calendar.py` | Read/create/edit/delete/enable timers, instant recording, weekly repeats, event recording, directories/tags and structured conflicts |
+| `recording_library.py`, `recording_management.py` | Recursive catalog, destinations, metadata/progress, title changes, move/delete including sidecars, revisions and operation status |
+| `/grab`, `/picon/…`, `camera.py`, `channel_media.py` | Authenticated screenshots and channel images; screen capture and recording frames remain separate capabilities |
+| `/file`, `recording_snapshot.py`, `media_stream.py`, `stream_vod.py` | Restricted recording access with GET/HEAD and correct byte ranges; include `.ap` index data for existing VOD/keyframe remux |
+| `stream_receiver.py`, `/web/streamhls.m3u`, `/web/video.m3u`, TS port 8001 | Dedicated live-TV/transcoding stream descriptors, authorized transport and verified service availability without OpenWebif |
+
+Retain the nine HA platforms, cards, media source and usable HLS/remux/VOD
+processing. Receiver snapshots replace neither the recording file service for
+external playback nor FFmpeg for any required HA transcoding. Frame extraction
+must not change the current channel or take over a TV playback hardware decoder.
+
+### API, events and operation
+
+1. **Domain contract:** A typed `ReceiverBackend` supplies device information,
+   state, catalogs, actions, images and media sources. OpenWebif quirks (mutating
+   GET requests, double URL decoding, inconsistent acknowledgements) stay in its
+   adapter. Missing data remains unknown; `None` differs from a valid empty list.
+2. **Versioned API:** Proposed base `/v1`, with `info`, `capabilities`, `state`,
+   timer/recording/dialog resources and `operations/{id}`. Report capabilities
+   separately, such as `dialogs.choices`, `snapshots.recording`, `stream.live`,
+   `stream.recording_range` and `power.cec`. Missing FFmpeg must not disable
+   control or dialogs. Writes use POST/PATCH/DELETE with validated sizes/ranges.
+3. **Events:** Start with HTTP JSON plus Server-Sent Events; HA initiates the
+   connection, requiring neither a broker nor an inbound HA port. State and
+   events carry a boot ID, sequence/revision and timestamp. Match the initial
+   snapshot to an event cursor to avoid losing updates during connection.
+   Bound replay buffers and slow clients; implement heartbeats, backoff and full
+   resync after gaps/restarts. Slow polling reconciles state and values without
+   usable hooks. Decide any `iot_class` change from the implemented push/polling
+   behavior and HA requirements.
+4. **Write safety:** Request ID, expected resource revision and a bounded
+   persistent operation journal. Repeated IDs with identical content return the
+   known operation; different content is rejected. Distinguish `accepted`,
+   `running`, `completed`, `failed` and `unknown`. A crash between an Enigma2
+   operation and journal completion can still leave uncertainty: no blanket
+   exactly-once guarantee. Read/reconcile results; never repeat an uncertain
+   write through the other backend.
+5. **Access:** Explicitly open pairing on the receiver, display a short-lived
+   one-time code on the TV and confirm access; issue revocable tokens per HA
+   instance. HTTPS with a validated trust anchor or fingerprint confirmed during
+   pairing; no silent certificate-validation bypass. Pairing itself must resist
+   device substitution/MITM; certificate changes require renewed trust checks.
+   Establish TLS/library availability in stage 0. Dedicated mDNS, for example
+   `_e2connect._tcp.local.`, is only a discovery hint; authenticate identity
+   afterwards. Separate read, control and file-management permissions. Keep
+   tokens out of URLs, logs and diagnostic exports.
+6. **File/process boundaries:** Recording IDs rather than arbitrary paths/URLs;
+   validate allowed recording directories, symlinks, path changes and sidecars.
+   No shell endpoint or arbitrary FFmpeg arguments. Bound reads/writes, handle
+   cancellation/timeouts and release file descriptors when clients disconnect.
+   Reduce worker privileges where reliably supported by the image.
+
+OpenATV supplies session/autostart hooks and an Enigma2-integrated Twisted reactor.
+This is a possible server foundation, not a guarantee for every image. Do not
+start a second reactor or access Enigma2 objects from worker threads. Use symbolic
+plugin constants and isolate image differences in small adapters. Python
+**3.14.2 is the HA requirement**, not automatically the plugin requirement.
+Inventory receiver Python, TLS, FFmpeg codecs, package manager and stream services
+for each supported image.
+
+| Native entry point to investigate | Planned use / boundary |
+| --- | --- |
+| `PluginDescriptor.WHERE_SESSIONSTART`, `WHERE_AUTOSTART`, `WHERE_PLUGINMENU` | Session binding, lifecycle and local configuration; use named constants |
+| `session.nav`, `nav.event`, `nav.record_event` | Current service and recording changes; detach callbacks during shutdown |
+| `service.seek()`, player `onPlayStateChanged` / `seekstate` | Position/file duration and actual playback state; rebind when the player changes, never infer pause from a fixed position |
+| `session.nav.RecordTimer`, `RecordTimerEntry`, `on_state_change` | Timer operations/conflicts and events; periodic reconciliation for edits without a complete event |
+| `eServiceCenter`, `eServiceReference`, `eEPGCache` | Channel catalogs and on-demand EPG queries |
+| `Screens.Standby`, `config.misc.standbyCounter` | Standby transitions; image-specific CEC and power adapters |
+| `session.openWithCallback`, dedicated `Screen` | Dialog display with explicit completion reasons |
+| `eStreamServer`, image-provided grab helper | Verify independent streaming and screenshots; presence alone proves neither access control nor hardware support |
+
+### First application: recording frames on the receiver
+
+Add `receiver_snapshot` to the existing image-provider ordering; provider choice
+and position remain configurable per receiver. A request contains recording ID,
+revision, position and a bounded image size. Return a job ID immediately; report
+completion and provide authenticated image retrieval separately. Reuse the HA
+image cache and neutral fallback. Do not silently change the selected position:
+for a shorter completed recording, use its midpoint as the current code does.
+HA's missing-FFmpeg repair must consider the selected image provider; a working
+receiver provider needs no HA FFmpeg for frame extraction. Discard completed jobs
+if their recording revision or configuration has become obsolete.
+
+One worker per receiver, a small bounded queue, deduplication of identical jobs,
+lower process priority and explicit CPU/memory/runtime/output limits. Start
+measurement with the current HA limits of 45 seconds and at most 640 × 640 pixels;
+the existing 64 MiB limit is a network budget, not a ready-made limit for local
+file decoding. Establish software decoder/codec availability; allow hardware
+acceleration only after proving that TV playback is unaffected.
+
+Cache keys bind recording, file change/revision, position and image profile;
+bound size/age and invalidate on moves/deletion. Prefer RAM or a suitable disk,
+avoiding unbounded flash writes. Read ongoing recordings only when the requested
+position is safely available. Defer under recording load; do not wake a disk only
+for background preparation if the corresponding receiver option forbids it.
+Deep standby means unavailable. Missing FFmpeg/codec, changed file and timeout
+are distinct outcomes. Test both receivers with H.264/MPEG-2 and HEVC where
+available; playback, recording and timeshift must remain undisturbed.
+
+### Second application: interactive messages
+
+A dedicated dialog manager assigns question IDs and stable answer IDs; visible
+labels such as “Now/Later/Cancel” remain configurable. Default selection and
+timeout action are separate fields. Distinguish `answered`, `timed_out`,
+`cancelled`, `rejected` and `interrupted`; only explicit input may produce
+`answered`. Applying a default after timeout is not user confirmation.
+Before completion distinguish `queued` and `displayed`; a label such as “Cancel”
+is a selectable answer ID, whereas closing the dialog has a separate reason.
+
+One visible Connect dialog per receiver, a bounded FIFO queue and configurable
+expiry for queued questions; do not displace other Enigma2 dialogs. Results bind
+question ID, receiver ID, answer ID, reason and timestamp. Enforce client
+ownership, cancellation by ID, bounded retention and result retrieval after
+disconnects. Mark open questions interrupted after a GUI restart; never attribute
+an old answer to the next question.
+In standby, reject by default with a clear reason; explicitly requested queuing
+must have an expiry and never wake the receiver automatically. Record whether
+cancellation came from the remote or the requesting client. Keep question text
+and answer contents out of diagnostics; automated follow-up actions run in HA.
+
+A new HA action, for example `dialog_show`, returns the question ID immediately;
+`dialog_status`/`dialog_cancel` and a correlated event such as
+`enigma2_connect_dialog_result` support automations without blocking an action
+for a long period. Result retrieval closes the race between the action and event
+subscription; automations must check IDs and deduplicate events. Retain Notify
+for simple messages. Later add UI text and YAML examples to “Messages and
+automations” in both user guides.
+
+OpenWebif's global last answer is insufficient. Enigma2's ordinary MessageBox
+callback can also return the current selection or default on timeout. Use a
+small dedicated dialog class with separate input/timeout paths, or a verified
+image adapter; never infer “True means a manual Yes”.
+
+### Stage 0: feasibility on 17 October 2026
+
+**Result: The technical approach is feasible on the Vu+ within the tested limits;
+stage 0 as a whole remains open.** A temporary plugin ran inside real Enigma2,
+returned authenticated HTTPS responses and displayed correlated dialogs.
+A separately executed FFmpeg process generated test images at selected positions.
+Current inventory is available for both pilot receivers; runtime checks cover
+only the Vu+ and do not constitute product acceptance.
+
+The Octagon remains authorized exclusively for read-only access. After explicit
+confirmation of its identity, its inventory was collected on 17 October 2026.
+The confirmed SSH key was matched exactly before authentication; global SSH
+trust settings were unchanged. Only system/package queries and static file
+analysis using `python3 -B` were performed, without writing Python bytecode.
+No files were uploaded or created on the receiver, no settings changed, and no
+dialogs, decoder load tests or restarts performed. Installed prerequisites are
+verified; execution of the new plugin on the Octagon remains untested and is
+outside this task's authorization.
+
+| Prerequisite | Vu+ Solo² | Octagon SF8008 4K Supreme |
+| --- | --- | --- |
+| Current image and architecture | Met: OpenATV 7.6.0, build 20260921, MIPS/mips32el | Recorded: OpenATV 7.6.0, build 20260831, ARM32/armv7l |
+| Receiver Python | Met for the experiment: 3.13.12 | 3.13.12 installed |
+| Enigma2 session and main thread | Verified in the actual plugin | Examined files/structure identical; runtime evidence pending |
+| HTTP/TLS libraries | Twisted 25.5.0, pyOpenSSL 25.1.0, OpenSSL 3.6.0 present | Same versions installed and importable |
+| Authenticated HTTPS | Verified with an explicitly trusted test certificate | Open |
+| Dialog with correlated response | Choice, timeout and cancellation verified | Open; dialog tests are not authorized |
+| FFmpeg/ffprobe and software decoders | FFmpeg 8.0 present; three synthetic profiles tested | FFmpeg/ffprobe 8.0; MPEG-2/H.264/HEVC listed, no frame/performance measurement |
+| Package manager and helpers | `opkg`, `grab` and OpenSSL present | `opkg`, `grab`, OpenSSL and Avahi present |
+| Resources | About 559 MiB RAM; only about 27 MiB free flash | 926.49 MiB RAM, four logical CPUs; 4.14 GiB root available |
+| Installable product package | Open; temporary experiment only | Open |
+| License and exact provenance of components to distribute | Open | Open |
+| Operation without OpenWebif | Open | Open |
+
+The Octagon reports kernel 4.4.35 and package architecture
+`cortexa15hf-neon-vfpv4`; its running Python is ARM32 regardless of the 4K model
+label. At the measurement point, 285.87 MiB RAM and 449.98 MiB in `/tmp` were
+available, with no swap. These reserves establish capacity, not decoder speed or
+load tolerance. Installed Enigma2 is `7.6.0+git35125+4fbbe910+4fbbe9136d-r1`;
+the Vu+ uses the separately recorded `e42a0ffb00` build.
+
+`StartEnigma.py` and the nine examined modules `Plugins/Plugin`,
+`Components/PluginComponent`, `Screens/Screen`, `Screens/MessageBox`, `Navigation`,
+`Screens/InfoBarGenerics`, `Components/MenuList`, `Components/ActionMap` and
+`e2reactor` each have identical SHA-256 values on both receivers. Their statically
+read code-object structures also match. This supports a shared OpenATV adapter;
+hardware/driver differences and actual session startup remain untested. The GUI
+modules were not executed in the SSH Python process. This does not establish
+that their other components or the complete images are identical.
+
+The Octagon lists software decoders, plus additional V4L2 wrappers; the latter
+do not prove working hardware acceleration. `streamproxy`, `transtreamproxy`
+and `streamproxy-wsgi` were not found in its executable search path. A TCP
+listener on port 8001 was present. This proves neither a missing streaming path
+nor independently authenticated access; the stream provider and authentication
+still need separate verification.
+
+The earlier historical VTi description does not describe this Vu+ test setup.
+The CPU inventory reports BCM7346B2/BMIPS5000 and two logical CPUs.
+Receiver and HA need separate Python requirements: Python 3.13 is the
+verified baseline for the next receiver pilot; this does not change the HA
+requirement of Python 3.14.2 or later. Support for a broader range of receiver
+Python versions still needs to be defined and tested on actual installations.
+
+The prototype uses the existing `e2reactor.PollReactor`.
+Session, navigation and the current service were available in the Enigma2 process;
+startup and request execution occurred on the main thread. The standalone
+Python inventory not finding `enigma` does not indicate missing plugin access here.
+GUI access must remain in the Enigma2 context; expensive decoding belongs
+in a separate process. A second reactor is not required.
+
+The pilot should use a small `opkg`/IPK package depending on existing image
+packages; avoid a second Python/TLS distribution in the limited flash. FFmpeg
+remains an optional image capability checked at runtime. On the Vu+,
+`avahi-daemon` and `/usr/bin/transtreamproxy` are installed; this does not yet establish dedicated
+discovery or independently authenticated streaming. Root free space was about
+27 MiB before testing and 28.24 MiB after cleanup; these are point-in-time values.
+Persistent image caches belong on a suitable separate medium. The Enigma2
+package revision and source evidence are in the
+[license record](LIZENZEN.md#ergänzung-receiver-machbarkeit-am-17102026).
+
+The existing Docker lab ran HA 2026.10.1 and Python 3.14.6. The Vu+ was added
+through the actual config flow: entry loaded, 72 registered entities,
+including 22 active and available entities and 50 disabled by default.
+The baseline read connection, playback, recording count and timer count, among others.
+It verifies the existing OpenWebif integration; a native HA backend adapter
+for the new receiver component has not yet been implemented or tested by this work.
+
+Additional Python calls from the HA container reached the test plugin directly.
+An untrusted certificate was rejected and the explicitly trusted certificate
+accepted; an invalid token returned HTTP 401. A second dialog while a question
+was open returned HTTP 409, and an oversized request body returned HTTP 413.
+A choice returned `answered` with an answer ID; timeout returned `timed_out` without
+an answer. Exit and client cancellation returned `cancelled` without an answer.
+No test dialog remained open. OK and Exit were injected through the existing
+HA remote and OpenWebif. The original physical remote has not yet been tested.
+
+The probe limited requests to 4096 bytes, results to 32 entries and connections
+to four; at most one owned dialog was allowed, with a timeout of 1–30 seconds.
+These are configured experimental values. The live checks verify the cases
+listed above; additional limits and failure cases were partly tested only with
+simulated Enigma2/HTTP objects. They do not establish load or security acceptance.
+
+| Synthetic TS file | Tested positions | Time per image | Highest measured RSS |
+| --- | --- | --- | --- |
+| MPEG-2, 720 × 576, 12 seconds | 2 and 10 seconds | 0.330–0.761 seconds | 17,780 KiB |
+| H.264, 1280 × 720, 12 seconds | 2 and 10 seconds | 0.527–0.577 seconds | 28,568 KiB |
+| HEVC, 1920 × 1080, 6 seconds | 1 and 4 seconds | 1.164–1.286 seconds | 41,920 KiB |
+
+All six calls returned JPEGs containing the test color expected at that position.
+Output was scaled to at most 640 pixels along either edge. HEVC reported reference
+picture/RPS warnings despite successful output; this remains a decoder limitation.
+The process used software decoders, reduced priority and configured thread limits.
+Configured limits were 256 MiB address space, 45 seconds CPU time,
+40 seconds waiting time, 64 file descriptors and 5 MiB output; allowed
+FFmpeg protocols were `file,pipe`. The limits were not deliberately exhausted.
+The measurements describe six individual calls, not worst-case sizing.
+RSS measures the decoder child process, not total Enigma2 and plugin memory.
+The frame worker ran separately through SSH; a native snapshot API and its
+HA integration have not yet been demonstrated.
+
+Short color files do not adequately represent actual broadcasts, long GOPs,
+damaged or growing recordings or large seeks. 4K, concurrent recordings/streams,
+sustained load, cancellation under load and low-memory conditions remain untested.
+No recordings were running before the experiments; the checks therefore do not
+establish non-interference with an ongoing recording. The available flash requires
+small packages and a bounded cache on suitable storage instead of root flash.
+
+The Vu+ GUI was restarted once through the HA test integration to load the
+temporary plugin and once to remove it. Each HA response was unconfirmed because
+of an HTTP error; neither command was repeated. Both restarts were subsequently
+confirmed by a changed GUI process ID and state. The plugin link, temporary
+receiver files and container test files were removed; the test listener was
+closed afterwards. Service reference, volume, standby and timer list matched
+the initial state, and no recording was running. These comparisons establish
+before/after states, not uninterrupted picture or audio playback.
+After cleanup, the HA entry was loaded again and all 22 active entities were
+available. The configured Vu+ remains in the HA lab for subsequent implementation
+work. Raw inventory, prototype, test helpers and measurements remain local under
+`.work/receiver-feasibility/`; they are not included in distribution. The material
+findings are recorded here and in both validation summaries. Local credentials
+under `.local-info/` remain excluded from Git.
+
+The next work items and decisions are:
+
+1. Use the Vu+ with the HA test container for development; Octagon prerequisites
+   are now recorded. Access there remains read-only. Keep plugin runtime evidence
+   pending until a separately authorized test environment is available.
+2. Define the receiver pilot matrix, minimum Python version, package format and
+   minimum storage requirement. A package manager alone does not prove a safe package lifecycle.
+3. Resolve provenance and licensing of the Enigma2 interface, libraries and helpers.
+   The installed FFmpeg reports `--enable-gpl` and `--enable-nonfree`; it will not
+   be bundled in this phase. Source revision and redistribution require separate resolution.
+4. Prepare the API contract and backend boundary from stage 1; then implement
+   pairing, certificate management, token revocation, stable device identity and events.
+5. Build a recording resolver with path protection and file revisions before
+   the production snapshot worker; then measure queue, cancellation, cache and resource budget.
+6. Test dialogs with the original remote, competing clients, standby and restarts;
+   verify package installation, upgrade, removal and reconnection separately.
+
+The plugin license must be decided separately from the HA client's Apache-2.0 license.
+Complete replacement of existing functions and acceptance with OpenWebif disabled
+remain later stages. The Vu+ experiment does not remove these requirements.
+
+### Migration and work packages
+
+| Stage | Deliverable and dependency | Acceptance before proceeding |
+| --- | --- | --- |
+| 0 – Feasibility | Inventory both pilot receivers, Octagon SF8008 4K Supreme and Vu+ Solo²: image/build, actual Python, CPU/RAM, TLS/Twisted, FFmpeg, package manager, stream/grab helpers. Small plugin for session, state, test dialog and bounded frame extraction; licensing/package decision. | Each claimed hook works on the relevant image; decoder/TLS/dialog limits measured. Record support matrix and resource limits. Explicitly restrict or adapt unavailable capabilities. |
+| 1 – Backend boundary and protocol | Typed contracts, normalized models, OpenWebif adapter, factory in config flow/setup, media sources without client-internal access. API schema and client/plugin contract tests. | Appropriate regression tests retain current behavior, including actions, identifiers, errors and media paths. |
+| 2 – Receiver foundation | Installable package, settings, HTTPS/pairing, identity/capabilities, state, events, journal and clean startup/shutdown. Requires stages 0/1. | Installation, upgrade, removal/rollback and GUI restart preserve settings; verify token revocation, reconnects and resource limits. |
+| 3 – Both new features | Correlated dialogs first, then snapshot worker/provider on the shared foundation. An existing entry can initially use Connect only for these capabilities. | Timeout never becomes confirmation; safely associate multiple questions/clients. Frames at the selected position without channel changes or recording disruption; verify failures/fallback. |
+| 4 – Complete control | Native state/channel/EPG data, remote/text, volume, power/CEC, audio, timeshift, sleep timer and timers/conflicts. | Per-image capability matrix, event/poll reconciliation, concurrent remote and HA interaction, DST/weekly repeats and uncertain writes. Timeshift settings remain unchanged after stopping. |
+| 5 – Recordings and media | Native catalogs/management with receiver-side conflict checks; picons, screenshots, file service including `.ap`, live TV and HLS/VOD integration. | Use dedicated test recordings for writes; verify partial failures, sidecars, mount/cross-filesystem boundaries and restart recovery. Separately prove range/seek, tuner exhaustion, stream limits and external playback. |
+| 6 – Independent operation | Native mode in the existing entry, complete documentation/support matrix and acceptance without OpenWebif. | Stop OpenWebif, disable its autostart and restart Enigma2: setup, discovery, all supported features and media paths pass without hidden OWIF requests/fallback. Additionally test installation on an image without the OWIF package. |
+
+Stage 3 delivers an independently useful first scope. **Only stage 6 demonstrates
+OpenWebif independence.** During migration distinguish “OpenWebif”, “OpenWebif
+with Connect extensions” and “Connect” modes. Assign exactly one write path per
+capability; switch only after pending operations are completed or reconciled.
+Do not change backends automatically after a failure.
+
+Dependency for stage 3: stage 2 already needs a minimal read-only recording
+resolver for permitted directories, mapping existing service references to native
+recording IDs and file revisions. A supplied legacy reference must be validated
+against receiver-side inventory; it is not permission to read any path. The full
+catalog, filtering and management remain in stage 5.
+
+Before switching to Connect, compare native capabilities with the features
+already supported on that receiver. Missing replacements prevent full migration;
+a reduced capability list does not prove parity. New optional snapshot profiles
+may have explicit limits. Run targeted local checks per stage and require current
+complete CI and quality review before adoption into main; maintain evidence and
+outstanding hardware checks in both verification summaries.
+
+Preserve `entry_id`, device/entity identifiers, action names and response modes.
+Current device identity uses a MAC or `host:` fallback; match authenticated MAC
+aliases and explicitly associate fallback entries. New native devices need a
+stable identity. Media identifiers additionally depend on byte-exact service
+references and their hashes: return legacy references or retain a persistent
+mapping. New recording IDs must not unexpectedly change saved media links.
+Version config-entry migration and test reauth, discovery duplicates, address
+changes, reload and a documented return to the previous backend.
+
+Optional new capabilities are compatible additions. Later removing the OpenWebif
+adapter or making the plugin mandatory would be a separate breaking decision,
+requiring a major version and migration guide. Independent operation does not
+automatically require removing the old adapter. Determine versions under the
+project rules when each stage is implemented.
+
+### Verification, open decisions and sources
+
+Separate contract tests for both backends, real local HTTP/SSE/range tests and
+simulated Enigma2 adapters from hardware tests. Cover failures between request,
+execution and acknowledgement, duplicated/lost events, restart, token revocation,
+path/symlink changes, full disks, concurrent clients and incomplete catalogs.
+File management cannot generally lock external Samba/NFS users; document the
+protection boundary and unknown activity explicitly.
+
+HA: retain 100% config-flow statement/branch coverage, over 95% combined coverage
+per production module, strict mypy and lifecycle/reauth/diagnostic checks. Do not
+relax existing quality exceptions or thresholds. Give the receiver component its
+own CI for selected Python/image variants, API contracts, packages and security
+boundaries. Hardware acceptance per image covers visible dialogs and the original
+remote, concurrent recordings/streams, standby and GUI/system restarts, followed
+by an extended load run. Each advertised capability needs appropriate evidence;
+missing DVB reception remains an explicit test limitation.
+
+Python/TLS and basic dialog/frame paths are now demonstrated on the tested Vu+.
+Octagon inventory is now recorded; its plugin runtime, realistic snapshot load,
+GUI/timer/CEC differences, independent stream authentication and package
+distribution remain unresolved. Resolve the
+remaining stage 0 questions before substantial restructuring, or explicitly
+limit the pilot to capabilities supported by evidence. A complete,
+verified backend is a project of several development months as a rough planning
+assumption; re-estimate each stage after feasibility testing. A plugin prototype
+and two extra features do not constitute complete replacement.
+
+The existing Apache-2.0 assessment covers the HTTP client. A plugin importing
+Enigma2, its helpers and package distribution require a separate provenance and
+license review. Do not relabel server/GUI source files as Apache. Decide the
+plugin license before distribution and update `docs/LIZENZEN.md`; separate
+repositories do not replace that review.
+
+Sources checked on 17 October 2026; upstream branches move, so record exact image
+source revisions in stage 0. These establish implementation entry points, not
+acceptance of the two receivers:
+
+- [OpenATV PluginDescriptor](https://github.com/openatv/enigma2/blob/master/lib/python/Plugins/Plugin.py) and [StartEnigma/session/reactor](https://github.com/openatv/enigma2/blob/master/lib/python/StartEnigma.py).
+- [OpenATV MessageBox](https://github.com/openatv/enigma2/blob/master/lib/python/Screens/MessageBox.py) and [OpenWebif message model](https://github.com/E2OpenPlugins/e2openplugin-OpenWebif/blob/master/plugin/controllers/models/message.py).
+- [Navigation/events](https://github.com/openatv/enigma2/blob/master/lib/python/Navigation.py), [playback/seek](https://github.com/openatv/enigma2/blob/master/lib/python/Screens/InfoBarGenerics.py), [timer events](https://github.com/openatv/enigma2/blob/master/lib/python/timer.py) and [native streaming](https://github.com/openatv/enigma2/blob/master/lib/dvb/streamserver.cpp).
+- [HA coordinator and push](https://contributors.home-assistant.io/core/integrations/fetching-data/) and [config flow/identity](https://contributors.home-assistant.io/core/integrations/config-flow/).
 
 ## Files and local archives
 

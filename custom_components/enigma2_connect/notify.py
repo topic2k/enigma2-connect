@@ -6,12 +6,18 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from homeassistant.components.notify.const import NotifyEntityFeature
     from homeassistant.core import HomeAssistant
     from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
     from .coordinator import EnigmaConfigEntry
+else:
+    try:
+        from homeassistant.components.notify.const import NotifyEntityFeature
+    except ImportError:
+        from homeassistant.components.notify import NotifyEntityFeature
 
-from homeassistant.components.notify import NotifyEntity, NotifyEntityFeature
+from homeassistant.components.notify import NotifyEntity
 
 from .entity import EnigmaEntity
 

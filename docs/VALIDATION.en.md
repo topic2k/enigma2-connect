@@ -2,6 +2,217 @@
 
 # Verification summary
 
+## HA test stack 2026.10.4 – 2.1.8
+
+Updated the development/test stack on **1 November 2026** to HA 2026.10.4 via
+`pytest-homeassistant-custom-component==0.13.375`. `uv lock --check` and
+`uv sync --locked` passed; synchronization used Python 3.14.7. Installed versions
+match `uv.lock`: `aiohttp==3.14.5`, `certifi==2026.10.18`,
+`cryptography==50.0.1`, `multidict==6.9.1`, `Pillow==13.0.0`, `PyJWT==2.15.1`,
+`pyOpenSSL==26.4.0`, `uv==0.13.5`, `yarl==1.25.1`, `hassil==3.12.1` and
+`home-assistant-intents==2026.10.6`. The Pillow override is the only remaining
+override because HA 2026.10.4 still pins version 12.3.0, affected by
+GHSA-5x8w-8jj5-q52h.
+
+Mypy across 41 source files, Ruff lint and format checks passed. The targeted
+API/config-flow/action-choice/image/streaming run using project FFmpeg 8.1.2
+initially passed **279 tests** in 659.61 seconds. After aligning and synchronizing
+`hassil` and `home-assistant-intents`, a further targeted run passed **164 tests**.
+An additional regression test reproduced
+the unload of an entry without `runtime_data` before the fix; `async_unload_entry`
+now skips resource closing only when runtime data was never initialized. No test
+failures; output included HA/asyncio runtime warnings and the zlib fallback notice.
+
+HA 2026.10 schema imports use `probatio` when available and retain the
+`voluptuous` fallback for older supported HA releases. Entity constants use the
+new `const` paths or the component exports present in HA 2026.9. HA 2026.9 was not
+run separately in this validation. Tests use the real HA test framework and
+synthetic media; receiver traffic is simulated. This is not receiver
+or production-HA acceptance. Quality criteria and coverage thresholds remain
+unchanged. Local checks do not replace current CI results for the pull request.
+
+A further targeted run of `tests/test_config_flow.py` passed **37 tests**. The
+regression test simulates a missing `probatio` import and verifies the
+`voluptuous` fallback; it does not replace a separate run with HA 2026.9.
+The platform compatibility run passed **4 tests**: three forced legacy constant
+imports for `binary_sensor`, `notify` and `remote`, plus the regular platform
+setup/unload test. Afterwards, `ruff check .`, `ruff format --check .` and
+`mypy` across 41 source files passed.
+
+For PR preparation on **1 November 2026**, the manifest, `pyproject.toml`,
+`uv.lock` and both changelogs were aligned to `2.1.8`. `uv.lock` changes only the
+local project version from `2.1.8.dev6` to `2.1.8`; package versions and the
+dependency resolution remain unchanged. `uv lock --check` (183 packages) and
+`git diff --check` passed. `uv lock --offline` could not re-resolve
+`hassil==3.12.1` for Python 3.15 because its registry metadata was unavailable in
+the local cache; no resolver-generated re-lock is claimed. `quality_scale.yaml`
+was reviewed; no criteria or coverage thresholds were lowered. The CI checks for
+the exact PR revision must pass before merge.
+
+## Dependabot security updates – 2.1.8-dev.5
+
+Checked via the GitHub Dependabot API on **1 November 2026**: 71 alerts in total,
+67 open (8 critical, 32 high, 26 medium, 1 low). All open alerts concern
+`uv.lock`; the development resolution uses `aiohttp==3.14.4`,
+`certifi==2026.10.18`, `multidict==6.9.1`, `Pillow==13.0.0`, `PyJWT==2.15.0` and
+`uv==0.13.4`. PyJWT 2.15.0 also addresses GHSA-gvp8-978c-rx2q: alert 17 lists the
+vulnerable range `>=2.11.0, <=2.13.0` but no first patched version. A targeted
+reuse check decoded an expired HS256 token without verification, then confirmed
+that `ExpiredSignatureError` is raised after signature verification is enabled
+again on the reused options dictionary.
+
+The additional test override `yarl==1.25.1` is required because `aiohttp==3.14.4`
+requires at least yarl 1.25.1 while HA 2026.9.1 pins yarl 1.24.5. Resolution and
+synchronization passed with Python 3.14.7 and HA 2026.9.1; installed package
+versions match the security overrides. `uv lock --check`, Ruff lint and format
+checks, and mypy across 41 source files passed.
+
+The targeted API/config-flow/image/streaming run passed **263 tests**; four FFmpeg
+render cases initially failed with system FFmpeg 4.4.2 on Ubuntu 22.04. The same
+four parameterized cases (`test_real_remux_preserves_packet_hashes_and_hls_seek`
+and `test_real_recording_seek_decodes_requested_colours`) passed with the project-
+local FFmpeg 8.1.2. Tests use the real HA test framework and synthetic media;
+receiver traffic is simulated. This is not production HA or receiver acceptance.
+Quality criteria and coverage thresholds remain unchanged. GitHub still reports
+the alerts on the default branch; adoption into `main` requires an explicitly
+approved PR.
+
+## Octagon inventory stage 0 – 2.1.8-dev.4
+
+Inspected strictly read-only on 17 October 2026 after explicit confirmation of
+Octagon identity. Matched the confirmed Ed25519 key exactly before authentication;
+the global SSH trust file was unchanged. Queries used `python3 -B`, package/library
+inventory, FFmpeg version/decoder lists, memory/storage figures and static
+Enigma2 file analysis. No uploads, files or configuration changes on the Octagon,
+no GUI actions, media/decoder runs, installation or restarts. The Vu+ and HA lab
+were not modified during this continuation.
+
+OpenATV 7.6.0 build 20260831, ARM32/armv7l, four logical CPUs, Python 3.13.12,
+Twisted 25.5.0, pyOpenSSL 25.1.0, OpenSSL 3.6.0, FFmpeg/ffprobe 8.0 and `opkg`
+installed. MPEG-2/H.264/HEVC software decoders listed; 926.49 MiB total RAM,
+285.87 MiB available, 4.14 GiB root available. `StartEnigma.py` and nine
+plugin/GUI/reactor files each have the same SHA-256 as the saved Vu+ files;
+their statically read structures also match. This establishes installed
+interface compatibility, not plugin runtime behavior.
+
+The [updated matrix](DEVELOPMENT.en.md#stage-0-feasibility-on-17-october-2026)
+separates met prerequisites from untested HTTPS/dialog/snapshot operation,
+package lifecycle and OpenWebif independence. **Both receiver inventories are
+complete; overall stage 0 remains incomplete because of these limits and the
+pending licensing/packaging decision.** Previous Vu+ evidence is retained.
+Raw data and compared source evidence remain local under
+`.work/receiver-feasibility/`; public documentation contains no credentials.
+
+Compared DE/EN documentation, checked local links/anchors, version consistency,
+offline lock validation and `git diff --check`; the lockfile changes only the
+project version. No integration logic changed; quality criteria, coverage
+thresholds and existing validation limits remain unchanged. No new HA or plugin
+runtime acceptance is claimed. Current CI remains required before adoption into
+`main`.
+
+## Receiver feasibility stage 0 – 2.1.8-dev.3
+
+Tested on 17 October 2026 at integration revision `8529207` (2.1.8-dev.2),
+using HA 2026.10.1 in the existing Docker lab and the real Vu+ Solo². The
+[findings and prerequisites](DEVELOPMENT.en.md#stage-0-feasibility-on-17-october-2026)
+apply to OpenATV 7.6.0 build 20260921. **Vu+ feasibility is positive with limits;
+overall stage 0 remains open.** Octagon SSH was rejected before authentication
+because its host key differed; no commands, files, installation or restarts on
+that receiver. Confirming its identity is required before collecting its current
+inventory; authorization remains strictly read-only even after confirmation.
+
+Actual checks:
+
+- Configured Vu+ in the HA lab: entry loaded, 72 registered entities, 22 active
+  and available. This demonstrates the existing OpenWebif integration.
+- Temporary dedicated HTTPS listener in the Enigma2 process, session/navigation
+  and the shared main thread with `e2reactor.PollReactor` verified. Python in the
+  HA container reaches the API with a verified test certificate; untrusted
+  certificate and incorrect token rejected. Concurrent dialog returns 409,
+  oversized request 413. Selection returns `answered/later`, timeout
+  `timed_out/null`, Exit and client cancellation each `cancelled/null`.
+  Test dialog visually checked; key input automated through HA/OpenWebif.
+- Six separate software decoder runs on the Vu+: synthetic MPEG-2 SD, H.264 HD
+  and HEVC Full HD files, two positions each. Correct JPEG/color,
+  0.330–1.286 s and measured peak RSS of 17,780–41,920 KiB. HEVC emitted
+  reference-frame/RPS warnings. No real recordings, UHD or load acceptance.
+- One Vu+ GUI restart each to load and remove the probe. HA responses were
+  unconfirmed/HTTP errors; neither restart was repeated, completion was verified
+  through changed PID and reachable state. Removed plugin link, test files,
+  certificate and private key from the Vu+, and confirmed listener closure;
+  container fixtures removed. Service reference, volume, mute, standby and
+  complete timer list identical before/after; no recording active.
+  After cleanup, the HA entry was loaded again with all 22 active entities
+  available. The HA test entry remains configured for subsequent implementation work.
+
+Separately, eleven simulated prototype tests passed for dialog states,
+authentication, limits and lifecycle, along with syntax checks. Probe limits are
+configured, not proven under deliberate overload. Physical remote, other
+skins/images, standby, restart during pending questions, multiple clients,
+endurance, concurrent recording/streaming and precise seeking in real files
+remain untested. The frame worker ran separately through SSH; neither a native
+snapshot API nor a HA backend adapter was implemented. OpenWebif remained active:
+complete independence, independent streaming authentication and installation
+without OpenWebif remain untested. Packaging, persistent identity/pairing,
+licensing decision and Octagon matrix are pending.
+
+Changed only documentation, version metadata and Git exclusion of local
+credentials; prototype and raw evidence remain local. Checked version/lock
+consistency, documentation links/anchors and `git diff --check`. Reviewed quality
+checklist impact: no integration logic, criteria, coverage thresholds or existing
+validation limits changed. Current CI remains required before eventual adoption
+into `main`. This check does not replace acceptance of the future receiver product.
+
+## Docker test lab – 2.1.8-dev.2
+
+Actually started on 17 October 2026 using Docker Desktop (Linux containers),
+Compose 5.6.0 and the official HA 2026.10.1 image on Windows. The container
+reports Python 3.14.6; FFmpeg is available at `/usr/bin/ffmpeg`. Automatic
+onboarding, authentication, HA state `RUNNING`, loading the Enigma2 Connect setup
+form and discarding the test flow passed. `check_config` and Compose configuration
+validation passed. Stop and restart preserved local data and the user; a
+deliberately stale installed component file was removed during the source update.
+Temporary verification files and staging directories were removed afterwards.
+Installed version 2.1.8-dev.2 confirmed. Both labs run simultaneously with separate
+volumes and loopback ports 18123 (EnigmaHACompanion) and 18124 (Enigma2 Connect).
+
+Six offline script tests cover resumed onboarding, saving credentials before user
+creation, rejecting another lab's URL, cleaning up an unexpected config flow,
+login after an invalid refresh token and the absent onboarding endpoint on
+completed installations. Ruff, formatting, Python syntax, version/lockfile and
+local documentation checks passed. The lockfile changes only the local project
+version. Startup logs contain the usual custom-integration warning; first startup
+also reported a warning in the external `rich` package, with no observed startup
+errors.
+
+Actual HA Container verification without a configured receiver; no evidence for
+receiver actions, streaming to LAN devices, automatic discovery, HAOS, Supervisor,
+add-ons or minimum HA version 2026.9. Simulated tests are reported separately.
+Reviewed quality checklist impact: no integration logic, criteria, coverage
+thresholds or existing acceptance limitations changed. Current CI remains required
+before a later merge into `main`.
+
+## Dedicated receiver component planning – 2.1.8-dev.1
+
+On 17 October 2026, analyzed integration commit `7af9665`, both recorded ideas
+and OpenWebif dependencies including discovery, images, files and streaming.
+Checked Enigma2 entry points against public upstream sources; moving source
+branches do not establish acceptance of installed images. The
+[implementation plan](DEVELOPMENT.en.md#implementation-plan-dedicated-receiver-component)
+defines seven stages, migration invariants, boundaries and separate acceptance.
+Reviewed German/English content for consistency; the minimal recording resolver
+is explicitly scheduled before the first receiver snapshots.
+
+Version/JSON/TOML consistency, 166 local links/anchors in developer guides and
+changelogs, Markdown code fences, the WSL offline lock check and
+`git diff --check` passed. The lockfile changes only the local project version;
+all dependencies and functional manifest settings are preserved. Documentation
+and version metadata only, so no new runtime tests or receiver/installed-HA
+acceptance were performed. No plugin implemented or installed. Reviewed quality
+checklist impact: no criteria, coverage thresholds or existing acceptance
+limitations changed; all new functional/performance evidence remains outstanding
+for its implementation stage.
+
 ## Daily blog checks – 2.1.7-dev.2
 
 135 offline script tests passed. New cases cover selecting due retries together with new posts on the following day, skipping successfully reviewed content and processing deferred posts in the next daily run while retaining the five-post limit. Explicit manual selection of exhausted retries remains available separately.

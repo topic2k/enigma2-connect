@@ -6,12 +6,18 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from homeassistant.components.binary_sensor.const import BinarySensorDeviceClass
     from homeassistant.core import HomeAssistant
     from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
     from .coordinator import EnigmaConfigEntry, EnigmaCoordinator
+else:
+    try:
+        from homeassistant.components.binary_sensor.const import BinarySensorDeviceClass
+    except ImportError:
+        from homeassistant.components.binary_sensor import BinarySensorDeviceClass
 
-from homeassistant.components.binary_sensor import BinarySensorDeviceClass, BinarySensorEntity
+from homeassistant.components.binary_sensor import BinarySensorEntity
 from homeassistant.const import EntityCategory
 
 from .entity import EnigmaEntity

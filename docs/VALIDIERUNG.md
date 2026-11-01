@@ -2,6 +2,222 @@
 
 # Prüfübersicht
 
+## HA-Teststack 2026.10.4 – 2.1.8
+
+Am **01.11.2026** den Entwicklungs-/Teststack mit
+`pytest-homeassistant-custom-component==0.13.375` auf HA 2026.10.4 aktualisiert.
+`uv lock --check` und `uv sync --locked` bestanden; die Synchronisierung lief mit
+Python 3.14.7. Installierte Versionen stimmen mit `uv.lock` überein:
+`aiohttp==3.14.5`, `certifi==2026.10.18`, `cryptography==50.0.1`,
+`multidict==6.9.1`, `Pillow==13.0.0`, `PyJWT==2.15.1`, `pyOpenSSL==26.4.0`,
+`uv==0.13.5`, `yarl==1.25.1`, `hassil==3.12.1` und
+`home-assistant-intents==2026.10.6`. Nur der Pillow-Override bleibt bestehen, da
+HA 2026.10.4 weiterhin die von GHSA-5x8w-8jj5-q52h betroffene Version 12.3.0 pinnt.
+
+Mypy für 41 Quelldateien, Ruff-Lint und Formatkontrolle bestanden. Der gezielte
+API-/Config-Flow-/Action-Choice-/Bild-/Streaminglauf mit Projekt-FFmpeg 8.1.2
+bestand zunächst mit **279 Tests** in 659,61 Sekunden. Nach dem Abgleich und der
+Synchronisierung von `hassil` und `home-assistant-intents` bestand ein weiterer
+gezielter Lauf mit **164 Tests**. Ein zusätzlicher Regressionstest
+reproduzierte vor der Korrektur das Entladen eines Eintrags ohne `runtime_data`;
+`async_unload_entry` überspringt nun nur dann das Schließen der Ressourcen, wenn
+keine Laufzeitdaten initialisiert wurden. Keine Testfehler; Ausgabe enthielt
+HA-/Asyncio-Laufzeitwarnungen und den zlib-Fallback-Hinweis.
+
+HA 2026.10-Schemaimporte verwenden `probatio`, wenn verfügbar, und behalten für
+ältere unterstützte HA-Stände den `voluptuous`-Fallback. Entity-Konstanten nutzen
+die neuen `const`-Pfade oder die in HA 2026.9 vorhandenen Komponentenexporte.
+HA 2026.9 wurde in diesem Lauf nicht separat ausgeführt. Die Tests nutzen das
+echte HA-Testframework und synthetische Medien; Receiververkehr ist simuliert.
+Keine Receiver- oder Produktiv-HA-Abnahme.
+Qualitätskriterien und Abdeckungsgrenzen blieben unverändert. Lokale Prüfungen
+ersetzen nicht die aktuellen CI-Ergebnisse des Pull Requests.
+
+Ein zusätzlicher gezielter Lauf von `tests/test_config_flow.py` bestand mit
+**37 Tests**. Der Regressionstest simuliert einen fehlenden `probatio`-Import und
+prüft den `voluptuous`-Fallback; er ersetzt keinen separaten Lauf mit HA 2026.9.
+Der Plattform-Kompatibilitätslauf bestand mit **4 Tests**: drei erzwungene
+Legacy-Konstantenpfade für `binary_sensor`, `notify` und `remote` sowie der
+reguläre Plattform-Setup-/Unload-Test. Anschließend bestanden `ruff check .`,
+`ruff format --check .` und `mypy` für 41 Quelldateien.
+
+Für die PR-Vorbereitung am **01.11.2026** wurden Manifest, `pyproject.toml`,
+`uv.lock` und beide Changelogs auf `2.1.8` abgeglichen. `uv.lock` ändert nur die
+lokale Projektversion von `2.1.8.dev6` auf `2.1.8`; Paketversionen und
+Abhängigkeitsauflösung blieben unverändert. `uv lock --check` (183 Pakete) und
+`git diff --check` bestanden. `uv lock --offline` konnte mangels lokal verfügbarer
+Registry-Metadaten `hassil==3.12.1` für Python 3.15 nicht neu auflösen; eine
+Resolver-Neuauflösung wird daher nicht behauptet. `quality_scale.yaml` wurde
+geprüft; Kriterien und Abdeckungsgrenzen wurden nicht abgesenkt. Vor dem Merge
+müssen die CI-Prüfungen des konkreten PR-Stands erfolgreich sein.
+
+## Dependabot-Sicherheitsupdates – 2.1.8-dev.5
+
+Am **01.11.2026** über die GitHub-Dependabot-API geprüft: 71 Meldungen insgesamt,
+67 offene (8 kritisch, 32 hoch, 26 mittel, 1 niedrig). Alle offenen Meldungen
+betreffen `uv.lock`; die Entwicklungsauflösung verwendet `aiohttp==3.14.4`,
+`certifi==2026.10.18`, `multidict==6.9.1`, `Pillow==13.0.0`, `PyJWT==2.15.0` und
+`uv==0.13.4`. Für `PyJWT` deckt 2.15.0 auch GHSA-gvp8-978c-rx2q ab: Alert 17 nennt
+den verletzlichen Bereich `>=2.11.0, <=2.13.0`, aber keine erste Patchversion.
+Ein gezielter Wiederverwendungstest prüfte einen zuerst unsigniert decodierten,
+abgelaufenen HS256-Token und bestätigte nach erneuter Aktivierung der
+Signaturprüfung die erwartete `ExpiredSignatureError`.
+
+Der zusätzliche Test-Override `yarl==1.25.1` ist notwendig, weil `aiohttp==3.14.4`
+mindestens yarl 1.25.1 verlangt, HA 2026.9.1 aber yarl 1.24.5 festlegt. Die
+Auflösung und Synchronisierung bestanden mit Python 3.14.7 und HA 2026.9.1;
+installierte Paketversionen stimmen mit den Sicherheits-Overrides überein.
+`uv lock --check`, Ruff-Prüfung und Formatkontrolle sowie mypy für 41 Quelldateien
+bestanden.
+
+Im gezielten API-/Config-Flow-/Bild-/Streaminglauf bestanden **263 Tests**;
+vier FFmpeg-Renderfälle scheiterten zunächst mit System-FFmpeg 4.4.2 unter Ubuntu
+22.04. Dieselben vier parametrisierten Fälle (`test_real_remux_preserves_packet_hashes_and_hls_seek`
+und `test_real_recording_seek_decodes_requested_colours`) bestanden mit dem im
+Projekt vorhandenen FFmpeg 8.1.2. Die Tests verwenden das echte HA-Testframework
+und synthetische Mediendaten; Receiververkehr ist simuliert. Das ist keine
+Receiver- oder HA-Produktivabnahme. Die Qualitätskriterien und Abdeckungsgrenzen
+blieben unverändert. GitHub meldet die Warnungen weiterhin auf dem Default-Branch;
+die Übernahme nach `main` erfordert einen ausdrücklich freigegebenen PR.
+
+## Octagon-Inventar Stufe 0 – 2.1.8-dev.4
+
+Am 17.10.2026 nach ausdrücklicher Bestätigung der Octagon-Identität ausschließlich
+lesend geprüft. Vor Anmeldung den bestätigten Ed25519-Schlüssel exakt abgeglichen;
+keine Änderung der globalen SSH-Vertrauensdatei. Abfragen mit `python3 -B`,
+Paket-/Bibliotheksinventar, FFmpeg-Versions-/Decoderliste, Speicherwerte und
+statische Enigma2-Dateianalyse. Keine Uploads, Dateien oder Konfigurationsänderungen
+auf dem Octagon, keine GUI-Aktionen, Medien-/Decoderläufe, Installationen oder
+Neustarts. Die Vu+ und das HA-Labor wurden in dieser Fortsetzung nicht verändert.
+
+OpenATV 7.6.0 Build 20260831, ARM32/armv7l, vier logische CPUs, Python 3.13.12,
+Twisted 25.5.0, pyOpenSSL 25.1.0, OpenSSL 3.6.0, FFmpeg/ffprobe 8.0 und `opkg`
+vorhanden. MPEG-2/H.264/HEVC-Softwaredecoder gelistet; 926,49 MiB RAM gesamt,
+285,87 MiB verfügbar, 4,14 GiB Root verfügbar. `StartEnigma.py` und neun
+Plugin-/GUI-/Reactor-Dateien sind gegenüber den gesicherten Vu+-Dateien jeweils
+SHA-256-identisch; auch ihre statisch gelesenen Strukturen stimmen überein.
+Das ist installierte Schnittstellenkompatibilität, kein Plugin-Laufzeitnachweis.
+
+Die [aktualisierte Matrix](ENTWICKLUNG.md#stufe-0-machbarkeitsstand-am-17102026)
+trennt erfüllte Voraussetzungen von ungeprüftem HTTPS-/Dialog-/Snapshotbetrieb,
+Paketlebenszyklus und OpenWebif-Unabhängigkeit. **Inventar beider Receiver
+abgeschlossen; Gesamtstufe 0 bleibt mit diesen Grenzen und der offenen
+Lizenz-/Paketentscheidung unvollständig.** Die früheren Vu+-Nachweise bleiben
+erhalten. Rohdaten und verglichene Quellbelege liegen lokal unter
+`.work/receiver-feasibility/`; öffentliche Dokumentation ohne Zugangsdaten.
+
+DE/EN-Dokumentation fachlich abgeglichen, lokale Links/Anker, Versionskonsistenz,
+Offline-Lockcheck und `git diff --check` geprüft; die Lockdatei ändert nur die
+eigene Projektversion. Keine Integrationslogik geändert; Qualitätskriterien,
+Abdeckungsgrenzen und bestehende Prüfvorbehalte unverändert. Keine neue HA- oder
+Plugin-Laufzeitabnahme behauptet. Aktuelle CI bleibt vor Übernahme nach `main`
+erforderlich.
+
+## Receiver-Machbarkeit Stufe 0 – 2.1.8-dev.3
+
+Am 17.10.2026 auf Integrationsstand `8529207` (2.1.8-dev.2) mit HA 2026.10.1
+im vorhandenen Docker-Testlabor und der echten Vu+ Solo² geprüft. Die
+[Befunde und Voraussetzungen](ENTWICKLUNG.md#stufe-0-machbarkeitsstand-am-17102026)
+gelten für OpenATV 7.6.0 Build 20260921. **Vu+-Machbarkeit eingeschränkt positiv;
+Gesamtstufe 0 weiterhin offen.** Der Octagon wurde wegen eines abweichenden
+SSH-Hostschlüssels vor der Anmeldung abgewiesen; dort keine Befehle, Dateien,
+Installation oder Neustarts. Eine bestätigte Geräteidentität fehlt für sein
+aktuelles Inventar; die Freigabe erlaubt dort auch danach nur lesende Prüfungen.
+
+Tatsächliche Prüfungen:
+
+- Vu+ im HA-Testlabor eingerichtet: Entry geladen, 72 registrierte Entitäten,
+  davon 22 aktiv und verfügbar. Dies belegt die bestehende OpenWebif-Integration.
+- Temporärer eigener HTTPS-Listener im Enigma2-Prozess, Session/Navigation und
+  gemeinsamer Hauptthread mit `e2reactor.PollReactor` nachgewiesen. Python aus
+  dem HA-Container erreicht die API mit geprüftem Testzertifikat; unvertrautes
+  Zertifikat und falscher Token abgewiesen. Paralleler Dialog erhält 409,
+  übergroßer Request 413. Auswahl ergibt `answered/later`, Timeout
+  `timed_out/null`, Exit und Clientabbruch jeweils `cancelled/null`.
+  Testdialog sichtbar geprüft; Tasten über HA/OpenWebif automatisiert.
+- Sechs separate Software-Decoderläufe auf der Vu+: künstliche MPEG-2-SD-,
+  H.264-HD- und HEVC-Full-HD-Dateien, je zwei Positionen. JPEG/Farbe passend,
+  0,330–1,286 s und 17.780–41.920 KiB gemessener Spitzen-RSS. HEVC mit
+  Referenzbild-/RPS-Warnungen. Keine realen Aufnahmen, UHD oder Lastabnahme.
+- Je ein GUI-Neustart der Vu+ zum Laden und Entfernen. HA-Aufrufantwort jeweils
+  unbestätigt/HTTP-Fehler; keinen Neustart wiederholt, Erfolg über neue PID und
+  erreichbaren Zustand bestätigt. Pluginlink, Testdateien, Testzertifikat und
+  privater Schlüssel auf der Vu+ entfernt, Listener geschlossen; Container-
+  Testdateien entfernt. Senderreferenz, Lautstärke, Stummschaltung, Standby und
+  vollständige Timerliste vor/nach den Prüfungen identisch; keine Aufnahme aktiv.
+  Nach dem Rückbau erneut HA-Eintrag geladen und alle 22 aktiven Entitäten
+  verfügbar. Der HA-Testeintrag bleibt für kommende Umsetzungsschritte eingerichtet.
+
+Davon getrennt bestanden elf simulierte Prototypentests zu Dialogzuständen,
+Authentifizierung, Grenzen und Lifecycle sowie Syntaxprüfungen. Die Probegrenzen
+sind konfiguriert, kein Nachweis unter absichtlicher Überlast. Physische
+Fernbedienung, andere Skins/Images, Standby, Neustart während offener Fragen,
+Mehrclient-/Langzeitbetrieb, Aufnahme-/Stream-Parallelbetrieb und genauer Seek
+realer Dateien stehen aus. Bildworker wurde separat über SSH ausgeführt; weder
+native Snapshot-API noch HA-Backendadapter umgesetzt. OpenWebif blieb aktiv:
+vollständige Unabhängigkeit, unabhängige Streaming-Authentifizierung und
+Installation ohne OpenWebif sind weiterhin ungeprüft. Paketierung, dauerhafte
+Identität/Pairing, Lizenzentscheidung und Octagon-Matrix fehlen.
+
+Nur Dokumentation, Versionsmetadaten und Git-Ausschluss lokaler Zugangsdaten
+geändert; Prototyp und Rohbelege bleiben lokal. Versions-/Lockabgleich,
+Dokumentationslinks/Anker und `git diff --check` geprüft. Qualitätscheckliste auf
+Auswirkungen geprüft: keine Integrationslogik, Kriterien, Abdeckungsgrenzen oder
+bisherigen Prüfvorbehalte geändert. Aktuelle CI bleibt vor einer späteren
+Übernahme nach `main` erforderlich. Diese Prüfung ersetzt keine Abnahme des
+künftigen Receiver-Produkts.
+
+## Docker-Testlabor – 2.1.8-dev.2
+
+Am 17.10.2026 mit Docker Desktop (Linux-Container), Compose 5.6.0 und dem
+offiziellen HA-Image 2026.10.1 unter Windows tatsächlich gestartet. Der Container
+meldet Python 3.14.6; FFmpeg ist unter `/usr/bin/ffmpeg` vorhanden. Automatische
+Ersteinrichtung, Anmeldung, HA-Zustand `RUNNING`, Laden des Enigma2-Connect-
+Einrichtungsformulars und anschließendes Verwerfen des Testflows bestanden.
+`check_config` und Compose-Konfigurationsprüfung erfolgreich. Stopp und erneuter
+Start erhalten lokale Daten und den Benutzer; eine absichtlich veraltete Datei
+im installierten Komponentenordner wurde beim Quellupdate entfernt. Temporäre
+Prüfdateien und Staging-Verzeichnisse anschließend entfernt. Installierte Version
+2.1.8-dev.2 bestätigt. Beide Labore laufen parallel mit getrennten Volumes und
+Loopback-Ports 18123 (EnigmaHACompanion) und 18124 (Enigma2 Connect).
+
+Sechs Offline-Skripttests prüfen fortgesetztes Onboarding, vor der Benutzeranlage
+gesicherte Zugangsdaten, Ablehnung fremder Labor-URLs, Aufräumen eines unerwarteten
+Config Flows, Login nach ungültigem Refresh-Token und den fehlenden Onboarding-
+Endpunkt abgeschlossener Installationen. Ruff, Format-, Python-Syntax-,
+Versions-/Lockdatei- und lokale Dokumentationsprüfungen bestanden. Die Lockdatei
+ändert ausschließlich die eigene Projektversion. Im Startlog nur die übliche
+Custom-Integration-Warnung; beim Erststart zusätzlich eine Warnung im externen
+Paket `rich`, keine beobachteten Startfehler.
+
+Tatsächliche HA-Container-Prüfung ohne eingerichteten Receiver, kein Nachweis für
+Receiveraktionen, Streaming zu LAN-Geräten, automatische Discovery, HAOS,
+Supervisor, Add-ons oder die HA-Mindestversion 2026.9. Die simulierten Tests
+sind davon getrennt. Qualitätscheckliste auf Auswirkungen geprüft: keine
+Integrationslogik, Kriterien, Abdeckungsgrenzen oder bestehenden Prüfvorbehalte
+verändert. Aktuelle CI bleibt vor einer späteren Übernahme nach `main` erforderlich.
+
+## Planung der eigenen Receiver-Komponente – 2.1.8-dev.1
+
+Am 17.10.2026 Integrationsstand `7af9665`, die beiden vorgemerkten Ideen und
+die OpenWebif-Abhängigkeiten einschließlich Discovery, Bildern, Dateien und
+Streaming analysiert. Enigma2-Ansatzpunkte anhand öffentlicher Upstreamquellen
+geprüft; bewegliche Quellstände sind keine Abnahme installierter Images.
+Der [Umsetzungsplan](ENTWICKLUNG.md#umsetzungsplan-eigene-receiver-komponente)
+enthält sieben Stufen, Migrationsinvarianten, Grenzen und getrennte Abnahmen.
+Deutsche/englische Fassung fachlich abgeglichen; der minimale Aufnahme-Resolver
+ist ausdrücklich vor den ersten Receiver-Snapshots eingeplant.
+
+Versions-/JSON-/TOML-Abgleich, 166 lokale Links/Anker in Entwicklerhandbüchern
+und Changelogs, Markdown-Codeblockgrenzen, Offline-Lockcheck in WSL und
+`git diff --check` bestanden. Die Lockdatei ändert ausschließlich die eigene
+Projektversion; sämtliche Abhängigkeiten und Manifest-Funktionseinstellungen
+sind erhalten. Nur Dokumentation und Versionsmetadaten geändert, daher keine
+neuen Laufzeittests oder Receiver-/HA-Praxisprüfungen. Kein Plugin implementiert
+oder installiert. Qualitätscheckliste auf Auswirkungen geprüft: keine Kriterien,
+Abdeckungsgrenzen oder bestehenden Prüfvorbehalte verändert; alle neuen
+Funktions-/Leistungsnachweise bleiben für die jeweilige Umsetzungsstufe offen.
+
 ## Tägliche Blogprüfung – 2.1.7-dev.2
 
 135 Offline-Skripttests bestanden. Neue Fälle prüfen die gemeinsame Auswahl fälliger Wiederholungen und neuer Beiträge am Folgetag, das Überspringen erfolgreich geprüfter Inhalte und die Bearbeitung zurückgestellter Beiträge im nächsten Tageslauf bei weiterhin höchstens fünf Beiträgen pro Lauf. Die manuelle Auswahl ausgeschöpfter Fehlversuche bleibt getrennt verfügbar.

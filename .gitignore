@@ -2,6 +2,7 @@
 .idea/
 .work/
 .local-archive/
+.local-info/
 __pycache__/
 .pytest_cache/
 .ruff_cache/

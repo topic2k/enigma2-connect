@@ -9,15 +9,20 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
     from typing import Any
 
+    import probatio as vol
     from homeassistant.core import HomeAssistant
 
     from .coordinator import EnigmaConfigEntry
+else:
+    try:
+        import probatio as vol
+    except ModuleNotFoundError:
+        import voluptuous as vol
 
 import ipaddress
 import re
 from uuid import uuid4
 
-import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.core import callback
 from homeassistant.helpers import config_validation as cv

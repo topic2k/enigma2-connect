@@ -8,14 +8,20 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from typing import Any
 
+    from homeassistant.components.remote.const import RemoteEntityFeature
     from homeassistant.core import HomeAssistant
     from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
     from .coordinator import EnigmaConfigEntry
+else:
+    try:
+        from homeassistant.components.remote.const import RemoteEntityFeature
+    except ImportError:
+        from homeassistant.components.remote import RemoteEntityFeature
 
 from collections.abc import Iterable
 
-from homeassistant.components.remote import RemoteEntity, RemoteEntityFeature
+from homeassistant.components.remote import RemoteEntity
 from homeassistant.exceptions import ServiceValidationError
 
 from .const import DOMAIN, KEYS

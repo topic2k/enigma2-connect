@@ -4,6 +4,7 @@
 
 ## Contents
 
+- [2.1.8](#218)
 - [2.1.7](#217)
 - [2.1.6](#216)
 - [2.1.5](#215)
@@ -21,6 +22,20 @@
 - [1.0.2](#102)
 - [1.0.1](#101)
 - [1.0.0](#100)
+
+## 2.1.8
+
+Unreleased.
+
+- Updated the development/test stack to Home Assistant 2026.10.4 through `pytest-homeassistant-custom-component==0.13.375`; aligned the `hassil` and `home-assistant-intents` dev dependencies with HA. Removed overrides for packages pinned to patched HA versions; `certifi` and `multidict` resolve to patched lock versions without exact overrides. Because HA still pins vulnerable `Pillow==12.3.0`, the targeted `Pillow==13.0.0` test override remains. Aligned schema and entity-constant imports with HA 2026.10, with fallbacks for older supported HA releases. Unloading an entry without initialized runtime data no longer raises an exception. The HA minimum version and production manifest requirements are unchanged.
+
+- Applied targeted UV overrides for security fixes in the development/test dependencies `aiohttp`, `certifi`, `multidict`, `Pillow`, `PyJWT` and `uv`; `yarl` is also upgraded to satisfy the new `aiohttp` minimum. Existing `cryptography`/`pyOpenSSL` overrides remain. The Home Assistant minimum version and production manifest requirements are unchanged.
+
+- Tested stage 0 on the Vu+ Solo² with the HA test container: temporary receiver plugin with its own HTTPS endpoint and interactive dialogs, plus bounded FFmpeg frame extraction. Documented prerequisites, measurements, cleanup and remaining acceptance in both languages. Inventoried the Octagon strictly read-only after SSH identity confirmation: documented matching Python/TLS and static plugin interfaces, its different ARM platform and larger memory/storage reserves. Its plugin runtime acceptance remains pending; access stays strictly read-only. Excluded local credentials from Git.
+
+- Added an isolated Docker test lab with HA 2026.10.1, automatic onboarding, installation of current source and a persistent configuration volume. Separate loopback port 18124 supports parallel operation with EnigmaHACompanion; start, stop, logs and configuration checks plus DE/EN instructions. Receivers are added manually.
+
+- Planned a dedicated receiver component: architecture, OpenWebif dependencies, native interfaces, interactive dialogs, receiver-side recording frames and staged migration to operation without OpenWebif in both developer guides. Planning status, unresolved image/licensing questions and required acceptance are explicitly distinguished from implemented features.
 
 ## 2.1.7
 
