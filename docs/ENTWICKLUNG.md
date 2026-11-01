@@ -143,6 +143,16 @@ Die Custom-Integration installiert diese Pakete nicht selbst; ihre Manifest-
 Anforderungen bleiben leer. Für eine produktive HA-Installation gelten deren
 eigene Paketversionen, die durch diese Repository-Änderung nicht aktualisiert werden.
 
+Weitere befristete Sicherheits-Overrides für den HA-Teststack setzen `aiohttp==3.14.4`,
+`certifi==2026.10.18`, `multidict==6.9.1`, `Pillow==13.0.0`, `PyJWT==2.15.0` und
+`uv==0.13.4`. Sie beheben die derzeit offenen Dependabot-Meldungen in `uv.lock`;
+die Versionen bleiben auf die betroffenen Entwicklungs-/Testabhängigkeiten begrenzt.
+Zusätzlich ist `yarl==1.25.1` erforderlich, da `aiohttp==3.14.4` diese Mindestversion
+verlangt, HA 2026.9.1 aber `yarl==1.24.5` festlegt.
+Sobald der festgelegte HA-Teststack gepatchte Versionen vorgibt, die jeweiligen
+Overrides entfernen und Lockdatei sowie betroffene Integrationstests erneut prüfen.
+Das ist keine allgemeine Freigabe eines abweichenden Home-Assistant-Paketstands.
+
 Die Python-Tests verwenden das echte Home-Assistant-Framework; Receiver-Antworten
 und Transporte sind simuliert. Sie prüfen unter anderem Config Flow,
 Gerätezuordnung, Plattformen, Fehlerfälle, Kalender, Aufnahmen, Medienquelle und

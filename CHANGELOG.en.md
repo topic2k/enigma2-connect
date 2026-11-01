@@ -4,6 +4,7 @@
 
 ## Contents
 
+- [2.1.8-dev.5](#218-dev5)
 - [2.1.8-dev.4](#218-dev4)
 - [2.1.7](#217)
 - [2.1.6](#216)
@@ -22,6 +23,12 @@
 - [1.0.2](#102)
 - [1.0.1](#101)
 - [1.0.0](#100)
+
+## 2.1.8-dev.5
+
+Unreleased development version.
+
+- Applied targeted UV overrides for security fixes in the development/test dependencies `aiohttp`, `certifi`, `multidict`, `Pillow`, `PyJWT` and `uv`; `yarl` is also upgraded to satisfy the new `aiohttp` minimum. Existing `cryptography`/`pyOpenSSL` overrides remain. The Home Assistant minimum version and production manifest requirements are unchanged.
 
 ## 2.1.8-dev.4
 

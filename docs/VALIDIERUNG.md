@@ -2,6 +2,35 @@
 
 # Prüfübersicht
 
+## Dependabot-Sicherheitsupdates – 2.1.8-dev.5
+
+Am **01.11.2026** über die GitHub-Dependabot-API geprüft: 71 Meldungen insgesamt,
+67 offene (8 kritisch, 32 hoch, 26 mittel, 1 niedrig). Alle offenen Meldungen
+betreffen `uv.lock`; die Entwicklungsauflösung verwendet `aiohttp==3.14.4`,
+`certifi==2026.10.18`, `multidict==6.9.1`, `Pillow==13.0.0`, `PyJWT==2.15.0` und
+`uv==0.13.4`. Für `PyJWT` deckt 2.15.0 auch GHSA-gvp8-978c-rx2q ab: Alert 17 nennt
+den verletzlichen Bereich `>=2.11.0, <=2.13.0`, aber keine erste Patchversion.
+Ein gezielter Wiederverwendungstest prüfte einen zuerst unsigniert decodierten,
+abgelaufenen HS256-Token und bestätigte nach erneuter Aktivierung der
+Signaturprüfung die erwartete `ExpiredSignatureError`.
+
+Der zusätzliche Test-Override `yarl==1.25.1` ist notwendig, weil `aiohttp==3.14.4`
+mindestens yarl 1.25.1 verlangt, HA 2026.9.1 aber yarl 1.24.5 festlegt. Die
+Auflösung und Synchronisierung bestanden mit Python 3.14.7 und HA 2026.9.1;
+installierte Paketversionen stimmen mit den Sicherheits-Overrides überein.
+`uv lock --check`, Ruff-Prüfung und Formatkontrolle sowie mypy für 41 Quelldateien
+bestanden.
+
+Im gezielten API-/Config-Flow-/Bild-/Streaminglauf bestanden **263 Tests**;
+vier FFmpeg-Renderfälle scheiterten zunächst mit System-FFmpeg 4.4.2 unter Ubuntu
+22.04. Dieselben vier parametrisierten Fälle (`test_real_remux_preserves_packet_hashes_and_hls_seek`
+und `test_real_recording_seek_decodes_requested_colours`) bestanden mit dem im
+Projekt vorhandenen FFmpeg 8.1.2. Die Tests verwenden das echte HA-Testframework
+und synthetische Mediendaten; Receiververkehr ist simuliert. Das ist keine
+Receiver- oder HA-Produktivabnahme. Die Qualitätskriterien und Abdeckungsgrenzen
+blieben unverändert. GitHub meldet die Warnungen weiterhin auf dem Default-Branch;
+die Übernahme nach `main` erfordert einen ausdrücklich freigegebenen PR.
+
 ## Octagon-Inventar Stufe 0 – 2.1.8-dev.4
 
 Am 17.10.2026 nach ausdrücklicher Bestätigung der Octagon-Identität ausschließlich

@@ -2,6 +2,34 @@
 
 # Verification summary
 
+## Dependabot security updates – 2.1.8-dev.5
+
+Checked via the GitHub Dependabot API on **1 November 2026**: 71 alerts in total,
+67 open (8 critical, 32 high, 26 medium, 1 low). All open alerts concern
+`uv.lock`; the development resolution uses `aiohttp==3.14.4`,
+`certifi==2026.10.18`, `multidict==6.9.1`, `Pillow==13.0.0`, `PyJWT==2.15.0` and
+`uv==0.13.4`. PyJWT 2.15.0 also addresses GHSA-gvp8-978c-rx2q: alert 17 lists the
+vulnerable range `>=2.11.0, <=2.13.0` but no first patched version. A targeted
+reuse check decoded an expired HS256 token without verification, then confirmed
+that `ExpiredSignatureError` is raised after signature verification is enabled
+again on the reused options dictionary.
+
+The additional test override `yarl==1.25.1` is required because `aiohttp==3.14.4`
+requires at least yarl 1.25.1 while HA 2026.9.1 pins yarl 1.24.5. Resolution and
+synchronization passed with Python 3.14.7 and HA 2026.9.1; installed package
+versions match the security overrides. `uv lock --check`, Ruff lint and format
+checks, and mypy across 41 source files passed.
+
+The targeted API/config-flow/image/streaming run passed **263 tests**; four FFmpeg
+render cases initially failed with system FFmpeg 4.4.2 on Ubuntu 22.04. The same
+four parameterized cases (`test_real_remux_preserves_packet_hashes_and_hls_seek`
+and `test_real_recording_seek_decodes_requested_colours`) passed with the project-
+local FFmpeg 8.1.2. Tests use the real HA test framework and synthetic media;
+receiver traffic is simulated. This is not production HA or receiver acceptance.
+Quality criteria and coverage thresholds remain unchanged. GitHub still reports
+the alerts on the default branch; adoption into `main` requires an explicitly
+approved PR.
+
 ## Octagon inventory stage 0 – 2.1.8-dev.4
 
 Inspected strictly read-only on 17 October 2026 after explicit confirmation of

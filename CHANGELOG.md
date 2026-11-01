@@ -4,6 +4,7 @@
 
 ## Inhaltsverzeichnis
 
+- [2.1.8-dev.5](#218-dev5)
 - [2.1.8-dev.4](#218-dev4)
 - [2.1.7](#217)
 - [2.1.6](#216)
@@ -22,6 +23,12 @@
 - [1.0.2](#102)
 - [1.0.1](#101)
 - [1.0.0](#100)
+
+## 2.1.8-dev.5
+
+Unveröffentlichte Entwicklerversion.
+
+- Sicherheitskorrekturen für die Entwicklungs-/Testabhängigkeiten `aiohttp`, `certifi`, `multidict`, `Pillow`, `PyJWT` und `uv` per gezielten UV-Overrides; `yarl` wird passend zur neuen `aiohttp`-Mindestversion mit angehoben. Bestehende `cryptography`-/`pyOpenSSL`-Ausnahmen bleiben erhalten. Die Home-Assistant-Mindestversion und produktiven Manifest-Abhängigkeiten bleiben unverändert.
 
 ## 2.1.8-dev.4
 

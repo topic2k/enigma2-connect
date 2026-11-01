@@ -138,6 +138,16 @@ The custom integration does not install these packages itself; its manifest
 requirements remain empty. Production HA installations retain their own package
 versions, which this repository change does not update.
 
+Additional temporary security overrides for the HA test stack select
+`aiohttp==3.14.4`, `certifi==2026.10.18`, `multidict==6.9.1`, `Pillow==13.0.0`,
+`PyJWT==2.15.0` and `uv==0.13.4`. They address the currently open Dependabot alerts
+in `uv.lock` and remain limited to the affected development/test dependencies.
+The additional `yarl==1.25.1` override is needed because `aiohttp==3.14.4`
+requires it while HA 2026.9.1 pins `yarl==1.24.5`.
+Once the pinned HA test stack provides patched versions, remove the corresponding
+overrides and recheck the lockfile and affected integration tests. This is not a
+general certification of a modified Home Assistant package set.
+
 Python tests use the real Home Assistant framework with simulated receiver
 responses and transports. They cover configuration, device targeting, platforms,
 errors, calendars, recordings, media sources and translations. JavaScript tests
