@@ -949,6 +949,12 @@ ohne sie dient der normalisierte Host als Fallback. Ein Adresswechsel erfolgt
 über Reconfigure. Für MAC-basierte Einträge wird dabei die Identität geprüft;
 ein Host-Fallback kann einen Gerätetausch hinter derselben Adresse nicht erkennen.
 
+Alle Entitäten teilen die Gerätebeschreibung aus `entity.py`. Die MAC-Verbindung
+wird direkt über `DeviceInfo(..., connections=...)` übergeben, nicht nachträglich
+per Wörterbuchzugriff ergänzt. So bleibt die Konstruktion mit HA 2026.9 und der
+angekündigten `DeviceInfo`-Dataclass ab HA 2026.11 kompatibel; eine Versionsabfrage
+oder Anhebung der Mindestversion ist dafür nicht erforderlich.
+
 Der erste erfolgreiche Coordinator-Refresh erfolgt vor dem Plattformaufbau.
 `OptionsFlowWithReload` übernimmt Optionsänderungen. Der Coordinator verwendet
 `always_update=False`; fehlende optionale Listen werden als `None` behandelt,

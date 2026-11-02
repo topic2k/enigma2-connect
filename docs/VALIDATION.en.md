@@ -2,6 +2,25 @@
 
 # Verification summary
 
+## DeviceInfo dataclass readiness – 2.1.9-dev.1
+
+On **2 November 2026**, ran the targeted tests in `tests/test_entity.py` and the
+two device-registry cases in `tests/test_silver_controls.py` with Python 3.14.2
+and the HA 2026.10.4 test stack
+(`pytest-homeassistant-custom-component==0.13.375`): **5 tests passed**.
+Branch coverage for `entity.py` is 100%, including both MAC/no-MAC branches.
+The tests cover valid, missing and unusable MAC addresses and preserve device
+identity.
+
+The future case uses a simulated `DeviceInfo` dataclass without a mapping
+interface; this verifies construction without later dictionary operations, but
+is not a run against actual HA 2026.11. The HA test stack uses the real HA test
+framework; receiver responses are simulated. No receiver or production-HA
+acceptance is claimed. Ruff lint/format, mypy across 41 source files, syntax
+checks for the changed Python files, `uv lock --check` and `git diff --check`
+passed. The devices quality criterion and coverage thresholds were not lowered;
+current PR CI is still required before a merge into `main`.
+
 ## HA test stack 2026.10.4 – 2.1.8
 
 Updated the development/test stack on **1 November 2026** to HA 2026.10.4 via

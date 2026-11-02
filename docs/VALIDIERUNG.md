@@ -2,6 +2,25 @@
 
 # Prüfübersicht
 
+## DeviceInfo-Dataclass-Vorbereitung – 2.1.9-dev.1
+
+Am **02.11.2026** den gezielten Lauf für `tests/test_entity.py` und die beiden
+Geräteregistry-Fälle in `tests/test_silver_controls.py` mit Python 3.14.2 und dem
+HA-2026.10.4-Teststack (`pytest-homeassistant-custom-component==0.13.375`)
+ausgeführt: **5 Tests bestanden**. Branch-Coverage für `entity.py`: 100 %,
+einschließlich beider MAC-/Kein-MAC-Branches. Die Tests prüfen gültige,
+fehlende und unbrauchbare MAC-Adressen sowie die stabile Geräteidentität.
+
+Der Zukunftsfall verwendet eine simulierte `DeviceInfo`-Dataclass ohne
+Wörterbuchschnittstelle; damit ist die Konstruktion ohne nachträgliche
+Wörterbuchoperationen geprüft, aber kein tatsächlicher Lauf mit HA 2026.11. Der
+HA-Teststack verwendet das echte HA-Testframework; Receiverantworten sind
+simuliert. Keine Receiver- oder Produktiv-HA-Abnahme. Ruff-Lint und -Format,
+Mypy für 41 Quelldateien, Syntaxprüfung der geänderten Python-Dateien,
+`uv lock --check` und `git diff --check` bestanden. Das Gerätequalitätskriterium
+und die Abdeckungsgrenzen wurden nicht abgesenkt; aktuelle PR-CI bleibt vor einem
+Merge nach `main` erforderlich.
+
 ## HA-Teststack 2026.10.4 – 2.1.8
 
 Am **01.11.2026** den Entwicklungs-/Teststack mit

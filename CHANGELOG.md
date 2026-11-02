@@ -4,6 +4,7 @@
 
 ## Inhaltsverzeichnis
 
+- [2.1.9-dev.1](#219-dev1)
 - [2.1.8](#218)
 - [2.1.7](#217)
 - [2.1.6](#216)
@@ -22,6 +23,12 @@
 - [1.0.2](#102)
 - [1.0.1](#101)
 - [1.0.0](#100)
+
+## 2.1.9-dev.1
+
+Unveröffentlichte Entwicklerversion.
+
+- Die gemeinsame Gerätebeschreibung übergibt die MAC-Verbindung direkt an den `DeviceInfo`-Konstruktor statt sie nachträglich per Wörterbuchzugriff einzutragen. Das bereitet `entity.py` auf die angekündigte Dataclass ab HA 2026.11 vor, ohne die Mindestversion HA 2026.9 oder die Geräteidentität zu ändern.
 
 ## 2.1.8
 

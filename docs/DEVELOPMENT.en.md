@@ -891,6 +891,12 @@ Device identity uses a normalized usable MAC address, falling back to a normaliz
 host. Change addresses through Reconfigure. MAC-based entries verify identity;
 a host fallback cannot detect replacement hardware behind the same address.
 
+All entities share the device description from `entity.py`. The MAC connection
+is passed directly through `DeviceInfo(..., connections=...)`, not assigned later
+through dictionary access. This keeps construction compatible with HA 2026.9 and
+the announced `DeviceInfo` dataclass in HA 2026.11; no version check or increase
+to the minimum HA version is required.
+
 The first successful coordinator refresh precedes platform setup.
 `OptionsFlowWithReload` applies option changes. The coordinator uses
 `always_update=False`; missing optional lists are `None`, not empty lists. The

@@ -261,6 +261,16 @@ async def test_receiver_without_reported_mac_keeps_persistent_identity(hass, ent
     assert not devices[0].connections
 
 
+async def test_receiver_with_reported_mac_keeps_persistent_identity(hass, entry, receiver):
+    from homeassistant.helpers import device_registry as dr
+
+    await setup(hass, entry)
+    devices = dr.async_entries_for_config_entry(dr.async_get(hass), entry.entry_id)
+    assert len(devices) == 1
+    assert devices[0].identifiers == {("enigma2_connect", entry.unique_id)}
+    assert devices[0].connections == {(dr.CONNECTION_NETWORK_MAC, "aa:bb:cc:dd:ee:ff")}
+
+
 async def test_structured_rejection_keeps_translated_ha_error(hass, entry, receiver, caplog):
     await setup(hass, entry)
     rejection = CommandRejectedError(

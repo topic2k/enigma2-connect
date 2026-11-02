@@ -4,6 +4,7 @@
 
 ## Contents
 
+- [2.1.9-dev.1](#219-dev1)
 - [2.1.8](#218)
 - [2.1.7](#217)
 - [2.1.6](#216)
@@ -22,6 +23,12 @@
 - [1.0.2](#102)
 - [1.0.1](#101)
 - [1.0.0](#100)
+
+## 2.1.9-dev.1
+
+Unreleased development version.
+
+- The shared device description now passes the MAC connection directly to the `DeviceInfo` constructor instead of assigning it through dictionary access afterwards. This prepares `entity.py` for the announced dataclass in HA 2026.11 without changing the HA 2026.9 minimum or device identity.
 
 ## 2.1.8
 
